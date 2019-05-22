@@ -69,6 +69,169 @@ class OrderItem extends AbstractRequest
      */
     protected $netTotalAmount;
 
+    /**
+     * @return string
+     */
+    public function getReference()
+    {
+        return $this->reference;
+    }
+
+    /**
+     * @param string $reference
+     * @return OrderItem
+     */
+    public function setReference($reference)
+    {
+        $this->reference = $reference;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     * @return OrderItem
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getQuantity()
+    {
+        return $this->quantity;
+    }
+
+    /**
+     * @param float $quantity
+     * @return OrderItem
+     */
+    public function setQuantity($quantity)
+    {
+        $this->quantity = $quantity;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUnit()
+    {
+        return $this->unit;
+    }
+
+    /**
+     * @param string $unit
+     * @return OrderItem
+     */
+    public function setUnit($unit)
+    {
+        $this->unit = $unit;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getUnitPrice()
+    {
+        return $this->unitPrice;
+    }
+
+    /**
+     * @param float $unitPrice
+     * @return OrderItem
+     */
+    public function setUnitPrice($unitPrice)
+    {
+        $this->unitPrice = $unitPrice;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTaxRate()
+    {
+        return $this->taxRate;
+    }
+
+    /**
+     * @param int $taxRate
+     * @return OrderItem
+     */
+    public function setTaxRate($taxRate)
+    {
+        $this->taxRate = $taxRate;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getTaxAmount()
+    {
+        return $this->taxAmount;
+    }
+
+    /**
+     * @param float $taxAmount
+     * @return OrderItem
+     */
+    public function setTaxAmount($taxAmount)
+    {
+        $this->taxAmount = $taxAmount;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGrossTotalAmount()
+    {
+        return $this->grossTotalAmount;
+    }
+
+    /**
+     * @param mixed $grossTotalAmount
+     * @return OrderItem
+     */
+    public function setGrossTotalAmount($grossTotalAmount)
+    {
+        $this->grossTotalAmount = $grossTotalAmount;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getNetTotalAmount()
+    {
+        return $this->netTotalAmount;
+    }
+
+    /**
+     * @param float $netTotalAmount
+     * @return OrderItem
+     */
+    public function setNetTotalAmount($netTotalAmount)
+    {
+        $this->netTotalAmount = $netTotalAmount;
+        return $this;
+    }
+
+
 
     public function toJSON()
     {
@@ -79,15 +242,15 @@ class OrderItem extends AbstractRequest
     {
 
         return [
-            'reference' => $this->reference,
-            'name' => $this->name,
-            'quantity' => $this->quantity,
-            'unit' => $this->unit,
-            'unitPrice' => $this->unitPrice,
-            'taxRate' => $this->taxRate,
-            'taxAmount' => $this->taxAmount,
-            'grossTotalAmount' => $this->grossTotalAmount,
-            'netTotalAmount' => $this->netTotalAmount,
+            'reference' => $this->getReference(),
+            'name' => $this->getName(),
+            'quantity' => $this->getQuantity(),
+            'unit' => $this->getUnit(),
+            'unitPrice' => $this->getUnitPrice(),
+            'taxRate' => $this->getTaxRate(),
+            'taxAmount' => $this->getTaxAmount(),
+            'grossTotalAmount' => $this->getGrossTotalAmount(),
+            'netTotalAmount' => $this->getNetTotalAmount(),
         ];
     }
 

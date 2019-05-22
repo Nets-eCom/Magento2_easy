@@ -31,6 +31,78 @@ class PaymentOrder extends AbstractRequest
      */
     protected $items;
 
+    /**
+     * @return float
+     */
+    public function getAmount()
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @param float $amount
+     * @return PaymentOrder
+     */
+    public function setAmount($amount)
+    {
+        $this->amount = $amount;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrency()
+    {
+        return $this->currency;
+    }
+
+    /**
+     * @param string $currency
+     * @return PaymentOrder
+     */
+    public function setCurrency($currency)
+    {
+        $this->currency = $currency;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReference()
+    {
+        return $this->reference;
+    }
+
+    /**
+     * @param string $reference
+     * @return PaymentOrder
+     */
+    public function setReference($reference)
+    {
+        $this->reference = $reference;
+        return $this;
+    }
+
+    /**
+     * @return OrderItem[]
+     */
+    public function getItems()
+    {
+        return $this->items;
+    }
+
+    /**
+     * @param OrderItem[] $items
+     * @return PaymentOrder
+     */
+    public function setItems($items)
+    {
+        $this->items = $items;
+        return $this;
+    }
+
 
     public function toJSON()
     {
@@ -40,16 +112,16 @@ class PaymentOrder extends AbstractRequest
     public function toArray()
     {
         $items = [];
-        if (!empty($this->items)) {
-            foreach ($this->items as $item) {
+        if (!empty($this->getItems())) {
+            foreach ($this->getItems() as $item) {
                 $items[] = $item->toArray();
             }
         }
 
         return [
-            'amount' => $this->amount,
-            'currency' => $this->currency,
-            'reference' => $this->reference,
+            'amount' => $this->getAmount(),
+            'currency' => $this->getCurrency(),
+            'reference' => $this->getReference(),
             'items' => $items
         ];
     }

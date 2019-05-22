@@ -27,6 +27,43 @@ class ConsumerType extends AbstractRequest
      */
     protected $default;
 
+    /**
+     * @return string[]
+     */
+    public function getSupportedTypes()
+    {
+        return $this->supportedTypes;
+    }
+
+    /**
+     * @param string[] $supportedTypes
+     * @return ConsumerType
+     */
+    public function setSupportedTypes($supportedTypes)
+    {
+        $this->supportedTypes = $supportedTypes;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDefault()
+    {
+        return $this->default;
+    }
+
+    /**
+     * @param string $default
+     * @return ConsumerType
+     */
+    public function setDefault($default)
+    {
+        $this->default = $default;
+        return $this;
+    }
+
+
     public function toJSON()
     {
         return json_encode($this->toArray());
@@ -42,8 +79,8 @@ class ConsumerType extends AbstractRequest
         $this->validate();
 
         return [
-            'default' => $this->default,
-            'supported_types' => $this->supportedTypes,
+            'default' => $this->getDefault(),
+            'supported_types' => $this->getSupportedTypes(),
         ];
     }
 
@@ -53,17 +90,17 @@ class ConsumerType extends AbstractRequest
      */
     protected function validate()
     {
-        if (empty($this->supportedTypes)) {
+        if (empty($this->getSupportedTypes())) {
             throw new \Exception("consumer type, supportedTypes must be specified");
         }
 
-        foreach ($this->supportedTypes as $type) {
+        foreach ($this->getSupportedTypes() as $type) {
             if (!in_array($type, $this->acceptedValues)) {
                 throw new \Exception("consumer type, array item of supportedTypes must be of B2C or B2B");
             }
         }
 
-        if (!in_array($this->default, $this->acceptedValues)) {
+        if (!in_array($this->getDefault(), $this->acceptedValues)) {
             throw new \Exception("consumer type, default type must be of B2C or B2B");
         }
     }
