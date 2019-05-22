@@ -9,11 +9,23 @@
             <label>Easy Checkout</label>
             <tab>dibs</tab>
             <resource>Dibs_EasyCheckout::system_config</resource>
-            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="connection" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>General</label>
                 <field id="enabled" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="test_mode" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Testmode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Checkout Key</label>
+                    <comment>Merchant Identifier, found in Easy-Portal</comment>
+                </field>
+                <field id="secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Secret Key</label>
+                    <comment>The secret key found in the DIBS Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
                 </field>
             </group>
         </section>
