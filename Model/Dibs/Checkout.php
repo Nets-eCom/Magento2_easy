@@ -28,6 +28,9 @@ class Checkout
     {
         // TODO we need quote
 
+        // TODO this is just a test case!
+     //   return $this->createNewDibsPayment();
+
     }
 
 
@@ -45,14 +48,16 @@ class Checkout
         $consumerType->setUseB2cOnly();
 
         $paymentCheckout = new CreatePaymentCheckout();
-        $paymentCheckout->setCharge(true); // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
         $paymentCheckout->setConsumerType($consumerType);
         $paymentCheckout->setIntegrationType($paymentCheckout::INTEGRATION_TYPE_EMBEDDED);
-        $paymentCheckout->setMerchantHandlesConsumerData(true); // WE Handle the customer data, i.e not attaching it in iframe!
         $paymentCheckout->setUrl("http://m230.localhost/onepage"); // TODO remove hardcode
-        $paymentCheckout->setPublicDevice(true); //  Default value = false, if set to true the checkout will not load any user data
         $paymentCheckout->setTermsUrl("http://m230.localhost/terms"); // TODO load from settings
+
+
+        $paymentCheckout->setCharge(true); // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
+        $paymentCheckout->setMerchantHandlesConsumerData(false); // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
         $paymentCheckout->setMerchantHandlesShippingCost(false); // TODO set to true
+        $paymentCheckout->setPublicDevice(true); //  Default value = false, if set to true the checkout will not load any user data
 
         // all items
         $orderItems = [];

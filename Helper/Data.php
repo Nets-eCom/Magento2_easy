@@ -6,7 +6,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
 
 
-    const XML_PATH_CONNECTION     = 'dibs_easycheckout/connection';
+    const XML_PATH_CONNECTION     = 'dibs_easycheckout/connection/';
     const API_BASE_URL_TEST = "https://test.api.dibspayment.eu";
     const API_BASE_URL_LIVE = "https://api.dibspayment.eu";
 

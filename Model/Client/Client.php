@@ -2,6 +2,7 @@
 namespace Dibs\EasyCheckout\Model\Client;
 
 
+use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\RequestOptions;
 use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
 
@@ -82,9 +83,24 @@ abstract class Client
         }
 
         $options = array_merge($options, $this->getDefaultOptions());
-        $result = $this->httpClient->get($endpoint, $options);
 
-        return $result->getBody()->getContents();
+        try {
+            $result = $this->httpClient->get($endpoint, $options);
+            return $result->getBody()->getContents();
+        } catch (BadResponseException $e) {
+            $exception = $this->handleException($e);
+        } catch (\Exception $e) {
+            $exception = $this->handleException($e);
+        }
+
+        if ($exception) {
+            $this->getLogger()->error("Failed sending request to dibs integration: GET $endpoint");
+            $this->getLogger()->error(json_encode($this->removeAuthForLogging($options)));
+            $this->getLogger()->error($exception->getMessage());
+            $this->getLogger()->error($exception->getHttpStatusCode());
+            $this->getLogger()->error($exception->getResponseBody());
+            throw $exception;
+        }
     }
 
     /**
@@ -92,7 +108,7 @@ abstract class Client
      * @param AbstractRequest $request
      * @param array $options
      * @return string
-     * @throws \Exception
+     * @throws ClientException
      */
     protected function post($endpoint, AbstractRequest $request, $options = []){
         if (!is_array($options)) {
@@ -101,19 +117,28 @@ abstract class Client
 
         $options = array_merge($options, $this->getDefaultOptions());
         $options[RequestOptions::JSON] = $request->toArray();
+        $exception = null;
 
         // todo catch exceptions or let them be catched by magento?
         try {
             $result = $this->httpClient->post($endpoint, $options);
+            return $result->getBody()->getContents();
+        } catch (BadResponseException $e) {
+            $exception = $this->handleException($e);
         } catch (\Exception $e) {
-            $this->getLogger()->error("Failed sending request to dibs integration: POST $endpoint");
-            $this->apiContext->getLogger()->error(json_encode($this->removeAuthForLogging($options)));
-            $this->getLogger()->error($request->toJSON());
-            $this->apiContext->getLogger()->error("Message: " . $e->getMessage());
-            throw $e;
+            $exception = $this->handleException($e);
         }
 
-        return $result->getBody()->getContents();
+        if ($exception) {
+            $this->getLogger()->error("Failed sending request to dibs integration: POST $endpoint");
+            $this->getLogger()->error(json_encode($this->removeAuthForLogging($options)));
+            $this->getLogger()->error($request->toJSON());
+            $this->getLogger()->error($exception->getMessage());
+            $this->getLogger()->error($exception->getHttpStatusCode());
+            $this->getLogger()->error($exception->getResponseBody());
+            throw $exception;
+        }
+
     }
 
     /**
@@ -123,25 +148,33 @@ abstract class Client
      * @return string
      * @throws \Exception
      */
-    protected function patch($endpoint, AbstractRequest $request, $options = []){
+    protected function put($endpoint, AbstractRequest $request, $options = []){
         if (!is_array($options)) {
             $options = [];
         }
 
         $options = array_merge($options, $this->getDefaultOptions());
         $options['json'] = $request;
+        $exception = null;
 
         try {
-            $result = $this->httpClient->patch($endpoint, $options);
+            $result = $this->httpClient->put($endpoint, $options);
+            return $result->getBody()->getContents();
+        }  catch (BadResponseException $e) {
+            $exception = $this->handleException($e);
         } catch (\Exception $e) {
-            $this->getLogger()->error("Failed sending request to dibs integration: PATCH $endpoint");
-            $this->getLogger()->error(json_encode($this->removeAuthForLogging($options)));
-            $this->getLogger()->error($request->toJSON());
-            $this->getLogger()->error("Message: " . $e->getMessage());
-            throw $e;
+            $exception = $this->handleException($e);
         }
 
-        return $result->getBody()->getContents();
+        if ($exception) {
+            $this->getLogger()->error("Failed sending request to dibs integration: PUT $endpoint");
+            $this->getLogger()->error(json_encode($this->removeAuthForLogging($options)));
+            $this->getLogger()->error($request->toJSON());
+            $this->getLogger()->error($exception->getMessage());
+            $this->getLogger()->error($exception->getHttpStatusCode());
+            $this->getLogger()->error($exception->getResponseBody());
+            throw $exception;
+        }
     }
 
     /**
@@ -165,6 +198,23 @@ abstract class Client
         }
 
         return $options;
+    }
+
+    /**
+     *
+     * @throws ClientException
+     */
+    private function handleException(\Exception $e)
+    {
+        if ($e instanceof BadResponseException) {
+            if ($e->hasResponse()) {
+                return new ClientException($e->getRequest(),$e->getResponse(), $e->getMessage(),$e->getCode(), $e);
+            } else {
+                return new ClientException($e->getRequest(), null, $e->getMessage(), $e->getCode());
+            }
+        } else if($e instanceof \Exception) {
+            return new ClientException(null, null, $e->getMessage(), $e->getCode());
+        }
     }
 
     /**

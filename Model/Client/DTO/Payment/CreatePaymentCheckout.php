@@ -80,6 +80,8 @@ class CreatePaymentCheckout extends AbstractRequest
 
     // TODO!
     protected $shipping;
+
+    /** @var Consumer $consumer */
     protected $consumer;
 
 
@@ -255,7 +257,8 @@ class CreatePaymentCheckout extends AbstractRequest
     public function toArray()
     {
         $data = [
-            'termsUrl' => $this->getTermsUrl()
+            'termsUrl' => $this->getTermsUrl(),
+            'consumer' => $this->consumer
         ];
 
         if ($this->merchantHandlesConsumerData !== null) {
