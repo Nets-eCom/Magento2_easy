@@ -6,6 +6,9 @@ use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
 class CreatePaymentCheckout extends AbstractRequest
 {
 
+    const INTEGRATION_TYPE_EMBEDDED = "EmbeddedCheckout";
+    const INTEGRATION_TYPE_HOSTED = "HostedPaymentPage";
+
     /**
      * Required|Optional (if $integrationType = EmbeddedCheckout, default!)
      * The URL of where the checkout should initialize on (mandatory)
@@ -241,7 +244,6 @@ class CreatePaymentCheckout extends AbstractRequest
         $this->merchantHandlesShippingCost = $merchantHandlesShippingCost;
         return $this;
     }
-
 
 
 

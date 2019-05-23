@@ -10,7 +10,7 @@
             <tab>dibs</tab>
             <resource>Dibs_EasyCheckout::system_config</resource>
             <group id="connection" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>General</label>
+                <label>Connection</label>
                 <field id="enabled" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
