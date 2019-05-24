@@ -1,0 +1,12 @@
+<div id="dibsOrderJS">
+    <script>
+
+        var checkoutOptions = {
+            checkoutKey: "<?php echo $block->getDibsCheckoutKey(); ?>", //[Required] Test or Live GUID with dashes
+            paymentId : "<?php echo $block->getDibsPaymentId(); ?>", //[required] GUID without dashes
+            containerId : "dibsOrderJS",
+            language: "<?php echo $block->getDibsLocale(); ?>",
+        };
+        var checkout = new Dibs.Checkout(checkoutOptions);
+    </script>
+</div>

@@ -1,0 +1,39 @@
+<?php
+
+
+// @codingStandardsIgnoreFile
+/** @var $block \Dibs\EasyCheckout\Block\Checkout */
+
+//id  #dibs-easy-checkout_shipping_method is mandatory
+?>
+<div id="dibs-easy-checkout_shipping_method">
+    <?php if ($groups = $block->getShippingRateGroups()): ?>
+        <?php $currentRate = $block->getCurrentShippingRate(); ?>
+        <?php if (!$currentRate): ?>
+            <h5><?php echo $block->escapeHtml(__('Please select a shipping method...')); ?></h5>
+        <?php endif; ?>
+        <?php foreach ($groups as $code => $rates): ?>
+            <?php if(0): ?><strong><?php echo $block->escapeHtml($block->getCarrierName($code)) ?></strong><?php endif; ?>
+            <?php foreach ($rates as $rate):
+                $value = $block->escapeHtml($block->renderShippingRateValue($rate));
+                $checked =  $currentRate === $rate->getCode()?'checked' : '';
+                ?>
+                <div class="dibs-easy-checkout-radio-row">
+                        <span>
+                            <input type="radio" name="shipping_method" <?php echo $checked;?> value="<?php echo $value; ?>" id="<?php echo $value; ?>">
+                            <label for="<?php echo $value; ?>">
+                                <?php /* @noEscape */ echo $block->renderShippingRateOption($rate); ?>
+                            </label>
+                        </span>
+                </div>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+
+    <?php else: ?>
+        <p>
+            <strong>
+                <?php echo $block->escapeHtml(__('Sorry, no quotes are available for this order right now.')); ?>
+            </strong>
+        </p>
+    <?php endif; ?>
+</div>

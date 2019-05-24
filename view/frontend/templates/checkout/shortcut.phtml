@@ -1,0 +1,10 @@
+<?php
+// @codingStandardsIgnoreFile
+/**
+ * @var \Dibs\EasyCheckout\Block\Checkout\Shortcut $block
+ */
+?>
+<br/>
+<button onclick="window.location.href = '<?php echo $block->getCheckoutUrl();?>'" class="dibs action primary checkout" type="button" title="<?php echo $block->escapeHtml(__('Checkout')); ?>">
+     <?php echo __('Checkout'); ?>
+</button>

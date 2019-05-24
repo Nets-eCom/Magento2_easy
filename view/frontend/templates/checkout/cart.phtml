@@ -1,0 +1,63 @@
+<?php
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+// @codingStandardsIgnoreFile
+/**
+ * @see \Magento\Paypal\Block\Express\Review\Details
+ * @var \Magento\Paypal\Block\Express\Review\Details $block
+ */
+// dibs-easy-checkout_cart id is mandatory (it's used into ajax update blocks part)
+?>
+<div id="dibs-easy-checkout_cart" class="table-wrapper order-items cart">
+    <table id="details-table" class="dibs-easy-checkout-review" cellspacing="0" cellpadding="0" border="0">
+        <?php foreach ($block->getItems() as $item): ?>
+            <?php echo $block->getItemHtml($item) ?>
+        <?php endforeach ?>
+    </table>
+    <div id="dibs-easy-checkout_cart_totals">
+        <table cellspacing="0" cellpadding="0" border="0">
+            <tfoot>
+            <?php echo $block->getChildHtml('totals'); ?>
+            </tfoot>
+        </table>
+    </div>
+    <div id="dibs-easy-checkout_cart_extra">
+        <div id="dibs-easy-checkout_coupon_toggle">
+            <div class="fieldset comment">
+                <input type="checkbox" name="coupon-toggle" value="1" id="coupon-toggle"
+                       title="<?php echo __('Use coupon'); ?>" class="checkbox">
+                <label for="coupon-toggle"><?php echo __('Use coupon'); ?></label>
+            </div>
+        </div>
+        <div class="dibs-easy-checkout-newsletter" id="dibs-easy-checkout-newsletter">
+            <div id="dibs-easy-checkout_newsletter" class="dibs-easy-checkout-block">
+                <form method="post"
+                      action="<?php echo $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]) . 'order/SaveNewsletter' ?>"
+                      id="dibs-easy-checkout-newsletter-form">
+                    <div class="fieldset comment">
+                        <input type="checkbox" name="newsletter" value="1" id="newsletter"
+                               title="<?php echo __('Sign Up for Our Newsletter') ?>" class="checkbox"/>
+                        <label for="newsletter"><span class="tick"></span><?php echo __('Sign Up for Our Newsletter') ?></label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    require([
+        'jquery'
+    ], function ($) {
+        $('#dibs-easy-checkout_coupon_toggle input').change(function () {
+            if (this.checked)
+                $('#dibs-easy-checkout-discount').addClass('visible');
+            else
+                $('#dibs-easy-checkout-discount').removeClass('visible');
+        });
+    });
+</script>
+
+
