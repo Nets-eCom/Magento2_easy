@@ -4,33 +4,91 @@
 namespace Dibs\EasyCheckout\Model\Dibs;
 
 
+use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\PaymentOrder;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\Quote;
 
-class Checkout
+class Order
 {
 
-    /** @var \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi */
+    /**
+     * @var \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi
+     */
     protected $paymentApi;
+
 
     public function __construct(
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi
-    )
-    {
+    ) {
         $this->paymentApi = $paymentApi;
     }
 
-    public function initCheckout()
+    /** @var $_quote Quote */
+    protected $_quote;
+
+    /**
+     * @throws LocalizedException
+     * @return $this
+     */
+    public function assignQuote(Quote $quote,$validate = true, $initAdapter = true)
     {
-        // TODO we need quote
 
-        // TODO this is just a test case!
-     //   return $this->createNewDibsPayment();
+        if ($validate) {
+            if (!$quote->hasItems()) {
+                throw new LocalizedException(__('Empty Cart'));
+            }
+            if ($quote->getHasError()) {
+                throw new LocalizedException(__('Cart has errors, cannot checkout.'));
+            }
 
+            // TOdo we should check that the currency is valid (SEK, NOK, DKK)
+        }
+
+        $this->_quote = $quote;
+        return $this;
+    }
+
+
+    /**
+     * @param Quote $quote
+     * @return string
+     * @throws \Exception
+     */
+    public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote)
+    {
+        // todo check if country is cvalid
+        //  if(!$this->getOrderAdapter()->orderDataCountryIsValid($data,$country)){
+        //     $this->reset();
+        //}
+
+
+        $paymentResponse = $this->createNewDibsPayment($quote);
+        return $paymentResponse->getPaymentId();
+    }
+
+
+    // TODO!
+    public function checkoutShouldBeUpdatedFromQuote($data, \Magento\Quote\Model\Quote $quote)
+    {
+        //$qSign = $this->getHelper()->getQuoteSignature($quote);
+        // TODO compare signature
+
+        // yes it should be updated from quote
+        return false;
+    }
+
+
+    public function updateCheckoutPaymentById($paymentId)
+    {
+
+       // TODO make api call and update dibs payment!
+        return $this;
     }
 
 
@@ -41,7 +99,7 @@ class Checkout
      * @throws \Exception
      * @return CreatePaymentResponse
      */
-    protected function createNewDibsPayment()
+    protected function createNewDibsPayment(Quote $quote)
     {
 
         $consumerType = new ConsumerType();
@@ -90,4 +148,12 @@ class Checkout
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }
 
+
+    /**
+     * @return Payment
+     */
+    public function getPaymentApi()
+    {
+        return $this->paymentApi;
+    }
 }

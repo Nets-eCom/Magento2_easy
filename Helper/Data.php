@@ -2,11 +2,14 @@
 namespace Dibs\EasyCheckout\Helper;
 
 
+use Magento\Quote\Model\Quote;
+
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    const COOKIE_CART_CTRL_KEY = 'DibsCartCtrlKey';
 
 
-    const XML_PATH_CONNECTION     = 'dibs_easycheckout/connection/';
+    const XML_PATH_CONNECTION  = 'dibs_easycheckout/connection/';
     const API_BASE_URL_TEST = "https://test.api.dibspayment.eu";
     const API_BASE_URL_LIVE = "https://api.dibspayment.eu";
 
@@ -51,7 +54,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function isEnabled($store = null) {
         return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_CONNECTION.'enable',
+            self::XML_PATH_CONNECTION.'enabled',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
@@ -75,5 +78,83 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
 
+    /** Helpers */
+    public function getCheckoutPath($path = null)
+    {
+        if (empty($path)) {
+            return 'onepage';
+        }
 
+        return 'onepage/order/' . trim(ltrim($path, '/'));
+    }
+
+    public function getCheckoutUrl($path = null, $params = [])
+    {
+        if (empty($path)) {
+            return $this->_getUrl('onepage', $params);
+        }
+        return $this->_getUrl($this->getCheckoutPath($path), $params);
+    }
+
+
+
+    public function getCartCtrlKeyCookieName()
+    {
+        return self::COOKIE_CART_CTRL_KEY;
+    }
+
+    public function subscribeNewsletter(Quote $quote)
+    {
+        if ($quote->getPayment()) {
+            $status = (int)$quote->getPayment()->getAdditionalInformation("dibs_easy_checkout_newsletter");
+        } else {
+            $status = null;
+        }
+
+        if ($status) { //when is set (in quote) is -1 for NO, 1 for Yes
+            return $status>0;
+        } else { //get default value
+            return false; //  todo load from settings if we should use newsletter
+        }
+    }
+
+
+    /**
+     * This function returns a hash, we will use it to check for changes in the quote!
+     * @param Quote $quote
+     * @return string
+     */
+    public function generateHashSignatureByQuote(Quote $quote)
+    {
+        $shippingMethod = null;
+        $countryId = null;
+        if (!$quote->isVirtual()) {
+            $shippingAddress = $quote->getShippingAddress();
+            $countryId = $shippingAddress->getCountryId();
+            $shippingMethod = $shippingAddress->getShippingMethod();
+        }
+
+        $billingAddress = $quote->getBillingAddress();
+        $info = [
+            'currency'=> $quote->getQuoteCurrencyCode(),
+            'shipping_method' => $shippingMethod,
+            'shipping_country' => $countryId,
+            'billing_country' =>$billingAddress->getCountryId(),
+            'payment' => $quote->getPayment()->getMethod(),
+            'subtotal'=> sprintf("%.2f", round($quote->getBaseSubtotal(), 2)), //store base (currency will be set in checkout)
+            'total'=> sprintf("%.2f", round($quote->getBaseGrandTotal(), 2)),  //base grand total
+            'items'=> []
+        ];
+
+        foreach ($quote->getAllVisibleItems() as $item) {
+            $info['items'][$item->getId()] = sprintf("%.2f", round($item->getQty()*$item->getBasePriceInclTax(), 2));
+        }
+        ksort($info['items']);
+        return md5(serialize($info));
+    }
+
+    public function getHeaderText()
+    {
+        return ""; // todo translate or get from settings =)
+    }
 }
