@@ -2,8 +2,6 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <title>Dibs Easy Checkout</title>
-        <css src="Dibs_EasyCheckout::css/font-awesome-min.css" />
-        <css src="Dibs_EasyCheckout::css/dibs.css" />
     </head>
     <update handle="checkout_item_price_renderers" />
     <body>

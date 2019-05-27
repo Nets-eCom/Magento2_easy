@@ -10,7 +10,7 @@
               method="post"
               >
             <div class="fieldset coupon<?php strlen($block->getCouponCode()) ? ' applied' : ''?>">
-                <input type="hidden" name="remove" id="remove-coupon" value="<?php echo strlen($block->getCouponCode()) ? 1 : 0 ;?>" />
+                <input type="hidden" name="remove" id="remove-coupon" value="<?php echo strlen($block->getCouponCode()) ? 1 : 0;?>" />
                 <div class="field">
                     <div class="control">
                         <input type="text" class="dibs-easy-checkout-show-on-focus input-text" id="coupon_code" name="coupon_code" value="<?php echo $block->escapeHtml($block->getCouponCode()) ?>" placeholder="<?php echo $block->escapeHtml(__('Enter discount code'));?>" />
