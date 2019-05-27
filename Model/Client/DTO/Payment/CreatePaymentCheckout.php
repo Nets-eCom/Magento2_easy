@@ -247,6 +247,42 @@ class CreatePaymentCheckout extends AbstractRequest
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getShipping()
+    {
+        return $this->shipping;
+    }
+
+    /**
+     * @param mixed $shipping
+     * @return CreatePaymentCheckout
+     */
+    public function setShipping($shipping)
+    {
+        $this->shipping = $shipping;
+        return $this;
+    }
+
+    /**
+     * @return Consumer
+     */
+    public function getConsumer()
+    {
+        return $this->consumer;
+    }
+
+    /**
+     * @param Consumer $consumer
+     * @return CreatePaymentCheckout
+     */
+    public function setConsumer($consumer)
+    {
+        $this->consumer = $consumer;
+        return $this;
+    }
+
 
 
     public function toJSON()
@@ -258,8 +294,13 @@ class CreatePaymentCheckout extends AbstractRequest
     {
         $data = [
             'termsUrl' => $this->getTermsUrl(),
-            'consumer' => $this->consumer
+            'consumer' => null,
+       //     'shipping' => null, // TODO
         ];
+
+        if ($this->getConsumer() instanceof Consumer) {
+            $data['consumer'] = $this->getConsumer()->toArray();
+        }
 
         if ($this->merchantHandlesConsumerData !== null) {
             $data['merchantHandlesConsumerData'] = $this->getMerchantHandlesConsumerData();

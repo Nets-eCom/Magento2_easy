@@ -7,6 +7,10 @@ namespace Dibs\EasyCheckout\Model\Dibs;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\Consumer;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPhoneNumber;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPrivatePerson;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerShippingAddress;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
@@ -22,10 +26,16 @@ class Order
      */
     protected $paymentApi;
 
+    /**
+     * @var \Dibs\EasyCheckout\Helper\Data $helper
+     */
+    protected $helper;
 
     public function __construct(
-        \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi
+        \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
+        \Dibs\EasyCheckout\Helper\Data $helper
     ) {
+        $this->helper = $helper;
         $this->paymentApi = $paymentApi;
     }
 
@@ -101,21 +111,47 @@ class Order
      */
     protected function createNewDibsPayment(Quote $quote)
     {
+        $privatePerson = new ConsumerPrivatePerson();
+        $privatePerson->setFirstName("Fouäd");
+        $privatePerson->setLastName("Ya");
+
+        $phoneNumber = new ConsumerPhoneNumber();
+        $phoneNumber->setPrefix("+46");
+        $phoneNumber->setNumber("0739011773");
+
+        $shippingAddress = new ConsumerShippingAddress();
+        $shippingAddress->setAddressLine1("Klapperstensvägen 2d");
+        $shippingAddress->setAddressLine2("");
+        $shippingAddress->setCity("Jordbro");
+        $shippingAddress->setPostalCode("13761");
+        $shippingAddress->setCountry("SWE");
+
+        $consumer = new Consumer();
+        $consumer->setReference("1");
+        $consumer->setEmail("fouad@nordicwebteam.se");
+        $consumer->setPrivatePerson($privatePerson);
+        $consumer->setPhoneNumber($phoneNumber);
+        $consumer->setShippingAddress($shippingAddress);
+
 
         $consumerType = new ConsumerType();
         $consumerType->setUseB2cOnly();
 
         $paymentCheckout = new CreatePaymentCheckout();
+        $paymentCheckout->setConsumer($consumer);
         $paymentCheckout->setConsumerType($consumerType);
         $paymentCheckout->setIntegrationType($paymentCheckout::INTEGRATION_TYPE_EMBEDDED);
-        $paymentCheckout->setUrl("http://m230.localhost/onepage"); // TODO remove hardcode
+        $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
         $paymentCheckout->setTermsUrl("http://m230.localhost/terms"); // TODO load from settings
 
 
         $paymentCheckout->setCharge(true); // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
-        $paymentCheckout->setMerchantHandlesConsumerData(false); // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
+        $paymentCheckout->setMerchantHandlesConsumerData(true); // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
         $paymentCheckout->setMerchantHandlesShippingCost(false); // TODO set to true
-        $paymentCheckout->setPublicDevice(true); //  Default value = false, if set to true the checkout will not load any user data
+        $paymentCheckout->setPublicDevice(false); //  Default value = false, if set to true the checkout will not load any user data
+
+
+
 
         // all items
         $orderItems = [];
@@ -127,25 +163,31 @@ class Order
         $orderItem->setUnit("st");
         $orderItem->setQuantity(1);
         $orderItem->setTaxRate(25);
-        $orderItem->setTaxAmount(25);
-        $orderItem->setUnitPrice(100); // excl. tax price per item
-        $orderItem->setNetTotalAmount(100); // excl. tax
-        $orderItem->setGrossTotalAmount(125); // incl. tax
+        $orderItem->setTaxAmount($this->fixPrice(25));
+        $orderItem->setUnitPrice($this->fixPrice(100)); // excl. tax price per item
+        $orderItem->setNetTotalAmount($this->fixPrice(100)); // excl. tax
+        $orderItem->setGrossTotalAmount($this->fixPrice(125)); // incl. tax
 
         // add to array
         $orderItems[] = $orderItem;
 
         // Todo generate from quote
         $paymentOrder = new PaymentOrder();
-        $paymentOrder->setAmount(125);
+        $paymentOrder->setAmount($this->fixPrice(125));
         $paymentOrder->setCurrency("SEK");
         $paymentOrder->setReference("quote_id_1111");
         $paymentOrder->setItems($orderItems);
+
 
         $createPaymentRequest = new CreatePayment();
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);
         return $this->paymentApi->createNewPayment($createPaymentRequest);
+    }
+
+    protected function fixPrice($price)
+    {
+        return $price * 100;
     }
 
 
