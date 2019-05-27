@@ -161,18 +161,18 @@ class Consumer extends AbstractRequest
         $data = [
             "reference" => $this->getReference(),
             "email" => $this->getEmail(),
-            "shippingAddress" => $this->getShippingAddress(),
-            "phoneNumber" => $this->getPhoneNumber(),
+            "shippingAddress" => $this->getShippingAddress()->toArray(),
+            "phoneNumber" => $this->getPhoneNumber()->toArray(),
         ];
 
         // fill out if the consumer is a company, if not, it must be omitted from the payload
         if ($company = $this->getCompany()) {
-            $data['company'] = $company;
+            $data['company'] = $company->toArray();
         }
 
         // fill out if the consumer is a private person, if not, it must be omitted from the payload
         if ($person = $this->getPrivatePerson()) {
-            $data['privatePerson'] = $person;
+            $data['privatePerson'] = $person->toArray();
         }
 
         //NB! Either pass "privatePerson" or "company", NOT BOTH!
