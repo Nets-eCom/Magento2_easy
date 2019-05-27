@@ -122,6 +122,7 @@ class Order
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
 
+        // TODO get from quote/customer
         $privatePerson = new ConsumerPrivatePerson();
         $privatePerson->setFirstName("Fouäd");
         $privatePerson->setLastName("Ya");
@@ -153,13 +154,20 @@ class Order
         $paymentCheckout->setConsumerType($consumerType);
         $paymentCheckout->setIntegrationType($paymentCheckout::INTEGRATION_TYPE_EMBEDDED);
         $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
-        $paymentCheckout->setTermsUrl("http://m230.localhost/terms"); // TODO load from settings
+        $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
 
 
-        $paymentCheckout->setCharge(true); // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
-        $paymentCheckout->setMerchantHandlesConsumerData(true); // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
-        $paymentCheckout->setMerchantHandlesShippingCost(false); // TODO set to true
-        $paymentCheckout->setPublicDevice(false); //  Default value = false, if set to true the checkout will not load any user data
+        // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
+        $paymentCheckout->setCharge(true);  // TODO use settings?
+
+        // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
+        $paymentCheckout->setMerchantHandlesConsumerData(true);
+
+        // TODO set to true?
+        $paymentCheckout->setMerchantHandlesShippingCost(false);
+
+        //  Default value = false, if set to true the checkout will not load any user data
+        $paymentCheckout->setPublicDevice(false);
 
 
         // Todo generate from quote
