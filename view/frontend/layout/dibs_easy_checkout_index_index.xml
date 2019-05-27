@@ -35,7 +35,42 @@
                         <!-- Shopping Cart -->
                         <block class="Dibs\EasyCheckout\Block\Checkout\Cart" name="dibs_easy_checkout.cart" as="cart" template="Dibs_EasyCheckout::checkout/cart.phtml">
                             <block class="Magento\Framework\View\Element\RendererList" name="checkout.onepage.review.item.renderers" as="renderer.list">
-                                <block class="Magento\Checkout\Block\Cart\Item\Renderer" as="default" template="Dibs_EasyCheckout::checkout/cart/item/item.phtml"/>
+                                <block class="Magento\ConfigurableProduct\Block\Cart\Item\Renderer\Configurable" as="configurable"
+                                       template="Dibs_EasyCheckout::checkout/cart/item/item.phtml">
+                                    <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions"
+                                           name="checkout.cart.item.renderers.configurable.actions" as="actions">
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Edit"
+                                               name="checkout.cart.item.renderers.configurable.actions.edit"
+                                               template="Magento_Checkout::cart/item/renderer/actions/edit.phtml"/>
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Remove"
+                                               name="checkout.cart.item.renderers.configurable.actions.remove"
+                                               template="Magento_Checkout::cart/item/renderer/actions/remove.phtml"/>
+                                    </block>
+                                </block>
+                                <block class="Magento\Checkout\Block\Cart\Item\Renderer" as="simple"
+                                       template="Dibs_EasyCheckout::checkout/cart/item/item.phtml">
+                                    <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions"
+                                           name="checkout.cart.item.renderers.simple.actions" as="actions">
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Edit"
+                                               name="checkout.cart.item.renderers.simple.actions.edit"
+                                               template="Magento_Checkout::cart/item/renderer/actions/edit.phtml"/>
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Remove"
+                                               name="checkout.cart.item.renderers.simple.actions.remove"
+                                               template="Magento_Checkout::cart/item/renderer/actions/remove.phtml"/>
+                                    </block>
+                                </block>
+                                <block class="Magento\Bundle\Block\Checkout\Cart\Item\Renderer" as="bundle"
+                                       template="Dibs_EasyCheckout::checkout/cart/item/item.phtml">
+                                    <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions"
+                                           name="checkout.cart.item.renderers.bundle.actions" as="actions">
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Edit"
+                                               name="checkout.cart.item.renderers.bundle.actions.edit"
+                                               template="Magento_Checkout::cart/item/renderer/actions/edit.phtml"/>
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Remove"
+                                               name="checkout.cart.item.renderers.bundle.actions.remove"
+                                               template="Magento_Checkout::cart/item/renderer/actions/remove.phtml"/>
+                                    </block>
+                                </block>
                             </block>
                             <block class="Magento\Checkout\Block\Cart\Totals" name="dibs_easy_checkout.cart.totals" as="totals" template="Dibs_EasyCheckout::checkout/cart/totals.phtml"/>
                         </block>
@@ -51,8 +86,17 @@
                         <!-- Subscribe to Newsletter -->
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"/>
                     </block>
+                    <block class="Magento\Checkout\Block\Cart\Crosssell" name="checkout.cart.crosssell" template="Magento_Catalog::product/list/items.phtml" after="-" ifconfig="checkout/cart/crosssell_enabled">
+                        <arguments>
+                            <argument name="type" xsi:type="string">crosssell</argument>
+                        </arguments>
+                        <block class="Magento\Catalog\Block\Product\ProductList\Item\Container" name="crosssell.product.addto" as="addto">
+                            <block class="Magento\Catalog\Block\Product\ProductList\Item\AddTo\Compare"
+                                   name="crosssell.product.addto.compare" as="compare"
+                                   template="Magento_Catalog::product/list/addto/compare.phtml"/>
+                        </block>
+                    </block>
                 </container>
-
                 <!-- IFRAME -->
                 <container name="dibs_easy_checkout.main" as="dibs_easy_checkoutMain" label="Main dibs_easy_checkout Container" htmlTag="div" htmlId="dibs_easy_checkoutMain">
                     <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.dibs.container" template="Dibs_EasyCheckout::main.phtml">

@@ -1,24 +1,43 @@
+<?php
+// @codingStandardsIgnoreFile
+
+
+/** @var $block Dibs\EasyCheckout\Block\Checkout */
+$counter = $this->helper('\Magento\Checkout\Helper\Cart');
+?>
 <?php $cCfg = 'data-mage-init=\'{"collapsible":{"openedState": "active", "saveState": true, "active": true}}\''; ?>
 <div class="dibs-easy-checkout-review" id="dibs-easy-checkout-review">
     <div class="dibs-easy-checkout-cart dibs-easy-checkout-section" id="dibs-easy-checkout-cart" <?php echo $cCfg; ?>>
         <div class="dibs-easy-checkout-title" data-role="title">
-            <h4 id="dibs-easy-checkout-cart-heading" role="heading" aria-level="2">
-                <?php echo $block->escapeHtml(__('Shopping Cart')); ?>
-            </h4>
+            <h1 id="dibs-easy-checkout-cart-heading" role="heading" aria-level="2">
+                <span><?= __('Basket') ?></span>
+                <span class="counter">
+                   <?php if ($counter->getItemsCount() > 1): ?>
+                       <?= /* @escapeNotVerified */
+                       __('%1 Items ', $counter->getItemsCount()) ?>
+                   <?php elseif ($counter->getItemsCount() == 1): ?>
+                       <?= /* @escapeNotVerified */
+                       __('%1 Item', $counter->getItemsCount()) ?>
+                   <?php endif; ?>
+                </span>
+            </h1>
         </div>
-        <div class="dibs-easy-checkout-section-content" data-role="content" aria-labelledby="dibs-easy-checkout-cart-heading">
+        <div class="dibs-easy-checkout-section-content" data-role="content"
+             aria-labelledby="dibs-easy-checkout-cart-heading">
             <?php echo $block->getChildHtml('cart'); ?>
         </div>
     </div>
 
-    <div class="dibs-easy-checkout-discount dibs-easy-checkout-section" id="dibs-easy-checkout-discount" <?php echo $cCfg; ?>>
+    <div class="dibs-easy-checkout-discount dibs-easy-checkout-section"
+         id="dibs-easy-checkout-discount" <?php echo $cCfg; ?>>
         <div class="dibs-easy-checkout-title" data-role="title">
             <h4 id="dibs-easy-checkout-discount-heading" role="heading" aria-level="2">
                 <?php /* @escapeNotVerified */
                 echo __('Apply Discount Code') ?>
             </h4>
         </div>
-        <div class="dibs-easy-checkout-section-content" data-role="content" aria-labelledby="dibs-easy-checkout-discount-heading">
+        <div class="dibs-easy-checkout-section-content" data-role="content"
+             aria-labelledby="dibs-easy-checkout-discount-heading">
             <?php echo $block->getChildHtml('coupon'); ?>
         </div>
     </div>
@@ -40,5 +59,8 @@
             }
         }
     }
+
+
+
 
 </script>

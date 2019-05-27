@@ -4,70 +4,96 @@
 /** @var $block Magento\Checkout\Block\Cart\Item\Renderer */
 
 $_item = $block->getItem();
+$product = $_item->getProduct();
+$currency = $_item->getQuote()->getCurrency()->getQuoteCurrencyCode();
 ?>
+<thead>
+
+<tr>
+    <th class="col item-img" scope="col"><span><?= /* @escapeNotVerified */
+            __('Item') ?></span></th>
+    <th class="col item-desc" scope="col"><span><?= /* @escapeNotVerified */
+            __('Description') ?></span></th>
+    <th class="col qty" scope="col"><span><?= /* @escapeNotVerified */
+            __('Quantity') ?></span></th>
+    <th class="col price" scope="col"><span><?= /* @escapeNotVerified */
+            __('Price') ?></span><span class="currency"><?= $currency ?></span></th>
+</tr>
+</thead>
 <tbody class="dibs-easy-checkout-cart dibs-easy-checkout-item">
 <tr>
-    <td class="dibs-easy-checkout-col item" data-th="<?php echo $block->escapeHtml(__('Product Name'));?>">
-        <div class="product-item-details">
-          <div class="product-item-image">
-                <?= $block->getImage($block->getProductForThumbnail(), 'cart_page_product_thumbnail')->toHtml() ?>
-            </div>
-            <div class="product-item-info">
-            <strong class="product name product-item-name"><?php echo $block->escapeHtml($block->getProductName()) ?></strong>
-
-            <?php if ($_options = $block->getOptionList()):?>
-                <dl class="item-options">
-                    <?php foreach ($_options as $_option) : ?>
-                        <?php $_formatedOptionValue = $block->getFormatedOptionValue($_option) ?>
-                        <dt><?php echo $block->escapeHtml($_option['label']) ?></dt>
-                        <dd>
-                            <?php if (isset($_formatedOptionValue['full_view'])): ?>
-                                <?php /* @escapeNotVerified */ echo $_formatedOptionValue['full_view'] ?>
-                            <?php else: ?>
-                                <?php /* @escapeNotVerified */ echo $_formatedOptionValue['value'] ?>
-                            <?php endif; ?>
-                        </dd>
-                    <?php endforeach; ?>
-                </dl>
-            <?php endif;?>
-            <?php if ($addtInfoBlock = $block->getProductAdditionalInformationBlock()):?>
-                <?php echo $addtInfoBlock->setItem($_item)->toHtml() ?>
-            <?php endif;?>
+    <td class="dibs-easy-checkout-col item-img">
+        <div class="product-item-image">
+            <?= $block->getImage($block->getProductForThumbnail(), 'cart_page_product_thumbnail')->toHtml() ?>
         </div>
     </td>
-    <?php if(0): //maybe a future adminhtml switch will control this? ?>
-        <td class="col price" data-th="<?php echo $block->escapeHtml(__('Price'));?>">
-		    <?php if ($this->helper('Magento\Tax\Helper\Data')->displayCartPriceInclTax() || $this->helper('Magento\Tax\Helper\Data')->displayCartBothPrices()): ?>
-                <span class="price-including-tax" data-label="<?php echo $block->escapeHtml(__('Incl. Tax'));?>">
+    <td class="dibs-easy-checkout-col item" data-th="<?php echo $block->escapeHtml(__('Product Name')); ?>">
+        <div class="product-item-details">
+            <div class="product-item-info">
+                <strong class="product name product-item-name"><?php echo $block->escapeHtml($block->getProductName()) ?></strong>
+                <?php if ($product->getShortDescription()):?>
+                    <span class="product description product-item-description">
+                        <?= /* @escapeNotVerified */ strip_tags($product->getShortDescription()) ?>
+                    </span>
+                <?php endif;?>
+                <?php if ($_options = $block->getOptionList()): ?>
+                    <dl class="item-options">
+                        <?php foreach ($_options as $_option) : ?>
+                            <?php $_formatedOptionValue = $block->getFormatedOptionValue($_option) ?>
+                            <dt><?php echo $block->escapeHtml($_option['label']) ?></dt>
+                            <dd>
+                                <?php if (isset($_formatedOptionValue['full_view'])): ?>
+                                    <?php /* @escapeNotVerified */
+                                    echo $_formatedOptionValue['full_view'] ?>
+                                <?php else: ?>
+                                    <?php /* @escapeNotVerified */
+                                    echo $_formatedOptionValue['value'] ?>
+                                <?php endif; ?>
+                            </dd>
+                        <?php endforeach; ?>
+                    </dl>
+                <?php endif; ?>
+                <?php if ($addtInfoBlock = $block->getProductAdditionalInformationBlock()): ?>
+                    <?php echo $addtInfoBlock->setItem($_item)->toHtml() ?>
+                <?php endif; ?>
+            </div>
+    </td>
+    <?php if (0): //maybe a future adminhtml switch will control this? ?>
+        <td class="col price" data-th="<?php echo $block->escapeHtml(__('Price')); ?>">
+            <?php if ($this->helper('Magento\Tax\Helper\Data')->displayCartPriceInclTax() || $this->helper('Magento\Tax\Helper\Data')->displayCartBothPrices()): ?>
+                <span class="price-including-tax" data-label="<?php echo $block->escapeHtml(__('Incl. Tax')); ?>">
                     <?php echo $block->getUnitPriceInclTaxHtml($_item); ?>
                 </span>
-		    <?php endif; ?>
-		    <?php if ($this->helper('Magento\Tax\Helper\Data')->displayCartPriceExclTax() || $this->helper('Magento\Tax\Helper\Data')->displayCartBothPrices()): ?>
-                <span class="price-excluding-tax" data-label="<?php echo $block->escapeHtml(__('Excl. Tax'));?>">
+            <?php endif; ?>
+            <?php if ($this->helper('Magento\Tax\Helper\Data')->displayCartPriceExclTax() || $this->helper('Magento\Tax\Helper\Data')->displayCartBothPrices()): ?>
+                <span class="price-excluding-tax" data-label="<?php echo $block->escapeHtml(__('Excl. Tax')); ?>">
                     <?php echo $block->getUnitPriceExclTaxHtml($_item); ?>
                 </span>
-		    <?php endif; ?>
+            <?php endif; ?>
         </td>
     <?php endif; ?>
-    <td class="dibs-easy-checkout-col qty" data-th="<?php echo $block->escapeHtml(__('Qty'));?>">
+    <td class="dibs-easy-checkout-col qty" data-th="<?php echo $block->escapeHtml(__('Qty')); ?>">
         <?php
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $FormKey = $objectManager->get('Magento\Framework\Data\Form\FormKey');
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $FormKey = $objectManager->get('Magento\Framework\Data\Form\FormKey');
         ?>
         <div class="qty" data-th="<?php echo $block->escapeHtml(__('Qty')); ?>">
             <span class="remove-product"><i class="fa fa-trash"></i></span>
             <span class="qty">
-                <span class="input-number-increment"><i class="fa fa-angle-up"></i></span>
-                <span class="input-number-decrement"><i class="fa fa-angle-down"></i></span>
-                <input id="cart-<?php /* @escapeNotVerified */ echo $_item->getId() ?>-qty"
+                <span class="input-number-increment">+</span>
+                <input id="cart-<?php /* @escapeNotVerified */
+                echo $_item->getId() ?>-qty"
                        name="cart[<?php /* @escapeNotVerified */ echo $_item->getId() ?>][qty]"
-                       data-cart-item-id="<?php /* @escapeNotVerified */ echo $_item->getSku() ?>"
-                       data-cart-product-id="<?php /* @escapeNotVerified */ echo $_item->getId() ?>"
-                       data-cart-form-key="<?php echo $FormKey->getFormKey();?>"
-                       data-cart-url-submit="<?= /* @escapeNotVerified */ $block->getUrl('checkout/sidebar/updateItemQty') ?>"
-                       data-cart-url-update="<?= /* @escapeNotVerified */ $block->getUrl('dibs-easy-checkout/order/cart') ?>"
-                       data-cart-url-remove="<?= /* @escapeNotVerified */ $block->getUrl('checkout/sidebar/removeItem'); ?>"
-                       value="<?php /* @escapeNotVerified */ echo $_item->getQty() ?>"
+                       data-cart-item-id="<?php /* @escapeNotVerified */echo $_item->getSku() ?>"
+                       data-cart-product-id="<?php /* @escapeNotVerified */echo $_item->getId() ?>"
+                       data-cart-form-key="<?php echo $FormKey->getFormKey(); ?>"
+                       data-cart-url-submit="<?= /* @escapeNotVerified */
+                       $block->getUrl('checkout/sidebar/updateItemQty') ?>"
+                       data-cart-url-update="<?= /* @escapeNotVerified */
+                       $block->getUrl('dibs-easy-checkout/order/cart') ?>"
+                       data-cart-url-remove="<?= /* @escapeNotVerified */
+                       $block->getUrl('checkout/sidebar/removeItem'); ?>"
+                       value="<?php /* @escapeNotVerified */echo $_item->getQty() ?>"
                        type="number"
                        min="1"
                        size="4"
@@ -76,22 +102,23 @@ $_item = $block->getItem();
                        maxlength="12"
                        data-validate="{required:true,'validate-greater-than-zero':true}"
                        data-role="cart-item-qty"/>
+                <span class="input-number-decrement">-</span>
             </span>
         </div>
     </td>
 
-    <td class="dibs-easy-checkout-col subtotal" data-th="<?php echo $block->escapeHtml(__('Subtotal'));?>">
+    <td class="dibs-easy-checkout-col subtotal" data-th="<?php echo $block->escapeHtml(__('Subtotal')); ?>">
         <?php if ($this->helper('Magento\Tax\Helper\Data')->displayCartPriceInclTax() || $this->helper('Magento\Tax\Helper\Data')->displayCartBothPrices()): ?>
-            <span class="price-including-tax" data-label="<?php echo $block->escapeHtml(__('Incl. Tax'));?>">
+            <span class="price-including-tax" data-label="<?php echo $block->escapeHtml(__('Incl. Tax')); ?>">
                     <?php echo $block->getRowTotalInclTaxHtml($_item); ?>
                 </span>
         <?php endif; ?>
         <?php if ($this->helper('Magento\Tax\Helper\Data')->displayCartPriceExclTax() || $this->helper('Magento\Tax\Helper\Data')->displayCartBothPrices()): ?>
-            <span class="price-excluding-tax" data-label="<?php echo $block->escapeHtml(__('Excl. Tax'));?>">
+            <span class="price-excluding-tax" data-label="<?php echo $block->escapeHtml(__('Excl. Tax')); ?>">
                     <?php echo $block->getRowTotalExclTaxHtml($_item); ?>
                 </span>
         <?php endif; ?>
     </td>
-  </div>
+    </div>
 </tr>
 </tbody>
