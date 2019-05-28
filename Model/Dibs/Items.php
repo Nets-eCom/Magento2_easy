@@ -418,7 +418,6 @@ class Items
 
     public function addTotals($grandTotal, $taxAmount)
     {
-
         //calculate Dibs total
         //WARNING:   The tax must to be applied AFTER discount and to the custom price (not original)
         //           else... the dibs tax total will differ
@@ -517,7 +516,8 @@ class Items
      * @return array
      * @throws \Exception
      */
-    public function generateOrderItemsFromQuote(Quote $quote) {
+    public function generateOrderItemsFromQuote(Quote $quote)
+    {
         $this->init($quote->getStore());
 
         $billingAddress = $quote->getBillingAddress();

@@ -165,7 +165,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         if (!$quote->validateMinimumAmount()) {
             $error =$this->getHelper()->getStoreConfig('sales/minimum_order/error_message');
-            if(!$error) $error = __('Subtotal must exceed minimum order amount.');
+            if (!$error) {
+                $error = __('Subtotal must exceed minimum order amount.');
+            }
+
             $this->throwRedirectToCartException($error);
         }
       
@@ -288,29 +291,43 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function initDibsCheckout()
     {
         $quote       = $this->getQuote();
-        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
+        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
+
+        // a signature is a md5 hashed value of the customer quote. Using this we can store the hash in session and compare the values
+        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
 
         // check if we already have started a payment flow with dibs
         $paymentId = $this->getCheckoutSession()->getDibsPaymentId(); //check session for Klarna Order Uri
         if($paymentId) {
             try {
-                // TODO here we should check if we need to update the dibs payment!
 
-                $dibsHandler->updateCheckoutPaymentById($paymentId);
+                // here we should check if we need to update the dibs payment!
+                if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $this->getCheckoutSession()->getDibsQuoteSignature())) {
+                    // try to update dibs payment data
+                    $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
+
+                    // Update new dibs quote signature!
+                    $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
+                }
+
             } catch(\Exception $e) {
 
                 // If we couldn't update the dibs payment flow for any reason, we try to create an new one...
 
-
-                // this will create an api call to dibs and initiaze a new payment
-                $paymentId = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote);
-                //save klarna uri in checkout/session
-                $this->getCheckoutSession()->setDibsPaymentId($paymentId);
-
-                // TODO
-                //$dibsHandler->resetDibsData();
+                // remove sessions
                 $this->getCheckoutSession()->unsDibsPaymentId(); //remove payment id from session
-                $this->getLogger()->error("Cannot Update Dibs Checkout Payment for ID: {$paymentId}, {$e->getMessage()} (see exception.log)");
+                $this->getCheckoutSession()->unsDibsQuoteSignature(); //remove signature from session
+
+
+                // this will create an api call to dibs and initiaze an new payment
+                $newPaymentId = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote);
+
+                //save the payment id and quote signature in checkout/session
+                $this->getCheckoutSession()->setDibsPaymentId($newPaymentId);
+                $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
+
+                // We log this!
+                $this->getLogger()->error("Trying to create a new payment because we could not Update Dibs Checkout Payment for ID: {$paymentId}, Error: {$e->getMessage()} (see exception.log)");
                 $this->getLogger()->error($e);
             }
 
@@ -321,6 +338,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
             //save klarna uri in checkout/session
             $this->getCheckoutSession()->setDibsPaymentId($paymentId);
+            $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
         }
 
 
