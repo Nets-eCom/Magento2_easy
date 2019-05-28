@@ -11,6 +11,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\PaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
+use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
 
@@ -178,6 +179,15 @@ class Order
         $createPaymentRequest->setOrder($paymentOrder);
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
+    }
+
+
+    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
+    {
+        $reference = new UpdatePaymentReference();
+        $reference->setReference($order->getIncrementId());
+        $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
+        return $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
 
     protected function fixPrice($price)

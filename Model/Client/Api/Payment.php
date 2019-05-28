@@ -7,6 +7,7 @@ use Dibs\EasyCheckout\Model\Client\Client;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
+use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 
 class Payment extends Client
 {
@@ -39,6 +40,24 @@ class Payment extends Client
     {
         try {
             $this->put("/v1/payments/".$paymentId."/orderitems", $cart);
+        } catch (\Exception $e) {
+            // handle?
+            throw $e;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param UpdatePaymentReference $reference
+     * @param $paymentId
+     * @return bool
+     * @throws \Exception
+     */
+    public function UpdatePaymentReference(UpdatePaymentReference $reference, $paymentId)
+    {
+        try {
+            $this->put("/v1/payments/".$paymentId."/referenceinformation", $reference);
         } catch (\Exception $e) {
             // handle?
             throw $e;
