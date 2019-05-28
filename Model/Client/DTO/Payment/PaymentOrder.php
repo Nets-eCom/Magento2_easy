@@ -20,7 +20,7 @@ class PaymentOrder extends AbstractRequest
 
     /**
      * Required
-     * Magento Order ID? Or Quote ID?
+     * Magento Order ID? Or Quote ID
      * @var string $reference
      */
     protected $reference;
