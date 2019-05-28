@@ -86,15 +86,13 @@
                         <!-- Subscribe to Newsletter -->
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"/>
                     </block>
+                </container>
+                <!-- CROSSSELL -->
+                <container name="dibs_easy_crosssell" as="dibs_easy_crosssell" label="dibs_easy Crosssell" htmlTag="div" htmlId="dibs_easy_checkoutCrosssell">
                     <block class="Magento\Checkout\Block\Cart\Crosssell" name="checkout.cart.crosssell" template="Magento_Catalog::product/list/items.phtml" after="-" ifconfig="checkout/cart/crosssell_enabled">
                         <arguments>
                             <argument name="type" xsi:type="string">crosssell</argument>
                         </arguments>
-                        <block class="Magento\Catalog\Block\Product\ProductList\Item\Container" name="crosssell.product.addto" as="addto">
-                            <block class="Magento\Catalog\Block\Product\ProductList\Item\AddTo\Compare"
-                                   name="crosssell.product.addto.compare" as="compare"
-                                   template="Magento_Catalog::product/list/addto/compare.phtml"/>
-                        </block>
                     </block>
                 </container>
                 <!-- IFRAME -->

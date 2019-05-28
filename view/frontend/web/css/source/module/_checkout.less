@@ -1,0 +1,60 @@
+//
+//  Fonts
+//  _____________________________________________
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&display=swap');
+
+//
+//  Variables
+//  _____________________________________________
+@dibs-font-family: 'Source Sans Pro', sans-serif;
+@dibs-color-blue: #247EB2;
+@dibs-color-light-grey: #E5E5E5;
+@dibs-color-dark-grey: #979797;
+@dibs-color-white: #FFFFFF;
+@dibs-color-black: #000000;
+@dibs-color-dark: #4444444;
+@dibs-color-border: #D1D1D1;
+//
+//  Mixins
+//  _____________________________________________
+
+.dibs-btn {
+  background-image: linear-gradient(0deg, #007EB2 0%, #0094CF 99%);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.20);
+  border-radius: 25px;
+}
+
+.dibs-white__backdrop {
+  background-color: @dibs-color-white;
+  border-radius: 4px;
+  padding: 40px;
+}
+
+//
+//  Mixins
+//  _____________________________________________
+
+.dibs_easy_checkout-index-index {
+  .page-title-wrapper {
+    display: none;
+  }
+  .page-header {
+    background-color: @dibs-color-white;
+  }
+  .page-wrapper {
+    background-color: @dibs-color-light-grey;
+  }
+}
+
+#dibs_easy_checkoutSidebar {
+  .dibs-white__backdrop;
+}
+#dibs_easy_checkoutCrosssell {
+  .block.crosssell {
+    width: 100%;
+    padding: 0;
+    .product-reviews-summary {
+
+    }
+  }
+}
