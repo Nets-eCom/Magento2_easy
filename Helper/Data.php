@@ -10,6 +10,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
 
     const XML_PATH_CONNECTION  = 'dibs_easycheckout/connection/';
+    const XML_PATH_SETTINGS = 'dibs_easycheckout/settings/';
+
     const API_BASE_URL_TEST = "https://test.api.dibspayment.eu";
     const API_BASE_URL_LIVE = "https://api.dibspayment.eu";
 
@@ -96,6 +98,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->_getUrl($this->getCheckoutPath($path), $params);
     }
 
+    public function getTermsUrl($store = null)
+    {
+
+        //if there are multiple pages with same url key; magento will generate options with key|id
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'terms_url', $store));
+        return $url[0];
+    }
+
 
 
     public function getCartCtrlKeyCookieName()
@@ -157,4 +167,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return ""; // todo translate or get from settings =)
     }
+
+    protected function getStoreConfig($path, $store = null) {
+        return $this->scopeConfig->getValue(
+            $path,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+
+    protected function getStoreConfigFlag($path,$store = null) {
+        return $this->scopeConfig->isSetFlag(
+            $path,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
 }

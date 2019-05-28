@@ -22,6 +22,11 @@ class Order
 {
 
     /**
+     * @var Items $items
+     */
+    protected $items;
+
+    /**
      * @var \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi
      */
     protected $paymentApi;
@@ -33,9 +38,11 @@ class Order
 
     public function __construct(
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
-        \Dibs\EasyCheckout\Helper\Data $helper
+        \Dibs\EasyCheckout\Helper\Data $helper,
+        Items $itemsHandler
     ) {
         $this->helper = $helper;
+        $this->items = $itemsHandler;
         $this->paymentApi = $paymentApi;
     }
 
@@ -111,6 +118,11 @@ class Order
      */
     protected function createNewDibsPayment(Quote $quote)
     {
+        // TODO handle this exception?
+        $items = $this->items->generateOrderItemsFromQuote($quote);
+
+
+        // TODO get from quote/customer
         $privatePerson = new ConsumerPrivatePerson();
         $privatePerson->setFirstName("Fouäd");
         $privatePerson->setLastName("Ya");
@@ -142,41 +154,28 @@ class Order
         $paymentCheckout->setConsumerType($consumerType);
         $paymentCheckout->setIntegrationType($paymentCheckout::INTEGRATION_TYPE_EMBEDDED);
         $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
-        $paymentCheckout->setTermsUrl("http://m230.localhost/terms"); // TODO load from settings
+        $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
 
 
-        $paymentCheckout->setCharge(true); // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
-        $paymentCheckout->setMerchantHandlesConsumerData(true); // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
-        $paymentCheckout->setMerchantHandlesShippingCost(false); // TODO set to true
-        $paymentCheckout->setPublicDevice(false); //  Default value = false, if set to true the checkout will not load any user data
+        // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
+        $paymentCheckout->setCharge(true);  // TODO use settings?
 
+        // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
+        $paymentCheckout->setMerchantHandlesConsumerData(true);
 
+        // TODO set to true?
+        $paymentCheckout->setMerchantHandlesShippingCost(false);
 
+        //  Default value = false, if set to true the checkout will not load any user data
+        $paymentCheckout->setPublicDevice(false);
 
-        // all items
-        $orderItems = [];
-
-        // new item
-        $orderItem = new OrderItem();
-        $orderItem->setReference("sku111");
-        $orderItem->setName("test produkt");
-        $orderItem->setUnit("st");
-        $orderItem->setQuantity(1);
-        $orderItem->setTaxRate(25);
-        $orderItem->setTaxAmount($this->fixPrice(25));
-        $orderItem->setUnitPrice($this->fixPrice(100)); // excl. tax price per item
-        $orderItem->setNetTotalAmount($this->fixPrice(100)); // excl. tax
-        $orderItem->setGrossTotalAmount($this->fixPrice(125)); // incl. tax
-
-        // add to array
-        $orderItems[] = $orderItem;
 
         // Todo generate from quote
         $paymentOrder = new PaymentOrder();
-        $paymentOrder->setAmount($this->fixPrice(125));
-        $paymentOrder->setCurrency("SEK");
-        $paymentOrder->setReference("quote_id_1111");
-        $paymentOrder->setItems($orderItems);
+        $paymentOrder->setAmount($this->fixPrice($quote->getGrandTotal()));
+        $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
+        $paymentOrder->setReference("quote_id_" . $quote->getId());
+        $paymentOrder->setItems($items);
 
 
         $createPaymentRequest = new CreatePayment();
