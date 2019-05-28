@@ -168,7 +168,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return ""; // todo translate or get from settings =)
     }
 
-    protected function getStoreConfig($path, $store = null) {
+    public function getStoreConfig($path, $store = null) {
         return $this->scopeConfig->getValue(
             $path,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -176,8 +176,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-
-    protected function getStoreConfigFlag($path,$store = null) {
+    public function getStoreConfigFlag($path,$store = null) {
         return $this->scopeConfig->isSetFlag(
             $path,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,

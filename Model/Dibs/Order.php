@@ -7,14 +7,10 @@ namespace Dibs\EasyCheckout\Model\Dibs;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\Consumer;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPhoneNumber;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPrivatePerson;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerShippingAddress;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\PaymentOrder;
+use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
 
@@ -53,7 +49,7 @@ class Order
      * @throws LocalizedException
      * @return $this
      */
-    public function assignQuote(Quote $quote,$validate = true, $initAdapter = true)
+    public function assignQuote(Quote $quote,$validate = true)
     {
 
         if ($validate) {
@@ -89,23 +85,45 @@ class Order
         return $paymentResponse->getPaymentId();
     }
 
-
-    // TODO!
-    public function checkoutShouldBeUpdatedFromQuote($data, \Magento\Quote\Model\Quote $quote)
+    /**
+     * @param $newSignature
+     * @param $currentSignature
+     * @return bool
+     */
+    public function checkIfPaymentShouldBeUpdated($newSignature, $currentSignature)
     {
-        //$qSign = $this->getHelper()->getQuoteSignature($quote);
-        // TODO compare signature
 
-        // yes it should be updated from quote
+        // if the current signature is not set, then we must update payment
+        if ($currentSignature == "" || $currentSignature == null) {
+            return true;
+        }
+
+        // if the signatures doesn't match, it must mean that the quote has been changed!
+        if ($newSignature != $currentSignature) {
+            return true;
+        }
+
+        // nothing happened to the quote, we dont need to update payment at dibs!
         return false;
     }
 
 
-    public function updateCheckoutPaymentById($paymentId)
+    /**
+     * @param Quote $quote
+     * @param $paymentId
+     * @return bool
+     * @throws \Exception
+     */
+    public function updateCheckoutPaymentByQuoteAndPaymentId(Quote $quote, $paymentId)
     {
+        // TODO handle this exception?
+        $items = $this->items->generateOrderItemsFromQuote($quote);
 
-       // TODO make api call and update dibs payment!
-        return $this;
+        $payment = new UpdatePaymentCart();
+        $payment->setAmount($this->fixPrice($quote->getGrandTotal()));
+        $payment->setItems($items);
+
+        return $this->paymentApi->UpdatePaymentCart($payment, $paymentId);
     }
 
 
