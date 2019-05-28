@@ -122,35 +122,11 @@ class Order
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
 
-        // TODO get from quote/customer
-        $privatePerson = new ConsumerPrivatePerson();
-        $privatePerson->setFirstName("Fouäd");
-        $privatePerson->setLastName("Ya");
-
-        $phoneNumber = new ConsumerPhoneNumber();
-        $phoneNumber->setPrefix("+46");
-        $phoneNumber->setNumber("0739011773");
-
-        $shippingAddress = new ConsumerShippingAddress();
-        $shippingAddress->setAddressLine1("Klapperstensvägen 2d");
-        $shippingAddress->setAddressLine2("");
-        $shippingAddress->setCity("Jordbro");
-        $shippingAddress->setPostalCode("13761");
-        $shippingAddress->setCountry("SWE");
-
-        $consumer = new Consumer();
-        $consumer->setReference("1");
-        $consumer->setEmail("fouad@nordicwebteam.se");
-        $consumer->setPrivatePerson($privatePerson);
-        $consumer->setPhoneNumber($phoneNumber);
-        $consumer->setShippingAddress($shippingAddress);
-
-
+        // todo check settings if b2c or/and b2b are accepted
         $consumerType = new ConsumerType();
-        $consumerType->setUseB2cOnly();
+        $consumerType->setUseB2bAndB2c();
 
         $paymentCheckout = new CreatePaymentCheckout();
-        $paymentCheckout->setConsumer($consumer);
         $paymentCheckout->setConsumerType($consumerType);
         $paymentCheckout->setIntegrationType($paymentCheckout::INTEGRATION_TYPE_EMBEDDED);
         $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
@@ -160,27 +136,29 @@ class Order
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
         $paymentCheckout->setCharge(true);  // TODO use settings?
 
-        // WE Handle the customer data, i.e not attaching it in iframe! when this is true we must attach consumer data
-        $paymentCheckout->setMerchantHandlesConsumerData(true);
+        // we let dibs handle customer data! customer will be able to fill in info in their iframe, and choose addresses
+        $paymentCheckout->setMerchantHandlesConsumerData(false);
 
         // TODO set to true?
         $paymentCheckout->setMerchantHandlesShippingCost(false);
 
-        //  Default value = false, if set to true the checkout will not load any user data
+        //  Default value = false,
+        // if set to true the checkout will not load any user data
         $paymentCheckout->setPublicDevice(false);
 
 
-        // Todo generate from quote
+        // we generate the order here, amount and items
         $paymentOrder = new PaymentOrder();
         $paymentOrder->setAmount($this->fixPrice($quote->getGrandTotal()));
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
         $paymentOrder->setReference("quote_id_" . $quote->getId());
         $paymentOrder->setItems($items);
 
-
+        //
         $createPaymentRequest = new CreatePayment();
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);
+
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }
 
