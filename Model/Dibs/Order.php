@@ -78,7 +78,7 @@ class Order
     {
         // todo check if country is cvalid
         //  if(!$this->getOrderAdapter()->orderDataCountryIsValid($data,$country)){
-        //     $this->reset();
+        //    throw new Exception
         //}
 
 
