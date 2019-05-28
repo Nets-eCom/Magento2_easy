@@ -14,6 +14,8 @@
 @dibs-color-black: #000000;
 @dibs-color-dark: #4444444;
 @dibs-color-border: #D1D1D1;
+@dibs-border: 1px solid @dibs-color-border;
+
 //
 //  Mixins
 //  _____________________________________________
@@ -30,29 +32,111 @@
   padding: 40px;
 }
 
+.dibs-heading {
+  font-size: 25px;
+  font-weight: 700;
+  color: @dibs-color-black;
+}
+
 //
-//  Mixins
+//  Main
 //  _____________________________________________
 
 .dibs_easy_checkout-index-index {
   .page-title-wrapper {
     display: none;
   }
+
   .page-header {
     background-color: @dibs-color-white;
   }
+
   .page-wrapper {
     background-color: @dibs-color-light-grey;
   }
 }
 
+//
+//  SideBar
+//  _____________________________________________
 #dibs_easy_checkoutSidebar {
+  font-family: @dibs-font-family;
+  color: @dibs-color-dark;
   .dibs-white__backdrop;
+
+  .dibs-easy-checkout-cart {
+    #dibs-easy-checkout-cart-heading {
+      .dibs-heading;
+
+      span {
+        &.counter {
+          &:before {
+            content: "";
+            display: inline-block;
+            border: 2px solid @dibs-color-black;
+            vertical-align: middle;
+            padding: 0 4px;
+            margin: 0 2px;
+          }
+        }
+
+        &.dibs-payment-methods__img {
+          img {
+            vertical-align: bottom;
+            float: right;
+          }
+        }
+      }
+    }
+  }
+
+  #dibs-easy-checkout_cart {
+    border-top: @dibs-border;
+  }
 }
+table {
+  &.dibs-easy-checkout-review {
+    > thead > tr > th,
+    > tbody > tr > th,
+    > tfoot > tr > th,
+    > thead > tr > td,
+    > tbody > tr > td,
+    > tfoot > tr > td,
+    .col.qty,
+    .col.price,
+    .col.subtotal,
+    .col.msrp {
+      padding: 10px 0;
+    }
+    th {
+      font-weight: 400;
+      &.item-img {
+        visibility: hidden;
+        opacity: 0;
+      }
+    }
+    .col.price {
+      .currency {
+        padding-left: 3px;
+        &:before {
+          content: '(';
+        }
+        &:after {
+          content: ')';
+        }
+      }
+    }
+  }
+}
+
+//
+//  Crosssell
+//  _____________________________________________
 #dibs_easy_checkoutCrosssell {
   .block.crosssell {
     width: 100%;
     padding: 0;
+
     .product-reviews-summary {
 
     }

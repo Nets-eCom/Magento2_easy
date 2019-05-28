@@ -20,6 +20,9 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
                        __('%1 Item', $counter->getItemsCount()) ?>
                    <?php endif; ?>
                 </span>
+                <span class="dibs-payment-methods__img">
+                    <img src="<?= $block->getViewFileUrl('Dibs_EasyCheckout::images/payment-methods.svg') ?>"
+                </span>
             </h1>
         </div>
         <div class="dibs-easy-checkout-section-content" data-role="content"
