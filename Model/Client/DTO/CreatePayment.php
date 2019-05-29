@@ -2,6 +2,7 @@
 namespace Dibs\EasyCheckout\Model\Client\DTO;
 
 
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\PaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 
@@ -13,6 +14,10 @@ class CreatePayment extends AbstractRequest
 
     /** @var CreatePaymentCheckout */
     protected $checkout;
+
+    /** @var CreatePaymentWebhook[] */
+    protected $webHooks;
+
 
     /**
      * @return PaymentOrder
@@ -51,7 +56,6 @@ class CreatePayment extends AbstractRequest
     }
 
 
-
     public function toJSON()
     {
         return json_encode($this->toArray());
@@ -59,10 +63,16 @@ class CreatePayment extends AbstractRequest
 
     public function toArray()
     {
-        return [
+        $data = [
             'order' => $this->order->toArray(),
             'checkout' => $this->checkout->toArray(),
         ];
+
+        if ($this->webHooks) {
+            $data['notifications']['webHooks'] = $this->webHooks;
+        }
+
+        return $data;
     }
 
 
