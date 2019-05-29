@@ -8,8 +8,8 @@
 @slick-arrow-color: white;
 @slick-dot-color: black;
 @slick-dot-color-active: @slick-dot-color;
-@slick-prev-character: "←";
-@slick-next-character: "→";
+@slick-prev-character: url("../images/left-arrow.svg");
+@slick-next-character: url("../images/right-arrow.svg");
 @slick-dot-character: "•";
 @slick-dot-size: 6px;
 @slick-opacity-default: 0.75;
@@ -26,23 +26,25 @@
 .slick-next {
     position: absolute;
     display: block;
-    height: 20px;
-    width: 20px;
     line-height: 0px;
     font-size: 0px;
     cursor: pointer;
-    background: transparent;
     color: transparent;
     top: 50%;
     -webkit-transform: translate(0, -50%);
     -ms-transform: translate(0, -50%);
     transform: translate(0, -50%);
     padding: 0;
-    border: none;
-    outline: none;
+    border: none !important;
+    outline: none !important;
+    background: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    box-shadow: 0 5px 5px 0 rgba(0,0,0,0.20) !important;
     &:hover, &:focus {
         outline: none;
-        background: transparent;
+        background: white;
         color: transparent;
         &:before {
             opacity: @slick-opacity-on-hover;
@@ -75,7 +77,8 @@
 }
 
 .slick-prev {
-    left: -25px;
+    left: -5px;
+    z-index: 9;
     [dir="rtl"] & {
         left: auto;
         right: -25px;
@@ -89,7 +92,7 @@
 }
 
 .slick-next {
-    right: -25px;
+    right: -5px;
     [dir="rtl"] & {
         left: -25px;
         right: auto;

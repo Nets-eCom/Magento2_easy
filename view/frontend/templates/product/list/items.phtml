@@ -53,9 +53,9 @@ switch ($type = $block->getType()) {
 <div class="block dibs-<?= /* @escapeNotVerified */$class ?>">
     <?php endif; ?>
     <div class="block-title title">
-        <strong id="block-<?= /* @escapeNotVerified */
+        <span id="block-<?= /* @escapeNotVerified */
         $class ?>-heading" role="heading" aria-level="2"><?= /* @escapeNotVerified */
-            $title ?></strong>
+            $title ?></span>
     </div>
     <div class="block-content content" aria-labelledby="block-<?= /* @escapeNotVerified */
     $class ?>-heading">
@@ -91,7 +91,7 @@ switch ($type = $block->getType()) {
                                             <div class="actions-primary">
                                                 <?php if ($_item->isSaleable()): ?>
                                                     <?php if ($_item->getTypeInstance()->hasRequiredOptions($_item)): ?>
-                                                        <button class="action tocart primary"
+                                                        <button class="action tocart dibs-primary"
                                                                 data-mage-init='{"redirectUrl": {"url": "<?= /* @escapeNotVerified */
                                                                 $block->getAddToCartUrl($_item) ?>"}}' type="button"
                                                                 title="<?= /* @escapeNotVerified */
@@ -103,7 +103,7 @@ switch ($type = $block->getType()) {
                                                         <?php $postDataHelper = $this->helper('Magento\Framework\Data\Helper\PostHelper');
                                                         $postData = $postDataHelper->getPostData($block->getAddToCartUrl($_item), ['product' => $_item->getEntityId()])
                                                         ?>
-                                                        <button class="action tocart primary"
+                                                        <button class="action tocart dibs-primary"
                                                                 data-post='<?= /* @escapeNotVerified */
                                                                 $postData ?>'
                                                                 type="button" title="<?= /* @escapeNotVerified */
@@ -141,7 +141,7 @@ switch ($type = $block->getType()) {
     ], function ($) {
         jQuery(document).ready(function () {
             jQuery(".dibs-product-items").slick({
-                dots: true,
+                dots: false,
                 infinite: true,
                 speed: 300,
                 slidesToShow: 4,
