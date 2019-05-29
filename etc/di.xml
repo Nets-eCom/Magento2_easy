@@ -13,4 +13,6 @@
             </argument>
         </arguments>
     </type>
+
+    <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Dibs\EasyCheckout\Block\Checkout\Cart\Crosssell" />
 </config>

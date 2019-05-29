@@ -268,11 +268,33 @@ table {
 //  Crosssell
 //  _____________________________________________
 #dibs_easy_checkoutCrosssell {
-  .block.crosssell {
+  .block.dibs-crosssell {
     width: 100%;
     padding: 0;
-
-    .product-reviews-summary {
+    .block-title {
+      .dibs-heading;
+      text-align: center;
+      margin-bottom: 0;
+      margin-top: 30px;
+    }
+    .dibs-products-grid {
+      .product-items {
+        width: 100%;
+        margin: 0;
+        .product-item {
+          display: inline-block;
+          text-align: center;
+          background: @dibs-color-white;
+          border-radius: 4px;
+          width: 25%;
+          img {
+            border-radius: 4px;
+          }
+          .product-item-info {
+            width: 100%;
+          }
+        }
+      }
 
     }
   }

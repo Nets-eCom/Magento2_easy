@@ -89,7 +89,7 @@
                 </container>
                 <!-- CROSSSELL -->
                 <container name="dibs_easy_crosssell" as="dibs_easy_crosssell" label="dibs_easy Crosssell" htmlTag="div" htmlId="dibs_easy_checkoutCrosssell">
-                    <block class="Magento\Checkout\Block\Cart\Crosssell" name="checkout.cart.crosssell" template="Magento_Catalog::product/list/items.phtml" after="-" ifconfig="checkout/cart/crosssell_enabled">
+                    <block class="Dibs\EasyCheckout\Block\Checkout\Cart\Crosssell" name="checkout.cart.crosssell" template="Dibs_EasyCheckout::product/list/items.phtml" after="-" ifconfig="checkout/cart/crosssell_enabled">
                         <arguments>
                             <argument name="type" xsi:type="string">crosssell</argument>
                         </arguments>
