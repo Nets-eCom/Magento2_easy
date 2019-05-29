@@ -1,7 +1,7 @@
 //
 //  Fonts
 //  _____________________________________________
-@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,700&display=swap');
 
 //
 //  Variables
@@ -12,7 +12,7 @@
 @dibs-color-dark-grey: #979797;
 @dibs-color-white: #FFFFFF;
 @dibs-color-black: #000000;
-@dibs-color-dark: #4444444;
+@dibs-color-dark: #444444;
 @dibs-color-border: #D1D1D1;
 @dibs-border: 1px solid @dibs-color-border;
 
@@ -94,33 +94,168 @@
     border-top: @dibs-border;
   }
 }
+
 table {
   &.dibs-easy-checkout-review {
-    > thead > tr > th,
-    > tbody > tr > th,
-    > tfoot > tr > th,
-    > thead > tr > td,
-    > tbody > tr > td,
-    > tfoot > tr > td,
-    .col.qty,
-    .col.price,
-    .col.subtotal,
-    .col.msrp {
-      padding: 10px 0;
-    }
     th {
+      padding-top: 10px;
+      padding-bottom: 10px;
       font-weight: 400;
+
       &.item-img {
         visibility: hidden;
         opacity: 0;
       }
     }
+
+    th, td {
+      vertical-align: middle;
+
+      &.qty,
+      &.price,
+      &.subtotal {
+        padding-left: 40px;
+        padding-right: 0;
+      }
+
+      &.item-img {
+        padding-right: 40px;
+        padding-left: 0;
+      }
+
+      &.item-desc {
+        padding-right: 0;
+        padding-left: 0;
+      }
+
+      &:not(.item-img) {
+        border-bottom: @dibs-border;
+      }
+
+      &.qty {
+        text-align: left !important;
+      }
+    }
+
+    td {
+      padding-top: 40px;
+      padding-bottom: 40px;
+
+      &.qty {
+        div.qty {
+          display: flex;
+        }
+
+        .remove-product {
+          display: inline-flex;
+          align-items: center;
+
+          span {
+            border: @dibs-border;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            text-align: center;
+            font-size: 26px;
+            cursor: pointer;
+            margin-right: 40px;
+            display: block;
+            line-height: 26px;
+            font-weight: 200;
+          }
+        }
+
+        span.qty {
+          display: flex;
+
+          input {
+            &:not([disabled]):focus {
+              box-shadow: none;
+            }
+
+            border-left: 0 !important;
+            border-right: 0 !important;
+            border: @dibs-border;
+            width: 50px;
+            height: 40px;
+            text-align: center;
+          }
+
+          .input-number-increment,
+          .input-number-decrement {
+            height: 38px;
+            width: 35px;
+            text-align: center;
+            border: @dibs-border;
+            cursor: pointer;
+          }
+
+          .input-number-increment {
+            border-bottom-right-radius: 50%;
+            border-top-right-radius: 50%;
+            font-size: 20px;
+            line-height: 40px;
+          }
+
+          .input-number-decrement {
+            border-bottom-left-radius: 50%;
+            border-top-left-radius: 50%;
+            font-size: 28px;
+            line-height: initial;
+          }
+        }
+      }
+
+      &.subtotal {
+        text-align: right !important;
+
+        .price {
+          .dibs-heading;
+        }
+      }
+    }
+
+    .dibs-easy-checkout-col {
+      .product-item-info {
+        width: 50%;
+
+        .item-options {
+          dl {
+            margin-top: 20px;
+          }
+
+          dt {
+            clear: left;
+            float: left;
+            margin: 0 10px 5px 0;
+            font-weight: 400 !important;
+
+            &:after {
+              content: ': ';
+            }
+          }
+
+          dd {
+            display: inline-block;
+            float: left;
+            margin: 0 0 5px;
+          }
+        }
+
+        .product-item-name {
+          .dibs-heading;
+        }
+      }
+    }
+
     .col.price {
       .currency {
         padding-left: 3px;
+
         &:before {
           content: '(';
         }
+
         &:after {
           content: ')';
         }

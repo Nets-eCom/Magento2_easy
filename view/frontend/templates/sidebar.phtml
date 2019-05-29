@@ -57,13 +57,8 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
             "dibsEasyCheckout": {
                 "ctrlkey": "<?php echo $block->generateHashSignatureByQuote(); ?>",
                 "ctrlcookie": "<?php echo $block->getCartCtrlKeyCookieName(); ?>",
-                "klarnaShippingAddressChange": "<?php echo $block->getShippingAddressSubmitUrl(); ?>",
-
+                "klarnaShippingAddressChange": "<?php echo $block->getShippingAddressSubmitUrl(); ?>"
             }
         }
     }
-
-
-
-
 </script>

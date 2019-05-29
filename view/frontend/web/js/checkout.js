@@ -30,7 +30,7 @@ define([
 	},
     _create: function () {
         this._bindEvents();
-        this.dibsApiChanges();
+        this.dibsApiChanges;
         this.uiManipulate();
     },
     _bindCartAjax : function(){
@@ -306,7 +306,10 @@ define([
                 }
             });
         },
-        
+
+        dibsApiChanges: function() {
+            // todo: dibsApiChanges
+        },
  
         /**
          * UI Stuff

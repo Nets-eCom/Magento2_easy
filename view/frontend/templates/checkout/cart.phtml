@@ -10,9 +10,24 @@
  * @var \Magento\Paypal\Block\Express\Review\Details $block
  */
 // dibs-easy-checkout_cart id is mandatory (it's used into ajax update blocks part)
+
+$cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
+$currency = $cartHelper->getCurrencyCode();
 ?>
 <div id="dibs-easy-checkout_cart" class="table-wrapper order-items">
     <table id="details-table" class="dibs-easy-checkout-review" cellspacing="0" cellpadding="0" border="0">
+        <thead>
+        <tr>
+            <th class="col item-img" scope="col"><span><?= /* @escapeNotVerified */
+                    __('Item') ?></span></th>
+            <th class="col item-desc" scope="col"><span><?= /* @escapeNotVerified */
+                    __('Description') ?></span></th>
+            <th class="col qty" scope="col"><span><?= /* @escapeNotVerified */
+                    __('Quantity') ?></span></th>
+            <th class="col price" scope="col"><span><?= /* @escapeNotVerified */
+                    __('Price') ?></span><span class="currency"><?= $currency ?></span></th>
+        </tr>
+        </thead>
         <?php foreach ($block->getItems() as $item): ?>
             <?php echo $block->getItemHtml($item) ?>
         <?php endforeach ?>
@@ -40,7 +55,8 @@
                     <div class="fieldset comment">
                         <input type="checkbox" name="newsletter" value="1" id="newsletter"
                                title="<?php echo __('Sign Up for Our Newsletter') ?>" class="checkbox"/>
-                        <label for="newsletter"><span class="tick"></span><?php echo __('Sign Up for Our Newsletter') ?></label>
+                        <label for="newsletter"><span class="tick"></span><?php echo __('Sign Up for Our Newsletter') ?>
+                        </label>
                     </div>
                 </form>
             </div>
