@@ -62,6 +62,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
+
     public function isTestMode($store = null) {
         return $this->scopeConfig->isSetFlag(
             self::XML_PATH_CONNECTION.'test_mode',
@@ -77,6 +78,27 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         } else {
             return self::API_BASE_URL_LIVE;
         }
+    }
+
+    public function chargeDirectly($store = null) {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SETTINGS.'charge_directly',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    protected function _replaceCheckout($store = null) {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SETTINGS.'replace_checkout',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function replaceCheckout($store = null)
+    {
+        return $this->isEnabled($store) && $this->_replaceCheckout($store);
     }
 
 

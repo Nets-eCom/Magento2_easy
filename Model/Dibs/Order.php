@@ -153,14 +153,11 @@ class Order
 
 
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
-        $paymentCheckout->setCharge(true);  // TODO use settings?
+        $paymentCheckout->setCharge($this->helper->chargeDirectly());
 
         // we let dibs handle customer data! customer will be able to fill in info in their iframe, and choose addresses
         $paymentCheckout->setMerchantHandlesConsumerData(false);
-
-        // TODO set to true?
-        $paymentCheckout->setMerchantHandlesShippingCost(false);
-
+        $paymentCheckout->setMerchantHandlesShippingCost(true);
         //  Default value = false,
         // if set to true the checkout will not load any user data
         $paymentCheckout->setPublicDevice(false);
@@ -173,7 +170,7 @@ class Order
         $paymentOrder->setReference("quote_id_" . $quote->getId());
         $paymentOrder->setItems($items);
 
-        //
+        // create payment object
         $createPaymentRequest = new CreatePayment();
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);

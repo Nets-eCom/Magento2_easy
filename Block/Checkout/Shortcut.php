@@ -50,7 +50,7 @@ class Shortcut extends \Magento\Framework\View\Element\Template implements Catal
 
         $this->_checkoutSession = $checkoutSession;
         $this->_mathRandom = $mathRandom;
-         $this->helper = $helper;
+        $this->helper = $helper;
         $this->setTemplate('checkout/shortcut.phtml');
 
         parent::__construct($context, $data);
@@ -60,17 +60,12 @@ class Shortcut extends \Magento\Framework\View\Element\Template implements Catal
     protected function _beforeToHtml()
     {
         $result = parent::_beforeToHtml();
-       
         $isInCatalog = $this->getIsInCatalogProduct();
-        $this->helper->logInfo($isInCatalog);
-        
         if($isInCatalog) {
             $this->_shouldRender = false;
             return $result;
         }
 
-
-        $quote = !$this->_checkoutSession ? null : $this->_checkoutSession->getQuote();
 
         // set misc data
         $this->setShortcutHtmlId(
@@ -79,7 +74,6 @@ class Shortcut extends \Magento\Framework\View\Element\Template implements Catal
             $this->helper->getCheckoutUrl()
         );
 
-     
         return $result;
     }
 
@@ -119,7 +113,7 @@ class Shortcut extends \Magento\Framework\View\Element\Template implements Catal
     
     public function getAlias() {
     
-        return 'product.info.addtocart.dibs-easy-checkout';
+        return 'product.info.addtocart.dibscheckout';
     }
 
 

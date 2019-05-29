@@ -13,4 +13,14 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Magento\Checkout\Block\Onepage\Link">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
+    <type name="Magento\Checkout\Block\Cart\Sidebar">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
+    <type name="Magento\Checkout\Block\Cart">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
 </config>
