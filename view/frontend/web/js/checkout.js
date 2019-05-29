@@ -188,7 +188,7 @@ define([
          * show ajax loader
          */
         _ajaxBeforeSend: function () {
-            if(window._dibsCheckout)  try { window._dibsCheckout(function (api) {api.suspend();}); } catch(err) {}
+            if(window.checkout)  try { window.checkout(function (api) {api.suspend();}); } catch(err) {}
             jQuery(this.options.waitLoadingContainer).show();
         },
 
@@ -196,7 +196,7 @@ define([
          * hide ajax loader
          */
         _ajaxComplete: function () {
-            if(window._dibsCheckout)  try { window._dibsCheckout(function (api) {api.resume();}); } catch(err) {}
+            if(window.checkout)  try { window.checkout(function (api) {api.resume();}); } catch(err) {}
             jQuery(this.options.waitLoadingContainer).hide();
         },
 

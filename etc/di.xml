@@ -13,6 +13,14 @@
             </argument>
         </arguments>
     </type>
-
     <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Dibs\EasyCheckout\Block\Checkout\Cart\Crosssell" />
+    <type name="Magento\Checkout\Block\Onepage\Link">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
+    <type name="Magento\Checkout\Block\Cart\Sidebar">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
+    <type name="Magento\Checkout\Block\Cart">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
 </config>
