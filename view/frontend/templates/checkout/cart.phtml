@@ -18,19 +18,30 @@ $currency = $cartHelper->getCurrencyCode();
     <table id="details-table" class="dibs-easy-checkout-review" cellspacing="0" cellpadding="0" border="0">
         <thead>
         <tr>
-            <th class="col item-img" scope="col"><span><?= /* @escapeNotVerified */
-                    __('Item') ?></span></th>
-            <th class="col item-desc" scope="col"><span><?= /* @escapeNotVerified */
-                    __('Description') ?></span></th>
-            <th class="col qty" scope="col"><span><?= /* @escapeNotVerified */
-                    __('Quantity') ?></span></th>
-            <th class="col price" scope="col"><span><?= /* @escapeNotVerified */
-                    __('Price') ?></span><span class="currency"><?= $currency ?></span></th>
+            <th class="col item-img" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Item') ?></span>
+            </th>
+            <th class="col item-desc" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Description') ?></span>
+            </th>
+            <th class="col qty" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Quantity') ?></span>
+            </th>
+            <th class="col price" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Price') ?></span>
+                <span class="currency"><?= $currency ?></span>
+            </th>
         </tr>
         </thead>
+        <tbody class="dibs-easy-checkout-cart dibs-easy-checkout-item">
         <?php foreach ($block->getItems() as $item): ?>
             <?php echo $block->getItemHtml($item) ?>
         <?php endforeach ?>
+        </tbody>
     </table>
     <div id="dibs-easy-checkout_cart_totals">
         <table cellspacing="0" cellpadding="0" border="0">
@@ -39,41 +50,6 @@ $currency = $cartHelper->getCurrencyCode();
             </tfoot>
         </table>
     </div>
-    <div id="dibs-easy-checkout_cart_extra">
-        <div id="dibs-easy-checkout_coupon_toggle">
-            <div class="fieldset comment">
-                <input type="checkbox" name="coupon-toggle" value="1" id="coupon-toggle"
-                       title="<?php echo __('Use coupon'); ?>" class="checkbox">
-                <label for="coupon-toggle"><?php echo __('Use coupon'); ?></label>
-            </div>
-        </div>
-        <div class="dibs-easy-checkout-newsletter" id="dibs-easy-checkout-newsletter">
-            <div id="dibs-easy-checkout_newsletter" class="dibs-easy-checkout-block">
-                <form method="post"
-                      action="<?php echo $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]) . 'order/SaveNewsletter' ?>"
-                      id="dibs-easy-checkout-newsletter-form">
-                    <div class="fieldset comment">
-                        <input type="checkbox" name="newsletter" value="1" id="newsletter"
-                               title="<?php echo __('Sign Up for Our Newsletter') ?>" class="checkbox"/>
-                        <label for="newsletter"><span class="tick"></span><?php echo __('Sign Up for Our Newsletter') ?>
-                        </label>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
-<script>
-    require([
-        'jquery'
-    ], function ($) {
-        $('#dibs-easy-checkout_coupon_toggle input').change(function () {
-            if (this.checked)
-                $('#dibs-easy-checkout-discount').addClass('visible');
-            else
-                $('#dibs-easy-checkout-discount').removeClass('visible');
-        });
-    });
-</script>
 
 

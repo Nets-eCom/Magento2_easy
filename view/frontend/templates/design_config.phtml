@@ -1,11 +1,11 @@
-<div class="dibs-easy-checkout-wrapper <?php if($block->getIsVerticalLayout()): ?>dibs-easy-checkout-fullwidth<?php endif; ?>">
+<div class="dibs-easy-checkout-wrapper <?php if ($block->getIsVerticalLayout()): ?>dibs-easy-checkout-fullwidth<?php endif; ?>">
     <?php echo $this->getChildHtml(); ?>
 </div>
-<?php if($block->getIsVerticalLayout()): ?>
-<script>
-    (function() {
-        var element = document.querySelector('.page-title-wrapper');
-        element.className = element.classList + ' center';
-    })();
-</script>
+<?php if ($block->getIsVerticalLayout()): ?>
+    <script>
+        (function () {
+            var element = document.querySelector('.page-title-wrapper');
+            element.className = element.classList + ' center';
+        })();
+    </script>
 <?php endif; ?>

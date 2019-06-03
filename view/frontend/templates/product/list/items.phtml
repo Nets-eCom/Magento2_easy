@@ -6,7 +6,8 @@
 
 // @codingStandardsIgnoreFile
 
-/* @var $block \Magento\Catalog\Block\Product\AbstractProduct */
+/* @var $block \Dibs\EasyCheckout\Block\Checkout\Cart\Crosssell */
+
 ?>
 
 <?php
@@ -48,7 +49,7 @@ switch ($type = $block->getType()) {
 }
 ?>
 
-<?php if ($exist): ?>
+<?php if ($exist && $block->isEnable()): ?>
 
 <div class="block dibs-<?= /* @escapeNotVerified */$class ?>">
     <?php endif; ?>

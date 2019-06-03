@@ -85,6 +85,8 @@
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.comment" as="comment" template="Dibs_EasyCheckout::checkout/comment.phtml"/>
                         <!-- Subscribe to Newsletter -->
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"/>
+                        <!-- Grand Totals -->
+                        <block class="Dibs\EasyCheckout\Block\Checkout\Cart" name="dibs_easy_checkout.grand.total" as="grand.total" template="Dibs_EasyCheckout::checkout/cart/grand_total.phtml"/>
                     </block>
                 </container>
                 <!-- CROSSSELL -->

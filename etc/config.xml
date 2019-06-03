@@ -5,6 +5,10 @@
             <general>
                 <enabled>0</enabled>
             </general>
+            <crosssell>
+                <display_crosssell>1</display_crosssell>
+                <crosssell_limit>8</crosssell_limit>
+            </crosssell>
         </dibs_easycheckout>
     </default>
 </config>

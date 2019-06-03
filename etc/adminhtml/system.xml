@@ -47,6 +47,16 @@
                     <comment>If Yes, the "Go to Checkout" button in the minicart and cart will point to Dibs checkout.</comment>
                 </field>
             </group>
+            <group id="crosssell" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Crosssell Products</label>
+                <field id="display_crosssell" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="10">
+                    <label>Display Crosssell Products</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="crosssell_limit" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="20">
+                    <label>Number of Products</label>
+                </field>
+            </group>
         </section>
     </system>
 </config>

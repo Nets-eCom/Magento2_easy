@@ -1,0 +1,11 @@
+<?php
+$quote = $block->getQuote();
+?>
+<div id="dibs-easy-checkout_grand__total" class="dibs-easy-checkout-block grand-total">
+    <h4 role="title">
+        <span class="total-title"><?= __('Total,') ?></span>
+        <span class="total-currency"><?= $quote->getData('quote_currency_code') ?></span>
+        <span class="total-amount"><?= $quote->getData('grand_total') ?></span>
+    </h4>
+    <span class="total-info"></span>
+</div>
