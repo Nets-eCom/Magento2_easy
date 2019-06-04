@@ -37,7 +37,7 @@ define([
             var cart = this.options.cartContainerSelector;
             var inputs = jQuery(cart).find('.ajax-qty-change');
             var _this = this;
-            jQuery.each(inputs, function(i, input){
+            jQuery.each(inputs, function(i, input) {
                 var inputQty  = jQuery(input);
                 var data_submit_url = inputQty.data('cart-url-submit');
                 var data_refresh_url = inputQty.data('cart-url-update');
@@ -80,7 +80,6 @@ define([
                     if(c == true){
                         var data = {
                             item_id     : inputQty.data('cart-product-id'),
-
                             form_key    : inputQty.data('cart-form-key')
                         };
                         jQuery.ajax({
@@ -188,7 +187,7 @@ define([
          * show ajax loader
          */
         _ajaxBeforeSend: function () {
-            if(window.checkout)  try { window.checkout(function (api) {api.suspend();}); } catch(err) {}
+            if(window._dibsCheckout)  try { window._dibsCheckout(function (api) {api.suspend();}); } catch(err) {}
             jQuery(this.options.waitLoadingContainer).show();
         },
 
@@ -196,7 +195,7 @@ define([
          * hide ajax loader
          */
         _ajaxComplete: function () {
-            if(window.checkout)  try { window.checkout(function (api) {api.resume();}); } catch(err) {}
+            if(window._dibsCheckout)  try { window._dibsCheckout(function (api) {api.resume();}); } catch(err) {}
             jQuery(this.options.waitLoadingContainer).hide();
         },
 
@@ -308,7 +307,15 @@ define([
         },
 
         dibsApiChanges: function() {
-            // todo: dibsApiChanges
+            if (!window._dibsCheckout) {
+                return
+            }
+
+            self = this;
+            window._dibsCheckout.on('payment-completed', function(response) {
+                self._ajaxSubmit(BASE_URL + "onepage/order/SaveOrder/pid/" + response.paymentId);
+
+            })
         },
  
         /**

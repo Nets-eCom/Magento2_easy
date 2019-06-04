@@ -75,7 +75,7 @@ abstract class Client
      * @param $endpoint
      * @param array $options
      * @return string
-     * @throws \Exception
+     * @throws ClientException
      */
     protected function get($endpoint, $options = []){
         if (!is_array($options)) {
@@ -146,7 +146,7 @@ abstract class Client
      * @param AbstractRequest $request
      * @param array $options
      * @return string
-     * @throws \Exception
+     * @throws ClientException
      */
     protected function put($endpoint, AbstractRequest $request, $options = []){
         if (!is_array($options)) {
@@ -200,9 +200,10 @@ abstract class Client
         return $options;
     }
 
+
     /**
-     *
-     * @throws ClientException
+     * @param \Exception $e
+     * @return ClientException
      */
     private function handleException(\Exception $e)
     {
@@ -212,9 +213,9 @@ abstract class Client
             } else {
                 return new ClientException($e->getRequest(), null, $e->getMessage(), $e->getCode());
             }
-        } else if($e instanceof \Exception) {
-            return new ClientException(null, null, $e->getMessage(), $e->getCode());
         }
+
+        return new ClientException(null, null, $e->getMessage(), $e->getCode());
     }
 
     /**

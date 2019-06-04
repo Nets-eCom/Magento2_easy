@@ -5,11 +5,13 @@ namespace Dibs\EasyCheckout\Model\Dibs;
 
 
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
+use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
+use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\PaymentOrder;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
@@ -132,7 +134,8 @@ class Order
      * This function will create a new dibs payment.
      * The payment ID which is returned in the response will be added to the DIBS javascript API, to load the payment iframe.
      *
-     * @throws \Exception
+     * @param Quote $quote
+     * @throws ClientException
      * @return CreatePaymentResponse
      */
     protected function createNewDibsPayment(Quote $quote)
@@ -164,7 +167,7 @@ class Order
 
 
         // we generate the order here, amount and items
-        $paymentOrder = new PaymentOrder();
+        $paymentOrder = new CreatePaymentOrder();
         $paymentOrder->setAmount($this->fixPrice($quote->getGrandTotal()));
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
         $paymentOrder->setReference("quote_id_" . $quote->getId());
@@ -179,6 +182,12 @@ class Order
     }
 
 
+    /**
+     * @param \Magento\Sales\Model\Order $order
+     * @param $paymentId
+     * @return bool
+     * @throws ClientException
+     */
     public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
     {
         $reference = new UpdatePaymentReference();
@@ -187,6 +196,21 @@ class Order
         return $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
 
+
+    /**
+     * @param $paymentId
+     * @return GetPaymentResponse
+     * @throws ClientException
+     */
+    public function loadDibsPaymentById($paymentId)
+    {
+        return $this->paymentApi->getPayment($paymentId);
+    }
+
+    /**
+     * @param $price
+     * @return float|int
+     */
     protected function fixPrice($price)
     {
         return $price * 100;
