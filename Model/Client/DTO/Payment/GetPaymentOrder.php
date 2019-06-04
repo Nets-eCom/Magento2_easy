@@ -1,9 +1,7 @@
 <?php
 namespace Dibs\EasyCheckout\Model\Client\DTO\Payment;
 
-use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
-
-class PaymentOrder extends AbstractRequest
+class GetPaymentOrder
 {
 
     /**
@@ -26,12 +24,6 @@ class PaymentOrder extends AbstractRequest
     protected $reference;
 
     /**
-     * Required
-     * @var $items OrderItem[]
-     */
-    protected $items;
-
-    /**
      * @return float
      */
     public function getAmount()
@@ -41,7 +33,7 @@ class PaymentOrder extends AbstractRequest
 
     /**
      * @param float $amount
-     * @return PaymentOrder
+     * @return GetPaymentOrder
      */
     public function setAmount($amount)
     {
@@ -59,7 +51,7 @@ class PaymentOrder extends AbstractRequest
 
     /**
      * @param string $currency
-     * @return PaymentOrder
+     * @return GetPaymentOrder
      */
     public function setCurrency($currency)
     {
@@ -77,54 +69,11 @@ class PaymentOrder extends AbstractRequest
 
     /**
      * @param string $reference
-     * @return PaymentOrder
+     * @return GetPaymentOrder
      */
     public function setReference($reference)
     {
         $this->reference = $reference;
         return $this;
     }
-
-    /**
-     * @return OrderItem[]
-     */
-    public function getItems()
-    {
-        return $this->items;
-    }
-
-    /**
-     * @param OrderItem[] $items
-     * @return PaymentOrder
-     */
-    public function setItems($items)
-    {
-        $this->items = $items;
-        return $this;
-    }
-
-
-    public function toJSON()
-    {
-        return json_encode($this->toArray());
-    }
-
-    public function toArray()
-    {
-        $items = [];
-        if (!empty($this->getItems())) {
-            foreach ($this->getItems() as $item) {
-                $items[] = $item->toArray();
-            }
-        }
-
-        return [
-            'amount' => $this->getAmount(),
-            'currency' => $this->getCurrency(),
-            'reference' => $this->getReference(),
-            'items' => $items
-        ];
-    }
-
-
 }

@@ -66,4 +66,39 @@ abstract class Checkout extends Action
         return $this->checkoutSession;
     }
 
+    /**
+     * Validate ajax request and redirect on failure
+     *
+     * @return bool
+     */
+    protected function ajaxRequestAllowed()
+    {
+
+
+        if(!$this->getRequest()->isXmlHttpRequest()) {
+            return false;
+        }
+
+        /* // Todo
+        //check if quote was changed
+        $ctrlkey    = (string)$this->getRequest()->getParam('ctrlkey');
+        if(!$ctrlkey) {
+            return false; //do not check
+        }
+
+        //check if cart was updated
+        $currkey    = $this->getDibsCheckout()->getQuoteSignature();
+        if($currkey != $ctrlkey) {
+            $response = array(
+                'reload'   => 1,
+                'messages' =>(string)__('The cart was updated (from another location), reloading the checkout, please wait...')
+            );
+            $this->getCheckoutSession()->addError($this->__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
+            $this->getResponse()->setBody(Zend_Json::encode($response));
+            return true;
+        }
+        */
+
+        return false;
+    }
 }

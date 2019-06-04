@@ -53,6 +53,10 @@ class ConsumerPhoneNumber extends AbstractRequest
     }
 
 
+    public function getPhoneNumber()
+    {
+        return $this->getPrefix() . $this->getNumber();
+    }
 
     public function toJSON()
     {

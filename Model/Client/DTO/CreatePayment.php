@@ -3,13 +3,13 @@ namespace Dibs\EasyCheckout\Model\Client\DTO;
 
 
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\PaymentOrder;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 
 class CreatePayment extends AbstractRequest
 {
 
-    /** @var PaymentOrder */
+    /** @var CreatePaymentOrder */
     protected $order;
 
     /** @var CreatePaymentCheckout */
@@ -20,7 +20,7 @@ class CreatePayment extends AbstractRequest
 
 
     /**
-     * @return PaymentOrder
+     * @return CreatePaymentOrder
      */
     public function getOrder()
     {
@@ -28,7 +28,7 @@ class CreatePayment extends AbstractRequest
     }
 
     /**
-     * @param PaymentOrder $order
+     * @param CreatePaymentOrder $order
      * @return CreatePayment
      */
     public function setOrder($order)
