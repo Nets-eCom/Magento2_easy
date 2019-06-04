@@ -31,22 +31,13 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
     </div>
     <?php echo $block->getChildHtml('shipping'); ?>
     <div class="dibs-easy-checkout-extra">
-        <div class="dibs-easy-checkout-discount dibs-easy-checkout-block discount"
-             id="dibs-easy-checkout-discount">
-            <div class="dibs-easy-checkout-title" data-role="title">
-                <h4 id="dibs-easy-checkout-discount-heading" role="heading" aria-level="2">
-                    <?php /* @escapeNotVerified */
-                    echo __('Apply Discount Code') ?>
-                </h4>
-            </div>
-            <div class="dibs-easy-checkout-section-content" data-role="content"
-                 aria-labelledby="dibs-easy-checkout-discount-heading">
-                <?php echo $block->getChildHtml('coupon'); ?>
-            </div>
+        <div class="dibs-easy-checkout-extra__right">
+            <?php echo $block->getChildHtml('grand.total'); ?>
         </div>
-        <?php echo $block->getChildHtml('comment'); ?>
-        <?php echo $block->getChildHtml('newsletter'); ?>
-        <?php echo $block->getChildHtml('grand.total'); ?>
+        <div class="dibs-easy-checkout-extra__left">
+            <?php echo $block->getChildHtml('coupon'); ?>
+            <?php echo $block->getChildHtml('newsletter'); ?>
+        </div>
     </div>
 </div>
 
@@ -64,6 +55,8 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
             }
         }
     }
+
+
 
 
 </script>
