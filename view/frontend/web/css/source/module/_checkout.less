@@ -28,12 +28,8 @@
   box-shadow: none !important;
   border-radius: 25px !important;
   color: #ffffff !important;
-  text-transform: uppercase;
-  font-size: 14px;
   border: none !important;
   font-family: @dibs-font-family !important;
-  height: 40px;
-  padding: 10px 50px;
   font-weight: 600;
 
   &:focus {
@@ -111,6 +107,7 @@
 //  _____________________________________________
 
 .dibs_easy_checkout-index-index {
+  -webkit-font-smoothing: antialiased;
   .page-title-wrapper,
   .nav-toggle {
     display: none;
@@ -198,8 +195,40 @@
 
   h4[role="heading"] {
     .dibs-heading;
+    margin-bottom: 1rem;
+    .total-amount {
+      float: right;
+    }
+  }
+  .dibs-easy-checkout-block {
+    &.discount {
+      #discount-coupon-form {
+        .fieldset {
+          position: relative;
+          .actions-toolbar {
+            position: absolute;
+            right: -15px;
+            top: 9px;
+            z-index: 1;
+            .action.apply.primary {
+              &, &:hover {
+                background: transparent;
+                border: none;
+                color: @dibs-light-blue;
+              }
+            }
+          }
+        }
+      }
+    }
+    &.grand-total {
+      .total-info {
+        color: #888888;
+      }
+    }
   }
 }
+
 
 table {
   &.dibs-easy-checkout-review {
@@ -387,6 +416,22 @@ table {
 
 button:not(.primary).dibs-primary {
   .dibs-btn;
+  height: 40px;
+  font-size: 14px;
+  padding: 10px 50px;
+  text-transform: uppercase;
+}
+.go-to-container {
+  margin-top: 20px;
+  a.go-to {
+    .dibs-btn;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20);
+    padding: 12px 50px;
+    font-size: 18px;
+    text-transform: none;
+    text-decoration: none;
+    float: right;
+  }
 }
 
 //  Totals
@@ -474,25 +519,42 @@ button:not(.primary).dibs-primary {
 
       tfoot {
         td, th {
-          padding: 15px 0 15px 40px;
+          padding: 15px 0 0;
           font-size: 14px;
           font-weight: 700;
+          &:last-of-type {
+            padding-bottom: 15px;
+          }
         }
       }
     }
   }
   //   Shipping
   //  _____________________________________________
+  .dibs-easy-checkout-shipping {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: @dibs-border;
+  }
   .dibs-easy-checkout-shipping,
   .dibs-easy-checkout-extra {
     .dibs-table-align;
   }
+  .dibs-easy-checkout-extra__left {
+    width: 70%;
+    float: left;
+  }
+  .dibs-easy-checkout-extra__right {
+    width: 30%;
+    float: right;
+  }
   .dibs-easy-checkout-block {
     &.discount,
-    &.comment,
     &.newsletter {
-      width: 60%;
-      float: left;
+      width: 70%;
+    }
+    &.grand-total {
+
     }
   }
 }
@@ -597,5 +659,14 @@ button:not(.primary).dibs-primary {
         }
       }
     }
+  }
+  .go-to-container {
+    display: none;
+  }
+  .dibs-easy-checkout-extra__left ,
+  .dibs-easy-checkout-extra__right {
+    width: 100%;
+    display: inline-block;
+    margin-bottom: 15px;
   }
 }
