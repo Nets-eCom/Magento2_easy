@@ -170,7 +170,7 @@ class Order
         $paymentOrder = new CreatePaymentOrder();
         $paymentOrder->setAmount($this->fixPrice($quote->getGrandTotal()));
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
-        $paymentOrder->setReference("quote_id_" . $quote->getId());
+        $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));
         $paymentOrder->setItems($items);
 
         // create payment object
@@ -223,5 +223,10 @@ class Order
     public function getPaymentApi()
     {
         return $this->paymentApi;
+    }
+
+    public function generateReferenceByQuoteId($quoteId)
+    {
+       return "quote_id_" . $quoteId;
     }
 }

@@ -3,7 +3,11 @@
 
 namespace Dibs\EasyCheckout\Model;
 
+use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
+use Magento\Customer\Api\Data\GroupInterface;
+use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\Quote;
 
 class Checkout extends \Magento\Checkout\Model\Type\Onepage
 {
@@ -16,6 +20,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     protected $dibsPaymentOrderHandler;
 
     protected $_allowedCountries;
+
+    protected $_doNotMarkCartDirty  = false;
 
 
     public function setCheckoutContext(CheckoutContext $context)
@@ -345,6 +351,188 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         return $this;
     }
 
+    public function placeOrder(GetPaymentResponse $dibsPayment,Quote $quote) {
+
+        //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
+        $this->setDoNotMarkCartDirty(true);
+
+
+        try {
+            $this->validateDibsPayment($dibsPayment,$quote);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+
+        //this will be saved in order (and is uniq); is ID of push request
+        //required to avoid duplicate orders; when push/confirmation are executed concurent
+        $quote->setDibsPaymentId($dibsPayment->getPaymentId());
+
+        $reservation = $klarnaOrder->getOrderAdapter()->getReservation($klarnaData); // $klarnaData['reservation'];
+        // $cart       = $klarnaOrder->getOrderAdapter()->getCartItems($klarnaData); // $klarnaData['cart']['items']; // not used!
+        $shipping   = $klarnaOrder->getOrderAdapter()->getShippingAddress($klarnaData); //  $klarnaData['shipping_address'];
+        $billing    = $klarnaOrder->getOrderAdapter()->getBillingAddress($klarnaData); // $klarnaData['billing_address'];
+
+        $diff       = array_diff_assoc($billing,$shipping);
+
+
+        $billingAddress = $quote->getBillingAddress()
+            ->addData($klarnaOrder->mageAddress($billing))
+            ->setCustomerAddressId(0)
+            ->setSaveInAddressBook(0)
+            ->setShouldIgnoreValidation(true);
+
+        $shippingAddress = $quote->getShippingAddress()
+            ->addData($klarnaOrder->mageAddress($shipping))
+            ->setSameAsBilling(1)
+            ->setCustomerAddressId(0)
+            ->setSaveInAddressBook(0)
+            ->setShouldIgnoreValidation(true);
+
+        $quote->setCustomerEmail($billingAddress->getEmail());
+
+        if(empty($diff)) { //?!?
+            $shippingAddress->setSameAsBilling(0);
+        }
+
+        $customer      = $quote->getCustomer(); //this (customer_id) is set into self::init
+        $createCustomer = false;
+
+
+        if ($customer && $customer->getId()) {
+            $quote->setCheckoutMethod(self::METHOD_CUSTOMER)
+                ->setCustomerId($customer->getId())
+                ->setCustomerEmail($customer->getEmail())
+                ->setCustomerFirstname($customer->getFirstname())
+                ->setCustomerLastname($customer->getLastname())
+                ->setCustomerIsGuest(false);
+        } else {
+            //checkout method
+            $quote->setCheckoutMethod(self::METHOD_GUEST)
+                ->setCustomerId(null)
+                ->setCustomerEmail($billingAddress->getEmail())
+                ->setCustomerFirstname($billingAddress->getFirstname())
+                ->setCustomerLastname($billingAddress->getLastname())
+                ->setCustomerIsGuest(true)
+                ->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
+
+            //register the customer, if its required
+            //the customer will be registered after order is placed (no METHOD_REGISTER), see bellow
+            if(
+                $billingAddress->getEmail() &&
+                $this->getHelper()->registerCustomer() &&
+                !$this->_customerEmailExists($billingAddress->getEmail(),$quote->getStore()->getWebsiteId())
+            ) {
+                $createCustomer = true;
+            }
+        }
+
+
+        //set payment
+        $payment = $quote->getPayment();
+
+        //force payment method
+        if(!$payment->getMethod() || $payment->getMethod() != $this->_paymentMethod) {
+            $payment->unsMethodInstance()->setMethod($this->_paymentMethod);
+        }
+
+        $paymentData = (new DataObject())
+            ->setIsTestMode($test)
+            ->setPushId($kID)
+            ->setReservation($reservation)
+            ->setId($klarnaOrder->getOrderAdapter()->getOrderId($klarnaData))
+            ->setCountryCode($klarnaOrder->getOrderAdapter()->getCountryCode())
+            ->setExpiresAt($klarnaOrder->getOrderAdapter()->getExpiresAt($klarnaData))
+        ;
+
+
+        $quote->getPayment()->getMethodInstance()->assignData($paymentData);
+        $quote->setNwtReservation($reservation); //this is used by pushAction
+
+        //- do not recollect totals
+        $quote->setTotalsCollectedFlag(true);
+
+
+        $order = $this->quoteManagement->submit($quote);
+
+
+
+        $this->_eventManager->dispatch(
+            'checkout_type_onepage_save_order_after',
+            ['order' => $order, 'quote' => $this->getQuote()]
+        );
+
+        if ($order->getCanSendNewEmailFlag()) {
+            try {
+                $this->orderSender->send($order);
+            } catch (\Exception $e) {
+                $this->_logger->critical($e);
+            }
+        }
+
+
+
+
+        // add order information to the session
+        $this->_checkoutSession
+            ->setLastOrderId($order->getId())
+            ->setLastRealOrderId($order->getIncrementId())
+            ->setLastOrderStatus($order->getStatus());
+
+
+
+        $this->_eventManager->dispatch(
+            'checkout_submit_all_after',
+            [
+                'order' => $order,
+                'quote' => $this->getQuote()
+            ]
+        );
+
+        if ($createCustomer) {
+            //@see Magento\Checkout\Controller\Account\Create
+            $orderCustomerService = $this->getObjectManager()->get('\Magento\Sales\Api\OrderCustomerManagementInterface');
+
+            try {
+                $orderCustomerService->create($order->getId());
+            } catch (\Exception $e) {
+                $this->_logger->error(__("Order %1, cannot create customer [%2]: %3",$order->getIncrementId(),$order->getCustomerEmail(),$e->getMessage()));
+                $this->_logger->critical($e);
+            }
+        }
+
+
+        if($order->getCustomerEmail() && $this->getHelper()->subscribeNewsletter($this->getQuote())) {
+            try {
+                //subscribe to newsletter
+                $this->orderSubscribeToNewsLetter($order);
+            } catch(\Exception $e) {
+                $this->_logger->error("Cannot subscribe customer ({$order->getCustomerEmail()}) to the Newsletter: ".$e->getMessage());
+            }
+        }
+
+        return $order;
+    }
+
+    protected function orderSubscribeToNewsLetter(\Magento\Sales\Model\Order $order)
+    {
+        $email = $order->getCustomerEmail();
+        if (!$email) {
+            return false;
+        }
+
+        $subscriber = $this->getObjectManager()->create('Magento\Newsletter\Model\Subscriber');
+        $subscriber->loadByEmail($email);
+
+        if($subscriber->getId()) {
+            return false;
+        }
+
+        return $subscriber->subscribe($email);
+    }
+
+
+
 
     /**
      * @param $message
@@ -383,6 +571,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
 
-    //public function setDoNotMarkCartDirty() {   $this->_doNotMarkCartDirty = true; }
-    //public function getDoNotMarkCartDirty() {   return $this->_doNotMarkCartDirty; }
+    public function setDoNotMarkCartDirty($markDirty)
+    {
+        $this->_doNotMarkCartDirty = (bool) $markDirty;
+    }
+
+    public function getDoNotMarkCartDirty()
+    {
+        return $this->_doNotMarkCartDirty;
+    }
 }
