@@ -22,7 +22,7 @@ class SaveOrder extends Checkout
         //$ctrlkey    = (string)$this->getRequest()->getParam('ctrlkey');
         $paymentId  = $this->getRequest()->getParam('pid');
         $checkoutPaymentId = $this->getCheckoutSession()->getDibsPaymentId();
-
+        $quote = $this->getDibsCheckout()->getQuote();
 
         /* // Todo remove comment when stopped testing
         if (!$paymentId || !$checkoutPaymentId || ($paymentId != $checkoutPaymentId)) {
@@ -37,6 +37,13 @@ class SaveOrder extends Checkout
 
             return false;
         }
+
+
+        if (!$quote) {
+
+        }
+
+        // check other quote stuff
         */
 
         try {
@@ -57,11 +64,29 @@ class SaveOrder extends Checkout
             return false;
         }
 
+        if ($payment->getOrderDetails()->getReference() !== $checkout->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
+            $checkout->getLogger()->error("The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
+            return false;
+        }
 
-        echo "<pre>";
-        var_dump($payment);
-        die;
+        if ($payment->getSummary()->getReservedAmount() === null) {
+            $checkout->getLogger()->error("Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checkout out yet!");
+            return false;
+        }
 
+
+        try {
+            $checkout->placeOrder($payment, $quote);
+        } catch (\Exception $e) {
+            $checkout->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
+            $checkout->getLogger()->error("Error message:" . $e->getMessage());
+
+            // todo show error to customer in magento! order could not be placed
+            return false;
+        }
+
+
+        // TODO send redirect url too success page!
     }
 
 

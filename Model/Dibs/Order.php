@@ -35,14 +35,23 @@ class Order
      */
     protected $helper;
 
+    /**
+     * @var \Magento\Directory\Model\CountryFactory
+     */
+    protected $_countryFactory;
+
+
     public function __construct(
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
         \Dibs\EasyCheckout\Helper\Data $helper,
+        \Magento\Directory\Model\CountryFactory $countryFactory,
         Items $itemsHandler
     ) {
         $this->helper = $helper;
         $this->items = $itemsHandler;
         $this->paymentApi = $paymentApi;
+        $this->_countryFactory  = $countryFactory;
+
     }
 
     /** @var $_quote Quote */
@@ -170,7 +179,7 @@ class Order
         $paymentOrder = new CreatePaymentOrder();
         $paymentOrder->setAmount($this->fixPrice($quote->getGrandTotal()));
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
-        $paymentOrder->setReference("quote_id_" . $quote->getId());
+        $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));
         $paymentOrder->setItems($items);
 
         // create payment object
@@ -194,6 +203,78 @@ class Order
         $reference->setReference($order->getIncrementId());
         $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
         return $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
+    }
+
+
+    protected $_addrFieldMap = array(    //map between Magento and Klarna address fields
+        'firstname'=>'given_name',
+        'lastname'=>'family_name',
+        'street'=>'street_address',
+        'company'=>'organization_name',
+        'city'=>'city',
+        'country_id'=>'country',
+        'postcode'=>'postal_code',
+        'telephone'=>'phone',
+        'email'=>'email',
+        'prefix'=>'title',
+        'care_of'=>'care_of'
+    );
+
+
+    public function convertDibsShippingToMagentoAddress(GetPaymentResponse $payment, $countryIdFallback = null)
+    {
+        if ($payment->getConsumer() === null) {
+            return array();
+        }
+
+
+        $company = null;
+        // if company name is set, then contact details are too
+        if ($payment->getIsCompany()) {
+            $companyObj = $payment->getConsumer()->getCompany();
+            $contact = $companyObj->getContactDetails();
+            $firstname =$contact->getFirstName();
+            $lastName = $contact->getLastName();
+            $company = $companyObj->getName();
+            $phone = $contact->getPhoneNumber()->getPhoneNumber();
+            $email = $contact->getEmail();
+        } else {
+            $private = $payment->getConsumer()->getPrivatePerson();
+            $firstname =$private->getFirstName();
+            $lastName = $private->getLastName();
+            $phone = $private->getPhoneNumber()->getPhoneNumber();
+            $email = $private->getEmail();
+        }
+
+        $address = $payment->getConsumer()->getShippingAddress();
+        $streets[] = $address->getAddressLine1();
+        if ($address->getAddressLine2()) {
+            $streets[] = $address->getAddressLine2();
+        }
+
+        $data = [
+            'firstname' => $firstname,
+            'lastname' => $lastName,
+            'company' => $company,
+            'telephone' => $phone,
+            'email' => $email,
+            'street' => $streets,
+            'city' => $address->getCity(),
+            'postcode' => $address->getPostalCode(),
+        ];
+
+        try {
+            $countryId = $this->_countryFactory->create()->loadByCode($address->getCountry())->getId();
+        } catch (\Exception $e) {
+            $countryId = $countryIdFallback;
+        }
+
+        if ($countryId) {
+            $data['country_id'] = $countryId;
+        }
+
+
+        return $data;
     }
 
 
@@ -223,5 +304,10 @@ class Order
     public function getPaymentApi()
     {
         return $this->paymentApi;
+    }
+
+    public function generateReferenceByQuoteId($quoteId)
+    {
+       return "quote_id_" . $quoteId;
     }
 }

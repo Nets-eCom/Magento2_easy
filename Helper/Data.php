@@ -101,6 +101,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->isEnabled($store) && $this->_replaceCheckout($store);
     }
 
+    public function registerCustomerOnCheckout($store = null)
+    {
+        return false; // TODO settings :)
+    }
+
+
+    // TODO
+    public function canCapture()
+    {
+        return false;
+    }
+
 
     /** Helpers */
     public function getCheckoutPath($path = null)

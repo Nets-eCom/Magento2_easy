@@ -327,9 +327,9 @@ class Items
             ->setUnit("st") // TODO! We need to map these somehow!
             ->setQuantity(1)
             ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-            ->setTaxAmount($taxAmount) // total tax amount
+            ->setTaxAmount($this->addZeroes($taxAmount)) // total tax amount
             ->setUnitPrice($this->addZeroes($exclTax)) // excl. tax price per item
-            ->setNetTotalAmount($exclTax) // excl. tax
+            ->setNetTotalAmount($this->addZeroes($exclTax)) // excl. tax
             ->setGrossTotalAmount($this->addZeroes($inclTax)); // incl. tax
 
 
