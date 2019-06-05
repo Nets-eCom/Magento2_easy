@@ -72,29 +72,21 @@
                                     </block>
                                 </block>
                                 <block class="Magento\Bundle\Block\Checkout\Cart\Item\Renderer" as="grouped"
-                                       template="Dibs_EasyCheckout::checkout/cart/item/item.phtml">
-                                    <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions"
-                                           name="checkout.cart.item.renderers.bundle.actions" as="actions">
-                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Edit"
-                                               name="checkout.cart.item.renderers.bundle.actions.edit"
-                                               template="Magento_Checkout::cart/item/renderer/actions/edit.phtml"/>
-                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Remove"
-                                               name="checkout.cart.item.renderers.bundle.actions.remove"
-                                               template="Magento_Checkout::cart/item/renderer/actions/remove.phtml"/>
-                                    </block>
-                                </block>
+                                       template="Dibs_EasyCheckout::checkout/cart/item/item.phtml"/>
                             </block>
                             <block class="Magento\Checkout\Block\Cart\Totals" name="dibs_easy_checkout.cart.totals" as="totals" template="Dibs_EasyCheckout::checkout/cart/totals.phtml"/>
                         </block>
                         <!-- Apply Discount Code -->
-                        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.coupon" as="coupon" template="Dibs_EasyCheckout::checkout/cart/coupon.phtml"/>
+                        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.coupon" as="coupon" template="Dibs_EasyCheckout::checkout/cart/coupon.phtml"
+                               ifconfig="dibs_easycheckout/layout/display_discount"/>
                         <!-- Shipping Method -->
-                        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping" as="shipping" template="Dibs_EasyCheckout::checkout/shipping.phtml">
+                        <block class="Dibs\EasyCheckout\Block\Checkout\Shipping" name="dibs_easy_checkout.shipping" as="shipping" template="Dibs_EasyCheckout::checkout/shipping.phtml">
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_method" as="shipping_method" template="Dibs_EasyCheckout::checkout/shipping/method.phtml"/>
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_address" as="shipping_address" template="Dibs_EasyCheckout::checkout/shipping/address.phtml"/>
                         </block>
                         <!-- Subscribe to Newsletter -->
-                        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"/>
+                        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"
+                               ifconfig="dibs_easycheckout/layout/display_newsletter"/>
                         <!-- Grand Totals -->
                         <block class="Magento\Checkout\Block\Cart\Totals" name="dibs_easy_checkout.grand.total" as="grand.total" template="Dibs_EasyCheckout::checkout/cart/grand_total.phtml"/>
                     </block>

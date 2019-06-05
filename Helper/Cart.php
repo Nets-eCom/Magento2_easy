@@ -2,6 +2,8 @@
 
 namespace Dibs\EasyCheckout\Helper;
 
+use Magento\Directory\Model\AllowedCountries;
+use Magento\Directory\Model\CountryFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Store\Model\StoreManagerInterface;
@@ -23,16 +25,32 @@ class Cart extends AbstractHelper
     protected $storeManager;
 
     /**
+     * @var \Magento\Directory\Model\AllowedCountries
+     */
+    protected $allowedCountryModel;
+
+    /**
+     * @var CountryFactory
+     */
+    protected $countryFactory;
+
+    /**
      * Cart constructor.
      * @param Context $context
      * @param StoreManagerInterface $storeManager
+     * @param AllowedCountries $allowedCountryModel
+     * @param CountryFactory $countryFactory
      */
     public function __construct(
         Context $context,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        AllowedCountries $allowedCountryModel,
+        CountryFactory $countryFactory
     )
     {
         $this->storeManager = $storeManager;
+        $this->allowedCountryModel = $allowedCountryModel;
+        $this->countryFactory = $countryFactory;
         parent::__construct($context);
     }
 
@@ -69,5 +87,18 @@ class Cart extends AbstractHelper
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllowedCountriesNames()
+    {
+        $allowedCountriesNames = [];
+        $allowedCountries = $this->allowedCountryModel->getAllowedCountries();
+        foreach ($allowedCountries as $allowedCountryCode) {
+            $allowedCountriesNames[$allowedCountryCode] = $this->countryFactory->create()->loadByCode($allowedCountryCode)->getName();
+        }
+        return $allowedCountriesNames;
     }
 }

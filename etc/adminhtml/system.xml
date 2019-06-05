@@ -47,9 +47,20 @@
                     <comment>If Yes, the "Go to Checkout" button in the minicart and cart will point to Dibs checkout.</comment>
                 </field>
             </group>
+            <group id="layout" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Layout options</label>
+                <field id="display_newsletter" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="10">
+                    <label>Display Newsletter checkbox</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="display_discount" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="10">
+                    <label>Display Discount Form</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
             <group id="crosssell" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Crosssell Products</label>
-                <field id="display_crosssell" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="10">
+                <field id="display_crosssell" translate="label comment" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="10">
                     <label>Display Crosssell Products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>

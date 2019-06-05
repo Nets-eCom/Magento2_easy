@@ -1,6 +1,9 @@
 <?php
 // @codingStandardsIgnoreFile
 
+$cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
+$allowedCountries = $cartHelper->getAllowedCountriesNames();
+
 ?>
 <div class="dibs-easy-checkout-shipping dibs-easy-checkout-section mobile-show"
      id="dibs-easy-checkout-shipping">
@@ -12,8 +15,20 @@
     <div class="dibs-easy-checkout-section-content" data-role="content"
          aria-labelledby="dibs-easy-checkout-review-heading">
         <form method="post" id="shipping-method-form"
-              action="<?php echo $block->escapeUrl($block->getShippingMethodSubmitUrl()); ?>"
+              action="<?php echo $block->escapeUrl($block->getShippingMethodUrl()); ?>"
               class="form">
+            <select class="country" id="country-box">
+                <option><?= __('Country') ?></option>
+                <?php foreach ($allowedCountries as $key => $country): ?>
+                    <option data-title="<?= $country ?>" value="<?= $key ?>"><?= $country ?></option>
+                <?php endforeach; ?>
+            </select>
+            <input class="postcode" type="text" id="postcode-box" name="postal"
+                   placeholder="<?php echo __('Postal code') ?>"/>
+            <button id="dibs-easy-checkout-set-postcode-button"
+                    class="action dibs-primary" title="<?php echo __('Choose Delivery'); ?>">
+                <span><?php echo __('Choose Delivery'); ?></span>
+            </button>
             <?php echo $block->getChildHtml('shipping_method'); ?>
         </form>
         <?php if ($addrUrl = $block->getShippingAddressSubmitUrl()): ?>

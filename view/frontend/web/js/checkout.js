@@ -26,12 +26,15 @@ define([
         dibsCountryChange: false,
         dibsShippingChange: false,
         hasInitFlag: false,
-        shippingAjaxInProgress : false
+        shippingAjaxInProgress : false,
+        scrollTrigger: '.go-to.dibs-btn',
+        scrollTarget: '.dibs-checkout-wrapper'
 	},
     _create: function () {
         this._bindEvents();
         this.dibsApiChanges;
         this.uiManipulate();
+        this.scrollToPayment();
     },
     _bindCartAjax : function(){
             var cart = this.options.cartContainerSelector;
@@ -162,7 +165,7 @@ define([
                 jQuery(this.options.couponFormSelector).on('submit', jQuery.proxy(this._applyCoupon,this));
                 this.checkValueOfInputs(jQuery(this.options.couponFormSelector));
             }
-            
+
         },
 
         checkValueOfInputs : function(form){
@@ -182,7 +185,7 @@ define([
             });
         },
 
-	
+
         /**
          * show ajax loader
          */
@@ -202,12 +205,12 @@ define([
         _changeShippingMethod:function() {
             this._ajaxFormSubmit(jQuery(this.options.shippingMethodFormSelector));
         },
-        
+
         _changeSubscriptionStatus:function() { this._ajaxFormSubmit(jQuery(this.options.newsletterFormSelector)); },
         _saveComment:function() { this._ajaxFormSubmit(jQuery(this.options.commentFormSelector)); return false;},
         _applyCoupon:function() { this._ajaxFormSubmit(jQuery(this.options.couponFormSelector)); return false;},
 
-      
+
         _ajaxFormSubmit: function (form) {
             return this._ajaxSubmit(form.prop('action'),form.serialize());
         },
@@ -239,7 +242,7 @@ define([
                 },
                 success: function (response) {
                     if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
-                        
+
                         if(response.reload || response.redirect) {
                             this.loadWaiting = false; //prevent that resetLoadWaiting hiding loader
                             if(response.messages) {
@@ -247,8 +250,8 @@ define([
                                 jQuery(this.options.waitLoadingContainer).html('<span class="error">'+response.messages+' Reloading...</span>');
                             } else {
                                 jQuery(this.options.waitLoadingContainer).html('<span class="error">Reloading...</span>');
-                            } 
-                            
+                            }
+
                             if (response.redirect) {
                                 window.location.href = response.redirect;
                             } else {
@@ -256,13 +259,13 @@ define([
                             }
                             return true;
                         } //end redirect   
-                        
+
                         //ctlKeyy Cookie
                         if(response.ctrlkey) {
                             _this.options.ctrlkey = response.ctrlkey;
                             jQuery.mage.cookies.set(_this.options.ctrlcookie, response.ctrlkey);
                         }
-                        
+
                         if(response.updates) {
 
                             var blocks = response.updates;
@@ -317,7 +320,7 @@ define([
 
             })
         },
- 
+
         /**
          * UI Stuff
          */
@@ -349,8 +352,18 @@ define([
             });
         },
 
-	
+        scrollToPayment : function () {
+            var trigger = this.options.scrollTrigger;
+            var target = this.options.scrollTarget;
+            jQuery(trigger).click(function() {
+                jQuery('html, body').animate({
+                    scrollTop: jQuery(target).offset().top
+                }, 500)
+            })
+        }
+
+
  });
-    
+
     return jQuery.mage.nwtdibsCheckout;
 });
