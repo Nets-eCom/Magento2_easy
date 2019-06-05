@@ -17,6 +17,8 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentSummary;
 class GetPaymentResponse
 {
 
+    private $isCompany = false;
+
     /** @var GetPaymentOrder $orderDetails */
     protected $orderDetails;
 
@@ -113,10 +115,13 @@ class GetPaymentResponse
                     $pp->setPhoneNumber($phoneNumber);
 
                     $consumer->setPrivatePerson($pp);
+
+                    $this->isCompany = false;
                 }
 
                 // consumer->company seems never to be empty, since it contains empty objects of contactDetails, so we check if company name is empty
                 if (!empty($p->consumer->company->name)) {
+                    $this->isCompany = true;
                     $org = $p->consumer->company;
                     $company = new GetConsumerCompany();
                     $contact = new GetConsumerCompanyContactDetails();
@@ -128,7 +133,7 @@ class GetPaymentResponse
                         $contact->setPhoneNumber($phone);
                     }
 
-                    if (!empty((array)$org->contactDetails)){
+                    if (!empty((array)$org->contactDetails) && isset($org->contactDetails->firstName)){
                         $contact->setFirstName($org->contactDetails->firstName);
                         $contact->setLastName($org->contactDetails->lastName);
                         $contact->setEmail($org->contactDetails->email);
@@ -246,5 +251,9 @@ class GetPaymentResponse
 
 
 
+    public function getIsCompany()
+    {
+        return $this->isCompany;
+    }
 
 }

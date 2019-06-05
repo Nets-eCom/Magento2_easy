@@ -18,22 +18,35 @@ class CheckoutContext
     /** @var \Dibs\EasyCheckout\Model\Dibs\Order $dibsOrderHandler */
     protected $dibsOrderHandler;
 
+    /** @var \Magento\Sales\Api\OrderCustomerManagementInterface */
+    protected $orderCustomerManagement;
+
+    /** @var \Magento\Newsletter\Model\Subscriber $Subscriber */
+    protected $subscriber;
+
    /**
      * Constructor
      *
      * @param \Dibs\EasyCheckout\Helper\Data $helper
      * @param \Dibs\EasyCheckout\Model\Dibs\Order $dibsOrderHandler
      * @param \Dibs\EasyCheckout\Logger\Logger $logger
+     * @param \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement
+     * @param \Magento\Newsletter\Model\Subscriber $subscriber
      *
      */
     public function __construct(
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Dibs\EasyCheckout\Model\Dibs\Order $dibsOrderHandler,
-        \Dibs\EasyCheckout\Logger\Logger $logger
+        \Dibs\EasyCheckout\Logger\Logger $logger,
+        \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement,
+        \Magento\Newsletter\Model\Subscriber $subscriber
     ) {
         $this->helper        = $helper;
         $this->logger = $logger;
         $this->dibsOrderHandler = $dibsOrderHandler;
+
+        $this->orderCustomerManagement = $orderCustomerManagement;
+        $this->subscriber = $subscriber;
     }
 
     /**
@@ -57,5 +70,24 @@ class CheckoutContext
     {
         return $this->dibsOrderHandler;
     }
+
+    /**
+     * @return \Magento\Sales\Api\OrderCustomerManagementInterface
+     */
+    public function getOrderCustomerManagement()
+    {
+        return $this->orderCustomerManagement;
+    }
+
+    /**
+     * @return \Magento\Newsletter\Model\Subscriber
+     */
+    public function getSubscriber()
+    {
+        return $this->subscriber;
+    }
+
+
+
 
 }

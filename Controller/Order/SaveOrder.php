@@ -78,17 +78,15 @@ class SaveOrder extends Checkout
         try {
             $checkout->placeOrder($payment, $quote);
         } catch (\Exception $e) {
-            $checkout->getLogger()->error("Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checkout out yet!");
+            $checkout->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
+            $checkout->getLogger()->error("Error message:" . $e->getMessage());
 
             // todo show error to customer in magento! order could not be placed
             return false;
         }
 
 
-        echo "<pre>";
-        var_dump($payment);
-        die;
-
+        // TODO send redirect url too success page!
     }
 
 

@@ -24,16 +24,25 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     protected $_doNotMarkCartDirty  = false;
 
 
+    /**
+     * @param CheckoutContext $context
+     */
     public function setCheckoutContext(CheckoutContext $context)
     {
         $this->context = $context;
     }
 
+    /**
+     * @return \Dibs\EasyCheckout\Helper\Data
+     */
     public function getHelper()
     {
         return $this->context->getHelper();
     }
 
+    /**
+     * @return \Psr\Log\LoggerInterface
+     */
     public function getLogger()
     {
         return $this->_logger;
@@ -65,8 +74,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked into $this->checkCart())
-        $blankAddress = $this->getBlankAddress($allowCountries[0]);
-
         $billingAddress  = $quote->getBillingAddress();
         if($quote->isVirtual()) {
             $shippingAddress = $billingAddress;
@@ -182,6 +189,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
 
+    /**
+     * @return bool
+     * @throws LocalizedException
+     */
     public function checkAndChangeCurrency()
     {
         $quote  = $this->getQuote();
@@ -200,7 +211,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
 
-    public function changeCountry($country,$saveQuote = false) {
+    /**
+     * @param $country
+     * @param bool $saveQuote
+     * @throws LocalizedException
+     */
+    public function changeCountry($country, $saveQuote = false) {
 
         $allowCountries = $this->getAllowedCountries();
         if(!$country || !in_array($country,$allowCountries)) {
@@ -221,7 +237,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
 
-
+    /**
+     * @param $country
+     * @return array
+     */
     public function getBlankAddress($country) {
         $blankAddress = array(
             'customer_address_id'=>0,
@@ -237,6 +256,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
 
+    /**
+     * @return bool|string
+     */
     public function checkAndChangeShippingMethod()
     {
 
@@ -281,6 +303,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
 
+    /**
+     * @return array
+     */
     public function getAllowedCountries() {
         if(is_null($this->_allowedCountries)) {
             $this->_allowedCountries = ["SE", "DK", "NO"]; // todo get from settings
@@ -351,49 +376,57 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         return $this;
     }
 
-    public function placeOrder(GetPaymentResponse $dibsPayment,Quote $quote) {
+    /**
+     * @param GetPaymentResponse $dibsPayment
+     * @param Quote $quote
+     * @return mixed
+     * @throws \Exception
+     */
+    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote) {
 
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
         $this->setDoNotMarkCartDirty(true);
 
-
+        /* // TODO
         try {
             $this->validateDibsPayment($dibsPayment,$quote);
         } catch (\Exception $e) {
             throw $e;
         }
+        */
 
 
-        //this will be saved in order (and is uniq); is ID of push request
-        //required to avoid duplicate orders; when push/confirmation are executed concurent
+        //this will be saved in order
         $quote->setDibsPaymentId($dibsPayment->getPaymentId());
 
-        $reservation = $klarnaOrder->getOrderAdapter()->getReservation($klarnaData); // $klarnaData['reservation'];
-        // $cart       = $klarnaOrder->getOrderAdapter()->getCartItems($klarnaData); // $klarnaData['cart']['items']; // not used!
-        $shipping   = $klarnaOrder->getOrderAdapter()->getShippingAddress($klarnaData); //  $klarnaData['shipping_address'];
-        $billing    = $klarnaOrder->getOrderAdapter()->getBillingAddress($klarnaData); // $klarnaData['billing_address'];
 
-        $diff       = array_diff_assoc($billing,$shipping);
+        // we use this country id if we fail converting dibs country id
+        $fallbackCountryId = null;
+        try {
+            $fallbackCountryId = $quote->getShippingAddress()->getCountryId();
+        } catch (\Exception $e) {
+            // IGNORE
+        }
+
+        $shipping = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($dibsPayment, $fallbackCountryId);
 
 
-        $billingAddress = $quote->getBillingAddress()
-            ->addData($klarnaOrder->mageAddress($billing))
+        // WE only get shipping address from dibs!
+        $billingAddress = $quote->getBillingAddress();
+        $billingAddress->addData($shipping)
             ->setCustomerAddressId(0)
             ->setSaveInAddressBook(0)
             ->setShouldIgnoreValidation(true);
 
-        $shippingAddress = $quote->getShippingAddress()
-            ->addData($klarnaOrder->mageAddress($shipping))
+        $shippingAddress = $quote->getShippingAddress();
+        $shippingAddress->addData($shipping)
             ->setSameAsBilling(1)
             ->setCustomerAddressId(0)
             ->setSaveInAddressBook(0)
             ->setShouldIgnoreValidation(true);
 
-        $quote->setCustomerEmail($billingAddress->getEmail());
 
-        if(empty($diff)) { //?!?
-            $shippingAddress->setSameAsBilling(0);
-        }
+        $quote->setCustomerEmail($billingAddress->getEmail());
 
         $customer      = $quote->getCustomer(); //this (customer_id) is set into self::init
         $createCustomer = false;
@@ -416,14 +449,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 ->setCustomerIsGuest(true)
                 ->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
 
-            //register the customer, if its required
-            //the customer will be registered after order is placed (no METHOD_REGISTER), see bellow
-            if(
-                $billingAddress->getEmail() &&
-                $this->getHelper()->registerCustomer() &&
-                !$this->_customerEmailExists($billingAddress->getEmail(),$quote->getStore()->getWebsiteId())
-            ) {
-                $createCustomer = true;
+            // register the customer, if its required, the customer will then be registered after order is placed
+            if ($billingAddress->getEmail() && $this->getHelper()->registerCustomerOnCheckout()) {
+                if (!$this->_customerEmailExists($billingAddress->getEmail(),$quote->getStore()->getWebsiteId())) {
+                    $createCustomer = true;
+                }
             }
         }
 
@@ -437,22 +467,19 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         $paymentData = (new DataObject())
-            ->setIsTestMode($test)
-            ->setPushId($kID)
-            ->setReservation($reservation)
-            ->setId($klarnaOrder->getOrderAdapter()->getOrderId($klarnaData))
-            ->setCountryCode($klarnaOrder->getOrderAdapter()->getCountryCode())
-            ->setExpiresAt($klarnaOrder->getOrderAdapter()->getExpiresAt($klarnaData))
-        ;
+            ->setDibsPaymentId($dibsPayment->getPaymentId())
+            ->setCountryId($shippingAddress->getCountryId());
 
 
         $quote->getPayment()->getMethodInstance()->assignData($paymentData);
-        $quote->setNwtReservation($reservation); //this is used by pushAction
+        $quote->setNwtReservation($dibsPayment->getPaymentId()); //this is used by pushAction
 
         //- do not recollect totals
         $quote->setTotalsCollectedFlag(true);
 
 
+        //!
+        // Now we create the order from the quote
         $order = $this->quoteManagement->submit($quote);
 
 
@@ -469,8 +496,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 $this->_logger->critical($e);
             }
         }
-
-
 
 
         // add order information to the session
@@ -491,10 +516,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         if ($createCustomer) {
             //@see Magento\Checkout\Controller\Account\Create
-            $orderCustomerService = $this->getObjectManager()->get('\Magento\Sales\Api\OrderCustomerManagementInterface');
-
             try {
-                $orderCustomerService->create($order->getId());
+                $this->context->getOrderCustomerManagement()->create($order->getId());
             } catch (\Exception $e) {
                 $this->_logger->error(__("Order %1, cannot create customer [%2]: %3",$order->getIncrementId(),$order->getCustomerEmail(),$e->getMessage()));
                 $this->_logger->critical($e);
@@ -514,6 +537,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         return $order;
     }
 
+    /**
+     * @param \Magento\Sales\Model\Order $order
+     * @return bool
+     * @throws \Exception
+     */
     protected function orderSubscribeToNewsLetter(\Magento\Sales\Model\Order $order)
     {
         $email = $order->getCustomerEmail();
@@ -521,7 +549,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             return false;
         }
 
-        $subscriber = $this->getObjectManager()->create('Magento\Newsletter\Model\Subscriber');
+        $subscriber = $this->context->getSubscriber();
         $subscriber->loadByEmail($email);
 
         if($subscriber->getId()) {
@@ -571,11 +599,17 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
 
+    /**
+     * @param $markDirty
+     */
     public function setDoNotMarkCartDirty($markDirty)
     {
         $this->_doNotMarkCartDirty = (bool) $markDirty;
     }
 
+    /**
+     * @return bool
+     */
     public function getDoNotMarkCartDirty()
     {
         return $this->_doNotMarkCartDirty;
