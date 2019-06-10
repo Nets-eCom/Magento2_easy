@@ -135,6 +135,9 @@ class Order
         $payment->setAmount($this->fixPrice($quote->getGrandTotal()));
         $payment->setItems($items);
 
+        // todo check shipping methods
+        $payment->setShippingCostSpecified(true);
+
         return $this->paymentApi->UpdatePaymentCart($payment, $paymentId);
     }
 
@@ -204,21 +207,6 @@ class Order
         $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
         return $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
-
-
-    protected $_addrFieldMap = array(    //map between Magento and Klarna address fields
-        'firstname'=>'given_name',
-        'lastname'=>'family_name',
-        'street'=>'street_address',
-        'company'=>'organization_name',
-        'city'=>'city',
-        'country_id'=>'country',
-        'postcode'=>'postal_code',
-        'telephone'=>'phone',
-        'email'=>'email',
-        'prefix'=>'title',
-        'care_of'=>'care_of'
-    );
 
 
     public function convertDibsShippingToMagentoAddress(GetPaymentResponse $payment, $countryIdFallback = null)

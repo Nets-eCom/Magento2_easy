@@ -19,6 +19,7 @@ class UpdatePaymentCart extends AbstractRequest
      */
     protected $items;
 
+    protected $shippingCostSpecified;
 
     /**
      * @return float
@@ -57,6 +58,26 @@ class UpdatePaymentCart extends AbstractRequest
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getShippingCostSpecified()
+    {
+        return $this->shippingCostSpecified;
+    }
+
+    /**
+     * @param mixed $shippingCostSpecified
+     * @return UpdatePaymentCart
+     */
+    public function setShippingCostSpecified($shippingCostSpecified)
+    {
+        $this->shippingCostSpecified = $shippingCostSpecified;
+        return $this;
+    }
+
+
+
 
     public function toJSON()
     {
@@ -74,7 +95,8 @@ class UpdatePaymentCart extends AbstractRequest
 
         return [
             'amount' => $this->getAmount(),
-            'items' => $items
+            'items' => $items,
+            'shipping' => ['costSpecified' => $this->getShippingCostSpecified()]
         ];
     }
 

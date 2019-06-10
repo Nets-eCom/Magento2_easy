@@ -154,7 +154,7 @@ abstract class Client
         }
 
         $options = array_merge($options, $this->getDefaultOptions());
-        $options['json'] = $request;
+        $options[RequestOptions::JSON] = $request->toArray();
         $exception = null;
 
         try {
@@ -184,6 +184,7 @@ abstract class Client
     {
 
         $options['headers'] = [
+            'Content-Type' => 'application/json',
             'Authorization' => $this->apiSecretKey,
         ];
 

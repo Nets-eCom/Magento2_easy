@@ -50,7 +50,10 @@ abstract class Update extends \Dibs\EasyCheckout\Controller\Checkout
                 if($shouldUpdateDibs) {
                     //update dibs iframe
                     $dibsPaymentId = $this->getCheckoutSession()->getDibsPaymentId();
-                    $updatedDibsPaymentId = $checkout->updatedibsOrder();
+
+
+                    //
+                    $checkout->updateDibsPayment($dibsPaymentId);
                 }
 
             } catch(CheckoutException $e) {
@@ -87,11 +90,13 @@ abstract class Update extends \Dibs\EasyCheckout\Controller\Checkout
             }
 
 
+            /*
             if($shouldUpdateDibs &&  (empty($updatedDibsPaymentId) || $updatedDibsPaymentId != $dibsPaymentId)) {
                 //another dibs order was created, add dibs block (need to be reloaded)
                 $blocks[] = 'dibs';
                 //if dibs have same location, we will use dibs api resume
             }
+            */
         }
         
         $response['ok'] = true; //to avoid empty response
