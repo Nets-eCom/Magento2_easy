@@ -101,4 +101,21 @@ class Cart extends AbstractHelper
         }
         return $allowedCountriesNames;
     }
+
+    /**
+     * @return array
+     */
+    public function getAllowedCountriesList()
+    {
+        return $this->allowedCountryModel->getAllowedCountries();
+    }
+
+    /**
+     * @param $countryId
+     * @return Country Name
+     */
+    public function getCountryNameByCode($countryId)
+    {
+        return $this->countryFactory->create()->loadByCode($countryId)->getName();
+    }
 }

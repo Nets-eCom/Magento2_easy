@@ -11,92 +11,94 @@ define([
     "mage/translate",
     "mage/mage",
     "mage/validation"
-], function(jQuery, alert){
+], function (jQuery, alert) {
     "use strict";
     jQuery.widget('mage.nwtdibsCheckout', {
-	options: {
-        shippingMethodFormSelector: '#shipping-method-form',
-        newsletterFormSelector : '#dibs-easy-checkout-newsletter-form',
-        commentFormSelector:  '#dibskassan-comment',
-        couponFormSelector: '#discount-coupon-form',
-        cartContainerSelector : '#details-table',
-        waitLoadingContainer: '#review-please-wait',
-        ctrlkey: null,
-        ctrlcookie: 'dibs-easy-checkoutCartCtrlKey',
-        dibsCountryChange: false,
-        dibsShippingChange: false,
-        hasInitFlag: false,
-        shippingAjaxInProgress : false,
-        scrollTrigger: '.go-to.dibs-btn',
-        scrollTarget: '.dibs-checkout-wrapper'
-	},
-    _create: function () {
-        this._bindEvents();
-        this.dibsApiChanges;
-        this.uiManipulate();
-        this.scrollToPayment();
-    },
-    _bindCartAjax : function(){
+        options: {
+            shippingMethodFormSelector: '#shipping-method-form',
+            shippingMethodLoaderSelector: '#shipping-method-loader',
+            getShippingMethodButton: '#shipping-method-button',
+            newsletterFormSelector: '#dibs-easy-checkout-newsletter-form',
+            commentFormSelector: '#dibskassan-comment',
+            couponFormSelector: '#discount-coupon-form',
+            cartContainerSelector: '#details-table',
+            waitLoadingContainer: '#review-please-wait',
+            ctrlkey: null,
+            ctrlcookie: 'dibs-easy-checkoutCartCtrlKey',
+            dibsCountryChange: false,
+            dibsShippingChange: false,
+            hasInitFlag: false,
+            shippingAjaxInProgress: false,
+            scrollTrigger: '.go-to.dibs-btn',
+            scrollTarget: '.dibs-checkout-wrapper'
+        },
+        _create: function () {
+            this._bindEvents();
+            this.dibsApiChanges;
+            this.uiManipulate();
+            this.scrollToPayment();
+        },
+        _bindCartAjax: function () {
             var cart = this.options.cartContainerSelector;
             var inputs = jQuery(cart).find('.ajax-qty-change');
             var _this = this;
-            jQuery.each(inputs, function(i, input) {
-                var inputQty  = jQuery(input);
+            jQuery.each(inputs, function (i, input) {
+                var inputQty = jQuery(input);
                 var data_submit_url = inputQty.data('cart-url-submit');
                 var data_refresh_url = inputQty.data('cart-url-update');
                 var data_remove_url = inputQty.data('cart-url-remove');
                 var increment = inputQty.siblings('.input-number-increment');
                 var decrement = inputQty.siblings('.input-number-decrement');
-                var remove    = inputQty.parent().siblings('.remove-product');
+                var remove = inputQty.parent().siblings('.remove-product');
                 var prevVal = false;
 
-                if(increment.data('binded')) return;
-                if(decrement.data('binded')) return;
-                if(remove.data('binded')) return;
+                if (increment.data('binded')) return;
+                if (decrement.data('binded')) return;
+                if (remove.data('binded')) return;
 
                 increment.data('binded', true);
                 decrement.data('binded', true);
                 remove.data('binded', true);
 
-                increment.on('click', function(){
+                increment.on('click', function () {
                     inputQty.val(parseInt(inputQty.val()) + 1);
-                    if(typeof ajaxActionTriggerTimeout !== "undefined"){
+                    if (typeof ajaxActionTriggerTimeout !== "undefined") {
                         clearTimeout(ajaxActionTriggerTimeout);
                     }
-                    window.ajaxActionTriggerTimeout = setTimeout(function(){
+                    window.ajaxActionTriggerTimeout = setTimeout(function () {
                         inputQty.trigger('change');
                     }, 1000);
                 });
-                decrement.on('click', function(){
+                decrement.on('click', function () {
                     var v = parseInt(inputQty.val());
-                    if(v < 2) return;
+                    if (v < 2) return;
                     inputQty.val(v - 1);
-                    if(typeof ajaxActionTriggerTimeout !== "undefined"){
+                    if (typeof ajaxActionTriggerTimeout !== "undefined") {
                         clearTimeout(ajaxActionTriggerTimeout);
                     }
-                    window.ajaxActionTriggerTimeout = setTimeout(function(){
+                    window.ajaxActionTriggerTimeout = setTimeout(function () {
                         inputQty.trigger('change');
                     }, 1000);
                 });
-                remove.on('click', function(){
+                remove.on('click', function () {
                     var c = confirm(jQuery.mage.__('Are you sure you want to remove this?'));
-                    if(c == true){
+                    if (c == true) {
                         var data = {
-                            item_id     : inputQty.data('cart-product-id'),
-                            form_key    : inputQty.data('cart-form-key')
+                            item_id: inputQty.data('cart-product-id'),
+                            form_key: inputQty.data('cart-form-key')
                         };
                         jQuery.ajax({
                             type: "POST",
                             url: data_remove_url,
                             data: data,
-                            beforeSend : function(){
+                            beforeSend: function () {
                                 _this._ajaxBeforeSend();
                             },
-                            complete : function(){
+                            complete: function () {
                             },
-                            success: function(data){
-                                if(!data.success){
-                                    if(data.error_message){
+                            success: function (data) {
+                                if (!data.success) {
+                                    if (data.error_message) {
                                         confirm(data.error_message);
                                     }
                                 }
@@ -105,20 +107,21 @@ define([
                         });
                     }
                 });
-                inputQty.on('keypress', function(e){
-                    if(e.keyCode == "1"){
+                inputQty.on('keypress', function (e) {
+                    if (e.keyCode == "1") {
                         inputQty.trigger('change');
                         return false;
-                    };
-                }).on('focus', function(){
+                    }
+                    ;
+                }).on('focus', function () {
                     prevVal = jQuery(inputQty).val();
-                }).on('change', function(){
+                }).on('change', function () {
                     var data = {
-                        item_id     : inputQty.data('cart-product-id'),
-                        form_key    : inputQty.data('cart-form-key'),
-                        item_qty    : inputQty.val()
+                        item_id: inputQty.data('cart-product-id'),
+                        form_key: inputQty.data('cart-form-key'),
+                        item_qty: inputQty.val()
                     };
-                    if(data.item_qty == 0){
+                    if (data.item_qty == 0) {
                         jQuery(inputQty).val(prevVal);
                         return false;
                     }
@@ -126,14 +129,14 @@ define([
                         type: "POST",
                         url: data_submit_url,
                         data: data,
-                        beforeSend : function(){
+                        beforeSend: function () {
                             _this._ajaxBeforeSend();
                         },
-                        complete : function(){
+                        complete: function () {
                         },
-                        success: function(data){
-                            if(!data.success){
-                                if(data.error_message){
+                        success: function (data) {
+                            if (!data.success) {
+                                if (data.error_message) {
                                     confirm(data.error_message);
                                 }
                             }
@@ -144,43 +147,46 @@ define([
             });
         },
 
-        _bindEvents: function(block) {
+        _bindEvents: function (block) {
             //$blocks = ['shipping_method','cart','coupon','messages', 'dibs','newsletter','comment'];
 
-            block = block?block:null;
-            if(!block || block == 'shipping_method') {
+            block = block ? block : null;
+            if (!block || block == 'shipping') {
+                jQuery(this.options.shippingMethodLoaderSelector).on('submit', jQuery.proxy(this._loadShippingMethod, this));
+            }
+            if (!block || block == 'shipping_method') {
                 jQuery(this.options.shippingMethodFormSelector).find('input[type=radio]').on('change', jQuery.proxy(this._changeShippingMethod, this));
             }
-            if(!block || block == 'newsletter') {
+            if (!block || block == 'newsletter') {
                 jQuery(this.options.newsletterFormSelector).find('input[type=checkbox]').on('change', jQuery.proxy(this._changeSubscriptionStatus, this));
             }
-            if(!block || block == 'comment') {
-                jQuery(this.options.commentFormSelector).on('submit', jQuery.proxy(this._saveComment,this));
+            if (!block || block == 'comment') {
+                jQuery(this.options.commentFormSelector).on('submit', jQuery.proxy(this._saveComment, this));
                 this.checkValueOfInputs(jQuery(this.options.commentFormSelector));
             }
-            if(!block || block == 'cart'){
+            if (!block || block == 'cart') {
                 this._bindCartAjax();
             }
-            if(!block || block == 'coupon') {
-                jQuery(this.options.couponFormSelector).on('submit', jQuery.proxy(this._applyCoupon,this));
+            if (!block || block == 'coupon') {
+                jQuery(this.options.couponFormSelector).on('submit', jQuery.proxy(this._applyCoupon, this));
                 this.checkValueOfInputs(jQuery(this.options.couponFormSelector));
             }
 
         },
 
-        checkValueOfInputs : function(form){
-            var checkValue = function(elem){
-                if(jQuery(elem).val()){
+        checkValueOfInputs: function (form) {
+            var checkValue = function (elem) {
+                if (jQuery(elem).val()) {
                     form.find('.primary').show();
                 } else {
                     form.find('.primary').hide();
                 }
             }
             var field = jQuery(form).find('.dibs-easy-checkout-show-on-focus').get(0);
-            jQuery(field).on("keyup", function(){
+            jQuery(field).on("keyup", function () {
                 checkValue(this)
             });
-            jQuery(field).on("change", function(){
+            jQuery(field).on("change", function () {
                 checkValue(this)
             });
         },
@@ -190,7 +196,12 @@ define([
          * show ajax loader
          */
         _ajaxBeforeSend: function () {
-            if(window._dibsCheckout)  try { window._dibsCheckout(function (api) {api.suspend();}); } catch(err) {}
+            if (window._dibsCheckout) try {
+                window._dibsCheckout(function (api) {
+                    api.suspend();
+                });
+            } catch (err) {
+            }
             jQuery(this.options.waitLoadingContainer).show();
         },
 
@@ -198,29 +209,47 @@ define([
          * hide ajax loader
          */
         _ajaxComplete: function () {
-            if(window._dibsCheckout)  try { window._dibsCheckout(function (api) {api.resume();}); } catch(err) {}
+            if (window._dibsCheckout) try {
+                window._dibsCheckout(function (api) {
+                    api.resume();
+                });
+            } catch (err) {
+            }
             jQuery(this.options.waitLoadingContainer).hide();
         },
 
-        _changeShippingMethod:function() {
+        _changeShippingMethod: function () {
             this._ajaxFormSubmit(jQuery(this.options.shippingMethodFormSelector));
         },
 
-        _changeSubscriptionStatus:function() { this._ajaxFormSubmit(jQuery(this.options.newsletterFormSelector)); },
-        _saveComment:function() { this._ajaxFormSubmit(jQuery(this.options.commentFormSelector)); return false;},
-        _applyCoupon:function() { this._ajaxFormSubmit(jQuery(this.options.couponFormSelector)); return false;},
+        _loadShippingMethod: function () {
+            this._ajaxFormSubmit(jQuery(this.options.shippingMethodLoaderSelector));
+            return false;
+        },
+
+        _changeSubscriptionStatus: function () {
+            this._ajaxFormSubmit(jQuery(this.options.newsletterFormSelector));
+        },
+        _saveComment: function () {
+            this._ajaxFormSubmit(jQuery(this.options.commentFormSelector));
+            return false;
+        },
+        _applyCoupon: function () {
+            this._ajaxFormSubmit(jQuery(this.options.couponFormSelector));
+            return false;
+        },
 
 
         _ajaxFormSubmit: function (form) {
-            return this._ajaxSubmit(form.prop('action'),form.serialize());
+            return this._ajaxSubmit(form.prop('action'), form.serialize());
         },
         /**
          * Attempt to ajax submit order
          */
-        _ajaxSubmit: function (url,data,method, beforeDIBSAjax, afterDIBSAjax) {
-            if(!method) method = 'post';
+        _ajaxSubmit: function (url, data, method, beforeDIBSAjax, afterDIBSAjax) {
+            if (!method) method = 'post';
             var _this = this;
-            if(this.options.shippingAjaxInProgress === true){
+            if (this.options.shippingAjaxInProgress === true) {
                 return false;
             }
             jQuery.ajax({
@@ -229,25 +258,25 @@ define([
                 context: this,
                 data: data,
                 dataType: 'json',
-                beforeSend: function(){
+                beforeSend: function () {
                     _this.options.shippingAjaxInProgress = true;
                     _this._ajaxBeforeSend();
-                    if(typeof beforeDIBSAjax === 'function'){
+                    if (typeof beforeDIBSAjax === 'function') {
                         beforeDIBSAjax();
                     }
                 },
-                complete: function(){
+                complete: function () {
                     _this.options.shippingAjaxInProgress = false;
                     _this._ajaxComplete();
                 },
                 success: function (response) {
                     if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
 
-                        if(response.reload || response.redirect) {
+                        if (response.reload || response.redirect) {
                             this.loadWaiting = false; //prevent that resetLoadWaiting hiding loader
-                            if(response.messages) {
+                            if (response.messages) {
                                 //alert({content: response.messages});
-                                jQuery(this.options.waitLoadingContainer).html('<span class="error">'+response.messages+' Reloading...</span>');
+                                jQuery(this.options.waitLoadingContainer).html('<span class="error">' + response.messages + ' Reloading...</span>');
                             } else {
                                 jQuery(this.options.waitLoadingContainer).html('<span class="error">Reloading...</span>');
                             }
@@ -261,20 +290,20 @@ define([
                         } //end redirect   
 
                         //ctlKeyy Cookie
-                        if(response.ctrlkey) {
+                        if (response.ctrlkey) {
                             _this.options.ctrlkey = response.ctrlkey;
                             jQuery.mage.cookies.set(_this.options.ctrlcookie, response.ctrlkey);
                         }
 
-                        if(response.updates) {
+                        if (response.updates) {
 
                             var blocks = response.updates;
                             var div = null;
 
                             for (var block in blocks) {
-                                if(blocks.hasOwnProperty(block)){
-                                    div = jQuery('#dibs-easy-checkout_'+block);
-                                    if(div.size()>0) {
+                                if (blocks.hasOwnProperty(block)) {
+                                    div = jQuery('#dibs-easy-checkout_' + block);
+                                    if (div.size() > 0) {
                                         div.replaceWith(blocks[block]);
                                         this._bindEvents(block);
                                     }
@@ -282,11 +311,11 @@ define([
                             }
                         }
 
-                        if(typeof afterDIBSAjax === 'function'){
+                        if (typeof afterDIBSAjax === 'function') {
                             afterDIBSAjax();
                         }
 
-                        if(response.messages) {
+                        if (response.messages) {
                             alert({
                                 content: response.messages
                             });
@@ -296,7 +325,7 @@ define([
                         alert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again (reload this page)')
                         });
-                       // window.location.reload();
+                        // window.location.reload();
                     }
                 },
                 error: function () {
@@ -309,13 +338,13 @@ define([
             });
         },
 
-        dibsApiChanges: function() {
+        dibsApiChanges: function () {
             if (!window._dibsCheckout) {
                 return
             }
 
             self = this;
-            window._dibsCheckout.on('payment-completed', function(response) {
+            window._dibsCheckout.on('payment-completed', function (response) {
                 self._ajaxSubmit(BASE_URL + "onepage/order/SaveOrder/pid/" + response.paymentId);
 
             })
@@ -324,38 +353,38 @@ define([
         /**
          * UI Stuff
          */
-        getViewport : function(){
+        getViewport: function () {
             var e = window, a = 'inner';
-            if (!('innerWidth' in window )) {
+            if (!('innerWidth' in window)) {
                 a = 'client';
                 e = document.documentElement || document.body;
             }
-            return { width : e[ a+'Width' ] , height : e[ a+'Height' ] };
+            return {width: e[a + 'Width'], height: e[a + 'Height']};
         },
-        sidebarFiddled : false,
-        fiddleSidebar : function(){
+        sidebarFiddled: false,
+        fiddleSidebar: function () {
             var t = this;
-            if( (this.getViewport().width <= 960) && !this.sidebarFiddled ){
-                jQuery('.mobile-collapse').each(function(){
+            if ((this.getViewport().width <= 960) && !this.sidebarFiddled) {
+                jQuery('.mobile-collapse').each(function () {
                     jQuery(this).collapsible('deactivate');
                     t.sidebarFiddled = true;
                 });
             }
         },
-        uiManipulate : function(){
+        uiManipulate: function () {
             var t = this;
-            jQuery(window).resize(function(){
+            jQuery(window).resize(function () {
                 t.fiddleSidebar();
             });
-            jQuery(document).ready(function(){
+            jQuery(document).ready(function () {
                 t.fiddleSidebar();
             });
         },
 
-        scrollToPayment : function () {
+        scrollToPayment: function () {
             var trigger = this.options.scrollTrigger;
             var target = this.options.scrollTarget;
-            jQuery(trigger).click(function() {
+            jQuery(trigger).click(function () {
                 jQuery('html, body').animate({
                     scrollTop: jQuery(target).offset().top
                 }, 500)
@@ -363,7 +392,7 @@ define([
         }
 
 
- });
+    });
 
     return jQuery.mage.nwtdibsCheckout;
 });
