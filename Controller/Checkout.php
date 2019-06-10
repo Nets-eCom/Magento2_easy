@@ -26,6 +26,13 @@ abstract class Checkout extends Action
      */
     protected $checkoutSession;
 
+
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $storeManager;
+
+
     /** @var DibsCheckoutCOntext $dibsCheckoutContext */
     protected $dibsCheckoutContext;
 
@@ -35,6 +42,7 @@ abstract class Checkout extends Action
         CustomerRepositoryInterface $customerRepository,
         AccountManagementInterface $accountManagement,
         \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         DibsCheckout $dibsCheckout,
         DibsCheckoutCOntext $dibsCheckoutContext
@@ -43,6 +51,8 @@ abstract class Checkout extends Action
         $this->dibsCheckout = $dibsCheckout;
         $this->resultPageFactory = $resultPageFactory;
         $this->checkoutSession = $checkoutSession;
+        $this->storeManager= $storeManager;
+
         $this->dibsCheckoutContext = $dibsCheckoutContext;
 
         parent::__construct(
@@ -79,7 +89,6 @@ abstract class Checkout extends Action
             return false;
         }
 
-        /* // Todo
         //check if quote was changed
         $ctrlkey    = (string)$this->getRequest()->getParam('ctrlkey');
         if(!$ctrlkey) {
@@ -93,11 +102,11 @@ abstract class Checkout extends Action
                 'reload'   => 1,
                 'messages' =>(string)__('The cart was updated (from another location), reloading the checkout, please wait...')
             );
-            $this->getCheckoutSession()->addError($this->__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
+            $this->messageManager->addErrorMessage($this->__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
             $this->getResponse()->setBody(Zend_Json::encode($response));
             return true;
         }
-        */
+
 
         return false;
     }

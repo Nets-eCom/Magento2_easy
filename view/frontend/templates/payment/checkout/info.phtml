@@ -1,0 +1,17 @@
+<?php
+// @codingStandardsIgnoreFile
+
+/**
+ * @var $block \Dibs\EasyCheckout\Block\Payment\Checkout\Info
+ */
+
+?>
+
+
+<dl class="payment-method dibseasycheckout order">
+    <dt class="title"><?php echo $block->escapeHtml($block->getMethod()->getTitle()) ?></dt>
+    <dd class="content">
+        <strong><?php echo $block->escapeHtml(__('Dibs Easy Checkout Payment ID ')) ?></strong>
+        <span class="number"><?php echo $block->escapeHtml($block->getInfo()->getAdditionalInformation('dibs_payment_id')) ?></span>
+    </dd>
+</dl>
