@@ -42,6 +42,7 @@ class GetShippingMethod extends Checkout
         CustomerRepositoryInterface $customerRepository,
         AccountManagementInterface $accountManagement,
         \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         DibsCheckout $dibsCheckout,
         DibsCheckoutCOntext $dibsCheckoutContext,
@@ -55,6 +56,7 @@ class GetShippingMethod extends Checkout
             $customerRepository,
             $accountManagement,
             $checkoutSession,
+            $storeManager,
             $resultPageFactory,
             $dibsCheckout,
             $dibsCheckoutContext
