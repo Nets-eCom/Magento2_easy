@@ -108,11 +108,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
 
     // TODO
-    public function canCapture()
+    public function canCapture($store = null)
     {
-        return false;
+        return true;
     }
 
+
+    // TODO
+    public function canCapturePartial($store = null)
+    {
+        return true;
+    }
 
     /** Helpers */
     public function getCheckoutPath($path = null)

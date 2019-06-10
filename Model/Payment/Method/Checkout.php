@@ -1,29 +1,17 @@
 <?php
-/**
- * Klarna Checkout extension
- *
- * @category    NWT
- * @package     NWT_KCO
- * @copyright   Copyright (c) 2016 Nordic Web Team ( http://nordicwebteam.se/ )
- * @license     http://nordicwebteam.se/licenses/nwtcl/1.0.txt  NWT Commercial License (NWTCL 1.0)
- * 
- *
- */
 
 namespace Dibs\EasyCheckout\Model\Payment\Method;
 
-use Magento\Framework\DataObject;
-use Magento\Sales\Model\Order\Payment as OrderPayment;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
- * Klarna Checkout Payment method 
+ * Dibs Easy Checkout Payment method
  */
 class Checkout extends AbstractMethod
 {
 
-    protected $_code  = 'dibs_easycheckout';
+    protected $_code  = 'dibseasycheckout';
 
    /**
     * @var string
@@ -136,6 +124,8 @@ class Checkout extends AbstractMethod
      */
     public function canUseForCountry($country)
     {
+        // TODO
+        return true;
         $country = trim(strtoupper($country));
         $result =  $country && in_array($country,$this->_helper->getCountries()) && parent::canUseForCountry($country);
         return $result;
@@ -168,6 +158,7 @@ class Checkout extends AbstractMethod
      */
     public function canUseForCurrency($currencyCode)    
     {
+        // TODO
         return true;
     }
 
@@ -254,7 +245,53 @@ class Checkout extends AbstractMethod
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        throw new LocalizedException(__('Authorize action is not available.'));
+        //NOTE: amount is "baseAmount"
+
+        if (!$this->canAuthorize()) {
+            throw new LocalizedException(__('Authorize action is not available.'));
+        }
+
+        $order = $payment->getOrder();
+        $this->setStore($order->getStoreId());
+
+        $payment->setShouldCloseParentTransaction(false);
+        // update totals
+        $amount = $payment->formatAmount($amount, true);
+        $payment->setBaseAmountAuthorized($amount);
+
+        $formattedAmount = $order->getBaseCurrency()->formatTxt($amount);
+
+
+        $info = $this->getInfoInstance();
+        $payment->setTransactionId($info->getAdditionalInformation('reservation'));
+        //    $payment->setIsFraudDetected(false); //bug into magento <=2.1.4 (don't know when/if was fixed) which mark all orders as FraudDetected on multicurrency stores
+
+        //restore OUR state/status (set into initialize), not state set by authorize
+        //@see Magento\Sales\Model\Order\Payment\Operations\AuthorizeOperation
+        //@see Magento\Sales\Model\Order\Payment\State\OrderCommand
+
+        $order
+            ->setState($payment->getDibseasycheckoutState())
+            ->setStatus($payment->getDibseasycheckoutStatus())
+        ;
+
+
+
+        $canCapture = $this->canCapture();
+        if($canCapture) {
+            $payment->setIsTransactionClosed(0); //let transaction OPEN (need to cancel/void this reservation)
+            $message = __('Authorized amount of %1.',$formattedAmount);
+
+        } else {
+            $message = __('Authorized amount of %1. Klarna Reservation was CREATED and transaction CLOSED. All further Klarna operations  (activate, refund) will be done, by hand, into Klarna control panel.', $formattedAmount);
+        }
+
+        // update transactions, order state and add comments
+        $transaction = $payment->addTransaction(Transaction::TYPE_AUTH);
+        $message = $payment->prependMessage($message);
+        $payment->addTransactionCommentsToOrder($transaction, $message);
+
+        return $this;
     }
 
 

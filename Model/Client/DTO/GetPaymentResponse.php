@@ -95,7 +95,9 @@ class GetPaymentResponse
                     $shippingAddress->setCity($s->city);
                     $shippingAddress->setReceiverLine($s->receiverLine);
                     $shippingAddress->setAddressLine1($s->addressLine1);
-                    $shippingAddress->setAddressLine2($s->addressLine2);
+                    if (isset($s->addressLine2)) {
+                        $shippingAddress->setAddressLine2($s->addressLine2);
+                    }
 
                     $consumer->setShippingAddress($shippingAddress);
                 }

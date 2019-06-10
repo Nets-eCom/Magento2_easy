@@ -12,7 +12,7 @@ use Magento\Quote\Model\Quote;
 class Checkout extends \Magento\Checkout\Model\Type\Onepage
 {
 
-    protected $_paymentMethod = 'dibs_easycheckout';
+    protected $_paymentMethod = 'dibseasycheckout';
 
     /** @var CheckoutContext $context */
     protected $context;
@@ -472,7 +472,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
 
         $quote->getPayment()->getMethodInstance()->assignData($paymentData);
-        $quote->setNwtReservation($dibsPayment->getPaymentId()); //this is used by pushAction
+        $quote->setDibsPaymentId($dibsPayment->getPaymentId()); //this is used by pushAction
 
         //- do not recollect totals
         $quote->setTotalsCollectedFlag(true);

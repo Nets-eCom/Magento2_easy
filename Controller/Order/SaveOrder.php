@@ -40,7 +40,8 @@ class SaveOrder extends Checkout
 
 
         if (!$quote) {
-
+            $checkout->getLogger()->error("No quote found for this customer.");
+            return false;
         }
 
         // check other quote stuff

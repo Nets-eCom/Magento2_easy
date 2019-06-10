@@ -14,5 +14,14 @@
                 <crosssell_limit>8</crosssell_limit>
             </crosssell>
         </dibs_easycheckout>
+
+        <payment>
+            <dibseasycheckout>
+                <active>1</active>
+                <model>Dibs\EasyCheckout\Model\Payment\Method\Checkout</model>
+                <order_status>pending</order_status>
+                <title>Dibs Easy Checkout</title>
+            </dibseasycheckout>
+        </payment>
     </default>
 </config>
