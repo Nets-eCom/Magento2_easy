@@ -39,7 +39,7 @@ class Checkout extends AbstractMethod
     protected $_canRefundInvoicePartial = true;
     protected $_canVoid = true;   //the payment will be canceled when order is canceled
     protected $_canUseInternal = false; //cannot be used internal (backend)
-    protected $_canUseCheckout = true; //used in checkout (will redirect the user to the /klarna/checkout)
+    protected $_canUseCheckout = true; //used in checkout (will redirect the user to the /dibs/checkout)
     protected $_isInitializeNeeded = true;  //will use initialize to authorize and set state/status to new/pending (with authorize the state is set to processing)
     protected $_canFetchTransactionInfo = false;
     protected $_canReviewPayment = false;

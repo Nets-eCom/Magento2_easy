@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <update handle="checkout_item_price_renderers" />
+    <container name="root">
+        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.sidebar" as="dibs_easy_checkout_sidebar" template="Dibs_EasyCheckout::sidebar.phtml" cacheable="false">
+
+            <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping" as="shipping" template="Dibs_EasyCheckout::checkout/shipping.phtml">
+                <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_method" as="shipping_method" template="Dibs_EasyCheckout::checkout/shipping/method.phtml"/>
+                <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_address" as="shipping_address" template="Dibs_EasyCheckout::checkout/shipping/address.phtml"/>
+            </block>
+
+            <block class="Dibs\EasyCheckout\Block\Checkout\Cart" name="dibs_easy_checkout.cart" as="cart" template="Dibs_EasyCheckout::checkout/cart.phtml">
+                <block class="Magento\Framework\View\Element\RendererList" name="checkout.onepage.review.item.renderers" as="renderer.list">
+                    <block class="Magento\Checkout\Block\Cart\Item\Renderer" as="default" template="Dibs_EasyCheckout::checkout/cart/item/item.phtml"/>
+                </block>
+                <block class="Magento\Checkout\Block\Cart\Totals" name="dibs_easy_checkout.totals" as="totals" template="Dibs_EasyCheckout::checkout/cart/totals.phtml"/>
+            </block>
+            <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.coupon" as="coupon" template="Dibs_EasyCheckout::checkout/cart/coupon.phtml"/>
+            <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.comment" as="comment" template="Dibs_EasyCheckout::checkout/comment.phtml"/>
+            <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"/>
+		</block>
+	    <!-- IFRAME -->
+	    <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.dibs" as="dibs" template="Dibs_EasyCheckout::iframe.phtml" cacheable="false" />
+	</container>
+</page>

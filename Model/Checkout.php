@@ -86,7 +86,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->changeCountry($allowCountries[0],$save = false);
         } elseif(!in_array($shippingAddress->getCountryId(),$allowCountries)) {
             $this->_logger->info(__("Wrong country set %1, change to %2",$shippingAddress->getCountryId(),$allowCountries[0]));
-            $this->messageManager->addNotice(__("Klarna checkout is not available for %1, country was changed to %2.",$shippingAddress->getCountryId(),$allowCountries[0]));
+            $this->messageManager->addNoticeMessage(__("Dibs Easy checkout is not available for %1, country was changed to %2.",$shippingAddress->getCountryId(),$allowCountries[0]));
             $this->changeCountry($allowCountries[0],$save = false);
         }
 
@@ -147,6 +147,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         return $this;
     }
 
+    public function getQuoteSignature()
+    {
+        return $this->getHelper()->generateHashSignatureByQuote($this->getQuote());
+    }
 
     /**
      * @return bool
@@ -367,7 +371,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             // this will create an api call to dibs and initiaze a new payment
             $paymentId = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote);
 
-            //save klarna uri in checkout/session
+            //save dibs uri in checkout/session
             $this->getCheckoutSession()->setDibsPaymentId($paymentId);
             $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
         }
