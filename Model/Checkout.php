@@ -398,6 +398,82 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
     }
 
+
+
+    //Checkout ajax updates
+
+
+    /**
+     * Set shipping method to quote, if needed
+     *
+     * @param string $methodCode
+     * @return void
+     */
+    public function updateShippingMethod($methodCode)
+    {
+        $quote = $this->getQuote();
+        if($quote->isVirtual()) {
+            return;
+        }
+        $shippingAddress = $quote->getShippingAddress();
+        if ($methodCode != $shippingAddress->getShippingMethod()) {
+            $this->ignoreAddressValidation();
+            $shippingAddress->setShippingMethod($methodCode)->setCollectShippingRates(true);
+            $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
+        }
+    }
+
+
+    /**
+        // TODO
+     * Update shipping address
+     *
+     * @param string $methodCode
+     * @return void
+
+    public function updateShippingAddress($data)
+    {
+        $quote = $this->getQuote();
+        if($quote->isVirtual()) {
+            return $this;
+        }
+        $addr = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($data,$withEmpty = false);
+        if(!$addr) return $this;
+
+        $shippingAddress = $quote->getShippingAddress();
+
+
+        $cnt = 0;
+        foreach($addr as $field=>$value) {
+            $kValue = trim(strtolower($value));
+            $mValue = trim(strtolower((string)$shippingAddress->getData($field)));
+            if($kValue != $mValue) {
+                $shippingAddress->setData($field,$value);
+                $cnt++;
+            }
+        }
+        if($cnt) {
+            $shippingAddress->setShouldIgnoreValidation(true)->setCollectShippingRates(true);
+            $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
+        }
+
+    }
+     */
+
+    /**
+     * Make sure addresses will be saved without validation errors
+     *
+     * @return void
+     */
+    private function ignoreAddressValidation()
+    {
+        $quote = $this->getQuote();
+        $quote->getBillingAddress()->setShouldIgnoreValidation(true);
+        if (!$quote->getIsVirtual()) {
+            $quote->getShippingAddress()->setShouldIgnoreValidation(true);
+        }
+    }
+
     /**
      * @param GetPaymentResponse $dibsPayment
      * @param Quote $quote
