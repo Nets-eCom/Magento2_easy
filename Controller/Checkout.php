@@ -83,8 +83,6 @@ abstract class Checkout extends Action
      */
     protected function ajaxRequestAllowed()
     {
-
-
         if(!$this->getRequest()->isXmlHttpRequest()) {
             return false;
         }

@@ -25,6 +25,7 @@ define([
             waitLoadingContainer: '#review-please-wait',
             ctrlkey: null,
             ctrlcookie: 'dibs-easy-checkoutCartCtrlKey',
+            ctrkeyCheck: true,
             dibsCountryChange: false,
             dibsShippingChange: false,
             hasInitFlag: false,
@@ -33,11 +34,35 @@ define([
             scrollTarget: '.dibs-checkout-wrapper'
         },
         _create: function () {
+            jQuery.mage.cookies.set(this.options.ctrlcookie,this.options.ctrlkey);
+            this._checkIfCartWasUpdated();
+
             this._bindEvents();
             this.dibsApiChanges;
             this.uiManipulate();
             this.scrollToPayment();
         },
+
+        _checkIfCartWasUpdated: function() {
+            var checkIfCartWasUpdated = setInterval((function(){
+                if(!this.options.ctrkeyCheck) {
+                    return true;
+                }
+                var ctrlkey = jQuery.mage.cookies.get(this.options.ctrlcookie);
+                if(ctrlkey && ctrlkey !== this.options.ctrlkey) {
+
+                    // clear the interval
+                    clearInterval(checkIfCartWasUpdated);
+
+
+                    // msg popup, then reload!
+                    jQuery(this.options.waitLoadingContainer).html('<span class="error">Cart was updated, please wait for the Checkout to reload...</span>').show();
+                    window.location.reload();
+
+                }
+            }).bind(this), 1000);
+        },
+
         _bindCartAjax: function () {
             var cart = this.options.cartContainerSelector;
             var inputs = jQuery(cart).find('.ajax-qty-change');
@@ -192,6 +217,7 @@ define([
          * show ajax loader
          */
         _ajaxBeforeSend: function () {
+            this.options.ctrkeyCheck = false;
             if (window._dibsCheckout) {
                 try {
                     window._dibsCheckout.freezeCheckout();
@@ -252,6 +278,7 @@ define([
                 data: data,
                 dataType: 'json',
                 beforeSend: function () {
+                    _this.options.ctrkeyCheck = false;
                     _this.options.shippingAjaxInProgress = true;
                     _this._ajaxBeforeSend();
                     if (typeof beforeDIBSAjax === 'function') {
@@ -287,6 +314,7 @@ define([
                             _this.options.ctrlkey = response.ctrlkey;
                             jQuery.mage.cookies.set(_this.options.ctrlcookie, response.ctrlkey);
                         }
+
 
                         if (response.updates) {
 
@@ -324,8 +352,13 @@ define([
                         });
                         // window.location.reload();
                     }
+
+                    // after we loaded the new ctrlkey we now can compare the keys again!
+                    _this.options.ctrkeyCheck = true;
+
                 },
                 error: function () {
+                    this.options.ctrkeyCheck = true;
                     alert({
                         content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                     });
