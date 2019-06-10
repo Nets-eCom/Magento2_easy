@@ -332,7 +332,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
 
         // check if we already have started a payment flow with dibs
-        $paymentId = $this->getCheckoutSession()->getDibsPaymentId(); //check session for Klarna Order Uri
+        $paymentId = $this->getCheckoutSession()->getDibsPaymentId(); //check session for Dibs Payment Id
         if($paymentId) {
             try {
 
@@ -378,6 +378,24 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
 
         return $this;
+    }
+
+    /**
+     * This vill be used in ajax calls
+     * @throws LocalizedException
+     */
+    public function updateDibsPayment($paymentId)
+    {
+        $quote       = $this->getQuote();
+        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
+
+        // a signature is a md5 hashed value of the customer quote. Using this we can store the hash in session and compare the values
+        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
+
+        $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
+
+        // Update new dibs quote signature!
+        $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
     }
 
     /**
