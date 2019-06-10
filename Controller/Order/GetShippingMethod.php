@@ -2,7 +2,6 @@
 
 namespace Dibs\EasyCheckout\Controller\Order;
 
-use Dibs\EasyCheckout\Controller\Checkout;
 use Dibs\EasyCheckout\Helper\Cart as DibsCartHelper;
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
 use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutCOntext;
@@ -10,7 +9,7 @@ use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Directory\Model\Country\Postcode\ValidatorInterface;
 
-class GetShippingMethod extends Checkout
+class GetShippingMethod extends Update
 {
 
     /**
@@ -116,6 +115,7 @@ class GetShippingMethod extends Checkout
                 );
             }
         }
+        $this->_sendResponse(['shipping_method','cart','coupon','messages', 'dibs','newsletter','grand_total']);
     }
 
     public function validatePostalCode($countryId, $postalCode)

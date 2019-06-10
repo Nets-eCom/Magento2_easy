@@ -39,7 +39,7 @@ class SaveShippingMethod extends \Dibs\EasyCheckout\Controller\Order\Update
                 );
             }
         }
-        $this->_sendResponse(['cart','coupon','messages', 'dibs','newsletter','comment','country']);
+        $this->_sendResponse(['cart','coupon','messages', 'dibs','newsletter','country']);
     }
 
 }

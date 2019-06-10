@@ -17,9 +17,9 @@ define([
         options: {
             shippingMethodFormSelector: '#shipping-method-form',
             shippingMethodLoaderSelector: '#shipping-method-loader',
+            shippingMethodsListSelector: '#dibs-easy-checkout_shipping_method',
             getShippingMethodButton: '#shipping-method-button',
             newsletterFormSelector: '#dibs-easy-checkout-newsletter-form',
-            commentFormSelector: '#dibskassan-comment',
             couponFormSelector: '#discount-coupon-form',
             cartContainerSelector: '#details-table',
             waitLoadingContainer: '#review-please-wait',
@@ -148,7 +148,7 @@ define([
         },
 
         _bindEvents: function (block) {
-            //$blocks = ['shipping_method','cart','coupon','messages', 'dibs','newsletter','comment'];
+            //$blocks = ['shipping_method','cart','coupon','messages', 'dibs','newsletter'];
 
             block = block ? block : null;
             if (!block || block == 'shipping') {
@@ -159,10 +159,6 @@ define([
             }
             if (!block || block == 'newsletter') {
                 jQuery(this.options.newsletterFormSelector).find('input[type=checkbox]').on('change', jQuery.proxy(this._changeSubscriptionStatus, this));
-            }
-            if (!block || block == 'comment') {
-                jQuery(this.options.commentFormSelector).on('submit', jQuery.proxy(this._saveComment, this));
-                this.checkValueOfInputs(jQuery(this.options.commentFormSelector));
             }
             if (!block || block == 'cart') {
                 this._bindCartAjax();
@@ -230,10 +226,7 @@ define([
         _changeSubscriptionStatus: function () {
             this._ajaxFormSubmit(jQuery(this.options.newsletterFormSelector));
         },
-        _saveComment: function () {
-            this._ajaxFormSubmit(jQuery(this.options.commentFormSelector));
-            return false;
-        },
+
         _applyCoupon: function () {
             this._ajaxFormSubmit(jQuery(this.options.couponFormSelector));
             return false;
@@ -307,7 +300,11 @@ define([
                                         div.replaceWith(blocks[block]);
                                         this._bindEvents(block);
                                     }
+                                    if (block === 'shipping_method') {
+                                        jQuery(this.options.shippingMethodsListSelector).show();
+                                    }
                                 }
+
                             }
                         }
 

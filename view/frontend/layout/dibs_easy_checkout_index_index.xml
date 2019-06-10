@@ -88,7 +88,7 @@
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"
                                ifconfig="dibs_easycheckout/layout/display_newsletter"/>
                         <!-- Grand Totals -->
-                        <block class="Magento\Checkout\Block\Cart\Totals" name="dibs_easy_checkout.grand.total" as="grand.total" template="Dibs_EasyCheckout::checkout/cart/grand_total.phtml"/>
+                        <block class="Magento\Checkout\Block\Cart\Totals" name="dibs_easy_checkout.grand_total" as="grand_total" template="Dibs_EasyCheckout::checkout/cart/grand_total.phtml"/>
                     </block>
                 </container>
                 <!-- CROSSSELL -->

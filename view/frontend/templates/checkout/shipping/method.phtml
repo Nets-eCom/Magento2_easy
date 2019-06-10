@@ -6,7 +6,7 @@
 
 //id  #dibs-easy-checkout_shipping_method is mandatory
 ?>
-<div id="dibs-easy-checkout_shipping_method">
+<div id="dibs-easy-checkout_shipping_method" style="display: none;">
     <?php if ($groups = $block->getShippingRateGroups()): ?>
         <?php $currentRate = $block->getCurrentShippingRate(); ?>
         <?php if (!$currentRate): ?>

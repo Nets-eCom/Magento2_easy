@@ -13,7 +13,7 @@ abstract class Update extends \Dibs\EasyCheckout\Controller\Checkout
 
         //reload the blocks even we have an error
         if(is_null($blocks)) {
-            $blocks = ['shipping_method','cart','coupon','messages', 'dibs','newsletter','comment'];
+            $blocks = ['shipping_method','cart','coupon','messages', 'dibs','newsletter','grand_total'];
         } elseif($blocks) {
             $blocks = (array)$blocks;
         } else {
