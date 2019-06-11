@@ -19,7 +19,7 @@ class SaveNewsletter extends \Dibs\EasyCheckout\Controller\Order\Update
 
             $newsletter = (int)$this->getRequest()->getParam('newsletter', 0);
             if ($quote->getPayment()) {
-                $quote->getPayment()->setAdditionalInformation('nwtkco_newsletter', $newsletter > 0 ? 1 : -1)->save();
+                $quote->getPayment()->setAdditionalInformation('dibs_easycheckout_newsletter', $newsletter > 0 ? 1 : -1)->save();
             }
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
                 $this->messageManager->addExceptionMessage(

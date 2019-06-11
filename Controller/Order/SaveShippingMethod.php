@@ -12,7 +12,7 @@ class SaveShippingMethod extends \Dibs\EasyCheckout\Controller\Order\Update
 
     public function execute()
     {
-        if ($this->ajaxRequestAllowed()) {
+        if (!$this->ajaxRequestAllowed()) {
             return;
         }
 

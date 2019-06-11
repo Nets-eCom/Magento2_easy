@@ -5,10 +5,6 @@ namespace Dibs\EasyCheckout\Controller\Order;
 class SaveCoupon extends \Dibs\EasyCheckout\Controller\Order\Update
 {
 
-    /**
-     * Order success (thankyou) action
-     */
-
     public function execute()
     {
         if ($this->ajaxRequestAllowed()) {
