@@ -124,16 +124,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getCheckoutPath($path = null)
     {
         if (empty($path)) {
-            return 'onepage';
+            return 'easycheckout';
         }
 
-        return 'onepage/order/' . trim(ltrim($path, '/'));
+        return 'easycheckout/order/' . trim(ltrim($path, '/'));
     }
 
     public function getCheckoutUrl($path = null, $params = [])
     {
         if (empty($path)) {
-            return $this->_getUrl('onepage', $params);
+            return $this->_getUrl('easycheckout', $params);
         }
         return $this->_getUrl($this->getCheckoutPath($path), $params);
     }
