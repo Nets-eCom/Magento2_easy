@@ -33,6 +33,7 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
     <div class="dibs-easy-checkout-extra">
         <div class="dibs-easy-checkout-extra__right">
             <?php echo $block->getChildHtml('grand_total'); ?>
+            <?php echo $block->getChildHtml('to_payment'); ?>
         </div>
         <div class="dibs-easy-checkout-extra__left">
             <?php echo $block->getChildHtml('coupon'); ?>

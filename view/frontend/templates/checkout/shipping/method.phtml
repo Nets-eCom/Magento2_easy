@@ -6,7 +6,7 @@
 
 //id  #dibs-easy-checkout_shipping_method is mandatory
 ?>
-<div id="dibs-easy-checkout_shipping_method" style="display: none;">
+<div id="dibs-easy-checkout_shipping_method" style="/*display: none;*/">
     <?php if ($groups = $block->getShippingRateGroups()): ?>
         <?php $currentRate = $block->getCurrentShippingRate(); ?>
         <?php if (!$currentRate): ?>
@@ -41,3 +41,37 @@
         </p>
     <?php endif; ?>
 </div>
+<script>
+    require([
+        'jquery',
+        'slick'
+    ], function ($) {
+        jQuery(document).ready(function () {
+            jQuery("#dibs-easy-checkout_shipping_method").slick({
+                dots: true,
+                prevArrow: false,
+                nextArrow: false,
+                infinite: false,
+                speed: 300,
+                slidesToShow: 5,
+                slidesToScroll: 1,
+                responsive: [
+                    {
+                        breakpoint: 768,
+                        settings: {
+                            slidesToShow: 3,
+                            slidesToScroll: 1
+                        }
+                    },
+                    {
+                        breakpoint: 600,
+                        settings: {
+                            slidesToShow: 1,
+                            slidesToScroll: 1
+                        }
+                    }
+                ]
+            })
+        });
+    });
+</script>
