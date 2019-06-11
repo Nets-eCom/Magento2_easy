@@ -31,7 +31,7 @@ class Checkout extends \Magento\Framework\View\Element\Template
      *
      * @var string
      */
-    protected $_controllerPath = 'onepage/order';
+    protected $_controllerPath = 'easycheckout/order';
 
     /**
      * @var \Magento\Tax\Helper\Data

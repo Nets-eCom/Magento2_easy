@@ -375,7 +375,7 @@ define([
 
             self = this;
             window._dibsCheckout.on('payment-completed', function (response) {
-                self._ajaxSubmit(BASE_URL + "onepage/order/SaveOrder/pid/" + response.paymentId);
+                self._ajaxSubmit(BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId);
 
             })
         },
