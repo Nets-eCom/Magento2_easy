@@ -7,19 +7,22 @@
 //id  #dibs-easy-checkout_shipping_method is mandatory
 ?>
 <div id="dibs-easy-checkout_shipping_method" style="/*display: none;*/">
-    <?php if ($groups = $block->getShippingRateGroups()): ?>
-        <?php $currentRate = $block->getCurrentShippingRate(); ?>
-        <?php if (!$currentRate): ?>
-            <h5><?php echo $block->escapeHtml(__('Please select a shipping method...')); ?></h5>
-        <?php endif; ?>
-        <?php foreach ($groups as $code => $rates): ?>
-            <?php if (0): ?>
-                <strong><?php echo $block->escapeHtml($block->getCarrierName($code)) ?></strong><?php endif; ?>
-            <?php foreach ($rates as $rate):
-                $value = $block->escapeHtml($block->renderShippingRateValue($rate));
-                $checked = $currentRate === $rate->getCode() ? 'checked' : '';
-                ?>
-                <div class="dibs-easy-checkout-radio-row">
+    <div class="shipping-method-holder">
+
+
+        <?php if ($groups = $block->getShippingRateGroups()): ?>
+            <?php $currentRate = $block->getCurrentShippingRate(); ?>
+            <?php if (!$currentRate): ?>
+                <h5><?php echo $block->escapeHtml(__('Please select a shipping method...')); ?></h5>
+            <?php endif; ?>
+            <?php foreach ($groups as $code => $rates): ?>
+                <?php if (0): ?>
+                    <strong><?php echo $block->escapeHtml($block->getCarrierName($code)) ?></strong><?php endif; ?>
+                <?php foreach ($rates as $rate):
+                    $value = $block->escapeHtml($block->renderShippingRateValue($rate));
+                    $checked = $currentRate === $rate->getCode() ? 'checked' : '';
+                    ?>
+                    <div class="dibs-easy-checkout-radio-row">
                         <span>
                             <input type="radio"
                                    name="shipping_method" <?php echo $checked; ?> value="<?php echo $value; ?>"
@@ -29,49 +32,56 @@
                                 echo $block->renderShippingRateOption($rate); ?>
                             </label>
                         </span>
-                </div>
+                    </div>
+                <?php endforeach; ?>
             <?php endforeach; ?>
-        <?php endforeach; ?>
 
-    <?php else: ?>
-        <p>
-            <strong>
-                <?php echo $block->escapeHtml(__('Sorry, no quotes are available for this order right now.')); ?>
-            </strong>
-        </p>
-    <?php endif; ?>
-</div>
-<script>
-    require([
-        'jquery',
-        'slick'
-    ], function ($) {
-        jQuery(document).ready(function () {
-            jQuery("#dibs-easy-checkout_shipping_method").slick({
-                dots: true,
-                prevArrow: false,
-                nextArrow: false,
-                infinite: false,
-                speed: 300,
-                slidesToShow: 5,
-                slidesToScroll: 1,
-                responsive: [
-                    {
-                        breakpoint: 768,
-                        settings: {
-                            slidesToShow: 3,
-                            slidesToScroll: 1
+        <?php else: ?>
+            <p>
+                <strong>
+                    <?php echo $block->escapeHtml(__('Sorry, no quotes are available for this order right now.')); ?>
+                </strong>
+            </p>
+        <?php endif; ?>
+    </div>
+    <script>
+        require([
+            'jquery',
+            'slick'
+        ], function ($) {
+            jQuery(document).ready(function () {
+                jQuery(".shipping-method-holder").slick({
+                    dots: true,
+                    prevArrow: false,
+                    nextArrow: false,
+                    infinite: false,
+                    slidesToShow: 5,
+                    slidesToScroll: 1,
+                    responsive: [
+                        {
+                            breakpoint: 1280,
+                            settings: {
+                                slidesToShow: 2,
+                                slidesToScroll: 1
+                            }
+                        },
+                        {
+                            breakpoint: 900,
+                            settings: {
+                                slidesToShow: 1.5,
+                                slidesToScroll: 1
+                            }
+                        },
+                        {
+                            breakpoint: 768,
+                            settings: {
+                                slidesToShow: 1.5,
+                                slidesToScroll: 1,
+                            }
                         }
-                    },
-                    {
-                        breakpoint: 600,
-                        settings: {
-                            slidesToShow: 1,
-                            slidesToScroll: 1
-                        }
-                    }
-                ]
-            })
+                    ]
+                })
+            });
         });
-    });
-</script>
+    </script>
+</div>

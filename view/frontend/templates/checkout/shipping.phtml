@@ -3,6 +3,7 @@
 
 $cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
 $allowedCountries = $cartHelper->getAllowedCountriesNames();
+$quote = $block->getQuote();
 
 ?>
 <div class="dibs-easy-checkout-shipping dibs-easy-checkout-section mobile-show"
@@ -11,6 +12,9 @@ $allowedCountries = $cartHelper->getAllowedCountriesNames();
         <h4 id="dibs-easy-checkout-review-heading" role="heading" aria-level="2">
             <?php echo $block->escapeHtml(__('Shipping Method')) ?>
         </h4>
+        <span class="shipping-price">
+            <?= ($quote->getShippingAddress() === null || !$quote->getShippingAddress()->getShippingInclTax()) ? __('_') : $quote->getShippingAddress()->getShippingInclTax() ?>
+        </span>
     </div>
     <div class="dibs-easy-checkout-section-shipping">
         <form method="post" id="shipping-method-loader" class="form"

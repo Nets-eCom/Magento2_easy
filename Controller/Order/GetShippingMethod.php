@@ -115,7 +115,7 @@ class GetShippingMethod extends Update
                 );
             }
         }
-        $this->_sendResponse(['shipping_method','cart','coupon','messages', 'dibs','newsletter','grand_total']);
+        $this->_sendResponse(['shipping_method','cart','coupon','shipping','messages', 'dibs','newsletter','grand_total']);
     }
 
     public function validatePostalCode($countryId, $postalCode)

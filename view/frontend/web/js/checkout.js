@@ -18,6 +18,7 @@ define([
             shippingMethodFormSelector: '#shipping-method-form',
             shippingMethodLoaderSelector: '#shipping-method-loader',
             shippingMethodsListSelector: '#dibs-easy-checkout_shipping_method',
+            shippingMethodCheckBoxHolder: '.dibs-easy-checkout-radio-row',
             getShippingMethodButton: '#shipping-method-button',
             newsletterFormSelector: '#dibs-easy-checkout-newsletter-form',
             couponFormSelector: '#discount-coupon-form',
@@ -34,22 +35,23 @@ define([
             scrollTarget: '.dibs-checkout-wrapper'
         },
         _create: function () {
-            jQuery.mage.cookies.set(this.options.ctrlcookie,this.options.ctrlkey);
+            jQuery.mage.cookies.set(this.options.ctrlcookie, this.options.ctrlkey);
             this._checkIfCartWasUpdated();
 
             this._bindEvents();
             this.dibsApiChanges;
             this.uiManipulate();
             this.scrollToPayment();
+            this.checkShippingMethod();
         },
 
-        _checkIfCartWasUpdated: function() {
-            var checkIfCartWasUpdated = setInterval((function(){
-                if(!this.options.ctrkeyCheck) {
+        _checkIfCartWasUpdated: function () {
+            var checkIfCartWasUpdated = setInterval((function () {
+                if (!this.options.ctrkeyCheck) {
                     return true;
                 }
                 var ctrlkey = jQuery.mage.cookies.get(this.options.ctrlcookie);
-                if(ctrlkey && ctrlkey !== this.options.ctrlkey) {
+                if (ctrlkey && ctrlkey !== this.options.ctrlkey) {
 
                     // clear the interval
                     clearInterval(checkIfCartWasUpdated);
@@ -178,6 +180,7 @@ define([
             block = block ? block : null;
             if (!block || block == 'shipping') {
                 jQuery(this.options.shippingMethodLoaderSelector).on('submit', jQuery.proxy(this._loadShippingMethod, this));
+                jQuery(this.options.shippingMethodLoaderSelector).on('submit', jQuery.proxy(this._loadShippingMethod, this));this.checkShippingMethod();
             }
             if (!block || block == 'shipping_method') {
                 jQuery(this.options.shippingMethodFormSelector).find('input[type=radio]').on('change', jQuery.proxy(this._changeShippingMethod, this));
@@ -238,6 +241,7 @@ define([
                 }
             }
             jQuery(this.options.waitLoadingContainer).hide();
+            this.checkShippingMethod();
         },
 
         _changeShippingMethod: function () {
@@ -419,9 +423,20 @@ define([
                     scrollTop: jQuery(target).offset().top
                 }, 500)
             })
+        },
+
+        checkShippingMethod: function () {
+            var holder = this.options.shippingMethodCheckBoxHolder;
+            jQuery(holder).click(function () {
+                var $checks = jQuery(this).find('input:radio[name=shipping_method]');
+                $checks.prop("checked", !$checks.is(":checked")).trigger('change');
+                if ($checks.is(":checked")) {
+                    console.log(jQuery(this));
+                    jQuery(this).css('opacity', '1');
+                    jQuery(this).parent().find('.dibs-easy-checkout-radio-row').not(this).css('opacity', '.5');
+                }
+            })
         }
-
-
     });
 
     return jQuery.mage.nwtdibsCheckout;

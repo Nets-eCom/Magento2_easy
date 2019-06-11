@@ -55,7 +55,8 @@
 
 .dibs-table-align {
   width: ~"calc(100% - 205px)";
-  float: right;
+  left: 205px;
+  position: relative;
 }
 
 .radio {
@@ -130,7 +131,7 @@
 #dibs_easy_checkoutSidebar {
   font-family: @dibs-font-family;
   color: @dibs-color-dark;
-  display: inline-block;
+  display: block;
   .dibs-white__backdrop;
 
   .dibs-easy-checkout-cart {
@@ -163,6 +164,7 @@
   #dibs-easy-checkout_cart {
     border-top: @dibs-border;
     display: inline-block;
+    width: 100%;
   }
 
   .load.indicator {
@@ -197,7 +199,7 @@
 
   h4[role="heading"] {
     .dibs-heading;
-    margin-bottom: 1rem;
+    margin-top: 0;
 
     .total-amount {
       float: right;
@@ -209,22 +211,28 @@
       #discount-coupon-form {
         .fieldset {
           position: relative;
+          display: flex;
+
+          .field {
+            flex: 1;
+          }
 
           input {
-            max-width: 384px;
+            border-right: none !important;
+            border-bottom-right-radius: 0 !important;
+            border-top-right-radius: 0 !important;
           }
 
           .actions-toolbar {
-            position: absolute;
-            right: 70px;
-            top: 11px;
-            z-index: 1;
-
             .action.apply.primary {
               &, &:hover {
                 background: transparent;
-                border: none;
+                border: @dibs-border;
                 color: @dibs-light-blue;
+                height: 50px;
+                border-left: none !important;
+                border-bottom-left-radius: 0 !important;
+                border-top-left-radius: 0 !important;
               }
             }
           }
@@ -235,6 +243,24 @@
     &.grand-total {
       .total-info {
         color: #888888;
+      }
+    }
+  }
+
+  .slick-slide {
+    &:not(.slick-active) {
+      position: relative;
+      opacity: .7;
+
+      &:after {
+        width: 100%;
+        height: 100%;
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to left, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
       }
     }
   }
@@ -430,17 +456,22 @@ table {
   padding-bottom: 25px;
   border-bottom: @dibs-border;
 
+  .dibs-easy-checkout-section-content {
+    width: 100%;
+  }
+
   #dibs-easy-checkout_shipping_method {
     width: 100%;
     margin: 0;
+
     .dibs-easy-checkout-radio-row {
-      display: inline-block;
       text-align: center;
       background: @dibs-color-white;
       border-radius: 4px;
       margin: 0 34px 0 0;
-      padding: 30px;
+      padding: 50px 30px;
       border: @dibs-border;
+      position: relative;
 
       &:hover {
         border-color: @dibs-light-blue;
@@ -448,6 +479,12 @@ table {
 
       input[type='radio'] {
         visibility: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
       }
 
       span > * {
@@ -458,6 +495,35 @@ table {
         .dibs-heading;
         display: block;
       }
+    }
+  }
+
+  .slick-list.draggable {
+    margin-top: 10px;
+  }
+
+  .slick-dots {
+    li {
+      margin: 0;
+
+      &.slick-active {
+        button {
+          border-color: @dibs-light-blue;
+          background-color: @dibs-light-blue;
+        }
+      }
+    }
+
+    button {
+      display: block;
+      width: 7px;
+      height: 7px;
+      padding: 0;
+      border: @dibs-border;
+      border-radius: 50%;
+      background-color: white;
+      text-indent: -9999px;
+      box-shadow: none !important;
     }
   }
 }
@@ -476,14 +542,21 @@ button:not(.primary).dibs-primary {
   a.go-to {
     .dibs-btn;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.20) !important;
-    padding: 12px 50px;
+    text-align: center;
     font-size: 18px;
     text-transform: none;
     text-decoration: none;
     float: right;
+    padding: 12px 30px;
+    width: 174px;
   }
 }
 
+.shipping-price {
+  .dibs-heading;
+  float: right;
+  text-align: right;
+}
 //  Totals
 //  _____________________________________________
 #dibs-easy-checkout_cart_totals {
@@ -516,8 +589,9 @@ button:not(.primary).dibs-primary {
         }
 
         &.item-img {
-          padding-right: 40px;
+          padding-right: 0;
           padding-left: 0;
+          width: @calc-width;
           max-width: @calc-width;
         }
 
@@ -562,6 +636,7 @@ button:not(.primary).dibs-primary {
     text-align: right;
     border-bottom: @dibs-border;
     color: @dibs-color-black;
+    float: left;
 
     table {
       width: 35%;
@@ -604,6 +679,7 @@ button:not(.primary).dibs-primary {
     select {
       height: 50px;
       width: 192px;
+      margin-bottom: 10px;
     }
 
     input {
@@ -613,7 +689,6 @@ button:not(.primary).dibs-primary {
         left: -3px;
         border-bottom-left-radius: 0 !important;
         border-top-left-radius: 0 !important;
-        border-left: none !important;
       }
     }
 
@@ -623,7 +698,6 @@ button:not(.primary).dibs-primary {
     }
 
     #shipping-method-button {
-      margin-left: 30px;
       height: 50px;
       position: relative;
       top: -1px;
@@ -636,17 +710,16 @@ button:not(.primary).dibs-primary {
     .dibs-table-align;
   }
   .dibs-easy-checkout-extra__left {
-    width: 70%;
-    float: left;
+    width: 65%;
   }
   .dibs-easy-checkout-extra__right {
-    width: 30%;
+    width: 35%;
     float: right;
   }
   .dibs-easy-checkout-block {
     &.discount,
     &.newsletter {
-      width: 70%;
+      width: 65%;
     }
 
     &.grand-total {
@@ -706,7 +779,7 @@ button:not(.primary).dibs-primary {
         &.price {
           text-align: right;
           position: absolute;
-          right: 0;
+          right: 25px;
         }
       }
 
@@ -755,7 +828,17 @@ button:not(.primary).dibs-primary {
         }
       }
     }
+
     .dibs-easy-checkout-shipping {
+      .dibs-easy-checkout-title {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between
+      }
+      .slick-list.draggable {
+        margin-top: 40px;
+      }
+
       select {
         border-bottom-right-radius: 0 !important;
         border-bottom-left-radius: 0 !important;
@@ -770,6 +853,10 @@ button:not(.primary).dibs-primary {
       #shipping-method-button {
         margin: 15px auto;
         width: 100%;
+      }
+
+      .slick-dots {
+        top: -40px;
       }
     }
   }
@@ -794,8 +881,8 @@ button:not(.primary).dibs-primary {
     display: inline-block;
     margin-bottom: 15px;
   }
+}
 
-
-
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__l) {
 
 }
