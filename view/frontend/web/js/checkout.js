@@ -37,7 +37,7 @@ define([
         _create: function () {
             jQuery.mage.cookies.set(this.options.ctrlcookie, this.options.ctrlkey);
             this._checkIfCartWasUpdated();
-
+            this.hidePaymentAndIframe();
             this._bindEvents();
             this.dibsApiChanges;
             this.uiManipulate();
@@ -242,6 +242,7 @@ define([
             }
             jQuery(this.options.waitLoadingContainer).hide();
             this.checkShippingMethod();
+            this.hidePaymentAndIframe();
         },
 
         _changeShippingMethod: function () {
@@ -415,14 +416,28 @@ define([
                 t.fiddleSidebar();
             });
         },
-
+        hidePaymentAndIframe: function () {
+            var trigger = this.options.getShippingMethodButton;
+            var ifr = this.options.scrollTarget;
+            var pay = this.options.scrollTrigger;
+            jQuery(trigger).click(function () {
+                jQuery(ifr).css({
+                    'visibility': 'hidden',
+                    'height': '0',
+                    'overflow' : 'hidden'
+                });
+                jQuery(pay).css({
+                    'display': 'none'
+                });
+            })
+        },
         scrollToPayment: function () {
             var trigger = this.options.scrollTrigger;
             var target = this.options.scrollTarget;
             jQuery(trigger).click(function () {
                 jQuery(target).css({
-                    'visibility':'visible',
-                    'height':'auto',
+                    'visibility': 'visible',
+                    'height': 'auto',
                 });
                 jQuery('html, body').animate({
                     scrollTop: jQuery(target).offset().top
