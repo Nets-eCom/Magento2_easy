@@ -35,11 +35,6 @@
                     <label>Url for Terms page</label>
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                 </field>
-                <field id="charge_directly" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Charge directly</label>
-                    <comment>By enabling this, the transaction will be charged automatically after reservation have been accepted.</comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
                 <field id="replace_checkout" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="605">
                     <label>Replace checkout url with Dibs Checkout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

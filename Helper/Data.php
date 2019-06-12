@@ -80,13 +80,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    public function chargeDirectly($store = null) {
-        return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_SETTINGS.'charge_directly',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
 
     protected function _replaceCheckout($store = null) {
         return $this->scopeConfig->isSetFlag(

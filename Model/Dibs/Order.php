@@ -123,7 +123,7 @@ class Order
     /**
      * @param Quote $quote
      * @param $paymentId
-     * @return bool
+     * @return void
      * @throws \Exception
      */
     public function updateCheckoutPaymentByQuoteAndPaymentId(Quote $quote, $paymentId)
@@ -167,8 +167,13 @@ class Order
         $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
 
 
+        // todo get from config
+        $paymentCheckout->setShippingCountries(['SWE','NOR']);
+
+
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
-        $paymentCheckout->setCharge($this->helper->chargeDirectly());
+        // we will call charge in capture online instead! so we set it to false
+        $paymentCheckout->setCharge(false);
 
         // we let dibs handle customer data! customer will be able to fill in info in their iframe, and choose addresses
         $paymentCheckout->setMerchantHandlesConsumerData(false);
@@ -197,7 +202,7 @@ class Order
     /**
      * @param \Magento\Sales\Model\Order $order
      * @param $paymentId
-     * @return bool
+     * @return void
      * @throws ClientException
      */
     public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)

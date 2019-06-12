@@ -78,8 +78,11 @@ class CreatePaymentCheckout extends AbstractRequest
     protected $merchantHandlesShippingCost;
 
 
-    // TODO!
-    protected $shipping;
+    /**
+     * will be converted to shipping -> countries[].countryCode
+     * @var array
+     */
+    protected $shippingCountries;
 
     /** @var Consumer $consumer */
     protected $consumer;
@@ -248,24 +251,6 @@ class CreatePaymentCheckout extends AbstractRequest
     }
 
     /**
-     * @return mixed
-     */
-    public function getShipping()
-    {
-        return $this->shipping;
-    }
-
-    /**
-     * @param mixed $shipping
-     * @return CreatePaymentCheckout
-     */
-    public function setShipping($shipping)
-    {
-        $this->shipping = $shipping;
-        return $this;
-    }
-
-    /**
      * @return Consumer
      */
     public function getConsumer()
@@ -283,6 +268,25 @@ class CreatePaymentCheckout extends AbstractRequest
         return $this;
     }
 
+    /**
+     * @return array
+     */
+    public function getShippingCountries()
+    {
+        return $this->shippingCountries;
+    }
+
+    /**
+     * @param array $shippingCountries
+     * @return CreatePaymentCheckout
+     */
+    public function setShippingCountries($shippingCountries)
+    {
+        $this->shippingCountries = $shippingCountries;
+        return $this;
+    }
+
+
 
 
     public function toJSON()
@@ -295,8 +299,18 @@ class CreatePaymentCheckout extends AbstractRequest
         $data = [
             'termsUrl' => $this->getTermsUrl(),
             'consumer' => null,
-       //     'shipping' => null, // TODO
         ];
+
+        if (!empty($this->getShippingCountries()) && is_array($this->getShippingCountries())) {
+
+            // set the structure
+            $countries = [];
+            foreach ($this->getShippingCountries() as $countryIso) {
+                $countries[] = ['countryCode' => $countryIso];
+            }
+
+            $data['shipping']['countries'] = $countries;
+        }
 
         if ($this->getConsumer() instanceof Consumer) {
             $data['consumer'] = $this->getConsumer()->toArray();
