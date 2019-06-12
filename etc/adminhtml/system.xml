@@ -40,7 +40,6 @@
                     <comment>By enabling this, the transaction will be charged automatically after reservation have been accepted.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-
                 <field id="replace_checkout" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="605">
                     <label>Replace checkout url with Dibs Checkout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -49,18 +48,33 @@
             </group>
             <group id="layout" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Layout options</label>
-                <field id="display_newsletter" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="10">
+                <field id="display_newsletter" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display Newsletter checkbox</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="display_discount" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="10">
+                <field id="display_discount" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display Discount Form</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="display_link" translate="label comment" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display link to a different payment method</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="display_additional_block" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display Additional block</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="additional_block" translate="label" type="editor" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional block Content</label>
+                    <frontend_model>Dibs\EasyCheckout\Block\Adminhtml\System\Config\Editor</frontend_model>
+                    <depends>
+                        <field id="display_additional_block">1</field>
+                    </depends>
                 </field>
             </group>
             <group id="crosssell" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Crosssell Products</label>
-                <field id="display_crosssell" translate="label comment" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="10">
+                <field id="display_crosssell" translate="label comment" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display Crosssell Products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>

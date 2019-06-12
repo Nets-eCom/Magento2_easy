@@ -1,0 +1,13 @@
+<?php
+// @codingStandardsIgnoreFile
+
+
+/** @var $block Dibs\EasyCheckout\Block\Checkout */
+?>
+
+<div class="different-checkout-link">
+    <a href="<?php echo $block->getUrl('checkout', ['_secure' => true]); ?>"
+       title="<?= __('Use a different payment method') ?>">
+        <?= __('Use a different payment method') ?>
+    </a>
+</div>

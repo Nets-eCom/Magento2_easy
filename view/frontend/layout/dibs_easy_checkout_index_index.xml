@@ -13,7 +13,6 @@
         <referenceContainer name="footer-container" remove="true"/>
         <referenceBlock name="authentication-popup" remove="true" />
 
-
         <referenceBlock name="head.additional">
             <block class="Dibs\EasyCheckout\Block\Script" name="dibs_easy_checkout_script" template="Dibs_EasyCheckout::js/dibscheckout.phtml"/>
         </referenceBlock>
@@ -25,13 +24,15 @@
             <block class="Dibs\EasyCheckout\Block\Messages" name="dibs_easy_checkout.messages"/>
         </referenceContainer>
 
-
         <referenceContainer name="content">
             <block class="Dibs\EasyCheckout\Block\Wrapper" name="dibs_easy_checkout_design_cfg" as="design_cfg" template="Dibs_EasyCheckout::design_config.phtml">
+                <container name="dibs_easy_checkoutHeader" as="dibs_easy_checkoutHeader" label="dibs_easy_checkout Header" htmlTag="div" htmlId="dibs_easy_checkoutHeader">
+                    <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.header" as="dibsHeader" template="Dibs_EasyCheckout::header.phtml" ifconfig="dibs_easycheckout/layout/display_additional_block"/>
+                </container>
                 <!-- SIDEBAR -->
                 <container name="dibs_easy_checkoutSidebar" as="dibs_easy_checkoutSidebar" label="dibs_easy_checkout Sidebar" htmlTag="div" htmlId="dibs_easy_checkoutSidebar">
                     <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.sidebar" as="sidebar" template="Dibs_EasyCheckout::sidebar.phtml" cacheable="false">
-                        
+
                         <!-- Shopping Cart -->
                         <block class="Dibs\EasyCheckout\Block\Checkout\Cart" name="dibs_easy_checkout.cart" as="cart" template="Dibs_EasyCheckout::checkout/cart.phtml">
                             <block class="Magento\Framework\View\Element\RendererList" name="checkout.onepage.review.item.renderers" as="renderer.list">
@@ -104,6 +105,7 @@
                 <container name="dibs_easy_checkout.main" as="dibs_easy_checkoutMain" label="Main dibs_easy_checkout Container" htmlTag="div" htmlId="dibs_easy_checkoutMain">
                     <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.dibs.container" template="Dibs_EasyCheckout::main.phtml">
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.dibs" as="dibs" template="Dibs_EasyCheckout::iframe.phtml" cacheable="false" />
+                        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.different.checkout.link" as="differentCheckoutLink" template="Dibs_EasyCheckout::different_checkout_link.phtml" ifconfig="dibs_easycheckout/layout/display_link"/>
                     </block>
                 </container>
             </block>

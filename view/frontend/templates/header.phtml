@@ -1,0 +1,10 @@
+<?php
+// @codingStandardsIgnoreFile
+
+
+/** @var $block Dibs\EasyCheckout\Block\Checkout */
+?>
+
+<?php if (!empty($block->helper()->getAdditionalBlock())): ?>
+    <?= $block->helper()->getAdditionalBlock() ?>
+<?php endif; ?>
