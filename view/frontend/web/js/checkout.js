@@ -32,7 +32,7 @@ define([
             hasInitFlag: false,
             shippingAjaxInProgress: false,
             scrollTrigger: '.go-to.dibs-btn',
-            scrollTarget: '.dibs-checkout-wrapper'
+            scrollTarget: '#dibsOrder'
         },
         _create: function () {
             jQuery.mage.cookies.set(this.options.ctrlcookie, this.options.ctrlkey);
@@ -180,7 +180,7 @@ define([
             block = block ? block : null;
             if (!block || block == 'shipping') {
                 jQuery(this.options.shippingMethodLoaderSelector).on('submit', jQuery.proxy(this._loadShippingMethod, this));
-                jQuery(this.options.shippingMethodLoaderSelector).on('submit', jQuery.proxy(this._loadShippingMethod, this));this.checkShippingMethod();
+                this.checkShippingMethod();
             }
             if (!block || block == 'shipping_method') {
                 jQuery(this.options.shippingMethodFormSelector).find('input[type=radio]').on('change', jQuery.proxy(this._changeShippingMethod, this));
@@ -246,6 +246,7 @@ define([
 
         _changeShippingMethod: function () {
             this._ajaxFormSubmit(jQuery(this.options.shippingMethodFormSelector));
+            jQuery(this.options.scrollTrigger).show();
         },
 
         _loadShippingMethod: function () {
@@ -419,6 +420,10 @@ define([
             var trigger = this.options.scrollTrigger;
             var target = this.options.scrollTarget;
             jQuery(trigger).click(function () {
+                jQuery(target).css({
+                    'visibility':'visible',
+                    'height':'auto',
+                });
                 jQuery('html, body').animate({
                     scrollTop: jQuery(target).offset().top
                 }, 500)
@@ -431,7 +436,6 @@ define([
                 var $checks = jQuery(this).find('input:radio[name=shipping_method]');
                 $checks.prop("checked", !$checks.is(":checked")).trigger('change');
                 if ($checks.is(":checked")) {
-                    console.log(jQuery(this));
                     jQuery(this).css('opacity', '1');
                     jQuery(this).parent().find('.dibs-easy-checkout-radio-row').not(this).css('opacity', '.5');
                 }
