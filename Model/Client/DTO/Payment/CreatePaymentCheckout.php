@@ -309,7 +309,7 @@ class CreatePaymentCheckout extends AbstractRequest
                 $countries[] = ['countryCode' => $countryIso];
             }
 
-            $data['shipping']['countries'] = $countries;
+            $data['ShippingCountries'] = $countries;
         }
 
         if ($this->getConsumer() instanceof Consumer) {

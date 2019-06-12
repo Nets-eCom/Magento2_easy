@@ -55,9 +55,6 @@ class CancelPayment extends AbstractRequest
         return $this;
     }
 
-
-
-
     public function toJSON()
     {
         return json_encode($this->toArray());
@@ -72,10 +69,12 @@ class CancelPayment extends AbstractRequest
             }
         }
 
-        return [
-            'amount' => $this->getAmount(),
-            'orderItems' => $items,
-        ];
+        $data = ['amount' => $this->getAmount()];
+        if ($items) {
+            $data['orderItems'] = $items;
+        }
+
+        return $data;
     }
 
 

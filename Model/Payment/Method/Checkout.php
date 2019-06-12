@@ -2,6 +2,7 @@
 
 namespace Dibs\EasyCheckout\Model\Payment\Method;
 
+use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Framework\Exception\LocalizedException;
 
@@ -158,8 +159,7 @@ class Checkout extends AbstractMethod
      */
     public function canUseForCurrency($currencyCode)    
     {
-        // TODO
-        return true;
+        return in_array(strtoupper($currencyCode), ['SEK','NOK','DKK']);
     }
 
 
@@ -263,7 +263,7 @@ class Checkout extends AbstractMethod
 
 
         $info = $this->getInfoInstance();
-        $payment->setTransactionId($info->getAdditionalInformation('reservation'));
+        $payment->setTransactionId($info->getAdditionalInformation('dibs_payment_id'));
         //    $payment->setIsFraudDetected(false); //bug into magento <=2.1.4 (don't know when/if was fixed) which mark all orders as FraudDetected on multicurrency stores
 
         //restore OUR state/status (set into initialize), not state set by authorize
@@ -313,7 +313,18 @@ class Checkout extends AbstractMethod
 
     public function void(\Magento\Payment\Model\InfoInterface $payment)
     {
-        throw new LocalizedException(__('Void action is not available.'));
+        $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
+        if ($paymentId) {
+            $api = $this->paymentApi;
+            $paymentObj = new CancelPayment();
+            //$paymentObj->setAmount($payment->)
+            $api->cancelPayment($paymentObj, $paymentId);
+
+        } else {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('You need an dibs payment ID to void.')
+            );
+        }
     }
 
 
