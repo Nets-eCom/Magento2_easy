@@ -116,8 +116,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         //TODO: ADD MINIMUM AOUNT TEST here
 
-
-        $method = $this->checkAndChangeShippingMethod();
+        // do not set shipping method
+     //   $method = $this->checkAndChangeShippingMethod();
 
         try {
             $quote->setTotalsCollectedFlag(false)->collectTotals()->save(); //REQUIRED (maybe shipping amount was changed)
@@ -140,9 +140,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->throwReloadException(__('Checkout was reloaded.'));
         }
 
+        /*
         if($method === false) {
             throw new LocalizedException(__('No shipping method'));
         }
+        */
 
         return $this;
     }
@@ -262,7 +264,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
     /**
      * @return bool|string
-     */
+     *
     public function checkAndChangeShippingMethod()
     {
 
@@ -305,7 +307,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         return $method;
 
     }
-
+    */
 
     /**
      * @return array

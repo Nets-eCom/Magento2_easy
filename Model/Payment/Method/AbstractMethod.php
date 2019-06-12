@@ -13,6 +13,11 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
      */
     protected $_helper;
 
+    /** @var \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi */
+    protected $paymentApi;
+
+    /** @var \Dibs\EasyCheckout\Model\Dibs\Items $itemsHandler */
+    protected $itemsHandler;
 
     /**
      * @var \Magento\Directory\Model\CurrencyFactory
@@ -30,7 +35,9 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Payment\Model\Method\Logger $logger
      * @param \Magento\Directory\Model\CurrencyFactory $currencyFactory
-     * @param \Dibs\EasyCheckout\Helper\Data
+     * @param \Dibs\EasyCheckout\Helper\Data $helper
+     * @param \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi
+     * @param \Dibs\EasyCheckout\Model\Dibs\Items $itemsHandler
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
      * @param array $data
@@ -45,6 +52,8 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Payment\Model\Method\Logger $logger,
         \Dibs\EasyCheckout\Helper\Data $helper,
+        \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
+        \Dibs\EasyCheckout\Model\Dibs\Items $itemsHandler,
         \Magento\Directory\Model\CurrencyFactory $currencyFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null, //not required params need to be at the end of the list, else Cannot instantiate abstract class Magento\Framework\Model\ResourceModel\AbstractResource
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
@@ -53,6 +62,10 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
     ) {
         $this->_helper = $helper;
         $this->_currencyFactory = $currencyFactory;
+
+        $this->itemsHandler = $itemsHandler;
+        $this->paymentApi = $paymentApi;
+
 
         parent::__construct(
             $context,
