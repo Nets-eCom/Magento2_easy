@@ -32,12 +32,12 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
     <?php echo $block->getChildHtml('shipping'); ?>
     <div class="dibs-easy-checkout-extra">
         <div class="dibs-easy-checkout-extra__right">
-            <?php echo $block->getChildHtml('grand_total'); ?>
-            <?php echo $block->getChildHtml('to_payment'); ?>
-        </div>
-        <div class="dibs-easy-checkout-extra__left">
             <?php echo $block->getChildHtml('coupon'); ?>
             <?php echo $block->getChildHtml('newsletter'); ?>
+        </div>
+        <div class="dibs-easy-checkout-extra__left">
+            <?php echo $block->getChildHtml('grand_total'); ?>
+            <?php echo $block->getChildHtml('to_payment'); ?>
         </div>
     </div>
 </div>
@@ -56,6 +56,7 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
             }
         }
     }
+
 
 
 

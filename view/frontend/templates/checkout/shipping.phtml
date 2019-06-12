@@ -4,7 +4,7 @@
 $cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
 $allowedCountries = $cartHelper->getAllowedCountriesNames();
 $quote = $block->getQuote();
-
+$shippingAddress = $quote->getShippingAddress();
 ?>
 <div class="dibs-easy-checkout-shipping dibs-easy-checkout-section mobile-show"
      id="dibs-easy-checkout-shipping">
@@ -13,7 +13,7 @@ $quote = $block->getQuote();
             <?php echo $block->escapeHtml(__('Shipping Method')) ?>
         </h4>
         <span class="shipping-price">
-            <?= ($quote->getShippingAddress() === null || !$quote->getShippingAddress()->getShippingInclTax()) ? __('_') : $quote->getShippingAddress()->getShippingInclTax() ?>
+            <?= ($shippingAddress === null || !$shippingAddress->getShippingInclTax()) ? __('_') : $shippingAddress->getShippingInclTax() ?>
         </span>
     </div>
     <div class="dibs-easy-checkout-section-shipping">
@@ -22,11 +22,14 @@ $quote = $block->getQuote();
             <select name="country_id" class="country" id="country-box">
                 <option><?= __('Country') ?></option>
                 <?php foreach ($allowedCountries as $key => $country): ?>
-                    <option data-title="<?= $country ?>" value="<?= $key ?>"><?= $country ?></option>
+                    <option data-title="<?= $country ?>" value="<?= $key ?>"
+                        <?= ($shippingAddress !== null && $shippingAddress->getCountryId() == $key) ? 'selected="selected"' : __('') ?>
+                    ><?= $country ?></option>
                 <?php endforeach; ?>
             </select>
             <input class="postcode" type="text" id="postcode-box" name="postal"
-                   placeholder="<?php echo __('Postal code') ?>"/>
+                   placeholder="<?php echo __('Postal code') ?>"
+                   value="<?= ($shippingAddress === null || !$shippingAddress->getPostcode()) ? __('') : $shippingAddress->getPostcode() ?>"/>
             <button type="submit" id="shipping-method-button"
                     class="action dibs-primary" title="<?php echo __('Choose Delivery'); ?>">
                 <span><?php echo __('Choose Delivery'); ?></span>

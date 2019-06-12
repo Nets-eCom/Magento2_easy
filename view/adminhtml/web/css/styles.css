@@ -13,3 +13,9 @@
     font-family: 'dibs_icon' !important;
     content: '\e900';
 }
+
+.dibs_information {
+    background-image: url(../images/dibs_logo_142x72.jpg);
+    background-repeat: no-repeat;
+    height: 10rem;
+}
