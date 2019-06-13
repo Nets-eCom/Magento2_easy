@@ -12,9 +12,6 @@
 
         <?php if ($groups = $block->getShippingRateGroups()): ?>
             <?php $currentRate = $block->getCurrentShippingRate(); ?>
-            <?php if (!$currentRate): ?>
-                <h5><?php echo $block->escapeHtml(__('Please select a shipping method...')); ?></h5>
-            <?php endif; ?>
             <?php foreach ($groups as $code => $rates): ?>
                 <?php if (0): ?>
                     <strong><?php echo $block->escapeHtml($block->getCarrierName($code)) ?></strong><?php endif; ?>
