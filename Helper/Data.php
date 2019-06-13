@@ -123,6 +123,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return 'easycheckout/order/' . trim(ltrim($path, '/'));
     }
 
+    public function getThankYouPageUrl()
+    {
+        return $this->_getUrl( 'easycheckout/thankyou');
+    }
+
+
     public function getCheckoutUrl($path = null, $params = [])
     {
         if (empty($path)) {
@@ -157,7 +163,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if ($status) { //when is set (in quote) is -1 for NO, 1 for Yes
             return $status>0;
         } else { //get default value
-            return false; //  todo load from settings if we should use newsletter
+            return false; //  todo load from settings if we should use newsletter as checked by default
         }
     }
 

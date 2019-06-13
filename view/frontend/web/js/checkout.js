@@ -39,7 +39,7 @@ define([
             this._checkIfCartWasUpdated();
             this.hidePaymentAndIframe();
             this._bindEvents();
-            this.dibsApiChanges;
+            this.dibsApiChanges();
             this.uiManipulate();
             this.scrollToPayment();
             this.checkShippingMethod();
@@ -381,9 +381,16 @@ define([
 
             self = this;
             window._dibsCheckout.on('payment-completed', function (response) {
+                console.log(response);
                 self._ajaxSubmit(BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId);
 
-            })
+            });
+
+            window._dibsCheckout.on('address-changed', function (response) {
+                console.log(response);
+
+                // TODO compare countryCode and postal code (ajax call)
+            });
         },
 
         /**
@@ -434,6 +441,7 @@ define([
         scrollToPayment: function () {
             var trigger = this.options.scrollTrigger;
             var target = this.options.scrollTarget;
+            var self = this;
             jQuery(trigger).click(function () {
                 jQuery(target).css({
                     'visibility': 'visible',
@@ -441,7 +449,7 @@ define([
                 });
                 jQuery('html, body').animate({
                     scrollTop: jQuery(target).offset().top
-                }, 500)
+                }, 500);
             })
         },
 

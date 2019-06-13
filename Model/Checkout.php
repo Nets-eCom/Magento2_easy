@@ -263,53 +263,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
 
     /**
-     * @return bool|string
-     *
-    public function checkAndChangeShippingMethod()
-    {
-
-        $quote = $this->getQuote();
-        if($quote->isVirtual()) {
-            return true;
-        }
-
-        $quote->collectTotals(); //this is need by shipping method with minimum amount
-
-        $shipping = $quote->getShippingAddress()->setCollectShippingRates(true)->collectShippingRates();
-        $allRates = $shipping->getAllShippingRates();
-
-        if(!count($allRates)) {
-            return false;
-        }
-
-        $rates    = array();
-        foreach($allRates as $rate) {
-            $rates[$rate->getCode()] = $rate->getCode();
-        }
-
-
-        //test current
-        $method = $shipping->getShippingMethod();
-        if($method && isset($rates[$method])) {
-            return $method;
-        }
-
-        // TODO remove this, customer must choose
-        //test default
-        $method = "flatrate_flatrate"; //$this->getHelper()->getShippingMethod();
-        if($method && isset($rates[$method])) {
-            $shipping->setShippingMethod($method);//->setCollectShippingRates(true);
-            return $method;
-        }
-
-        $method = $allRates[0]->getCode();
-        $shipping->setShippingMethod($method);//->setCollectShippingRates(true);
-        return $method;
-
-    }
-    */
-
-    /**
      * @return array
      */
     public function getAllowedCountries() {
