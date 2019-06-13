@@ -39,7 +39,6 @@ define([
             this._checkIfCartWasUpdated();
             this.hidePaymentAndIframe();
             this._bindEvents();
-            this.dibsApiChanges();
             this.uiManipulate();
             this.scrollToPayment();
             this.checkShippingMethod();
@@ -196,6 +195,10 @@ define([
                 this.checkValueOfInputs(jQuery(this.options.couponFormSelector));
             }
 
+            if (!block || block == 'dibs') {
+                this.dibsApiChanges();
+            }
+
         },
 
         checkValueOfInputs: function (form) {
@@ -233,7 +236,7 @@ define([
         /**
          * hide ajax loader
          */
-        _ajaxComplete: function () {
+        _ajaxComplete: function (dontHidePayment) {
             if (window._dibsCheckout) {
                 try {
                     window._dibsCheckout.thawCheckout();
@@ -242,7 +245,11 @@ define([
             }
             jQuery(this.options.waitLoadingContainer).hide();
             this.checkShippingMethod();
-            this.hidePaymentAndIframe();
+            this.dibsApiChanges();
+
+            if (!dontHidePayment) {
+                this.hidePaymentAndIframe();
+            }
         },
 
         _changeShippingMethod: function () {
@@ -387,9 +394,34 @@ define([
             });
 
             window._dibsCheckout.on('address-changed', function (response) {
-                console.log(response);
 
-                // TODO compare countryCode and postal code (ajax call)
+                jQuery.ajax({
+                    url: BASE_URL + "easycheckout/order/CheckAddress,
+                    type: "POST",
+                    context: this,
+                    data: jQuery.param(response),
+                    dataType: 'json',
+                    beforeSend: function () {
+                        _this._ajaxBeforeSend();
+                    },
+                    complete: function () {
+                        _this._ajaxComplete(true);
+                    },
+                    success: function (res) {
+                        if (jQuery.type(res) === 'object' && !jQuery.isEmptyObject(res)) {
+                            if (res.chooseShippingMethod) {
+
+                            }
+                        }
+
+                    },
+                    error: function () {
+                        this.options.ctrkeyCheck = true;
+                        alert({
+                            content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
+                        });
+                    }
+                });
             });
         },
 

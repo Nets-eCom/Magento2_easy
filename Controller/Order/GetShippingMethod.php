@@ -71,13 +71,13 @@ class GetShippingMethod extends Update
     {
         $countryId = (string)$this->getRequest()->getParam('country_id');
         $postalCode = (string)$this->getRequest()->getParam('postal');
-
         $postalCode = preg_replace("/[^0-9]/", "", $postalCode);
 
         if (!$postalCode) {
             $this->getResponse()->setBody(json_encode(array('messages' => 'Please choose a valid Postal code.')));
             return;
         }
+
         if (!$this->validateCountryId($countryId)) {
             $this->getResponse()->setBody(json_encode(array('messages' => 'Please select a Valid Country.')));
             return;
@@ -89,7 +89,7 @@ class GetShippingMethod extends Update
             return;
         }*/
 
-        if ($this->validateCountryId($countryId) && $postalCode) {
+        if ($postalCode) {
             try {
                 $quote = $this->getDibsCheckout()->getQuote();
                 $quote->getShippingAddress()
