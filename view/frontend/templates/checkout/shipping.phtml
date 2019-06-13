@@ -12,9 +12,7 @@ $shippingAddress = $quote->getShippingAddress();
         <h4 id="dibs-easy-checkout-review-heading" role="heading" aria-level="2">
             <?php echo $block->escapeHtml(__('Shipping Method')) ?>
         </h4>
-        <span class="shipping-price">
-            <?= ($shippingAddress === null || !$shippingAddress->getShippingInclTax()) ? __('_') : $shippingAddress->getShippingInclTax() ?>
-        </span>
+        <?php echo $block->getChildHtml('dibs_shipping_total'); ?>
     </div>
     <div class="dibs-easy-checkout-section-shipping">
         <form method="post" id="shipping-method-loader" class="form"

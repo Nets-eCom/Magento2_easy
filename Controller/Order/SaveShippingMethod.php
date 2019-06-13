@@ -12,18 +12,18 @@ class SaveShippingMethod extends \Dibs\EasyCheckout\Controller\Order\Update
 
     public function execute()
     {
-        if (!$this->ajaxRequestAllowed()) {
+        if ($this->ajaxRequestAllowed()) {
             return;
         }
 
         $shippingMethod = $this->getRequest()->getPost('shipping_method', '');
-        if(!$shippingMethod) {
-            $this->getResponse()->setBody(json_encode(array('messages'=>'Please choose a valid shipping method.')));
+        if (!$shippingMethod) {
+            $this->getResponse()->setBody(json_encode(array('messages' => 'Please choose a valid shipping method.')));
             return;
         }
 
 
-        if($shippingMethod) {
+        if ($shippingMethod) {
             try {
                 $checkout = $this->getDibsCheckout();
                 $checkout->updateShippingMethod($shippingMethod);
@@ -39,7 +39,7 @@ class SaveShippingMethod extends \Dibs\EasyCheckout\Controller\Order\Update
                 );
             }
         }
-        $this->_sendResponse(['cart','coupon','messages', 'dibs','newsletter','country']);
+        $this->_sendResponse(['cart', 'coupon', 'dibs_shipping_total', 'messages', 'dibs', 'newsletter', 'grand_total']);
     }
 
 }

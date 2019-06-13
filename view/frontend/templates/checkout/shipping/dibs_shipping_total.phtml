@@ -1,0 +1,9 @@
+<?php
+// @codingStandardsIgnoreFile
+
+$quote = $block->getQuote();
+$shippingAddress = $quote->getShippingAddress();
+?>
+<span class="shipping-price" id="dibs-easy-checkout_dibs_shipping_total">
+    <?= ($shippingAddress === null || !$shippingAddress->getShippingInclTax()) ? __('_') : $shippingAddress->getShippingInclTax() ?>
+</span>
