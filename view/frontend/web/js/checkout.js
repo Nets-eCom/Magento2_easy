@@ -390,20 +390,20 @@ define([
                 return
             }
 
-            self = this;
+            var self = this;
             window._dibsCheckout.on('payment-completed', function (response) {
                 console.log(response);
                 self._ajaxSubmit(BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId);
 
             });
 
-            window._dibsCheckout.on('address-changed', function (response) {
+            window._dibsCheckout.on('pay-initialized', function (response) {
 
                 jQuery.ajax({
-                    url: BASE_URL + "easycheckout/order/CheckAddress",
+                    url: BASE_URL + "easycheckout/order/ValidateOrder",
                     type: "POST",
                     context: this,
-                    data: jQuery.param(response),
+                    data: "",
                     dataType: 'json',
                     beforeSend: function () {
                         self._hideDibsCheckout();
@@ -411,20 +411,49 @@ define([
                     complete: function () {
                         self._showDibsCheckout();
                     },
-                    success: function (res) {
-                        if (jQuery.type(res) === 'object' && !jQuery.isEmptyObject(res)) {
-                            if (res.chooseShippingMethod) {
+                    success: function (response) {
 
+                        if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
+
+                            if (response.error) {
+                                window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
+                            } else {
+                                window._dibsCheckout.sendPaymentOrderFinalizedEvent(true);
                             }
-                        }
 
+                            if (response.chooseShippingMethod) {
+                                self.checkShippingMethod();
+                                self._hideDibsCheckout();
+                            }
+
+                            if (response.messages) {
+                                alert({
+                                    content: jQuery.mage.__(response.messages)
+                                });
+                            }
+                        } else {
+
+                            // tell dibs not to finish order!
+                            window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
+
+                            alert({
+                                content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
+                            });
+                        }
                     },
-                    error: function () {
+                    error: function(data) {
+                        // tell dibs not to finish order!
+                        window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
+
                         alert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                         });
+
                     }
+
                 });
+
+
             });
         },
 

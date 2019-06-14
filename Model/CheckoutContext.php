@@ -24,12 +24,16 @@ class CheckoutContext
     /** @var \Magento\Newsletter\Model\Subscriber $Subscriber */
     protected $subscriber;
 
+    /** @var \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale */
+    protected $dibsLocale;
+
    /**
      * Constructor
      *
      * @param \Dibs\EasyCheckout\Helper\Data $helper
      * @param \Dibs\EasyCheckout\Model\Dibs\Order $dibsOrderHandler
      * @param \Dibs\EasyCheckout\Logger\Logger $logger
+     * @param \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale,
      * @param \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement
      * @param \Magento\Newsletter\Model\Subscriber $subscriber
      *
@@ -38,13 +42,14 @@ class CheckoutContext
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Dibs\EasyCheckout\Model\Dibs\Order $dibsOrderHandler,
         \Dibs\EasyCheckout\Logger\Logger $logger,
+        \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale,
         \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement,
         \Magento\Newsletter\Model\Subscriber $subscriber
     ) {
         $this->helper        = $helper;
         $this->logger = $logger;
         $this->dibsOrderHandler = $dibsOrderHandler;
-
+        $this->dibsLocale = $dibsLocale;
         $this->orderCustomerManagement = $orderCustomerManagement;
         $this->subscriber = $subscriber;
     }
@@ -85,6 +90,14 @@ class CheckoutContext
     public function getSubscriber()
     {
         return $this->subscriber;
+    }
+
+    /**
+     * @return Dibs\Locale
+     */
+    public function getDibsLocale()
+    {
+        return $this->dibsLocale;
     }
 
 

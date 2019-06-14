@@ -444,7 +444,7 @@ class Items
             return $this;
         }
 
-        throw new CheckoutException(__("The grand total price does not match the price being sent to Dibs."), 'checkout/cart');
+        throw new CheckoutException(__("The grand total price does not match the price being sent to Dibs. Please contact an admin or use another checkout method."), 'checkout/cart');
     }
 
 

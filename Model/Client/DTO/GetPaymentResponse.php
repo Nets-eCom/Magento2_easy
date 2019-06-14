@@ -60,7 +60,7 @@ class GetPaymentResponse
                 $summary->setReservedAmount($p->summary->reservedAmount);
             }
 
-            if (!empty((array)$p->paymentDetails)) {
+            if (!empty((array)$p->paymentDetails) && isset($p->paymentDetails->paymentMethod)) {
                 $paymentDetails->setPaymentMethod($p->paymentDetails->paymentMethod);
                 $paymentDetails->setPaymentType($p->paymentDetails->paymentType);
 

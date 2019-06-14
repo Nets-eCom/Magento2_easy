@@ -90,6 +90,19 @@ class Locale
         "SE","NO","DK",
     ];
 
+    public function getCountryIdByIso3Code($iso3)
+    {
+        foreach ($this->allowedShippingCountries as $key => $countryId)
+        {
+            if ($key === $iso3) {
+                return $countryId;
+            }
+        }
+
+        // we return it back if we cant find anything... We should throw an exception in the future!
+        return $iso3;
+    }
+
     /**
      * @return array
      */
