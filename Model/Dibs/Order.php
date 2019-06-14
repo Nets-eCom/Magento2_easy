@@ -165,7 +165,7 @@ class Order
         $consumerTypes = $this->helper->getConsumerTypes();
 
         // if no settings are added, add B2C
-        if (!$defaultConsumerType && !$consumerTypes) {
+        if (!$defaultConsumerType || !$consumerTypes) {
             $consumerType->setUseB2cOnly();
         } else {
             $consumerType->setDefault($defaultConsumerType);
@@ -179,9 +179,13 @@ class Order
         $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
 
 
-        // todo get from config
-        $paymentCheckout->setShippingCountries(['SWE','NOR']);
-
+        /* // This seems not to have any affect on the checkout! So I am removing it!
+        //!
+        $shippingCountries = $this->helper->getShippingCountries();
+        if (!empty($shippingCountries) && is_array($shippingCountries)) {
+            $paymentCheckout->setShippingCountries($shippingCountries);
+        }
+        */
 
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
         // we will call charge in capture online instead! so we set it to false
@@ -197,6 +201,7 @@ class Order
 
         // we generate the order here, amount and items
         $paymentOrder = new CreatePaymentOrder();
+
         $paymentOrder->setAmount($this->fixPrice($quote->getGrandTotal()));
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
         $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));

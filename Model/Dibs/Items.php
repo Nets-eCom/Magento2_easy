@@ -370,9 +370,9 @@ class Items
     // TODO!!
     public function addDiscounts($couponCode)
     {
-        /*
-        foreach($this->_discounts as $vat=>$amount) {
-            if ($amount==0)  {
+
+        foreach($this->_discounts as $vat=> $amountInclTax) {
+            if ($amountInclTax==0)  {
                 continue;
             }
 
@@ -381,37 +381,30 @@ class Items
                 $reference = 'discount-toinvoice';
             }
 
+           // var_dump($vat);
+            //var_dump($amount);
+            //die;
+
+            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountExclTax = $amountInclTax - $taxAmount;
+
             $orderItem = new OrderItem();
             $orderItem
                 ->setReference($reference)
                 ->setName($couponCode?(string)__('Discount (%1)',$couponCode):(string)__('Discount'))
-                ->setUnit("st") // TODO! We need to map these somehow!
+                ->setUnit("st")
                 ->setQuantity(1)
                 ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-                ->setTaxAmount($this->getTotalTaxAmount($amount, $vat)) // total tax amount
-                ->setUnitPrice($this->addZeroes($exclTax)) // excl. tax price per item
-                ->setNetTotalAmount($exclTax) // excl. tax
-                ->setGrossTotalAmount($this->addZeroes($inclTax)); // incl. tax
+                ->setTaxAmount($taxAmount) // total tax amount
+                ->setUnitPrice(0) // excl. tax price per item
+                ->setNetTotalAmount(-$amountExclTax) // excl. tax
+                ->setGrossTotalAmount(-$amountInclTax); // incl. tax
 
 
-            //$orderItem->setTaxRate(25);
-            //$orderItem->setTaxAmount($this->fixPrice(25));
-            //$orderItem->setUnitPrice($this->fixPrice(100)); // excl. tax price per item
-            //$orderItem->setNetTotalAmount($this->fixPrice(100)); // excl. tax
-            //$orderItem->setGrossTotalAmount($this->fixPrice(125)); // incl. tax
-
-
-            //$this->_cart[$reference] = array(
-               // 'reference'=>$reference,
-               // 'name'=> $couponCode?(string)__('Discount (%1)',$couponCode):(string)__('Discount'),
-               // 'quantity'=>1,
-               // 'unit_price'=> $this->addZeroes($amount)*-1,
-              //  'discount_rate'=>0,
-             //   'tax_rate'=>  $this->addZeroes($vat),
-            //    'total_tax_amount' => $this->getTotalTaxAmount($amount, $vat), // ->addZeroes included
-            //);
+            $this->_cart[$reference] = $orderItem;
         }
-        */
+
         return $this;
 
     }
@@ -445,7 +438,6 @@ class Items
         //quote/order/invoice/creditmemo total taxes
         $grandTotal = $this->addZeroes($grandTotal);
         $difference    = $grandTotal-$calculatedTotal;
-
 
         //no correction required
         if($difference == 0) {

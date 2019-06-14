@@ -86,6 +86,10 @@ class Locale
         "LIE"  => "LI",
     ];
 
+    protected $allowedCountries = [
+        "SE","NO","DK",
+    ];
+
     /**
      * @return array
      */
@@ -105,10 +109,23 @@ class Locale
     /**
      * @return array
      */
-    public function getAllowedShippingCountries()
+    public function getAllowedShippingCountries($code = null)
     {
+        if ($code === "iso2") {
+            return array_values($this->allowedShippingCountries);
+        } else if ($code === "iso3") {
+            return array_keys($this->allowedShippingCountries);
+        }
+
         return $this->allowedShippingCountries;
     }
 
+    /**
+     * @return array
+     */
+    public function getAllowedCountries()
+    {
+        return $this->allowedCountries;
+    }
 
 }

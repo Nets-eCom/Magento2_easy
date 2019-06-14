@@ -216,13 +216,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * @param null $store
-     * @return mixed
+     * @return string
      */
     public function getTermsUrl($store = null)
     {
         //if there are multiple pages with same url key; magento will generate options with key|id
         $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'terms_url', $store));
-        return $url[0];
+        return $this->_getUrl($url[0]);
     }
 
 
@@ -255,71 +255,37 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @var null
-     */
-    protected $_countries = null;
-    /**
-     * @var null
-     */
-    protected $_countryOptions = null;
-
-    /**
      * @param null $store
      * @return array|null
      */
     public function getCountries($store = null)
     {
-        if (is_null($this->_countries)) {
-            $mageAllowCountries = preg_split("#\s*[ ,;]\s*#", strtoupper((string)$this->getStoreConfig('general/country/allow', $store)), null, PREG_SPLIT_NO_EMPTY);
-            $klrnAllowCountries = $this->dibsLocale->getAllowedShippingCountries();
-            $this->_countries = array_intersect($mageAllowCountries, $klrnAllowCountries);
-
-            // specific country
-            if ((int)$this->getAllowSpecificCountries()> 0) {
-                $specificCountries =  preg_split("#\s*[ ,;]\s*#", strtoupper((string)$this->getSpecificCountry()), null, PREG_SPLIT_NO_EMPTY);
-                if ($specificCountries) {
-                    $this->_countries = array_intersect($this->_countries, $specificCountries);
-                }
-            }
-
-            //add default country first
-            $defaultCountry = strtoupper(trim((string)$this->getDefaultCountry()));
-            $key = array_search($defaultCountry, $this->_countries);
-            if ($key) { //intentionally not tested with  !== false, if is on first position do nothing
-                unset($this->_countries[$key]);
-                array_unshift($this->_countries, $defaultCountry); //add default on first position
-            }
-        }
-        return $this->_countries;
-    }
-
-    /**
-     * @param null $store
-     * @return mixed
-     */
-    public function getSpecificCountry($store = null)
-    {
-
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'specificcountry',
+        $values = $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS.'allowed_countries',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
+
+        return $this->splitStringToArray($values);
     }
 
-    public function getAllowSpecificCountries($store = null)
+    /*
+    public function getShippingCountries($store = null)
     {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'specificcountry',
+        $values = $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS.'allowed_shipping_countries',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
+
+        return $this->splitStringToArray($values);
     }
+    */
 
     public function getDefaultCountry($store = null)
     {
         return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'country',
+            self::XML_PATH_SETTINGS.'default_country',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
@@ -338,11 +304,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getConsumerTypes($store = null)
     {
 
-        return $this->scopeConfig->getValue(
+        $values =  $this->scopeConfig->getValue(
             self::XML_PATH_SETTINGS.'customer_types',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
+
+        return $this->splitStringToArray($values);
     }
 
     /**
@@ -424,5 +392,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
+    }
+
+    protected function splitStringToArray($values)
+    {
+        return preg_split("#\s*[ ,;]\s*#", $values, null, PREG_SPLIT_NO_EMPTY);
     }
 }

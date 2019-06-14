@@ -1,7 +1,7 @@
 <?php
 namespace Dibs\EasyCheckout\Model\System\Config\Source;
 
-class Country implements \Magento\Framework\Option\ArrayInterface
+class ShippingCountry implements \Magento\Framework\Option\ArrayInterface
 {
 
 
@@ -28,7 +28,7 @@ class Country implements \Magento\Framework\Option\ArrayInterface
     {
         $this->initCountryMap();
 
-        $locales = $this->_locale->getAllowedCountries();
+        $locales = $this->_locale->getAllowedShippingCountries();
         $return = array();
 
         if(!$isMultiselect) {
@@ -36,13 +36,13 @@ class Country implements \Magento\Framework\Option\ArrayInterface
         }
 
         $mappedCountries = [];
-        foreach($locales as $countryCode) {
+        foreach($locales as $iso3Code => $countryCode) {
             $label = $this->getCountryLabelByCode($countryCode);
             if ($label === null) {
                 $label = $countryCode;
             }
 
-            $mappedCountries[$label] = $countryCode;
+            $mappedCountries[$label] = $iso3Code;
         }
 
         // sort

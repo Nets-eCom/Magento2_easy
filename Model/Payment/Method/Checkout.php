@@ -125,8 +125,6 @@ class Checkout extends AbstractMethod
      */
     public function canUseForCountry($country)
     {
-        // TODO
-        return true;
         $country = trim(strtoupper($country));
         $result =  $country && in_array($country,$this->_helper->getCountries()) && parent::canUseForCountry($country);
         return $result;
