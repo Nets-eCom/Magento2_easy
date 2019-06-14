@@ -224,12 +224,7 @@ define([
          */
         _ajaxBeforeSend: function () {
             this.options.ctrkeyCheck = false;
-            if (window._dibsCheckout) {
-                try {
-                    window._dibsCheckout.freezeCheckout();
-                } catch (err) {
-                }
-            }
+            this._hideDibsCheckout()
             jQuery(this.options.waitLoadingContainer).show();
         },
 
@@ -237,18 +232,27 @@ define([
          * hide ajax loader
          */
         _ajaxComplete: function (dontHidePayment) {
+            this._showDibsCheckout()
+            jQuery(this.options.waitLoadingContainer).hide();
+            this.checkShippingMethod();
+            this.dibsApiChanges();
+        },
+
+        _showDibsCheckout: function() {
             if (window._dibsCheckout) {
                 try {
                     window._dibsCheckout.thawCheckout();
                 } catch (err) {
                 }
             }
-            jQuery(this.options.waitLoadingContainer).hide();
-            this.checkShippingMethod();
-            this.dibsApiChanges();
+        },
 
-            if (!dontHidePayment) {
-                this.hidePaymentAndIframe();
+        _hideDibsCheckout: function() {
+            if (window._dibsCheckout) {
+                try {
+                    window._dibsCheckout.freezeCheckout();
+                } catch (err) {
+                }
             }
         },
 
@@ -396,16 +400,16 @@ define([
             window._dibsCheckout.on('address-changed', function (response) {
 
                 jQuery.ajax({
-                    url: BASE_URL + "easycheckout/order/CheckAddress,
+                    url: BASE_URL + "easycheckout/order/CheckAddress",
                     type: "POST",
                     context: this,
                     data: jQuery.param(response),
                     dataType: 'json',
                     beforeSend: function () {
-                        _this._ajaxBeforeSend();
+                        self._hideDibsCheckout();
                     },
                     complete: function () {
-                        _this._ajaxComplete(true);
+                        self._showDibsCheckout();
                     },
                     success: function (res) {
                         if (jQuery.type(res) === 'object' && !jQuery.isEmptyObject(res)) {
@@ -416,7 +420,6 @@ define([
 
                     },
                     error: function () {
-                        this.options.ctrkeyCheck = true;
                         alert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                         });

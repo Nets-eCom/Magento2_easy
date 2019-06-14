@@ -35,35 +35,89 @@
 
             <group id="settings" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Settings</label>
-                <field id="terms_url" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="10" >
+
+                <field id="country" translate="label comment" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Default Country</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\Country</source_model>
+                    <comment>Only if multiple countries are allowed. If this is invalid, the first allowed country will be used</comment>
+                </field>
+
+                <field id="allowspecific" translate="label comment" type="allowspecific" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment from Applicable Countries</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                    <comment>Check your Klarna account to find out allowed countries.</comment>
+                </field>
+
+                <field id="specificcountry" translate="label comment" type="multiselect" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment from Specific Countries</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\Country</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment><![CDATA[Assure that selected countries are in <strong>Allow Countries</strong> list (<em>System &raquo; Configuration &raquo; General &raquo; General</em>)]]></comment>
+                </field>
+
+                <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Checkout Allowed Customer Types</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
+                    <comment>Choose at least one customer type that is allowed in the checkout.</comment>
+                </field>
+
+                <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Checkout Default Customer Type</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
+                    <comment>Choose default customer type</comment>
+                </field>
+
+
+                <field id="can_capture" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Capture/Refund payment</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If NO, no payment operations will be done (Capture/Refund/Void) on Invoice/Creditmemo/Order</comment>
+                </field>
+                <field id="can_capture_partial" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Can capture partial </label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If NO, you cannot make partial invoices/refunds</comment>
+                </field>
+
+                <field id="newsletter_subscribe" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
+                    <label>Subscribe Newsletter Checked by default</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="register_customer" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="120">
+                    <label>Register Guest Customers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="terms_url" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="130" >
                     <label>Url for Terms page</label>
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                 </field>
-                <field id="replace_checkout" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="605">
+                <field id="replace_checkout" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="140">
                     <label>Replace checkout url with Dibs Checkout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>If Yes, the "Go to Checkout" button in the minicart and cart will point to Dibs checkout.</comment>
                 </field>
             </group>
+
             <group id="layout" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Layout options</label>
-                <field id="display_newsletter" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="display_newsletter" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display Newsletter checkbox</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="display_discount" translate="label comment" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="display_discount" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display Discount Form</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="display_link" translate="label comment" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="display_link" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display link to a different payment method</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="display_additional_block" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="display_additional_block" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display Additional block</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="additional_block" translate="label" type="editor" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="additional_block" translate="label" type="editor" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Additional block Content</label>
                     <frontend_model>Dibs\EasyCheckout\Block\Adminhtml\System\Config\Editor</frontend_model>
                     <depends>
@@ -71,9 +125,9 @@
                     </depends>
                 </field>
             </group>
-            <group id="crosssell" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="crosssell" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Crosssell Products</label>
-                <field id="display_crosssell" translate="label comment" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="display_crosssell" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Display Crosssell Products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>

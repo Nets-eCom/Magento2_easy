@@ -159,6 +159,18 @@ class Order
         // todo check settings if b2c or/and b2b are accepted
         $consumerType = new ConsumerType();
         $consumerType->setUseB2bAndB2c();
+        $consumerType->setDefault($this->helper->getDefaultConsumerType());
+
+        $defaultConsumerType = $this->helper->getDefaultConsumerType();
+        $consumerTypes = $this->helper->getConsumerTypes();
+
+        // if no settings are added, add B2C
+        if (!$defaultConsumerType && !$consumerTypes) {
+            $consumerType->setUseB2cOnly();
+        } else {
+            $consumerType->setDefault($defaultConsumerType);
+            $consumerType->setSupportedTypes($consumerTypes);
+        }
 
         $paymentCheckout = new CreatePaymentCheckout();
         $paymentCheckout->setConsumerType($consumerType);
