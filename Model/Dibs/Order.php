@@ -12,6 +12,8 @@ use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
+use Dibs\EasyCheckout\Model\Client\DTO\PaymentMethod;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
@@ -123,7 +125,7 @@ class Order
     /**
      * @param Quote $quote
      * @param $paymentId
-     * @return void
+     * @return Update
      * @throws \Exception
      */
     public function updateCheckoutPaymentByQuoteAndPaymentId(Quote $quote, $paymentId)
@@ -212,6 +214,33 @@ class Order
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);
 
+
+        if ($this->helper->useInvoiceFee()) {
+            $invoiceLabel = $this->helper->getInvoiceFeeLabel();
+            $invoiceLabel = $invoiceLabel ? $invoiceLabel : __("Invoice Fee");
+            $invoiceFee = $this->helper->getInvoiceFee();
+
+            if ($invoiceFee > 0) {
+                $feeItem = new OrderItem();
+                $feeItem
+                    ->setName($invoiceLabel)
+                    ->setReference(strtolower(str_replace(" ", "_", $invoiceLabel)))
+                    ->setTaxRate($this->fixPrice(0)) // todo add vat
+                    ->setGrossTotalAmount($this->fixPrice($invoiceFee)) // TODO add vat
+                    ->setNetTotalAmount($this->fixPrice($invoiceFee)) // // excl. tax
+                    ->setUnit("st")
+                    ->setQuantity(1)
+                    ->setUnitPrice($this->fixPrice($invoiceFee)) // // excl. tax
+                    ->setTaxAmount(0); // todo add vat
+
+                $paymentFee = new PaymentMethod();
+                $paymentFee->setName("easyinvoice");
+                $paymentFee->setFee($feeItem);
+
+                $createPaymentRequest->setPaymentMethods([$paymentFee]);
+            }
+        }
+
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }
 
@@ -227,7 +256,7 @@ class Order
         $reference = new UpdatePaymentReference();
         $reference->setReference($order->getIncrementId());
         $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
-        return $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
+        $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
 
 

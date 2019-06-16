@@ -18,6 +18,10 @@ class CreatePayment extends AbstractRequest
     /** @var CreatePaymentWebhook[] */
     protected $webHooks;
 
+    /**
+     * @var PaymentMethod[] $paymentMethods
+     */
+    protected $paymentMethods;
 
     /**
      * @return CreatePaymentOrder
@@ -55,6 +59,44 @@ class CreatePayment extends AbstractRequest
         return $this;
     }
 
+    /**
+     * @return CreatePaymentWebhook[]
+     */
+    public function getWebHooks()
+    {
+        return $this->webHooks;
+    }
+
+    /**
+     * @param CreatePaymentWebhook[] $webHooks
+     * @return CreatePayment
+     */
+    public function setWebHooks($webHooks)
+    {
+        $this->webHooks = $webHooks;
+        return $this;
+    }
+
+    /**
+     * @return PaymentMethod[]
+     */
+    public function getPaymentMethods()
+    {
+        return $this->paymentMethods;
+    }
+
+    /**
+     * @param PaymentMethod[] $paymentMethods
+     * @return CreatePayment
+     */
+    public function setPaymentMethods($paymentMethods)
+    {
+        $this->paymentMethods = $paymentMethods;
+        return $this;
+    }
+
+
+
 
     public function toJSON()
     {
@@ -70,6 +112,14 @@ class CreatePayment extends AbstractRequest
 
         if ($this->webHooks) {
             $data['notifications']['webHooks'] = $this->webHooks;
+        }
+
+        if ($this->paymentMethods) {
+            $methods = [];
+            foreach($this->paymentMethods as $p) {
+                $methods[] = $p->toArray();
+            }
+            $data['paymentMethods'] = $methods;
         }
 
         return $data;

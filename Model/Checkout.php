@@ -3,6 +3,7 @@
 
 namespace Dibs\EasyCheckout\Model;
 
+use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Framework\DataObject;
@@ -588,6 +589,17 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         return $order;
+    }
+
+    /**
+     * @param \Magento\Sales\Model\Order $order
+     * @param $paymentId
+     * @return void
+     * @throws ClientException
+     */
+    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
+    {
+        $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId);
     }
 
     /**

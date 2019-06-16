@@ -84,8 +84,18 @@ class SaveOrder extends Checkout
         }
 
 
-        // TODO send redirect url too success page!
+        try {
 
+            $this->dibsCheckout->updateMagentoPaymentReference($order, $paymentId);
+        } catch (\Exception $e) {
+            $checkout->getLogger()->error("
+                Order created with ID: " . $order->getIncrementId(). ". 
+                But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: ".$quote->getId()."...  Dibs Payment ID: " . $payment->getPaymentId()
+            );
+
+            $checkout->getLogger()->error("Error message:" . $e->getMessage());
+            // lets ignore this and save it in logs! let customer see his/her order confirmation!
+        }
 
 
         // clear old sessions
