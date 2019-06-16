@@ -195,9 +195,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @return string
      */
-    public function getThankYouPageUrl()
+    public function getSuccessPageUrl()
     {
-        return $this->_getUrl( 'easycheckout/thankyou');
+        return $this->_getUrl( 'easycheckout/order/success');
     }
 
 

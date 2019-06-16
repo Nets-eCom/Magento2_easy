@@ -392,8 +392,52 @@ define([
 
             var self = this;
             window._dibsCheckout.on('payment-completed', function (response) {
-                console.log(response);
-                self._ajaxSubmit(BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId);
+
+                jQuery.ajax({
+                    url: BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId,
+                    type: "POST",
+                    context: this,
+                    data: "",
+                    dataType: 'json',
+                    beforeSend: function () {
+                        self._hideDibsCheckout();
+                    },
+                    complete: function () {
+                        self._showDibsCheckout();
+                    },
+                    success: function (response) {
+
+                        if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
+
+                            if (response.chooseShippingMethod) {
+                                self.checkShippingMethod();
+                                self._hideDibsCheckout();
+                            }
+
+                            if (response.messages) {
+                                alert({
+                                    content: jQuery.mage.__(response.messages)
+                                });
+                            }
+
+                            if (response.redirectTo) {
+                                window.location.href = response.redirectTo;
+                            }
+
+                        } else {
+                            alert({
+                                content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
+                            });
+                        }
+                    },
+                    error: function(data) {
+                        alert({
+                            content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
+                        });
+
+                    }
+
+                });
 
             });
 

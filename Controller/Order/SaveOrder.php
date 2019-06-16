@@ -21,74 +21,102 @@ class SaveOrder extends Checkout
         // todo? csrf...
         //$ctrlkey    = (string)$this->getRequest()->getParam('ctrlkey');
         $paymentId  = $this->getRequest()->getParam('pid');
-        $checkoutPaymentId = $this->getCheckoutSession()->getDibsPaymentId();
+        $session = $this->getCheckoutSession();
+
+        $checkoutPaymentId = $session->getDibsPaymentId();
         $quote = $this->getDibsCheckout()->getQuote();
 
-        /* // Todo remove comment when stopped testing
+        if (!$quote) {
+            return $this->respondWithError("Your session has expired. Quote missing.");
+        }
+
+        // Todo remove comment when stopped testing
         if (!$paymentId || !$checkoutPaymentId || ($paymentId != $checkoutPaymentId)) {
             $checkout->getLogger()->error("Invalid request");
             if (!$checkoutPaymentId) {
                 $checkout->getLogger()->error("No dibs checkout payment id in session.");
+                return $this->respondWithError("Your session has expired.");
+
             }
 
             if ($paymentId != $checkoutPaymentId) {
-                $checkout->getLogger()->error("The received payment id does not match the one in the session.");
+                return $checkout->getLogger()->error("The session has expired or is wrong.");
             }
 
-            return false;
+            return $checkout->getLogger()->error("Invalid data.");
         }
 
 
-        if (!$quote) {
-            $checkout->getLogger()->error("No quote found for this customer.");
-            return false;
-        }
-
-        // check other quote stuff
-        */
 
         try {
             $payment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
         } catch (ClientException $e) {
             if ($e->getHttpStatusCode() == 404) {
                 $checkout->getLogger()->error("The dibs payment with ID: " . $paymentId . " was not found in dibs.");
-                return false;
+                return $this->respondWithError("Could not create an order. The payment was not found in dibs.");
             } else {
                 $checkout->getLogger()->error("Something went wrong when we tried to fetch the payment ID from Dibs. Http Status code: " . $e->getHttpStatusCode());
                 $checkout->getLogger()->error("Error message:" . $e->getMessage());
                 $checkout->getLogger()->debug($e->getResponseBody());
 
-                // todo show error to customer in magento! order could not be placed
-
+                return $this->respondWithError("Could not create an order, please contact site admin. Dibs seems to be down!");
             }
-
-            return false;
         }
 
         if ($payment->getOrderDetails()->getReference() !== $checkout->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
             $checkout->getLogger()->error("The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
-            return false;
+            return $this->respondWithError("Could not create an order. Invalid data. Contact admin.");
         }
 
         if ($payment->getSummary()->getReservedAmount() === null) {
-            $checkout->getLogger()->error("Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checkout out yet!");
-            return false;
+            $checkout->getLogger()->error("Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
+            return $this->respondWithError("We could not create your order... The payment hasn't reached Dibs. Payment id: " . $payment->getPaymentId());
         }
 
 
         try {
-            $checkout->placeOrder($payment, $quote);
+            $order = $checkout->placeOrder($payment, $quote);
         } catch (\Exception $e) {
             $checkout->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
             $checkout->getLogger()->error("Error message:" . $e->getMessage());
 
-            // todo show error to customer in magento! order could not be placed
-            return false;
+           return $this->respondWithError("We could not create your order. Please contact the site admin with this error and payment id: " . $payment->getPaymentId());
         }
 
 
         // TODO send redirect url too success page!
+
+
+
+        // clear old sessions
+        $session->clearHelperData();
+        $session->clearQuote()->clearStorage();
+
+
+        // we set new sessions
+        $session
+            ->setLastQuoteId($order->getQuoteId())
+            ->setLastSuccessQuoteId($order->getQuoteId())
+            ->setLastOrderId($order->getId())
+            ->setLastRealOrderId($order->getIncrementId())
+            ->setLastOrderStatus($order->getStatus());
+
+
+        $this->getResponse()->setBody(json_encode(
+            array(
+                'redirectTo' => $this->dibsCheckoutContext->getHelper()->getSuccessPageUrl()
+            )
+        ));
+        return false;
     }
 
+
+    protected function respondWithError($message,$redirectTo = false, $extraData = [])
+    {
+        $data = array('messages' => $message, "redirectTo" => $redirectTo);
+        $data = array_merge($data, $extraData);
+        $this->getResponse()->setBody(json_encode($data));
+        return false;
+    }
 
 }
