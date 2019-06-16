@@ -222,16 +222,31 @@ class Order
 
             if ($invoiceFee > 0) {
                 $feeItem = new OrderItem();
+                $taxRate = $this->items->getMaxVat();
+
+                $invoiceFeeInclTax = $invoiceFee;
+                $taxAmount = 0;
+                if ($taxRate > 0) {
+
+                    // i.e: 10 * ((100 + 25) / 100) =
+                    // 10 * 125/100 =
+                    // 10 * 1.25
+                    $invoiceFeeInclTax = $invoiceFee * ((100 + $taxRate) / 100);
+
+                    // the amount is with taxes - not with taxes
+                    $taxAmount = $invoiceFeeInclTax - $invoiceFee;
+                }
+
                 $feeItem
                     ->setName($invoiceLabel)
                     ->setReference(strtolower(str_replace(" ", "_", $invoiceLabel)))
-                    ->setTaxRate($this->fixPrice(0)) // todo add vat
-                    ->setGrossTotalAmount($this->fixPrice($invoiceFee)) // TODO add vat
+                    ->setTaxRate($this->fixPrice($taxRate))
+                    ->setGrossTotalAmount($this->fixPrice($invoiceFeeInclTax)) // incl tax
                     ->setNetTotalAmount($this->fixPrice($invoiceFee)) // // excl. tax
                     ->setUnit("st")
                     ->setQuantity(1)
                     ->setUnitPrice($this->fixPrice($invoiceFee)) // // excl. tax
-                    ->setTaxAmount(0); // todo add vat
+                    ->setTaxAmount($this->fixPrice($taxAmount)); // tax amount
 
                 $paymentFee = new PaymentMethod();
                 $paymentFee->setName("easyinvoice");

@@ -217,6 +217,11 @@ class Items
                 // fix the vat
                 $vat = round($vat,0);
 
+                // We save the maximum vat rate used. We will use the maximum vat rate on invoice fee and shipping fee.
+                if ($vat > $this->_maxvat) {
+                    $this->_maxvat = $vat;
+                }
+
 
                 //$items with parent id are children of a bundle product;
                 //if !$withPrice, add just bundle product (!$getParentId) with price,
@@ -589,7 +594,10 @@ class Items
     }
 
 
-
+    public function getMaxVat()
+    {
+        return $this->_maxvat;
+    }
 
 
     public function getTotalTaxAmount($price,$vat)
