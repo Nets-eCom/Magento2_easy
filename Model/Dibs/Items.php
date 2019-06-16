@@ -245,7 +245,7 @@ class Items
                     ->setQuantity(round($qty,0))
                     ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
                     ->setTaxAmount($this->getTotalTaxAmount($unitPrice * $qty, $vat)) // total tax amount
-                    ->setUnitPrice($unitPrice) // excl. tax price per item
+                    ->setUnitPrice($unitPriceExclTax) // excl. tax price per item
                     ->setNetTotalAmount($unitPriceExclTax * $qty) // excl. tax
                     ->setGrossTotalAmount($unitPrice * $qty); // incl. tax
 
