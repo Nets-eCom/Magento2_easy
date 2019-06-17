@@ -2,22 +2,78 @@
 // @codingStandardsIgnoreFile
 
 ?>
-<?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
+<?php /** @var $block \Dibs\EasyCheckout\Block\Success */
+$orderId = $block->getOrderId();
+$realId = $block->getRealOrderId();
+?>
 <div class="checkout-success" id="dibs-easy-checkout-success">
-    <?php if ($block->getOrderId()):?>
-        <?php if ($block->getCanViewOrder()) :?>
-            <p><?php echo __('Your order number is: %1.', sprintf('<a href="%s" class="order-number"><strong>%s</strong></a>', $block->escapeHtml($block->getViewOrderUrl()), $block->escapeHtml($block->getOrderId()))) ?></p>
-        <?php  else :?>
-            <p><?php echo __('Your order # is: <span>%1</span>.', $block->escapeHtml($block->getOrderId())) ?></p>
-        <?php endif;?>
-            <p><?php /* @escapeNotVerified */ echo __('We\'ll email you an order confirmation with details and tracking info.') ?></p>
-    <?php endif;?>
+    <?php if ($block->getOrderId()): ?>
+        <?php
+        $orderData = $block->getOrderById($realId);
+        $orderItems = $block->getOrderItems($realId);
+        //var_dump($orderData);die;
+        ?>
+        <h1><?= __('Thank you! We have received your order.') ?></h1>
+        <p><?php /* @escapeNotVerified */
+            echo __('We\'ll email you an order confirmation with details and tracking info.') ?></p>
+        <?php echo $block->getAdditionalInfoHtml() ?>
+        <?php if ($orderData) : ?>
+            <div class="order_inside">
+                <ul class="dibs-easy-checkout-order-overview dibs-easy-checkout-thankyou-order-details order_details">
+                    <li class="dibs-easy-checkout-order-overview__order order">
+                        <?= __('Order number:') ?>
+                        <strong>
+                            <?php if ($block->getCanViewOrder()) : ?>
+                                <p><?php echo __('#: %1.', sprintf('<a href="%s" class="order-number"><strong>%s</strong></a>', $block->escapeHtml($block->getViewOrderUrl()), $block->escapeHtml($block->getOrderId()))) ?></p>
+                            <?php else : ?>
+                                <p><?php echo __('#: %1', $block->escapeHtml($block->getOrderId())) ?></p>
+                            <?php endif; ?>
+                        </strong>
+                    </li>
 
-    <?php echo $block->getAdditionalInfoHtml() ?>
+                    <li class="dibs-easy-checkout-order-overview__date date">
+                        <?= __('Date:') ?><strong><?= substr($orderData->getData('created_at'), 0, 10) ?></strong>
+                    </li>
+                    <li class="dibs-easy-checkout-order-overview__total total">
+                        <?= __('Total:') ?>
+                        <strong>
+                            <span class="dibs-easy-checkout-Price-amount amount"><?= $orderData->formatPrice($orderData->getData('grand_total')) ?></span>
+                        </strong>
+                    </li>
+                    <li class="dibs-easy-checkout-order-overview__payment-method method">
+                        <?= __('Payment Method:') ?> <strong><?= __('DIBS Easy') ?></strong>
+                    </li>
+                </ul>
+            </div>
+            <?php if ($orderItems) : ?>
+                <div class="dibs-easy-checkout-order__items">
+                <strong><?= __('Order Details:') ?></strong>
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-item"><?= __('Product') ?></th>
+                        <th class="col-subtotal"><?= __('Subtotal') ?></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($orderItems as $orderItem) : ?>
+                        <tr>
+                            <td class="col-item"><?= $orderItem->getData('name') . ' X ' . round($orderItem->getData('qty_ordered')) ?></td>
+                            <td class="col-amount"><?= $orderData->formatPrice($orderItem->getData('row_total_incl_tax')) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
 
+        <?php endif; ?>
+        </div>
+    <?php endif; ?>
     <div class="actions-toolbar">
-        <div class="primary">
-            <a class="action primary continue" href="<?php /* @escapeNotVerified */ echo $block->getUrl() ?>"><span><?php /* @escapeNotVerified */ echo __('Continue Shopping') ?></span></a>
+        <div class="dibs-primary-wrapper">
+            <a class="action dibs-primary dibs-btn continue" href="<?php /* @escapeNotVerified */
+            echo $block->getUrl() ?>"><span><?php /* @escapeNotVerified */
+                    echo __('Continue Shopping') ?></span></a>
         </div>
     </div>
 </div>

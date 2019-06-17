@@ -19,7 +19,7 @@ class Success extends \Dibs\EasyCheckout\Controller\Checkout
 
         // need to be BEFORE event dispach (GA need to have layout loaded, to set the orderIds on the block)
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set(__("Dibs Easy Checkout"));
+        $resultPage->getConfig()->getTitle()->set(__("Dibs Easy Checkout - Success"));
 
         $this->_eventManager->dispatch(
             'checkout_onepage_controller_success_action',

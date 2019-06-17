@@ -533,6 +533,7 @@ table {
         }
       }
     }
+
     button {
       display: block;
       width: 7px;
@@ -545,6 +546,7 @@ table {
       box-shadow: none !important;
     }
   }
+
   #shipping-method-button {
     height: 50px;
     position: relative;
@@ -916,3 +918,92 @@ button:not(.primary).dibs-primary {
     float: right;
   }
 }
+
+// --- Success
+.dibs_easy_checkout-order-success {
+  .columns {
+    letter-spacing: 0.5px;
+  }
+  .dibs-primary {
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.20) !important;
+    text-align: center;
+    font-size: 18px;
+    text-transform: none;
+    text-decoration: none;
+    padding: 12px 30px;
+    width: 174px;
+    height: 50px;
+    font-weight: 600;
+  }
+  .page-title {
+    .dibs-heading;
+  }
+
+  .checkout-success {
+    h1 {
+      color: @dibs-color-black;
+      font-size: 52px;
+      text-align: center;
+      font-weight: 600;
+    }
+  }
+  #dibs_easy_checkoutSidebar {
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  .dibs-easy-checkout-thankyou-order-details.order_details {
+    list-style: none;
+    display: table;
+    width: 100%;
+    margin: 15px 0 30px;
+    padding: 15px 0 0;
+    font-size: 18px;
+    border-top: 6px solid @dibs-light-blue;
+
+    li {
+      width: 25%;
+      display: table-cell;
+      float: none;
+      margin-bottom: 0;
+      text-align: left;
+      font-weight: 300;
+
+      strong {
+        width: 100%;
+        display: block;
+      }
+    }
+  }
+  .dibs-easy-checkout-order__items {
+    margin: 70px 0;
+    padding: 45px 35px 25px;
+    border: 3px solid @dibs-light-blue;
+    position: relative;
+    strong {
+      .dibs-heading;
+    }
+    table {
+
+      tbody {
+        border-top: 1px solid rgba(0,0,0, .05);
+      }
+      th,td  {
+        font-size: 16px;
+        padding: 15px 0;
+      }
+      th {
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      td {
+        &.col-item {
+          font-weight: 600;
+        }
+        &.col-amount {
+          font-weight: 300;
+        }
+      }
+    }
+  }
+}
+
