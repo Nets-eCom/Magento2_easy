@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<!-- It's mandatory to have this events here, global (and not into adminhtml/) to be used also when payment is captured via API -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_order_payment_capture">
+        <observer name="dibs_easy_checkout_payment_capture" instance="Dibs\EasyCheckout\Observer\PaymentCapture"/>
+    </event>
+</config>

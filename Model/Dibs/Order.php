@@ -388,8 +388,17 @@ class Order
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
         if ($paymentId) {
 
+            $invoice = $payment->getCapturedInvoice(); // we get this from Observer\PaymentCapture
+            if(!$invoice) {
+                throw new LocalizedException(__('Cannot capture online, no invoice set'));
+            }
+
+            // generate items
+            $captureItems = $this->items->fromInvoice($invoice);
+
             $paymentObj = new ChargePayment();
             $paymentObj->setAmount($this->fixPrice($amount));
+            $paymentObj->setItems($captureItems);
 
             // capture/charge it now!
             $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
