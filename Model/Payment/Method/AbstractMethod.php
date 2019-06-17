@@ -24,6 +24,9 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
      */
     protected $_currencyFactory;
 
+    /** @var \Dibs\EasyCheckout\Model\Dibs\Order $dibsHandler */
+    protected $dibsHandler;
+
 
 
     /**
@@ -38,6 +41,7 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
      * @param \Dibs\EasyCheckout\Helper\Data $helper
      * @param \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi
      * @param \Dibs\EasyCheckout\Model\Dibs\Items $itemsHandler
+     * @param \Dibs\EasyCheckout\Model\Dibs\Order $dibsHandler
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
      * @param array $data
@@ -54,6 +58,7 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
         \Dibs\EasyCheckout\Model\Dibs\Items $itemsHandler,
+        \Dibs\EasyCheckout\Model\Dibs\Order $dibsHandler,
         \Magento\Directory\Model\CurrencyFactory $currencyFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null, //not required params need to be at the end of the list, else Cannot instantiate abstract class Magento\Framework\Model\ResourceModel\AbstractResource
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
@@ -65,6 +70,7 @@ abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMeth
 
         $this->itemsHandler = $itemsHandler;
         $this->paymentApi = $paymentApi;
+        $this->dibsHandler = $dibsHandler;
 
 
         parent::__construct(

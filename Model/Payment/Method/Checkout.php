@@ -2,6 +2,7 @@
 
 namespace Dibs\EasyCheckout\Model\Payment\Method;
 
+use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Framework\Exception\LocalizedException;
@@ -311,17 +312,14 @@ class Checkout extends AbstractMethod
 
     public function void(\Magento\Payment\Model\InfoInterface $payment)
     {
-        $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
-        if ($paymentId) {
-            $api = $this->paymentApi;
-            $paymentObj = new CancelPayment();
-            //$paymentObj->setAmount($payment->)
-            $api->cancelPayment($paymentObj, $paymentId);
+        if (!$this->_canVoid) {
+            throw new LocalizedException(__('Void/Cancel action is not available.'));
+        }
 
-        } else {
-            throw new \Magento\Framework\Exception\LocalizedException(
-                __('You need an dibs payment ID to void.')
-            );
+        try {
+            $this->dibsHandler->cancelDibsPayment($payment);
+        } catch (ClientException $e) {
+            throw new LocalizedException(__("Could not cancel order. %1", $e->getMessage()), $e);
         }
     }
 

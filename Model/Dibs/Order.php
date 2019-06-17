@@ -6,6 +6,7 @@ namespace Dibs\EasyCheckout\Model\Dibs;
 
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Dibs\EasyCheckout\Model\Client\ClientException;
+use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
@@ -275,6 +276,11 @@ class Order
     }
 
 
+    /**
+     * @param GetPaymentResponse $payment
+     * @param null $countryIdFallback
+     * @return array
+     */
     public function convertDibsShippingToMagentoAddress(GetPaymentResponse $payment, $countryIdFallback = null)
     {
         if ($payment->getConsumer() === null) {
@@ -333,6 +339,43 @@ class Order
 
 
     /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @throws ClientException
+     * @throws LocalizedException
+     */
+    public function cancelDibsPayment(\Magento\Payment\Model\InfoInterface $payment)
+    {
+        $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
+        //$this->dibsLogger->error("Cancel Dibs Payment ID: " . $paymentId);
+        //$this->dibsLogger->error($payment->getOrder()->getGrandTotal());
+
+        if ($paymentId) {
+
+            // we load the payment from dibs api instead
+            $payment = $this->loadDibsPaymentById($paymentId);
+
+
+            $api = $this->paymentApi;
+            $paymentObj = new CancelPayment();
+            $paymentObj->setAmount($payment->getSummary()->getReservedAmount());
+
+
+            //$paymentObj->setAmount($this->fixPrice($payment->getOrder()->getGrandTotal()));
+
+            // cancel it now!
+            $api->cancelPayment($paymentObj, $paymentId);
+
+            // todo check if response.body.code = 1007, Partial cancel not allowed
+            // this means the payment amount is wrong, then we could fetch the amount form the api instead!
+
+        } else {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('You need an dibs payment ID to void.')
+            );
+        }
+    }
+
+    /**
      * @param $paymentId
      * @return GetPaymentResponse
      * @throws ClientException
@@ -360,6 +403,10 @@ class Order
         return $this->paymentApi;
     }
 
+    /**
+     * @param $quoteId
+     * @return string
+     */
     public function generateReferenceByQuoteId($quoteId)
     {
        return "quote_id_" . $quoteId;

@@ -76,6 +76,15 @@ class ClientException extends Exception
                 return "Dibs Error: " . implode(". ", $errors);
             }
 
+            if (isset($content['message'])) {
+                $errMsg = $content['message'];
+                if ($response->getStatusCode() >= 500) {
+                    return "Dibs are experiencing technical issues. Try again, or contact the site admin! " . "Dibs Error: " . $errMsg;
+                }
+
+                return "Dibs Error: " . $errMsg;
+            }
+
             return $fallbackMessage;
         } catch (\Exception $e) {
             return $fallbackMessage;
