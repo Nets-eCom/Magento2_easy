@@ -599,6 +599,10 @@ class Items
         return $this->_maxvat;
     }
 
+    public function getCart()
+    {
+        return $this->_cart;
+    }
 
     public function getTotalTaxAmount($price,$vat)
     {

@@ -418,8 +418,26 @@ class Order
         $chargeId = $payment->getAdditionalInformation('dibs_charge_id');
         if ($chargeId) {
 
+            $amountToRefund = $this->fixPrice($amount);
+            $items = $payment->getCreditMemo()->getItems();
+            $shippingToRefund = $payment->getCreditMemo()->getShippingAmount();
+
+
+            // $payment->getCreditMemo()->getAdjustmentPositive();
+            // $payment->getCreditMemo()->getAdjustmentNegative();
+
+            $refundItems = $this->items
+                ->addItems($items)
+                ->getCart();
+
+
+            if ($shippingToRefund > 0) {
+                // todo we need to add shipping to $refundItems!
+            }
+
             $paymentObj = new RefundPayment();
-            $paymentObj->setAmount($this->fixPrice($amount));
+            $paymentObj->setAmount($amountToRefund);
+            $paymentObj->setItems($refundItems);
 
             // refund now!
             $response = $this->paymentApi->refundPayment($paymentObj, $chargeId);
