@@ -7,6 +7,7 @@ namespace Dibs\EasyCheckout\Model\Dibs;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
+use Dibs\EasyCheckout\Model\Client\DTO\ChargePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
@@ -15,6 +16,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentMethod;
+use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
@@ -355,7 +357,6 @@ class Order
             $payment = $this->loadDibsPaymentById($paymentId);
 
 
-            $api = $this->paymentApi;
             $paymentObj = new CancelPayment();
             $paymentObj->setAmount($payment->getSummary()->getReservedAmount());
 
@@ -363,7 +364,7 @@ class Order
             //$paymentObj->setAmount($this->fixPrice($payment->getOrder()->getGrandTotal()));
 
             // cancel it now!
-            $api->cancelPayment($paymentObj, $paymentId);
+            $this->paymentApi->cancelPayment($paymentObj, $paymentId);
 
             // todo check if response.body.code = 1007, Partial cancel not allowed
             // this means the payment amount is wrong, then we could fetch the amount form the api instead!
@@ -374,6 +375,71 @@ class Order
             );
         }
     }
+
+
+    /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $amount
+     * @throws ClientException
+     * @throws LocalizedException
+     */
+    public function captureDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount)
+    {
+        $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
+        if ($paymentId) {
+
+            $paymentObj = new ChargePayment();
+            $paymentObj->setAmount($this->fixPrice($amount));
+
+            // capture/charge it now!
+            $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
+
+            // save charge id, we need it later! if a refund will be made
+            $payment->setAdditionalInformation('dibs_charge_id', $response->getChargeId());
+            $payment->setTransactionId($response->getChargeId());
+
+
+        } else {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('You need an dibs payment ID to capture.')
+            );
+        }
+    }
+
+
+    /**
+     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $amount
+     * @throws ClientException
+     * @throws LocalizedException
+     */
+    public function refundDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount)
+    {
+        $chargeId = $payment->getAdditionalInformation('dibs_charge_id');
+        if ($chargeId) {
+
+            $paymentObj = new RefundPayment();
+            $paymentObj->setAmount($this->fixPrice($amount));
+
+            // refund now!
+            $response = $this->paymentApi->refundPayment($paymentObj, $chargeId);
+
+            try {
+                // save refund id, just for debugging purposes
+                $payment->setAdditionalInformation('dibs_refund_id', $response->getRefundId());
+                $payment->setTransactionId($response->getRefundId());
+            } catch (\Exception $e) {
+                // do nothing we dont really  need this
+            }
+
+
+        } else {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('You need an dibs charge ID to refund.')
+            );
+        }
+    }
+
 
     /**
      * @param $paymentId

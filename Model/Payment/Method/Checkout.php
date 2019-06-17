@@ -88,6 +88,7 @@ class Checkout extends AbstractMethod
         if(!$this->_canCapture) {
             return false;
         }
+
         $payment = $this->getInfoInstance();
         $order   = $payment->getOrder();
         return $this->_helper->canCapture($order?$order->getStore():null);
@@ -296,12 +297,30 @@ class Checkout extends AbstractMethod
 
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        throw new LocalizedException(__('Capture action is not available.'));
+        if (!$this->canCapture()) {
+            throw new LocalizedException(__('Capture action is not available.'));
+        }
+
+        try {
+            $this->dibsHandler->captureDibsPayment($payment, $amount);
+        } catch (ClientException $e) {
+            throw new LocalizedException(__("Could not Capture order. %1", $e->getMessage()), $e);
+        }
     }
+
 
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        throw new LocalizedException(__('Refund action is not available.'));
+
+        if (!$this->canRefund()) {
+            throw new LocalizedException(__('Refund action is not available.'));
+        }
+
+        try {
+            $this->dibsHandler->refundDibsPayment($payment, $amount);
+        } catch (ClientException $e) {
+            throw new LocalizedException(__("Could not Refund Invoice. %1", $e->getMessage()), $e);
+        }
     }
 
     public function cancel(\Magento\Payment\Model\InfoInterface $payment)

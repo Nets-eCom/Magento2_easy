@@ -20,7 +20,7 @@ class CreatePaymentChargeResponse
     {
         if ($response !== "") {
             $data = json_decode($response, true);
-            $this->setChargeId($data['paymentId']);
+            $this->setChargeId($data['chargeId']);
 
             if (isset($data['invoice']['invoiceNumber'])) {
                 $this->setInvoiceNumber($data['invoice']['invoiceNumber']);
