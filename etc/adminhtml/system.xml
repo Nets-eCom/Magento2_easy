@@ -97,6 +97,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>If Yes, the "Go to Checkout" button in the minicart and cart will point to Dibs checkout.</comment>
                 </field>
+                <field id="add_css" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="150">
+                    <label>Add Dibs Css file</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[If yes, <strong>dibs.css</strong> will be added to the frontend <strong>(Only needed if styles-l.css and styles-m.css are removed or if magento default less file compiler is not been used)!</strong>]]></comment>
+                </field>
             </group>
 
 

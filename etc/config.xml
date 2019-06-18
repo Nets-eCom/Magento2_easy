@@ -5,6 +5,9 @@
             <general>
                 <enabled>0</enabled>
             </general>
+            <settings>
+                <add_css>0</add_css>
+            </settings>
             <layout>
                 <display_newsletter>1</display_newsletter>
                 <display_discount>1</display_discount>
