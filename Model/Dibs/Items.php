@@ -449,9 +449,14 @@ class Items
             return $this;
         }
 
+
+
+        //var_dump($difference); die;
+
+
+
         throw new CheckoutException(__("The grand total price does not match the price being sent to Dibs. Please contact an admin or use another checkout method."), 'checkout/cart');
     }
-
 
 
     /**
@@ -536,7 +541,8 @@ class Items
 
 
         try {
-            $this->addTotals($quote->getGrandTotal(),$shippingAddress->getTaxAmount());
+            $this->addTotals($this->getAmount($quote),$shippingAddress->getTaxAmount());
+            //$this->addTotals($quote->getGrandTotal(),$shippingAddress->getTaxAmount());
         } catch (\Exception $e) {
             //!! todo handle somehow!
             throw $e;
@@ -564,11 +570,10 @@ class Items
 
     //generate Dibs items from Magento Invoice
     public function fromInvoice(Order\Invoice $invoice) {
-
-
         $order  = $invoice->getOrder();
 
-        $this->init($order->getStore())
+        $this
+            ->init($order->getStore())
             ->addItems($invoice->getAllItems());
 
 
@@ -578,19 +583,85 @@ class Items
             $iShipping = $invoice->getShippingAmount();
             $oShipping = $order->getShippingAmount();
 
-            if($iShipping != $oShipping && $oShipping>0) { //this cannot happens, but...  if yes, we will adjust shipping discount amoutn
+            //this should never happen but if it does , we will adjust shipping discount amoutn
+            if($iShipping != $oShipping && $oShipping>0) {
                 $oShippingDiscount = round($iShipping*$oShippingDiscount/$oShipping,4);
             }
+
             $invoice->setShippingDiscountAmount($oShippingDiscount);
         }
+
         if($invoice->getShippingAmount() != 0) {
             $this->addShipping($invoice);
         }
 
-        $this->addDiscounts($order->getCouponCode()) //coupon code is not copied to invoice
-        ->addTotals($invoice->getGrandTotal(),$invoice->getTaxAmount());
+        //
+        $this
+            ->addDiscounts($order->getCouponCode())  //coupon code is not copied to invoice
+            ->addTotals($invoice->getGrandTotal(),$invoice->getTaxAmount()); // calculate totals
 
         return $this->_cart;
+    }
+
+    /**
+     * This will help us generate Dibs Order Items for which will be sent as a refund or partial refund.
+     * We don't add discounts or shipping here even though the invoice has discounts, we only add items to be refunded.
+     * Shipping amount is added IF it should be refunded as well.
+     * @param Order\Creditmemo $creditMemo
+     * @throws CheckoutException
+     * @return array
+     */
+    public function fromCreditMemo(Order\Creditmemo $creditMemo) {
+        $order = $creditMemo->getOrder();
+
+        // no support at dibs for adjustments
+        // $creditMemo->getAdjustmentPositive();
+        // $creditMemo->getAdjustmentNegative();
+
+        $this->init($order->getStore());
+        $this->addItems($creditMemo->getAllItems());
+
+        if($creditMemo->getShippingAmount() != 0) {
+            $this->addShipping($creditMemo);
+        }
+
+        $this
+            ->addDiscounts($order->getCouponCode())  //coupon code is not copied to invoice
+            ->addTotals($creditMemo->getGrandTotal(),$creditMemo->getTaxAmount()); // calculate totals
+
+        // return the items!
+        return $this->getCart();
+    }
+
+    /**
+     * Grand Total without invoice fee, we do not send the invoice fee to Dibs in the total amount. They calculate it.
+     * @param $obj Quote|Order|Order\Invoice
+     * @return int
+     */
+    public function getAmount($obj)
+    {
+        // TODO remove when invoice fee is fixed
+        if (true) {
+            return $obj->getGrandTotal();
+        }
+
+        $grandTotal = $obj->getGrandTotal();
+        $toRemove = 0;
+        $codeSearch = $this->_helper->getInvoiceFeeLabel();
+        $codeSearch = strtolower(str_replace(" ","_", $codeSearch));
+
+        foreach ($obj->getTotals() as $total) {
+            if ($total->getCode() == $codeSearch ) {
+               $toRemove = $total->getValue();
+              break;
+           }
+        }
+
+        if ($toRemove == 0) {
+            return $grandTotal;
+        }
+
+        return $grandTotal - $toRemove;
     }
 
 
