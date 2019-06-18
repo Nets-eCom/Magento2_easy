@@ -62,7 +62,7 @@ class SaveCoupon extends \Dibs\EasyCheckout\Controller\Order\Update
                 __('We can\'t apply your coupon.')
             );
         }
-        $this->_sendResponse();
+        $this->_sendResponse(['cart','coupon','messages','shipping','dibs','grand_total','dibs_shipping_total']);
 
     }
 
