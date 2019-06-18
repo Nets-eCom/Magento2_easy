@@ -157,6 +157,9 @@ class Order
      */
     protected function createNewDibsPayment(Quote $quote)
     {
+        $dibsAmount = $this->fixPrice($this->items->getAmount($quote));
+        //$dibsAmount = $this->fixPrice($quote->getGrandTotal());
+
         // TODO handle this exception?
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
@@ -207,9 +210,9 @@ class Order
         // we generate the order here, amount and items
         $paymentOrder = new CreatePaymentOrder();
 
-        $paymentOrder->setAmount($this->fixPrice($quote->getGrandTotal()));
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
         $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));
+        $paymentOrder->setAmount($dibsAmount);
         $paymentOrder->setItems($items);
 
         // create payment object
@@ -348,26 +351,16 @@ class Order
     public function cancelDibsPayment(\Magento\Payment\Model\InfoInterface $payment)
     {
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
-        //$this->dibsLogger->error("Cancel Dibs Payment ID: " . $paymentId);
-        //$this->dibsLogger->error($payment->getOrder()->getGrandTotal());
-
         if ($paymentId) {
 
-            // we load the payment from dibs api instead
+            // we load the payment from dibs api instead, then we will get full amount!
             $payment = $this->loadDibsPaymentById($paymentId);
-
 
             $paymentObj = new CancelPayment();
             $paymentObj->setAmount($payment->getSummary()->getReservedAmount());
 
-
-            //$paymentObj->setAmount($this->fixPrice($payment->getOrder()->getGrandTotal()));
-
             // cancel it now!
             $this->paymentApi->cancelPayment($paymentObj, $paymentId);
-
-            // todo check if response.body.code = 1007, Partial cancel not allowed
-            // this means the payment amount is wrong, then we could fetch the amount form the api instead!
 
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
@@ -428,21 +421,8 @@ class Order
         if ($chargeId) {
 
             $amountToRefund = $this->fixPrice($amount);
-            $items = $payment->getCreditMemo()->getItems();
-            $shippingToRefund = $payment->getCreditMemo()->getShippingAmount();
+            $refundItems = $this->items->fromCreditMemo($payment->getCreditMemo());
 
-
-            // $payment->getCreditMemo()->getAdjustmentPositive();
-            // $payment->getCreditMemo()->getAdjustmentNegative();
-
-            $refundItems = $this->items
-                ->addItems($items)
-                ->getCart();
-
-
-            if ($shippingToRefund > 0) {
-                // todo we need to add shipping to $refundItems!
-            }
 
             $paymentObj = new RefundPayment();
             $paymentObj->setAmount($amountToRefund);
