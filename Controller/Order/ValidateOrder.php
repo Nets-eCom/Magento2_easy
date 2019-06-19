@@ -45,6 +45,14 @@ class ValidateOrder extends Update
                 return $this->respondWithError("Something went wrong when we tried to retrieve the order from Dibs. Please try again or contact an admin.");
 
             }
+        } catch (\Exception $e) {
+            $this->messageManager->addExceptionMessage(
+                $e,
+                __('Something went wrong.')
+            );
+
+            $checkout->getLogger()->error("Validate Order: Something went wrong. Might have been the request parser. Payment ID: ". $checkoutPaymentId. "... Error message:" . $e->getMessage());
+            return $this->respondWithError("Something went wrong... Contact site admin.");
         }
 
         if ($payment->getConsumer()->getShippingAddress() === null) {
@@ -83,7 +91,7 @@ class ValidateOrder extends Update
                 __('Something went wrong.')
             );
 
-            $checkout->getLogger()->error("Validate Order: Something went wrong... Error message:" . $e->getMessage());
+            $checkout->getLogger()->error("Validate Order: Something went wrong... Payment ID: ". $checkoutPaymentId. "... Error message:" . $e->getMessage());
             return $this->respondWithError("Something went wrong... Contact site admin.");
         }
 

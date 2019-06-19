@@ -34,16 +34,15 @@ class SaveOrder extends Checkout
         if (!$paymentId || !$checkoutPaymentId || ($paymentId != $checkoutPaymentId)) {
             $checkout->getLogger()->error("Invalid request");
             if (!$checkoutPaymentId) {
-                $checkout->getLogger()->error("No dibs checkout payment id in session.");
+                $checkout->getLogger()->error("Save Order: No dibs checkout payment id in session.");
                 return $this->respondWithError("Your session has expired.");
-
             }
 
             if ($paymentId != $checkoutPaymentId) {
-                return $checkout->getLogger()->error("The session has expired or is wrong.");
+                return $checkout->getLogger()->error("Save Order: The session has expired or is wrong.");
             }
 
-            return $checkout->getLogger()->error("Invalid data.");
+            return $checkout->getLogger()->error("Save Order: Invalid data.");
         }
 
 
@@ -52,24 +51,32 @@ class SaveOrder extends Checkout
             $payment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
         } catch (ClientException $e) {
             if ($e->getHttpStatusCode() == 404) {
-                $checkout->getLogger()->error("The dibs payment with ID: " . $paymentId . " was not found in dibs.");
+                $checkout->getLogger()->error("Save Order: The dibs payment with ID: " . $paymentId . " was not found in dibs.");
                 return $this->respondWithError("Could not create an order. The payment was not found in dibs.");
             } else {
-                $checkout->getLogger()->error("Something went wrong when we tried to fetch the payment ID from Dibs. Http Status code: " . $e->getHttpStatusCode());
+                $checkout->getLogger()->error("Save Order: Something went wrong when we tried to fetch the payment ID from Dibs. Http Status code: " . $e->getHttpStatusCode());
                 $checkout->getLogger()->error("Error message:" . $e->getMessage());
                 $checkout->getLogger()->debug($e->getResponseBody());
 
                 return $this->respondWithError("Could not create an order, please contact site admin. Dibs seems to be down!");
             }
+        } catch (\Exception $e) {
+            $this->messageManager->addExceptionMessage(
+                $e,
+                __('Something went wrong.')
+            );
+
+            $checkout->getLogger()->error("Save Order: Something went wrong. Might have been the request parser. Payment ID: ". $checkoutPaymentId. "... Error message:" . $e->getMessage());
+            return $this->respondWithError("Something went wrong... Contact site admin.");
         }
 
         if ($payment->getOrderDetails()->getReference() !== $checkout->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
-            $checkout->getLogger()->error("The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
+            $checkout->getLogger()->error("Save Order: The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
             return $this->respondWithError("Could not create an order. Invalid data. Contact admin.");
         }
 
         if ($payment->getSummary()->getReservedAmount() === null) {
-            $checkout->getLogger()->error("Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
+            $checkout->getLogger()->error("Save Order: Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
             return $this->respondWithError("We could not create your order... The payment hasn't reached Dibs. Payment id: " . $payment->getPaymentId());
         }
 
