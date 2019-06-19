@@ -157,8 +157,7 @@ class Order
      */
     protected function createNewDibsPayment(Quote $quote)
     {
-        $dibsAmount = $this->fixPrice($this->items->getAmount($quote));
-        //$dibsAmount = $this->fixPrice($quote->getGrandTotal());
+        $dibsAmount = $this->fixPrice($quote->getGrandTotal());
 
         // TODO handle this exception?
         $items = $this->items->generateOrderItemsFromQuote($quote);
@@ -186,15 +185,6 @@ class Order
         $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
         $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
 
-
-        /* // This seems not to have any affect on the checkout! So I am removing it!
-        //!
-        $shippingCountries = $this->helper->getShippingCountries();
-        if (!empty($shippingCountries) && is_array($shippingCountries)) {
-            $paymentCheckout->setShippingCountries($shippingCountries);
-        }
-        */
-
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
         // we will call charge in capture online instead! so we set it to false
         $paymentCheckout->setCharge(false);
@@ -219,48 +209,6 @@ class Order
         $createPaymentRequest = new CreatePayment();
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);
-
-
-        if ($this->helper->useInvoiceFee()) {
-            $invoiceLabel = $this->helper->getInvoiceFeeLabel();
-            $invoiceLabel = $invoiceLabel ? $invoiceLabel : __("Invoice Fee");
-            $invoiceFee = $this->helper->getInvoiceFee();
-
-            if ($invoiceFee > 0) {
-                $feeItem = new OrderItem();
-                $taxRate = $this->items->getMaxVat();
-
-                $invoiceFeeInclTax = $invoiceFee;
-                $taxAmount = 0;
-                if ($taxRate > 0) {
-
-                    // i.e: 10 * ((100 + 25) / 100) =
-                    // 10 * 125/100 =
-                    // 10 * 1.25
-                    $invoiceFeeInclTax = $invoiceFee * ((100 + $taxRate) / 100);
-
-                    // the amount is with taxes - not with taxes
-                    $taxAmount = $invoiceFeeInclTax - $invoiceFee;
-                }
-
-                $feeItem
-                    ->setName($invoiceLabel)
-                    ->setReference(strtolower(str_replace(" ", "_", $invoiceLabel)))
-                    ->setTaxRate($this->fixPrice($taxRate))
-                    ->setGrossTotalAmount($this->fixPrice($invoiceFeeInclTax)) // incl tax
-                    ->setNetTotalAmount($this->fixPrice($invoiceFee)) // // excl. tax
-                    ->setUnit("st")
-                    ->setQuantity(1)
-                    ->setUnitPrice($this->fixPrice($invoiceFee)) // // excl. tax
-                    ->setTaxAmount($this->fixPrice($taxAmount)); // tax amount
-
-                $paymentFee = new PaymentMethod();
-                $paymentFee->setName("easyinvoice");
-                $paymentFee->setFee($feeItem);
-
-                $createPaymentRequest->setPaymentMethods([$paymentFee]);
-            }
-        }
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }

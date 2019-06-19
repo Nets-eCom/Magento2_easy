@@ -541,8 +541,7 @@ class Items
 
 
         try {
-            $this->addTotals($this->getAmount($quote),$shippingAddress->getTaxAmount());
-            //$this->addTotals($quote->getGrandTotal(),$shippingAddress->getTaxAmount());
+            $this->addTotals($quote->getGrandTotal(),$shippingAddress->getTaxAmount());
         } catch (\Exception $e) {
             //!! todo handle somehow!
             throw $e;
@@ -631,37 +630,6 @@ class Items
 
         // return the items!
         return $this->getCart();
-    }
-
-    /**
-     * Grand Total without invoice fee, we do not send the invoice fee to Dibs in the total amount. They calculate it.
-     * @param $obj Quote|Order|Order\Invoice
-     * @return int
-     */
-    public function getAmount($obj)
-    {
-        // TODO remove when invoice fee is fixed
-        if (true) {
-            return $obj->getGrandTotal();
-        }
-
-        $grandTotal = $obj->getGrandTotal();
-        $toRemove = 0;
-        $codeSearch = $this->_helper->getInvoiceFeeLabel();
-        $codeSearch = strtolower(str_replace(" ","_", $codeSearch));
-
-        foreach ($obj->getTotals() as $total) {
-            if ($total->getCode() == $codeSearch ) {
-               $toRemove = $total->getValue();
-              break;
-           }
-        }
-
-        if ($toRemove == 0) {
-            return $grandTotal;
-        }
-
-        return $grandTotal - $toRemove;
     }
 
 

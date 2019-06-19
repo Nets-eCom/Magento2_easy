@@ -261,8 +261,9 @@ class GetPaymentResponse
 
     protected function _get($obj, $key)
     {
-        if (isset($obj->$key)) {
-            return $obj->$key;
+        $arr = (array)$obj;
+        if (isset($arr[$key])) {
+            return $arr[$key];
         }
 
         return null;
