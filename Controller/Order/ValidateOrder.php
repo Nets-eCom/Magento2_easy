@@ -2,13 +2,7 @@
 
 namespace Dibs\EasyCheckout\Controller\Order;
 
-use Dibs\EasyCheckout\Helper\Cart as DibsCartHelper;
-use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
-use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutCOntext;
 use Dibs\EasyCheckout\Model\Client\ClientException;
-use Magento\Customer\Api\AccountManagementInterface;
-use Magento\Customer\Api\CustomerRepositoryInterface;
-use Magento\Directory\Model\Country\Postcode\ValidatorInterface;
 
 class ValidateOrder extends Update
 {
@@ -55,7 +49,7 @@ class ValidateOrder extends Update
 
         if ($payment->getConsumer()->getShippingAddress() === null) {
             $checkout->getLogger()->error("Validate Order: Consumer has no shipping address.");
-            return $this->respondWithError("Please choose a shipping address.");
+            return $this->respondWithError("Please add shipping information.");
         }
 
         $currentPostalCode = $payment->getConsumer()->getShippingAddress()->getPostalCode();
@@ -76,6 +70,12 @@ class ValidateOrder extends Update
                 ]);
             }
 
+            if (!$quote->getShippingAddress()->getShippingMethod()) {
+                $checkout->getLogger()->error("Validate Order: Consumer has no shipping address.");
+                return $this->respondWithError("Please choose a shipping method.", true, [
+                    'postalCode' => $currentPostalCode, 'countryId' => $currentCountryId
+                ]);
+            }
 
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
