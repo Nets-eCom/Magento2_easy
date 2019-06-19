@@ -1,10 +1,22 @@
 <?xml version="1.0"?>
-<payment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Payment:etc/payment.xsd">
-    <methods>
-        <method name="dibseasycheckout">
-            <allow_multiple_address>0</allow_multiple_address>
-        </method>
-    </methods>
-</payment>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Sales:etc/sales.xsd">
+    <!--
+    <section name="quote">
+        <group name="totals">
+            <item name="dibs_invoice_fee" instance="Dibs\EasyCheckout\Model\Quote\Total\Fee" sort_order="150"/>
+        </group>
+    </section>
+    -->
 
+
+    <section name="order_invoice">
+        <group name="totals">
+            <item name="dibs_invoice_fee" instance="Dibs\EasyCheckout\Model\Invoice\Total\Fee" sort_order="160"/>
+        </group>
+    </section>
+    <section name="order_creditmemo">
+        <group name="totals">
+            <item name="dibs_invoice_fee" instance="Dibs\EasyCheckout\Model\Creditmemo\Total\Fee" sort_order="160"/>
+        </group>
+    </section>
+</config>

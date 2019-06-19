@@ -27,7 +27,7 @@ $shippingAddress = $quote->getShippingAddress();
             </select>
             <input class="postcode" type="text" id="postcode-box" name="postal"
                    placeholder="<?php echo __('Postal code') ?>"
-                   value="<?= ($shippingAddress === null || !$shippingAddress->getPostcode()) ? __('') : $shippingAddress->getPostcode() ?>"/>
+                   value="<?= ($shippingAddress === null || !$shippingAddress->getPostcode()) ? __('') : $shippingAddress->getPostcode() ?>" autofocus />
             <button type="submit" id="shipping-method-button"
                     class="action dibs-primary" title="<?php echo __('Choose Delivery'); ?>">
                 <span><?php echo __('Choose Delivery'); ?></span>

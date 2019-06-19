@@ -249,7 +249,7 @@ class Items
                     ->setUnit("st") // TODO! We need to map these somehow!
                     ->setQuantity(round($qty,0))
                     ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-                    ->setTaxAmount($this->getTotalTaxAmount($unitPrice * $qty, $vat)) // total tax amount
+                    ->setTaxAmount($this->getTotalTaxAmount($unitPrice * $qty, $vat, false)) // total tax amount
                     ->setUnitPrice($unitPriceExclTax) // excl. tax price per item
                     ->setNetTotalAmount($unitPriceExclTax * $qty) // excl. tax
                     ->setGrossTotalAmount($unitPrice * $qty); // incl. tax
@@ -371,6 +371,74 @@ class Items
         return $this;
     }
 
+    /**
+     * @param $invoiceLabel
+     * @param $invoiceFee
+     * @param $vatIncluded
+     */
+    public function addInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded)
+    {
+        $item = $this->generateInvoiceFeeItem($invoiceLabel,$invoiceFee, $vatIncluded);
+        $this->_cart[$item->getReference()] = $item;
+    }
+
+    /**
+     * @param $invoiceLabel
+     * @param $invoiceFee
+     * @param $vatIncluded
+     * @return OrderItem
+     */
+    public function generateInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded)
+    {
+        $feeItem = new OrderItem();
+        $taxRate = $this->getMaxVat();
+
+        // basic values if taxes is 0
+        $invoiceFeeExclTax = $invoiceFee;
+        $invoiceFeeInclTax = $invoiceFee;
+        $taxAmount = 0;
+
+        // here we calculate if there are taxes!
+        if ($taxRate > 0) {
+
+            if (!$vatIncluded) {
+                $invoiceFeeExclTax = $invoiceFee;
+                // i.e: 20 * ((100 + 25) / 100) =
+                // 20 * 125/100 =
+                // 20 * 1.25 = 25
+                $invoiceFeeInclTax = $invoiceFee * ((100 + $taxRate) / 100);
+
+
+
+            } else {
+
+
+                // with taxes!
+                $invoiceFeeInclTax = $invoiceFee;
+
+                // i.e: 25 * ((100 + 25) / 100) =
+                // 25 * 125/100 =
+                // 25 / 1.25 = 20
+                $invoiceFeeExclTax = $invoiceFeeInclTax / ((100 + $taxRate) / 100);
+            }
+
+            // count the tax amount
+            $taxAmount = $invoiceFeeInclTax - $invoiceFeeExclTax;
+        }
+
+        $feeItem
+            ->setName($invoiceLabel)
+            ->setReference(strtolower(str_replace(" ", "_", $invoiceLabel)))
+            ->setTaxRate($this->addZeroes($taxRate))
+            ->setGrossTotalAmount($this->addZeroes($invoiceFeeInclTax)) // incl tax
+            ->setNetTotalAmount($this->addZeroes($invoiceFeeExclTax)) // // excl. tax
+            ->setUnit("st")
+            ->setQuantity(1)
+            ->setUnitPrice($this->addZeroes($invoiceFeeExclTax)) // // excl. tax
+            ->setTaxAmount($this->addZeroes($taxAmount)); // tax amount
+
+        return $feeItem;
+    }
 
     // TODO!!
     public function addDiscounts($couponCode)
@@ -414,7 +482,7 @@ class Items
 
     }
 
-    public function addTotals($grandTotal, $taxAmount)
+    public function validateTotals($grandTotal)
     {
         //calculate Dibs total
         //WARNING:   The tax must to be applied AFTER discount and to the custom price (not original)
@@ -448,12 +516,6 @@ class Items
         if($difference == 0) {
             return $this;
         }
-
-
-
-        //var_dump($difference); die;
-
-
 
         throw new CheckoutException(__("The grand total price does not match the price being sent to Dibs. Please contact an admin or use another checkout method."), 'checkout/cart');
     }
@@ -541,8 +603,7 @@ class Items
 
 
         try {
-            $this->addTotals($this->getAmount($quote),$shippingAddress->getTaxAmount());
-            //$this->addTotals($quote->getGrandTotal(),$shippingAddress->getTaxAmount());
+            $this->validateTotals($quote->getGrandTotal());
         } catch (\Exception $e) {
             //!! todo handle somehow!
             throw $e;
@@ -558,18 +619,23 @@ class Items
     public function fromOrder(Order $order) {
         $this->init($order->getStore());
 
+
+        // we will validate the grand total that we send to dibs, since we dont send invocie fee with it, we remove it now
+        $grandTotal = $order->getGrandTotal();
         $this->addItems($order->getAllItems())
             ->addShipping($order)
             ->addDiscounts($order->getCouponCode())
-            ->addTotals($order->getGrandTotal(),$order->getTaxAmount());
+            ->validateTotals($grandTotal);
 
         return $this->_cart;
     }
 
 
-
-    //generate Dibs items from Magento Invoice
-    public function fromInvoice(Order\Invoice $invoice) {
+    /**
+     * @param Order\Invoice $invoice
+     * @return void
+     */
+    public function addDibsItemsByInvoice(Order\Invoice $invoice) {
         $order  = $invoice->getOrder();
 
         $this
@@ -595,12 +661,8 @@ class Items
             $this->addShipping($invoice);
         }
 
-        //
-        $this
-            ->addDiscounts($order->getCouponCode())  //coupon code is not copied to invoice
-            ->addTotals($invoice->getGrandTotal(),$invoice->getTaxAmount()); // calculate totals
-
-        return $this->_cart;
+        //coupon code is not copied to invoice so we take it from the order!
+        $this->addDiscounts($order->getCouponCode());
     }
 
     /**
@@ -625,45 +687,14 @@ class Items
             $this->addShipping($creditMemo);
         }
 
+        $grandTotal = $creditMemo->getGrandTotal();
         $this
             ->addDiscounts($order->getCouponCode())  //coupon code is not copied to invoice
-            ->addTotals($creditMemo->getGrandTotal(),$creditMemo->getTaxAmount()); // calculate totals
+            ->validateTotals($grandTotal); // calculate totals
 
         // return the items!
         return $this->getCart();
     }
-
-    /**
-     * Grand Total without invoice fee, we do not send the invoice fee to Dibs in the total amount. They calculate it.
-     * @param $obj Quote|Order|Order\Invoice
-     * @return int
-     */
-    public function getAmount($obj)
-    {
-        // TODO remove when invoice fee is fixed
-        if (true) {
-            return $obj->getGrandTotal();
-        }
-
-        $grandTotal = $obj->getGrandTotal();
-        $toRemove = 0;
-        $codeSearch = $this->_helper->getInvoiceFeeLabel();
-        $codeSearch = strtolower(str_replace(" ","_", $codeSearch));
-
-        foreach ($obj->getTotals() as $total) {
-            if ($total->getCode() == $codeSearch ) {
-               $toRemove = $total->getValue();
-              break;
-           }
-        }
-
-        if ($toRemove == 0) {
-            return $grandTotal;
-        }
-
-        return $grandTotal - $toRemove;
-    }
-
 
     public function getMaxVat()
     {
@@ -675,9 +706,13 @@ class Items
         return $this->_cart;
     }
 
-    public function getTotalTaxAmount($price,$vat)
+    public function getTotalTaxAmount($price,$vat, $addZeroes = true)
     {
-        return $this->addZeroes($this->calculationTool->calcTaxAmount($price, $vat, true));
+        if ($addZeroes) {
+            return $this->addZeroes($this->calculationTool->calcTaxAmount($price, $vat, true));
+        } else {
+            return $this->calculationTool->calcTaxAmount($price, $vat, true);
+        }
     }
 
     public function addZeroes($amount)

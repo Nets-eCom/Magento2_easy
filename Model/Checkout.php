@@ -528,6 +528,24 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $quote->getPayment()->getMethodInstance()->assignData($paymentData);
         $quote->setDibsPaymentId($dibsPayment->getPaymentId()); //this is used by pushAction
 
+
+
+        // we need to add invoice fee here to order if its enabled
+        if ($this->getHelper()->useInvoiceFee()
+            && $dibsPayment->getPaymentDetails()->getPaymentType() === "INVOICE"
+            && $dibsPayment->getPaymentDetails()->getPaymentMethod() === "EasyInvoice"
+        ) {
+
+            $invoiceFee = $this->getHelper()->getInvoiceFee() * 1.25; // TODO remove hardcode!
+
+            $quote->setDibsInvoiceFee($invoiceFee);
+            $quote->setGrandTotal($quote->getGrandTotal() + $invoiceFee);
+            $quote->setBaseGrandTotal($quote->getGrandTotal() + $invoiceFee);
+
+            $quote->collectTotals();
+        }
+
+
         //- do not recollect totals
         $quote->setTotalsCollectedFlag(true);
 

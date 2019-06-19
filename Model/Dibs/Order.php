@@ -21,6 +21,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
+use Magento\Sales\Model\Order\Invoice;
 
 class Order
 {
@@ -157,8 +158,7 @@ class Order
      */
     protected function createNewDibsPayment(Quote $quote)
     {
-        $dibsAmount = $this->fixPrice($this->items->getAmount($quote));
-        //$dibsAmount = $this->fixPrice($quote->getGrandTotal());
+        $dibsAmount = $this->fixPrice($quote->getGrandTotal());
 
         // TODO handle this exception?
         $items = $this->items->generateOrderItemsFromQuote($quote);
@@ -227,32 +227,7 @@ class Order
             $invoiceFee = $this->helper->getInvoiceFee();
 
             if ($invoiceFee > 0) {
-                $feeItem = new OrderItem();
-                $taxRate = $this->items->getMaxVat();
-
-                $invoiceFeeInclTax = $invoiceFee;
-                $taxAmount = 0;
-                if ($taxRate > 0) {
-
-                    // i.e: 10 * ((100 + 25) / 100) =
-                    // 10 * 125/100 =
-                    // 10 * 1.25
-                    $invoiceFeeInclTax = $invoiceFee * ((100 + $taxRate) / 100);
-
-                    // the amount is with taxes - not with taxes
-                    $taxAmount = $invoiceFeeInclTax - $invoiceFee;
-                }
-
-                $feeItem
-                    ->setName($invoiceLabel)
-                    ->setReference(strtolower(str_replace(" ", "_", $invoiceLabel)))
-                    ->setTaxRate($this->fixPrice($taxRate))
-                    ->setGrossTotalAmount($this->fixPrice($invoiceFeeInclTax)) // incl tax
-                    ->setNetTotalAmount($this->fixPrice($invoiceFee)) // // excl. tax
-                    ->setUnit("st")
-                    ->setQuantity(1)
-                    ->setUnitPrice($this->fixPrice($invoiceFee)) // // excl. tax
-                    ->setTaxAmount($this->fixPrice($taxAmount)); // tax amount
+                $feeItem = $this->items->generateInvoiceFeeItem($invoiceLabel,$invoiceFee, false);
 
                 $paymentFee = new PaymentMethod();
                 $paymentFee->setName("easyinvoice");
@@ -381,13 +356,25 @@ class Order
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
         if ($paymentId) {
 
+            /** @var Invoice $invoice */
             $invoice = $payment->getCapturedInvoice(); // we get this from Observer\PaymentCapture
             if(!$invoice) {
                 throw new LocalizedException(__('Cannot capture online, no invoice set'));
             }
 
             // generate items
-            $captureItems = $this->items->fromInvoice($invoice);
+            $this->items->addDibsItemsByInvoice($invoice);
+
+            // at this point we got VAT/Tax Rate from items above.
+            if ($invoice->getDibsInvoiceFee()) {
+                $this->items->addInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $invoice->getDibsInvoiceFee(), true);
+            }
+
+            // We validate the items before we send them to Dibs. This might throw an exception!
+            $this->items->validateTotals($invoice->getGrandTotal());
+
+            // now we have our items...
+            $captureItems = $this->items->getCart();
 
             $paymentObj = new ChargePayment();
             $paymentObj->setAmount($this->fixPrice($amount));
@@ -420,8 +407,16 @@ class Order
         $chargeId = $payment->getAdditionalInformation('dibs_charge_id');
         if ($chargeId) {
 
+            $creditMemo = $payment->getCreditMemo();
+            $this->items->fromCreditMemo($creditMemo);
+
+            // remove dibs invoice fee from amount
+            if ($creditMemo->getDibsInvoiceFee()) {
+                $this->items->addInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $creditMemo->getDibsInvoiceFee(), true);
+            }
+
+            $refundItems = $this->items->getCart();
             $amountToRefund = $this->fixPrice($amount);
-            $refundItems = $this->items->fromCreditMemo($payment->getCreditMemo());
 
 
             $paymentObj = new RefundPayment();
