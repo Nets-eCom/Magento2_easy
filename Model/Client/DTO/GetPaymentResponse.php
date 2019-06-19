@@ -51,24 +51,24 @@ class GetPaymentResponse
             $consumer = new GetPaymentConsumer();
 
             if (!empty((array)$p->orderDetails)) {
-                $orderDetails->setReference($p->orderDetails->reference);
-                $orderDetails->setAmount($p->orderDetails->amount);
-                $orderDetails->setCurrency($p->orderDetails->currency);
+                $orderDetails->setReference($this->_get($p->orderDetails,'reference'));
+                $orderDetails->setAmount($this->_get($p->orderDetails,'amount'));
+                $orderDetails->setCurrency($this->_get($p->orderDetails,'currency'));
             }
 
             if (!empty((array)$p->summary)) {
-                $summary->setReservedAmount($p->summary->reservedAmount);
+                $summary->setReservedAmount($this->_get($p->summary,'reservedAmount'));
             }
 
             if (!empty((array)$p->paymentDetails) && isset($p->paymentDetails->paymentMethod)) {
-                $paymentDetails->setPaymentMethod($p->paymentDetails->paymentMethod);
-                $paymentDetails->setPaymentType($p->paymentDetails->paymentType);
+                $paymentDetails->setPaymentMethod($this->_get($p->paymentDetails,'paymentMethod'));
+                $paymentDetails->setPaymentType($this->_get($p->paymentDetails,'paymentType'));
 
                 // if card!
                 if (!empty((array)$p->paymentDetails->cardDetails)) {
                     $cardDetails = new GetPaymentCardDetails();
-                    $cardDetails->setExpiryDate($p->paymentDetails->cardDetails->expiryDate);
-                    $cardDetails->setMaskedPan($p->paymentDetails->cardDetails->maskedPan);
+                    $cardDetails->setExpiryDate($this->_get($p->paymentDetails->cardDetails,'expiryDate'));
+                    $cardDetails->setMaskedPan($this->_get($p->paymentDetails->cardDetails,'maskedPan'));
 
                     $paymentDetails->setCardDetails($cardDetails);
                 }
@@ -76,10 +76,10 @@ class GetPaymentResponse
                 // if invoice!
                 if (!empty((array)$p->paymentDetails->invoiceDetails)) {
                     $invoiceDetails = new GetPaymentInvoiceDetails();
-                    $invoiceDetails->setDueDate($p->paymentDetails->invoiceDetails->dueDate);
-                    $invoiceDetails->setInvoiceNumber($p->paymentDetails->invoiceDetails->invoiceNumber);
-                    $invoiceDetails->setOcr($p->paymentDetails->invoiceDetails->ocr);
-                    $invoiceDetails->setPdfLink($p->paymentDetails->invoiceDetails->pdfLink);
+                    $invoiceDetails->setDueDate($this->_get($p->paymentDetails->invoiceDetails,'dueDate'));
+                    $invoiceDetails->setInvoiceNumber($this->_get($p->paymentDetails->invoiceDetails,'invoiceNumber'));
+                    $invoiceDetails->setOcr($this->_get($p->paymentDetails->invoiceDetails,'ocr'));
+                    $invoiceDetails->setPdfLink($this->_get($p->paymentDetails->invoiceDetails,'pdfLink'));
 
                     $paymentDetails->setInvoiceDetails($invoiceDetails);
                 }
@@ -90,11 +90,11 @@ class GetPaymentResponse
                     $s = $p->consumer->shippingAddress;
                     $shippingAddress = new GetConsumerShippingAddress();
 
-                    $shippingAddress->setPostalCode($s->postalCode);
-                    $shippingAddress->setCountry($s->country);
-                    $shippingAddress->setCity($s->city);
-                    $shippingAddress->setReceiverLine($s->receiverLine);
-                    $shippingAddress->setAddressLine1($s->addressLine1);
+                    $shippingAddress->setPostalCode($this->_get($s,'postalCode'));
+                    $shippingAddress->setCountry($this->_get($s,'country'));
+                    $shippingAddress->setCity($this->_get($s,'city'));
+                    $shippingAddress->setReceiverLine($this->_get($s,'receiverLine'));
+                    $shippingAddress->setAddressLine1($this->_get($s,'addressLine1'));
                     if (isset($s->addressLine2)) {
                         $shippingAddress->setAddressLine2($s->addressLine2);
                     }
@@ -108,12 +108,12 @@ class GetPaymentResponse
 
                     //
                     $phoneNumber = new ConsumerPhoneNumber();
-                    $phoneNumber->setNumber($priv->phoneNumber->number);
-                    $phoneNumber->setPrefix($priv->phoneNumber->prefix);
+                    $phoneNumber->setNumber($this->_get($priv->phoneNumber,'number'));
+                    $phoneNumber->setPrefix($this->_get($priv->phoneNumber,'prefix'));
 
-                    $pp->setLastName($priv->lastName);
-                    $pp->setFirstName($priv->firstName);
-                    $pp->setEmail($priv->email);
+                    $pp->setLastName($this->_get($priv,'lastName'));
+                    $pp->setFirstName($this->_get($priv,'firstName'));
+                    $pp->setEmail($this->_get($priv,'email'));
                     $pp->setPhoneNumber($phoneNumber);
 
                     $consumer->setPrivatePerson($pp);
@@ -130,21 +130,21 @@ class GetPaymentResponse
 
                     if (!empty((array)$org->contactDetails->phoneNumber)) {
                         $phone = new ConsumerPhoneNumber();
-                        $phone->setNumber($org->contactDetails->phoneNumber->number);
-                        $phone->setPrefix($org->contactDetails->phoneNumber->prefix);
+                        $phone->setNumber($this->_get($org->contactDetails->phoneNumber,'number'));
+                        $phone->setPrefix($this->_get($org->contactDetails->phoneNumber,'prefix'));
                         $contact->setPhoneNumber($phone);
                     }
 
                     if (!empty((array)$org->contactDetails) && isset($org->contactDetails->firstName)){
-                        $contact->setFirstName($org->contactDetails->firstName);
-                        $contact->setLastName($org->contactDetails->lastName);
-                        $contact->setEmail($org->contactDetails->email);
+                        $contact->setFirstName($this->_get($org->contactDetails,'firstName'));
+                        $contact->setLastName($this->_get($org->contactDetails,'lastName'));
+                        $contact->setEmail($this->_get($org->contactDetails,'email'));
                     }
 
                     // add data to company
                     $company->setContactDetails($contact);
-                    $company->setName($org->name);
-                    $company->setRegistrationNumber($org->registrationNumber);
+                    $company->setName($this->_get($org,'name'));
+                    $company->setRegistrationNumber($this->_get($org,'registrationNumber'));
 
 
                     // add company to consumer
@@ -256,6 +256,16 @@ class GetPaymentResponse
     public function getIsCompany()
     {
         return $this->isCompany;
+    }
+
+
+    protected function _get($obj, $key)
+    {
+        if (isset($obj->$key)) {
+            return $obj->$key;
+        }
+
+        return null;
     }
 
 }

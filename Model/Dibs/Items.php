@@ -249,7 +249,7 @@ class Items
                     ->setUnit("st") // TODO! We need to map these somehow!
                     ->setQuantity(round($qty,0))
                     ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-                    ->setTaxAmount($this->getTotalTaxAmount($unitPrice * $qty, $vat)) // total tax amount
+                    ->setTaxAmount($this->getTotalTaxAmount($unitPrice * $qty, $vat, false)) // total tax amount
                     ->setUnitPrice($unitPriceExclTax) // excl. tax price per item
                     ->setNetTotalAmount($unitPriceExclTax * $qty) // excl. tax
                     ->setGrossTotalAmount($unitPrice * $qty); // incl. tax
@@ -675,9 +675,13 @@ class Items
         return $this->_cart;
     }
 
-    public function getTotalTaxAmount($price,$vat)
+    public function getTotalTaxAmount($price,$vat, $addZeroes = true)
     {
-        return $this->addZeroes($this->calculationTool->calcTaxAmount($price, $vat, true));
+        if ($addZeroes) {
+            return $this->addZeroes($this->calculationTool->calcTaxAmount($price, $vat, true));
+        } else {
+            return $this->calculationTool->calcTaxAmount($price, $vat, true);
+        }
     }
 
     public function addZeroes($amount)
