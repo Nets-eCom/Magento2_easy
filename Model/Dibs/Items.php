@@ -32,8 +32,6 @@ class Items
      */
     protected $_productConfig;
 
-
-
     protected $_cart     = array();
     protected $_discounts = array();
     protected $_maxvat = 0;
@@ -57,18 +55,14 @@ class Items
     }
 
 
-
-
-    public function init($store = null) {
+    public function init($store = null)
+    {
         $this->_store = $store;
         $this->_cart = array();
         $this->_discounts = array();
         $this->_maxvat = 0;
         $this->_inclTAX = false;
         $this->_toInvoice = false;
-
-
-
 
         return $this;
     }
@@ -323,7 +317,6 @@ class Items
         }
 
 
-
         //
         $orderItem = new OrderItem();
         $orderItem
@@ -408,11 +401,7 @@ class Items
                 // 20 * 1.25 = 25
                 $invoiceFeeInclTax = $invoiceFee * ((100 + $taxRate) / 100);
 
-
-
             } else {
-
-
                 // with taxes!
                 $invoiceFeeInclTax = $invoiceFee;
 

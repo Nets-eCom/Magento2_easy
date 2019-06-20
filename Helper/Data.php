@@ -123,35 +123,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * @param null $store
-     * @return bool
-     */
-    public function useInvoiceFee($store = null) {
-        return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_SETTINGS_INVOICE.'use_invoice_fee',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getInvoiceFeeLabel($store = null) {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS_INVOICE.'invoice_fee_label',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getInvoiceFee($store = null) {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS_INVOICE.'invoice_fee',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-
-    /**
-     * @param null $store
      * @return string
      */
     public function getApiUrl($store = null){

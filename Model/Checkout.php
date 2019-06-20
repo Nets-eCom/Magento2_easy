@@ -150,6 +150,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getQuoteSignature()
     {
         return $this->getHelper()->generateHashSignatureByQuote($this->getQuote());
@@ -430,13 +433,120 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
     }
 
+
+    /**
+     * @param $paymentId
+     * @return true|void
+     * @throws CheckoutException
+     */
+    public function tryToSaveDibsPayment($paymentId)
+    {
+        $session = $this->getCheckoutSession();
+
+        $checkoutPaymentId = $session->getDibsPaymentId();
+        $quote = $this->getQuote();
+
+        if (!$quote) {
+            return $this->throwRedirectToCartException(__("Your session has expired. Quote missing."));
+        }
+
+        if (!$paymentId || !$checkoutPaymentId || ($paymentId != $checkoutPaymentId)) {
+            $this->getLogger()->error("Invalid request");
+            if (!$checkoutPaymentId) {
+                $this->getLogger()->error("Save Order: No dibs checkout payment id in session.");
+                return $this->throwRedirectToCartException(__("Your session has expired."));
+            }
+
+            if ($paymentId != $checkoutPaymentId) {
+                return $this->getLogger()->error("Save Order: The session has expired or is wrong.");
+            }
+
+            return $this->getLogger()->error("Save Order: Invalid data.");
+        }
+
+
+        try {
+            $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
+        } catch (ClientException $e) {
+            if ($e->getHttpStatusCode() == 404) {
+                $this->getLogger()->error("Save Order: The dibs payment with ID: " . $paymentId . " was not found in dibs.");
+                return $this->throwReloadException(__("Could not create an order. The payment was not found in dibs."));
+            } else {
+                $this->getLogger()->error("Save Order: Something went wrong when we tried to fetch the payment ID from Dibs. Http Status code: " . $e->getHttpStatusCode());
+                $this->getLogger()->error("Error message:" . $e->getMessage());
+                $this->getLogger()->debug($e->getResponseBody());
+
+                return $this->throwReloadException(__("Could not create an order, please contact site admin. Dibs seems to be down!"));
+            }
+        } catch (\Exception $e) {
+            $this->messageManager->addExceptionMessage(
+                $e,
+                __('Something went wrong.')
+            );
+
+            $this->getLogger()->error("Save Order: Something went wrong. Might have been the request parser. Payment ID: ". $checkoutPaymentId. "... Error message:" . $e->getMessage());
+            return $this->throwReloadException(__("Something went wrong... Contact site admin."));
+        }
+
+
+        if ($payment->getOrderDetails()->getReference() !== $this->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
+            $this->getLogger()->error("Save Order: The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
+            return $this->throwReloadException(__("Could not create an order. Invalid data. Contact admin."));
+        }
+
+        if ($payment->getSummary()->getReservedAmount() === null) {
+            $this->getLogger()->error("Save Order: Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
+            return $this->throwReloadException(__("We could not create your order... The payment hasn't reached Dibs. Payment id: %1", $payment->getPaymentId()));
+        }
+
+
+        try {
+            $order = $this->placeOrder($payment, $quote);
+        } catch (\Exception $e) {
+            $this->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
+            $this->getLogger()->error("Error message:" . $e->getMessage());
+
+            return $this->throwReloadException(__("We could not create your order. Please contact the site admin with this error and payment id: %1",$payment->getPaymentId()));
+        }
+
+
+        try {
+            $this->updateMagentoPaymentReference($order, $paymentId);
+        } catch (\Exception $e) {
+            $this->getLogger()->error("
+                Order created with ID: " . $order->getIncrementId(). ". 
+                But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: ".$quote->getId()."...  Dibs Payment ID: " . $payment->getPaymentId()
+            );
+
+            // lets ignore this and save it in logs! let customer see his/her order confirmation!
+            $this->getLogger()->error("Error message:" . $e->getMessage());
+        }
+
+
+        // clear old sessions
+        $session->clearHelperData();
+        $session->clearQuote()->clearStorage();
+
+
+        // we set new sessions
+        $session
+            ->setLastQuoteId($order->getQuoteId())
+            ->setLastSuccessQuoteId($order->getQuoteId())
+            ->setLastOrderId($order->getId())
+            ->setLastRealOrderId($order->getIncrementId())
+            ->setLastOrderStatus($order->getStatus());
+
+
+        return true;
+    }
+
     /**
      * @param GetPaymentResponse $dibsPayment
      * @param Quote $quote
      * @return mixed
      * @throws \Exception
      */
-    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote) {
+    protected function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote) {
 
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
         $this->setDoNotMarkCartDirty(true);

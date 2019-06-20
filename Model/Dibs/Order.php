@@ -186,15 +186,6 @@ class Order
         $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
         $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
 
-
-        /* // This seems not to have any affect on the checkout! So I am removing it!
-        //!
-        $shippingCountries = $this->helper->getShippingCountries();
-        if (!empty($shippingCountries) && is_array($shippingCountries)) {
-            $paymentCheckout->setShippingCountries($shippingCountries);
-        }
-        */
-
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
         // we will call charge in capture online instead! so we set it to false
         $paymentCheckout->setCharge(false);
