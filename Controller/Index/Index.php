@@ -78,6 +78,10 @@ class Index extends Checkout
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
+        if ($this->getRequest()->getParam('paymentFailed')) {
+            throw new CheckoutException(__("The payment was canceled or failed."),'*/*');
+        }
+
         // it will validate the payment id and everything before trying to place the order
         return $checkout->tryToSaveDibsPayment($paymentId);
     }
