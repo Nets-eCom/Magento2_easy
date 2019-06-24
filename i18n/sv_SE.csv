@@ -32,7 +32,6 @@
 "Cart has errors, cannot checkout.","Cart has errors, cannot checkout."
 "Authorize action is not available.","Authorize action is not available."
 "Authorized amount of %1.","Authorized amount of %1."
-"Authorized amount of %1. Klarna Reservation was CREATED and transaction CLOSED. All further Klarna operations  (activate, refund) will be done, by hand, into Klarna control panel.","Authorized amount of %1. Klarna Reservation was CREATED and transaction CLOSED. All further Klarna operations  (activate, refund) will be done, by hand, into Klarna control panel."
 "Capture action is not available.","Capture action is not available."
 "Refund action is not available.","Refund action is not available."
 "Void action is not available.","Void action is not available."
