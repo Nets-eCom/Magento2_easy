@@ -104,6 +104,31 @@
                 </field>
             </group>
 
+
+            <group id="invoice" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Invoice Fee</label>
+                <field id="use_invoice_fee" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Use Invoice Fee</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="invoice_fee_label" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="320">
+                    <label>Invoice Fee Label</label>
+                    <comment>This will be displayed in the invoice row</comment>
+                    <depends>
+                        <field id="*/*/use_invoice_fee">1</field>
+                    </depends>
+                </field>
+
+                <field id="invoice_fee" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="320">
+                    <label>Invoice Fee</label>
+                    <comment>Invoice fee excl. Taxes. The tax will be calculated accordingly to the tax rates of the cart.</comment>
+                    <depends>
+                        <field id="*/*/use_invoice_fee">1</field>
+                    </depends>
+                </field>
+            </group>
+
             <group id="layout" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Layout options</label>
                 <field id="display_newsletter" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

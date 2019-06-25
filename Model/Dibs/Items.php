@@ -659,10 +659,9 @@ class Items
      * We don't add discounts or shipping here even though the invoice has discounts, we only add items to be refunded.
      * Shipping amount is added IF it should be refunded as well.
      * @param Order\Creditmemo $creditMemo
-     * @throws CheckoutException
-     * @return array
+     * @return void
      */
-    public function fromCreditMemo(Order\Creditmemo $creditMemo) {
+    public function addDibsItemsByCreditMemo(Order\Creditmemo $creditMemo) {
         $order = $creditMemo->getOrder();
 
         // no support at dibs for adjustments
@@ -676,13 +675,7 @@ class Items
             $this->addShipping($creditMemo);
         }
 
-        $grandTotal = $creditMemo->getGrandTotal();
-        $this
-            ->addDiscounts($order->getCouponCode())  //coupon code is not copied to invoice
-            ->validateTotals($grandTotal); // calculate totals
-
-        // return the items!
-        return $this->getCart();
+        $this->addDiscounts($order->getCouponCode()); //coupon code is not copied to invoice
     }
 
     public function getMaxVat()

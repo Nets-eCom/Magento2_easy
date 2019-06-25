@@ -399,12 +399,15 @@ class Order
         if ($chargeId) {
 
             $creditMemo = $payment->getCreditMemo();
-            $this->items->fromCreditMemo($creditMemo);
+            $this->items->addDibsItemsByCreditMemo($creditMemo);
 
             // remove dibs invoice fee from amount
             if ($creditMemo->getDibsInvoiceFee()) {
                 $this->items->addInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $creditMemo->getDibsInvoiceFee(), true);
             }
+
+            // We validate the items before we send them to Dibs. This might throw an exception!
+            $this->items->validateTotals($creditMemo->getGrandTotal());
 
             $refundItems = $this->items->getCart();
             $amountToRefund = $this->fixPrice($amount);
