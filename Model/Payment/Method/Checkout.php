@@ -283,7 +283,7 @@ class Checkout extends AbstractMethod
             $message = __('Authorized amount of %1.',$formattedAmount);
 
         } else {
-            $message = __('Authorized amount of %1. Klarna Reservation was CREATED and transaction CLOSED. All further Klarna operations  (activate, refund) will be done, by hand, into Klarna control panel.', $formattedAmount);
+            $message = __('Authorized amount of %1.', $formattedAmount);
         }
 
         // update transactions, order state and add comments
