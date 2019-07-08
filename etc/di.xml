@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Dibs\EasyCheckout\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="Dibs\EasyCheckout\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">dibs</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">Dibs\EasyCheckout\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+    <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Dibs\EasyCheckout\Block\Checkout\Cart\Crosssell" />
+    <type name="Magento\Checkout\Block\Onepage\Link">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
+    <type name="Magento\Checkout\Block\Cart\Sidebar">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
+    <type name="Magento\Checkout\Block\Cart">
+        <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
+    </type>
+</config>

@@ -1,0 +1,19 @@
+<?php
+
+
+// @codingStandardsIgnoreFile
+/** @var $block \Dibs\EasyCheckout\Block\Checkout */
+
+//id  #dibs-easy-checkout_shipping_method is mandatory
+$quote = $block->getQuote();
+if($quote->isVirtual()) return;
+
+?>
+<div id="dibs-easy-checkout_shipping_address">
+    <!-- 
+    <?php
+        $sa = $quote->getShippingAddress();
+        echo "PostCode: {$sa->getPostcode()}, Country: {$sa->getCountryId()}\n";
+     ?>
+     -->
+</div>

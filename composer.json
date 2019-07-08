@@ -1,0 +1,20 @@
+{
+  "name": "dibs/easycheckout",
+  "description": "Dibs Easy Checkout",
+  "type": "magento2-module",
+  "version": "1.0.0",
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Dibs\\EasyCheckout\\": ""
+    }
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://repo.magento.com/"
+    }
+  ]
+}

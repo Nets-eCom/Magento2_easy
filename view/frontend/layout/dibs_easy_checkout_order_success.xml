@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>Success</title>
+    </head>
+
+    <body>
+
+        <referenceBlock name="minicart" remove="true"/>
+        <referenceBlock name="authentication-popup" remove="true" />
+
+        <referenceContainer name="page.messages">
+            <block class="Dibs\EasyCheckout\Block\Messages" name="dibs_easy_checkout_validationmessages"/>
+        </referenceContainer>
+        <referenceContainer name="content">
+            <container name="dibs_easy_checkoutSidebar" as="dibs_easy_checkoutSidebar" label="Dibs_EasycCheckout Sidebar" htmlTag="div" htmlId="dibs_easy_checkoutSidebar">
+                <block class="Dibs\EasyCheckout\Block\Success" name="dibs_easy_checkout_success" template="success.phtml" cacheable="false" />
+                <block class="Magento\GoogleAdwords\Block\Code" name="google.adwords.code" template="code.phtml"/>
+            </container>
+        </referenceContainer>
+
+        <container name="order.success.additional.info" label="Order Success Additional Info"/>
+    </body>
+</page>

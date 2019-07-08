@@ -1,0 +1,7 @@
+<?php
+/**
+ * @var $block \Dibs\EasyCheckout\Block\Payment\Checkout\Info
+ */
+?>
+<?php echo $block->escapeHtml(__('Dibs Easy Checkout Payment ID: %1', $block->getInfo()->getAdditionalInformation('dibs_payment_id'))) ?>
+    {{pdf_row_separator}}

@@ -1,0 +1,12 @@
+<?php
+/**
+ * @var $block \Dibs\EasyCheckout\Block\Payment\Checkout\Info
+ */
+?>
+<div class="order-payment-method-name"><?php echo $block->escapeHtml($block->getMethod()->getTitle()); ?></div>
+<table class="data-table admin__table-secondary">
+    <tr>
+        <th><?php echo $block->escapeHtml(__('Dibs Easy Checkout Payment ID')); ?>:</th>
+        <td><?php echo $block->escapeHtml($block->getInfo()->getAdditionalInformation('dibs_payment_id')); ?></td>
+    </tr>
+</table>

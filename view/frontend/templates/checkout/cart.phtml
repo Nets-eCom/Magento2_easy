@@ -1,0 +1,55 @@
+<?php
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+// @codingStandardsIgnoreFile
+/**
+ * @see \Magento\Paypal\Block\Express\Review\Details
+ * @var \Magento\Paypal\Block\Express\Review\Details $block
+ */
+// dibs-easy-checkout_cart id is mandatory (it's used into ajax update blocks part)
+
+$cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
+$currency = $cartHelper->getCurrencyCode();
+?>
+<div id="dibs-easy-checkout_cart" class="table-wrapper order-items">
+    <table id="details-table" class="dibs-easy-checkout-review" cellspacing="0" cellpadding="0" border="0">
+        <thead>
+        <tr>
+            <th class="col item-img" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Item') ?></span>
+            </th>
+            <th class="col item-desc" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Description') ?></span>
+            </th>
+            <th class="col qty" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Quantity') ?></span>
+            </th>
+            <th class="col price" scope="col">
+                <span><?= /* @escapeNotVerified */
+                    __('Price') ?></span>
+                <span class="currency"><?= $currency ?></span>
+            </th>
+        </tr>
+        </thead>
+        <tbody class="dibs-easy-checkout-cart dibs-easy-checkout-item">
+        <?php foreach ($block->getItems() as $item): ?>
+            <?php echo $block->getItemHtml($item) ?>
+        <?php endforeach ?>
+        </tbody>
+    </table>
+    <div id="dibs-easy-checkout_cart_totals">
+        <table cellspacing="0" cellpadding="0" border="0">
+            <tfoot>
+            <?php echo $block->getChildHtml('totals'); ?>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+

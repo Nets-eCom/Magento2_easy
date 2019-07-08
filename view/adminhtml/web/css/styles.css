@@ -1,0 +1,21 @@
+@font-face {
+    font-family: 'dibs_icon';
+    src: url('../fonts/dibs_icon.eot?n9o06w');
+    src: url('../fonts/dibs_icon.eot?n9o06w#iefix') format('embedded-opentype'),
+    url('../fonts/dibs_icon.ttf?n9o06w') format('truetype'),
+    url('../fonts/dibs_icon.woff?n9o06w') format('woff'),
+    url('../fonts/dibs_icon.svg?n9o06w#dibs_icon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.admin__menu .item-dibs.level-0 > a:before {
+    font-family: 'dibs_icon' !important;
+    content: '\e900';
+}
+
+.dibs_information {
+    background-image: url(../images/dibs_logo_142x72.jpg);
+    background-repeat: no-repeat;
+    height: 10rem;
+}

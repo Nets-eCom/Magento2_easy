@@ -1,0 +1,64 @@
+<?php
+// @codingStandardsIgnoreFile
+
+
+/** @var $block Dibs\EasyCheckout\Block\Checkout */
+$counter = $this->helper('\Magento\Checkout\Helper\Cart');
+?>
+<div class="dibs-easy-checkout-review" id="dibs-easy-checkout-review">
+    <div class="dibs-easy-checkout-cart dibs-easy-checkout-section" id="dibs-easy-checkout-cart">
+        <div class="dibs-easy-checkout-title" data-role="title">
+            <h1 id="dibs-easy-checkout-cart-heading" role="heading" aria-level="2">
+                <span class="dibs-payment-methods__img">
+                    <img src="<?= $block->getViewFileUrl('Dibs_EasyCheckout::images/payment-methods.svg') ?>"/>
+                </span>
+                <span><?= __('Basket') ?></span>
+                <span class="counter">
+                   <?php if ($counter->getItemsCount() > 1): ?>
+                       <?= /* @escapeNotVerified */
+                       __('%1 Items ', $counter->getItemsCount()) ?>
+                   <?php elseif ($counter->getItemsCount() == 1): ?>
+                       <?= /* @escapeNotVerified */
+                       __('%1 Item', $counter->getItemsCount()) ?>
+                   <?php endif; ?>
+                </span>
+            </h1>
+        </div>
+        <div class="dibs-easy-checkout-section-content" data-role="content"
+             aria-labelledby="dibs-easy-checkout-cart-heading">
+            <?php echo $block->getChildHtml('cart'); ?>
+        </div>
+    </div>
+    <?php echo $block->getChildHtml('shipping'); ?>
+    <div class="dibs-easy-checkout-extra">
+        <div class="dibs-easy-checkout-extra__right">
+            <?php echo $block->getChildHtml('coupon'); ?>
+            <?php echo $block->getChildHtml('newsletter'); ?>
+        </div>
+        <div class="dibs-easy-checkout-extra__left">
+            <?php echo $block->getChildHtml('grand_total'); ?>
+            <?php echo $block->getChildHtml('to_payment'); ?>
+        </div>
+    </div>
+</div>
+
+<span class="please-wait load indicator" id="review-please-wait" style="display: none;"
+      data-text="<?php echo $block->escapeHtml(__('Submitting order information...')); ?>">
+    <span><?php echo $block->escapeHtml(__('Submitting order information...')); ?></span>
+</span>
+<script type="text/x-magento-init">
+    {
+        "#dibs-easy-checkout-review": {
+            "dibsEasyCheckout": {
+                "ctrlkey": "<?php echo $block->generateHashSignatureByQuote(); ?>",
+                "ctrlcookie": "<?php echo $block->getCartCtrlKeyCookieName(); ?>",
+                "dibsShippingAddressChange": "<?php echo $block->getShippingAddressSubmitUrl(); ?>"
+            }
+        }
+    }
+
+
+
+
+
+</script>

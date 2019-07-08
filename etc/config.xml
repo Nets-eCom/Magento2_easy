@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <dibs_easycheckout>
+            <general>
+                <enabled>0</enabled>
+            </general>
+            <settings>
+                <add_css>0</add_css>
+            </settings>
+            <layout>
+                <display_newsletter>1</display_newsletter>
+                <display_discount>1</display_discount>
+            </layout>
+            <crosssell>
+                <display_crosssell>1</display_crosssell>
+                <crosssell_limit>8</crosssell_limit>
+            </crosssell>
+        </dibs_easycheckout>
+
+        <payment>
+            <dibseasycheckout>
+                <active>1</active>
+                <model>Dibs\EasyCheckout\Model\Payment\Method\Checkout</model>
+                <order_status>pending</order_status>
+                <title>Dibs Easy Checkout</title>
+            </dibseasycheckout>
+        </payment>
+    </default>
+</config>
