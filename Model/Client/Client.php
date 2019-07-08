@@ -13,6 +13,8 @@ use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
 abstract class Client
 {
 
+    const COMMERCE_PLATFORM_TAG = 'NWTMagento2';
+
     /**
      * @var int
      */
@@ -185,6 +187,7 @@ abstract class Client
 
         $options['headers'] = [
             'Content-Type' => 'application/json',
+            'commercePlatformTag' => self::COMMERCE_PLATFORM_TAG,
             'Authorization' => $this->apiSecretKey,
         ];
 
