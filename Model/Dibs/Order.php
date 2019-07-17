@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Dibs\EasyCheckout\Model\Dibs;
-
 
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Dibs\EasyCheckout\Model\Client\ClientException;
@@ -14,7 +12,6 @@ use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentMethod;
 use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
@@ -46,7 +43,6 @@ class Order
      */
     protected $_countryFactory;
 
-
     public function __construct(
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
         \Dibs\EasyCheckout\Helper\Data $helper,
@@ -57,7 +53,6 @@ class Order
         $this->items = $itemsHandler;
         $this->paymentApi = $paymentApi;
         $this->_countryFactory  = $countryFactory;
-
     }
 
     /** @var $_quote Quote */
@@ -67,9 +62,8 @@ class Order
      * @throws LocalizedException
      * @return $this
      */
-    public function assignQuote(Quote $quote,$validate = true)
+    public function assignQuote(Quote $quote, $validate = true)
     {
-
         if ($validate) {
             if (!$quote->hasItems()) {
                 throw new LocalizedException(__('Empty Cart'));
@@ -85,7 +79,6 @@ class Order
         return $this;
     }
 
-
     /**
      * @param Quote $quote
      * @return string
@@ -97,7 +90,6 @@ class Order
         //  if(!$this->getOrderAdapter()->orderDataCountryIsValid($data,$country)){
         //    throw new Exception
         //}
-
 
         $paymentResponse = $this->createNewDibsPayment($quote);
         return $paymentResponse->getPaymentId();
@@ -125,7 +117,6 @@ class Order
         return false;
     }
 
-
     /**
      * @param Quote $quote
      * @param $paymentId
@@ -147,7 +138,6 @@ class Order
         return $this->paymentApi->UpdatePaymentCart($payment, $paymentId);
     }
 
-
     /**
      * This function will create a new dibs payment.
      * The payment ID which is returned in the response will be added to the DIBS javascript API, to load the payment iframe.
@@ -162,7 +152,6 @@ class Order
 
         // TODO handle this exception?
         $items = $this->items->generateOrderItemsFromQuote($quote);
-
 
         // todo check settings if b2c or/and b2b are accepted
         $consumerType = new ConsumerType();
@@ -197,7 +186,6 @@ class Order
         // if set to true the checkout will not load any user data
         $paymentCheckout->setPublicDevice(false);
 
-
         // we generate the order here, amount and items
         $paymentOrder = new CreatePaymentOrder();
 
@@ -211,14 +199,13 @@ class Order
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);
 
-
         if ($this->helper->useInvoiceFee()) {
             $invoiceLabel = $this->helper->getInvoiceFeeLabel();
             $invoiceLabel = $invoiceLabel ? $invoiceLabel : __("Invoice Fee");
             $invoiceFee = $this->helper->getInvoiceFee();
 
             if ($invoiceFee > 0) {
-                $feeItem = $this->items->generateInvoiceFeeItem($invoiceLabel,$invoiceFee, false);
+                $feeItem = $this->items->generateInvoiceFeeItem($invoiceLabel, $invoiceFee, false);
 
                 $paymentFee = new PaymentMethod();
                 $paymentFee->setName("easyinvoice");
@@ -230,7 +217,6 @@ class Order
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }
-
 
     /**
      * @param \Magento\Sales\Model\Order $order
@@ -246,7 +232,6 @@ class Order
         $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
 
-
     /**
      * @param GetPaymentResponse $payment
      * @param null $countryIdFallback
@@ -255,9 +240,8 @@ class Order
     public function convertDibsShippingToMagentoAddress(GetPaymentResponse $payment, $countryIdFallback = null)
     {
         if ($payment->getConsumer() === null) {
-            return array();
+            return [];
         }
-
 
         $company = null;
         // if company name is set, then contact details are too
@@ -304,10 +288,8 @@ class Order
             $data['country_id'] = $countryId;
         }
 
-
         return $data;
     }
-
 
     /**
      * @param \Magento\Payment\Model\InfoInterface $payment
@@ -327,14 +309,12 @@ class Order
 
             // cancel it now!
             $this->paymentApi->cancelPayment($paymentObj, $paymentId);
-
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('You need an dibs payment ID to void.')
             );
         }
     }
-
 
     /**
      * @param \Magento\Payment\Model\InfoInterface $payment
@@ -349,7 +329,7 @@ class Order
 
             /** @var Invoice $invoice */
             $invoice = $payment->getCapturedInvoice(); // we get this from Observer\PaymentCapture
-            if(!$invoice) {
+            if (!$invoice) {
                 throw new LocalizedException(__('Cannot capture online, no invoice set'));
             }
 
@@ -377,15 +357,12 @@ class Order
             // save charge id, we need it later! if a refund will be made
             $payment->setAdditionalInformation('dibs_charge_id', $response->getChargeId());
             $payment->setTransactionId($response->getChargeId());
-
-
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('You need an dibs payment ID to capture.')
             );
         }
     }
-
 
     /**
      * @param \Magento\Payment\Model\InfoInterface $payment
@@ -397,13 +374,29 @@ class Order
     {
         $chargeId = $payment->getAdditionalInformation('dibs_charge_id');
         if ($chargeId) {
-
             $creditMemo = $payment->getCreditMemo();
             $this->items->addDibsItemsByCreditMemo($creditMemo);
 
             // remove dibs invoice fee from amount
             if ($creditMemo->getDibsInvoiceFee()) {
-                $this->items->addInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $creditMemo->getDibsInvoiceFee(), true);
+                $invoiceFee = $this->items->generateInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $creditMemo->getDibsInvoiceFee(), true);
+
+                $fee = ($invoiceFee->getGrossTotalAmount() / 100);
+
+                if ($creditMemo->getAdjustmentNegative() && $fee != $creditMemo->getAdjustmentNegative()) {
+                    throw new LocalizedException(__("The adjustment fee must match the Dibs Invoice Fee, if you don't want to refund the invoice fee."));
+                }
+
+                // we only add invoice fee to refund if adjustment fee isnt matching the invoice fee
+                if ($creditMemo->getAdjustmentNegative() != $fee) {
+                    $this->items->addToCart($invoiceFee);
+                }
+
+
+            } else {
+                if ($creditMemo->getAdjustmentNegative() > 0) {
+                    throw new LocalizedException(__("You can only add an adjustment fee that matches the Dibs Invoice Fee"));
+                }
             }
 
             // We validate the items before we send them to Dibs. This might throw an exception!
@@ -427,15 +420,12 @@ class Order
             } catch (\Exception $e) {
                 // do nothing we dont really  need this
             }
-
-
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('You need an dibs charge ID to refund.')
             );
         }
     }
-
 
     /**
      * @param $paymentId
@@ -456,7 +446,6 @@ class Order
         return $price * 100;
     }
 
-
     /**
      * @return Payment
      */
@@ -471,6 +460,6 @@ class Order
      */
     public function generateReferenceByQuoteId($quoteId)
     {
-       return "quote_id_" . $quoteId;
+        return "quote_id_" . $quoteId;
     }
 }

@@ -51,8 +51,13 @@ class ClientException extends Exception
         return $this->responseBody;
     }
 
-    protected function buildMessage(ResponseInterface $response, $fallbackMessage) {
-        if (!$response) {
+    /**
+     * @param ResponseInterface|null $response
+     * @param string $fallbackMessage
+     * @return string
+     */
+    protected function buildMessage($response, $fallbackMessage = "") {
+        if (!$response || !($response instanceof ResponseInterface)) {
             return $fallbackMessage;
         }
 
