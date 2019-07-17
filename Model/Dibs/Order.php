@@ -72,7 +72,6 @@ class Order
                 throw new LocalizedException(__('Cart has errors, cannot checkout.'));
             }
 
-            // TOdo we should check that the currency is valid (SEK, NOK, DKK)
         }
 
         $this->_quote = $quote;
@@ -86,10 +85,6 @@ class Order
      */
     public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote)
     {
-        // todo check if country is cvalid
-        //  if(!$this->getOrderAdapter()->orderDataCountryIsValid($data,$country)){
-        //    throw new Exception
-        //}
 
         $paymentResponse = $this->createNewDibsPayment($quote);
         return $paymentResponse->getPaymentId();
@@ -125,14 +120,12 @@ class Order
      */
     public function updateCheckoutPaymentByQuoteAndPaymentId(Quote $quote, $paymentId)
     {
-        // TODO handle this exception?
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
         $payment = new UpdatePaymentCart();
         $payment->setAmount($this->fixPrice($quote->getGrandTotal()));
         $payment->setItems($items);
 
-        // todo check shipping methods
         $payment->setShippingCostSpecified(true);
 
         return $this->paymentApi->UpdatePaymentCart($payment, $paymentId);
@@ -150,17 +143,14 @@ class Order
     {
         $dibsAmount = $this->fixPrice($quote->getGrandTotal());
 
-        // TODO handle this exception?
+        // let it throw exception, should be handled somewhere else
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
-        // todo check settings if b2c or/and b2b are accepted
-        $consumerType = new ConsumerType();
-        $consumerType->setUseB2bAndB2c();
-        $consumerType->setDefault($this->helper->getDefaultConsumerType());
-
+        // set consumer type(s)
         $defaultConsumerType = $this->helper->getDefaultConsumerType();
         $consumerTypes = $this->helper->getConsumerTypes();
 
+        $consumerType = new ConsumerType();
         // if no settings are added, add B2C
         if (!$defaultConsumerType || !$consumerTypes) {
             $consumerType->setUseB2cOnly();
@@ -199,6 +189,7 @@ class Order
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);
 
+        // add invoice fee
         if ($this->helper->useInvoiceFee()) {
             $invoiceLabel = $this->helper->getInvoiceFeeLabel();
             $invoiceLabel = $invoiceLabel ? $invoiceLabel : __("Invoice Fee");

@@ -67,7 +67,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             //$this->_logger->info(__("Set customer %1",$customer->getId()));
             $quote->assignCustomer($customer->getCustomerDataObject()); //this will set also primary billing/shipping address as billing address
             //$quote->setCustomer($customer->getCustomerDataObject());
-            //TODO: set customer address
+
         }
 
         $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked into $this->checkCart())

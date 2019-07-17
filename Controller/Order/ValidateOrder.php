@@ -41,7 +41,6 @@ class ValidateOrder extends Update
                 $checkout->getLogger()->error("Validate Order: Error message:" . $e->getMessage());
                 $checkout->getLogger()->debug($e->getResponseBody());
 
-                // todo show error to customer in magento! order could not be placed
                 return $this->respondWithError("Something went wrong when we tried to retrieve the order from Dibs. Please try again or contact an admin.");
 
             }

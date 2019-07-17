@@ -374,14 +374,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @return string
-     */
-    public function getHeaderText()
-    {
-        return ""; // todo translate or get from settings =)
-    }
-
-    /**
      * @param $path
      * @param null $store
      * @return mixed

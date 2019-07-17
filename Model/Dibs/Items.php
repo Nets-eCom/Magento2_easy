@@ -226,7 +226,7 @@ class Items
                 $orderItem
                     ->setReference($sku)
                     ->setName($item->getName() . " " . ($comment ? "({$comment})" : ""))
-                    ->setUnit("st") // TODO! We need to map these somehow!
+                    ->setUnit("st")
                     ->setQuantity(round($qty, 0))
                     ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
                     ->setTaxAmount($this->getTotalTaxAmount($unitPrice * $qty, $vat, false)) // total tax amount
