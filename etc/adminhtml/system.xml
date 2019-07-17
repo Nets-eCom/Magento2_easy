@@ -67,6 +67,12 @@
                     <comment>Choose default customer type</comment>
                 </field>
 
+                <field id="checkout_flow" translate="label comment" type="select" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Checkout Flow</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\CheckoutFlow</source_model>
+                    <comment>Choose checkout flow.</comment>
+                </field>
+
 
                 <field id="can_capture" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Capture/Refund payment</label>
