@@ -4,6 +4,7 @@ namespace Dibs\EasyCheckout\Model;
 
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
+use Dibs\EasyCheckout\Model\Client\DTO\PaymentResponseInterface;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
@@ -269,11 +270,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
     /**
-     * @return $this
+     * @param $integrationType string
+     * @return PaymentResponseInterface
      * @throws LocalizedException
      */
-    public function initDibsCheckout()
+    public function initDibsCheckout($integrationType)
     {
+
         $quote       = $this->getQuote();
         $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
 
@@ -284,6 +287,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $paymentId = $this->getCheckoutSession()->getDibsPaymentId(); //check session for Dibs Payment Id
         if ($paymentId) {
             try {
+
+                // this will try to load the dibs payment if it exists
+                $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
 
                 // here we should check if we need to update the dibs payment!
                 if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $this->getCheckoutSession()->getDibsQuoteSignature())) {
@@ -302,7 +308,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 $this->getCheckoutSession()->unsDibsQuoteSignature(); //remove signature from session
 
                 // this will create an api call to dibs and initiaze an new payment
-                $newPaymentId = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote);
+                $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
+                $newPaymentId = $payment->getPaymentId();
 
                 //save the payment id and quote signature in checkout/session
                 $this->getCheckoutSession()->setDibsPaymentId($newPaymentId);
@@ -315,14 +322,24 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         } else {
 
             // this will create an api call to dibs and initiaze a new payment
-            $paymentId = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote);
+            $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
+            $paymentId = $payment->getPaymentId();
 
             //save dibs uri in checkout/session
             $this->getCheckoutSession()->setDibsPaymentId($paymentId);
             $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
         }
 
-        return $this;
+        return $payment;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLocale()
+    {
+        $countryCode = $this->getQuote()->getShippingAddress()->getCountryId();
+        return $this->context->getDibsLocale()->getLocaleByCountryCode($countryCode);
     }
 
     /**

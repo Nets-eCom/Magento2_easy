@@ -71,7 +71,6 @@ class Order
             if ($quote->getHasError()) {
                 throw new LocalizedException(__('Cart has errors, cannot checkout.'));
             }
-
         }
 
         $this->_quote = $quote;
@@ -80,14 +79,13 @@ class Order
 
     /**
      * @param Quote $quote
-     * @return string
+     * @param string $integrationType
+     * @return CreatePaymentResponse
      * @throws \Exception
      */
-    public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote)
+    public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote, $integrationType)
     {
-
-        $paymentResponse = $this->createNewDibsPayment($quote);
-        return $paymentResponse->getPaymentId();
+        return $this->createNewDibsPayment($quote, $integrationType);
     }
 
     /**
@@ -136,10 +134,11 @@ class Order
      * The payment ID which is returned in the response will be added to the DIBS javascript API, to load the payment iframe.
      *
      * @param Quote $quote
+     * @param $integrationType string
      * @throws ClientException
      * @return CreatePaymentResponse
      */
-    protected function createNewDibsPayment(Quote $quote)
+    protected function createNewDibsPayment(Quote $quote, $integrationType)
     {
         $dibsAmount = $this->fixPrice($quote->getGrandTotal());
 
@@ -161,9 +160,16 @@ class Order
 
         $paymentCheckout = new CreatePaymentCheckout();
         $paymentCheckout->setConsumerType($consumerType);
-        $paymentCheckout->setIntegrationType($paymentCheckout::INTEGRATION_TYPE_EMBEDDED);
-        $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
+        $paymentCheckout->setIntegrationType($integrationType);
         $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
+
+        if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
+            // when we use hosted flow we set the url where customer should be redirected back
+            $paymentCheckout->setReturnUrl($this->helper->getCheckoutUrl());
+        } else {
+            // when we use embedded, we set the url!
+            $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
+        }
 
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
         // we will call charge in capture online instead! so we set it to false
@@ -382,8 +388,6 @@ class Order
                 if ($creditMemo->getAdjustmentNegative() != $fee) {
                     $this->items->addToCart($invoiceFee);
                 }
-
-
             } else {
                 if ($creditMemo->getAdjustmentNegative() > 0) {
                     throw new LocalizedException(__("You can only add an adjustment fee that matches the Dibs Invoice Fee"));
@@ -395,7 +399,6 @@ class Order
 
             $refundItems = $this->items->getCart();
             $amountToRefund = $this->fixPrice($amount);
-
 
             $paymentObj = new RefundPayment();
             $paymentObj->setAmount($amountToRefund);

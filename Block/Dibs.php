@@ -1,10 +1,8 @@
 <?php
 namespace Dibs\EasyCheckout\Block;
 
-
 class Dibs extends \Magento\Framework\View\Element\Template
 {
-
 
     /**
      * @var \Dibs\EasyCheckout\Helper\Data
@@ -31,19 +29,10 @@ class Dibs extends \Magento\Framework\View\Element\Template
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Dibs\EasyCheckout\Service\GetCurrentDibsPaymentId $getCurrentDibsPaymentIdService,
         array $data = []
-    )
-    {
-
+    ) {
         $this->getCurrentDibsPaymentIdService = $getCurrentDibsPaymentIdService;
         $this->helper = $helper;
         parent::__construct($context, $data);
-    }
-
-
-    public function getDibsLocale()
-    {
-        // Todo remove hardcode
-        return "sv-SE";
     }
 
     public function getDibsCheckoutKey()
@@ -51,14 +40,14 @@ class Dibs extends \Magento\Framework\View\Element\Template
         return $this->getHelper()->getApiCheckoutKey();
     }
 
-
     public function getDibsPaymentId()
     {
         return $this->getCurrentDibsPaymentIdService->getDibsPaymentId();
     }
 
-    public function getHelper(){
+    public function getHelper()
+    {
         return $this->helper;
     }
- }
 
+}
