@@ -59,6 +59,7 @@ class GetPaymentResponse implements PaymentResponseInterface
 
             if (!empty((array)$p->summary)) {
                 $summary->setReservedAmount($this->_get($p->summary, 'reservedAmount'));
+                $summary->setChargedAmount($this->_get($p->summary, 'chargedAmount'));
             }
 
             if (!empty((array)$p->paymentDetails) && isset($p->paymentDetails->paymentMethod)) {

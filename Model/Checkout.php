@@ -68,7 +68,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             //$this->_logger->info(__("Set customer %1",$customer->getId()));
             $quote->assignCustomer($customer->getCustomerDataObject()); //this will set also primary billing/shipping address as billing address
             //$quote->setCustomer($customer->getCustomerDataObject());
-
         }
 
         $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked into $this->checkCart())
@@ -276,7 +275,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function initDibsCheckout($integrationType)
     {
-
         $quote       = $this->getQuote();
         $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
 
@@ -490,9 +488,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             return $this->throwReloadException(__("Could not create an order. Invalid data. Contact admin."));
         }
 
-        if ($payment->getSummary()->getReservedAmount() === null) {
+        // In Swish there is no reserved amount?
+        if ($payment->getSummary()->getReservedAmount() === null && $payment->getSummary()->getChargedAmount() === null()) {
             $this->getLogger()->error("Save Order: Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
-            return $this->throwReloadException(__("We could not create your order... The payment hasn't reached Dibs. Payment id: %1", $payment->getPaymentId()));
+            return $this->throwReloadException(__("We could not create your order... No reserved or charged amount found. Payment id: %1", $payment->getPaymentId()));
         }
 
         try {
@@ -644,7 +643,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         //!
         // Now we create the order from the quote
         try {
-
             $order = $this->quoteManagement->submit($quote);
         } catch (\Exception $e) {
             $this->_logger->error($e);
