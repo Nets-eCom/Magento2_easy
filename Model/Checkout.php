@@ -489,7 +489,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         // In Swish there is no reserved amount?
-        if ($payment->getSummary()->getReservedAmount() === null && $payment->getSummary()->getChargedAmount() === null()) {
+        if ($payment->getSummary()->getReservedAmount() === null && $payment->getSummary()->getChargedAmount() === null) {
             $this->getLogger()->error("Save Order: Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
             return $this->throwReloadException(__("We could not create your order... No reserved or charged amount found. Payment id: %1", $payment->getPaymentId()));
         }
