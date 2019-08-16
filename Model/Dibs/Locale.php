@@ -83,10 +83,6 @@ class Locale
         "LIE"  => "LI",
     ];
 
-    protected $allowedCountries = [
-        "SE","NO","DK",
-    ];
-
     protected $localeMap = [
         "SE" => "sv-SE",
         "NO" => "nb-NO",
@@ -121,19 +117,6 @@ class Locale
         return $this->allowedCurrencies;
     }
 
-    /**
-     * @return array
-     */
-    public function getAllowedShippingCountries($code = null)
-    {
-        if ($code === "iso2") {
-            return array_values($this->allowedShippingCountries);
-        } elseif ($code === "iso3") {
-            return array_keys($this->allowedShippingCountries);
-        }
-
-        return $this->allowedShippingCountries;
-    }
 
     /**
      * @param $countryCode string
@@ -146,13 +129,5 @@ class Locale
         }
 
         return "en-GB";
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllowedCountries()
-    {
-        return $this->allowedCountries;
     }
 }

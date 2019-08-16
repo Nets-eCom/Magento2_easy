@@ -167,10 +167,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->throwRedirectToCartException(__('The Dibs Easy Checkout is not enabled, please use an alternative checkout method.'));
         }
 
-        if (!$this->getAllowedCountries()) {
-            $this->throwRedirectToCartException(__('The Dibs Easy Checkout is NOT available (no allowed country), please use an alternative checkout method.'));
-        }
-
         if (!$quote->hasItems()) {
             $this->throwRedirectToCartException(__('There are no items in your cart.'));
         }
@@ -219,10 +215,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function changeCountry($country, $saveQuote = false)
     {
-        $allowCountries = $this->getAllowedCountries();
-        if (!$country || !in_array($country, $allowCountries)) {
-            throw new LocalizedException(__('Invalid country (%1)', $country));
-        }
 
         $blankAddress = $this->getBlankAddress($country);
         $quote        = $this->getQuote();
@@ -262,10 +254,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function getAllowedCountries()
     {
         if (is_null($this->_allowedCountries)) {
-            $this->_allowedCountries = ["SE", "DK", "NO"]; // todo get from settings
+            $this->_allowedCountries = $this->getHelper()->getCountries();
         }
 
-        return $this->_allowedCountries;
+        return array_keys($this->_allowedCountries);
     }
 
     /**

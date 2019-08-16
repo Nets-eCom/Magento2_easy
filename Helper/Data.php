@@ -51,6 +51,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale */
     protected $dibsLocale;
 
+    protected $allowedCountryModel;
+
     /**
      * Data constructor.
      * @param \Magento\Framework\App\Helper\Context $context
@@ -60,10 +62,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Dibs\EasyCheckout\Model\Dibs\Locale $locale
+        \Dibs\EasyCheckout\Model\Dibs\Locale $locale,
+        \Magento\Directory\Model\AllowedCountries $allowedCountryModel
     ) {
         $this->dibsLocale = $locale;
         $this->storeManager = $storeManager;
+        $this->allowedCountryModel = $allowedCountryModel;
+
         parent::__construct($context);
     }
 
@@ -284,36 +289,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCountries($store = null)
     {
-        $values = $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS . 'allowed_countries',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-
-        return $this->splitStringToArray($values);
-    }
-
-    /*
-    public function getShippingCountries($store = null)
-    {
-        $values = $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'allowed_shipping_countries',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-
-        return $this->splitStringToArray($values);
-    }
-    */
-
-    public function getDefaultCountry($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS . 'default_country',
+        return $this->allowedCountryModel->getAllowedCountries(
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
     }
+
 
     public function getDefaultConsumerType($store = null)
     {
