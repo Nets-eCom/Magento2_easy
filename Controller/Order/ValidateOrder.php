@@ -6,12 +6,8 @@ use Dibs\EasyCheckout\Model\Client\ClientException;
 
 class ValidateOrder extends Update
 {
-
-
-
     public function execute()
     {
-
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
@@ -23,12 +19,10 @@ class ValidateOrder extends Update
             return $this->respondWithError("Your session has expired, found no dibs payment id.");
         }
 
-
         if (!$quote) {
             $checkout->getLogger()->error("Validate Order: No quote found for this customer.");
             return $this->respondWithError("Your session has expired, found no quote.");
         }
-
 
         try {
             $payment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($checkoutPaymentId);
@@ -41,9 +35,7 @@ class ValidateOrder extends Update
                 $checkout->getLogger()->error("Validate Order: Error message:" . $e->getMessage());
                 $checkout->getLogger()->debug($e->getResponseBody());
 
-                // todo show error to customer in magento! order could not be placed
                 return $this->respondWithError("Something went wrong when we tried to retrieve the order from Dibs. Please try again or contact an admin.");
-
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
@@ -51,7 +43,7 @@ class ValidateOrder extends Update
                 __('Something went wrong.')
             );
 
-            $checkout->getLogger()->error("Validate Order: Something went wrong. Might have been the request parser. Payment ID: ". $checkoutPaymentId. "... Error message:" . $e->getMessage());
+            $checkout->getLogger()->error("Validate Order: Something went wrong. Might have been the request parser. Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
             return $this->respondWithError("Something went wrong... Contact site admin.");
         }
 
@@ -66,7 +58,6 @@ class ValidateOrder extends Update
         // check other quote stuff
 
         try {
-
             $oldPostCode = $quote->getShippingAddress()->getPostcode();
             $oldCountryId = $quote->getShippingAddress()->getCountryId();
 
@@ -84,26 +75,23 @@ class ValidateOrder extends Update
                     'postalCode' => $currentPostalCode, 'countryId' => $currentCountryId
                 ]);
             }
-
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
                 $e,
                 __('Something went wrong.')
             );
 
-            $checkout->getLogger()->error("Validate Order: Something went wrong... Payment ID: ". $checkoutPaymentId. "... Error message:" . $e->getMessage());
+            $checkout->getLogger()->error("Validate Order: Something went wrong... Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
             return $this->respondWithError("Something went wrong... Contact site admin.");
         }
 
-
-
-        $this->getResponse()->setBody(json_encode(array('chooseShippingMethod' => false, 'error' => false)));
+        $this->getResponse()->setBody(json_encode(['chooseShippingMethod' => false, 'error' => false]));
         return false;
     }
 
-    protected function respondWithError($message,$chooseShippingMethod = false, $extraData = [])
+    protected function respondWithError($message, $chooseShippingMethod = false, $extraData = [])
     {
-        $data = array('messages' => $message, "chooseShippingMethod" => $chooseShippingMethod, 'error' => true);
+        $data = ['messages' => $message, "chooseShippingMethod" => $chooseShippingMethod, 'error' => true];
         $data = array_merge($data, $extraData);
         $this->getResponse()->setBody(json_encode($data));
         return false;

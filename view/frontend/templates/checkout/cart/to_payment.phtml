@@ -1,8 +1,23 @@
+<?php
+// @codingStandardsIgnoreFile
+
+/** @var $block Dibs\EasyCheckout\Block\Checkout */
+
+
+?>
 <div class="dibs-easy-checkout-block grand-total">
     <div class="go-to-container">
-        <button class="go-to dibs-btn" style="display: none"
-           title="<?= __('Go to payment') ?>">
-            <span><?= __('Go to payment') ?></span>
-        </button>
+
+        <?php if ($block->getUseIframe()): ?>
+            <button class="go-to dibs-btn" style="display: none"
+               title="<?= __('Go to payment') ?>">
+                <span><?= __('Go to payment') ?></span>
+            </button>
+        <?php else: ?>
+            <button onclick="window.location='<?php echo $block->getCheckoutRedirectUrl(); ?>';" class="go-to dibs-btn" style="display: none"
+                    title="<?= __('Go to payment') ?>">
+                <span><?= __('Go to payment') ?></span>
+            </button>
+        <?php endif; ?>
     </div>
 </div>

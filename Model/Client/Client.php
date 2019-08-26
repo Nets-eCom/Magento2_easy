@@ -52,7 +52,7 @@ abstract class Client
     {
         $this->httpClient = new \GuzzleHttp\Client([
             'base_uri' => $baseUrl,
-            //    'verify' => false,
+        //    'verify' => false,
         ]);
     }
 
@@ -121,7 +121,6 @@ abstract class Client
         $options[RequestOptions::JSON] = $request->toArray();
         $exception = null;
 
-        // todo catch exceptions or let them be catched by magento?
         try {
             $result = $this->httpClient->post($endpoint, $options);
             return $result->getBody()->getContents();
@@ -239,3 +238,12 @@ abstract class Client
     }
 
 }
+
+
+
+
+
+
+
+
+

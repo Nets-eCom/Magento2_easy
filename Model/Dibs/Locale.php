@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Dibs\EasyCheckout\Model\Dibs;
-
 
 class Locale
 {
@@ -27,7 +25,6 @@ class Locale
     protected $allowedCurrencies = [
       "SEK","NOK","DKK"
     ];
-
 
     /**
      * Iso Codes
@@ -86,14 +83,15 @@ class Locale
         "LIE"  => "LI",
     ];
 
-    protected $allowedCountries = [
-        "SE","NO","DK",
+    protected $localeMap = [
+        "SE" => "sv-SE",
+        "NO" => "nb-NO",
+        "DK" => "da-DK"
     ];
 
     public function getCountryIdByIso3Code($iso3)
     {
-        foreach ($this->allowedShippingCountries as $key => $countryId)
-        {
+        foreach ($this->allowedShippingCountries as $key => $countryId) {
             if ($key === $iso3) {
                 return $countryId;
             }
@@ -119,26 +117,17 @@ class Locale
         return $this->allowedCurrencies;
     }
 
+
     /**
-     * @return array
+     * @param $countryCode string
+     * @return string
      */
-    public function getAllowedShippingCountries($code = null)
+    public function getLocaleByCountryCode($countryCode)
     {
-        if ($code === "iso2") {
-            return array_values($this->allowedShippingCountries);
-        } else if ($code === "iso3") {
-            return array_keys($this->allowedShippingCountries);
+        if (array_key_exists($countryCode, $this->localeMap)) {
+            return $this->localeMap[$countryCode];
         }
 
-        return $this->allowedShippingCountries;
+        return "en-GB";
     }
-
-    /**
-     * @return array
-     */
-    public function getAllowedCountries()
-    {
-        return $this->allowedCountries;
-    }
-
 }

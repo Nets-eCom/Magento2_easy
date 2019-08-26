@@ -1,7 +1,6 @@
 <?php
 namespace Dibs\EasyCheckout\Helper;
 
-
 use Magento\Quote\Model\Quote;
 
 /**
@@ -14,7 +13,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * Cart Cookie name. Will be used to check if the cart was updated
      */
     const COOKIE_CART_CTRL_KEY = 'DibsCartCtrlKey';
-
 
     /**
      * Dibs System Settings, Connection group
@@ -53,6 +51,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale */
     protected $dibsLocale;
 
+    protected $allowedCountryModel;
 
     /**
      * Data constructor.
@@ -63,59 +62,90 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Dibs\EasyCheckout\Model\Dibs\Locale $locale
+        \Dibs\EasyCheckout\Model\Dibs\Locale $locale,
+        \Magento\Directory\Model\AllowedCountries $allowedCountryModel
     ) {
         $this->dibsLocale = $locale;
         $this->storeManager = $storeManager;
+        $this->allowedCountryModel = $allowedCountryModel;
+
         parent::__construct($context);
     }
 
+    /**
+     * @param null $store
+     * @return mixed
+     */
+    public function getApiSecretKey($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_CONNECTION . 'secret_key',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
 
     /**
      * @param null $store
      * @return mixed
      */
-    public function getApiSecretKey($store = null) {
+    public function getApiCheckoutKey($store = null)
+    {
         return $this->scopeConfig->getValue(
-            self::XML_PATH_CONNECTION.'secret_key',
+            self::XML_PATH_CONNECTION . 'checkout_key',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
     }
-
-    /**
-     * @param null $store
-     * @return mixed
-     */
-    public function getApiCheckoutKey($store = null) {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_CONNECTION.'checkout_key',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
 
     /**
      * @param null $store
      * @return bool
      */
-    public function isEnabled($store = null) {
+    public function isEnabled($store = null)
+    {
         return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_CONNECTION.'enabled',
+            self::XML_PATH_CONNECTION . 'enabled',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
     }
 
-
     /**
      * @param null $store
      * @return bool
      */
-    public function isTestMode($store = null) {
+    public function isTestMode($store = null)
+    {
         return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_CONNECTION.'test_mode',
+            self::XML_PATH_CONNECTION . 'test_mode',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function useInvoiceFee($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SETTINGS_INVOICE . 'use_invoice_fee',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getInvoiceFeeLabel($store = null)
+    {
+        return $this->scopeConfig->getValue(
+           self::XML_PATH_SETTINGS_INVOICE . 'invoice_fee_label',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getInvoiceFee($store = null)
+    {
+        return $this->scopeConfig->getValue(
+           self::XML_PATH_SETTINGS_INVOICE . 'invoice_fee',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
@@ -125,7 +155,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param null $store
      * @return string
      */
-    public function getApiUrl($store = null){
+    public function getApiUrl($store = null)
+    {
         if ($this->isTestMode($store)) {
             return self::API_BASE_URL_TEST;
         } else {
@@ -133,14 +164,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-
     /**
      * @param null $store
      * @return bool
      */
-    protected function _replaceCheckout($store = null) {
+    protected function _replaceCheckout($store = null)
+    {
         return $this->scopeConfig->isSetFlag(
-            self::XML_PATH_SETTINGS.'replace_checkout',
+            self::XML_PATH_SETTINGS . 'replace_checkout',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
@@ -163,7 +194,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'register_customer', $store);
     }
-
 
     /**
      * @param null $store
@@ -198,9 +228,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getSuccessPageUrl()
     {
-        return $this->_getUrl( 'easycheckout/order/success');
+        return $this->_getUrl('easycheckout/order/success');
     }
-
 
     /**
      * @param null $path
@@ -225,7 +254,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'terms_url', $store));
         return $this->_getUrl($url[0]);
     }
-
 
     /**
      * @return string
@@ -261,42 +289,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCountries($store = null)
     {
-        $values = $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'allowed_countries',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-
-        return $this->splitStringToArray($values);
-    }
-
-    /*
-    public function getShippingCountries($store = null)
-    {
-        $values = $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'allowed_shipping_countries',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-
-        return $this->splitStringToArray($values);
-    }
-    */
-
-    public function getDefaultCountry($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'default_country',
+        return $this->allowedCountryModel->getAllowedCountries(
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
     }
+
 
     public function getDefaultConsumerType($store = null)
     {
-
         return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'default_customer_type',
+            self::XML_PATH_SETTINGS . 'default_customer_type',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
@@ -304,14 +307,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getConsumerTypes($store = null)
     {
-
         $values =  $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS.'customer_types',
+            self::XML_PATH_SETTINGS . 'customer_types',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
 
         return $this->splitStringToArray($values);
+    }
+
+    public function getCheckoutFlow($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'checkout_flow',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
     }
 
     /**
@@ -349,19 +360,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @return string
-     */
-    public function getHeaderText()
-    {
-        return ""; // todo translate or get from settings =)
-    }
-
-    /**
      * @param $path
      * @param null $store
      * @return mixed
      */
-    public function getStoreConfig($path, $store = null) {
+    public function getStoreConfig($path, $store = null)
+    {
         return $this->scopeConfig->getValue(
             $path,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -374,7 +378,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param null $store
      * @return bool
      */
-    public function getStoreConfigFlag($path, $store = null) {
+    public function getStoreConfigFlag($path, $store = null)
+    {
         return $this->scopeConfig->isSetFlag(
             $path,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,

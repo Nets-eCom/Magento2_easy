@@ -5,10 +5,16 @@ class GetPaymentSummary
 {
 
     /**
-     * Required
+     * Required if $chargedAmount is null
      * @var float $reservedAmount
      */
     protected $reveredAmount;
+
+    /**
+     * Required if $reservedAmount is null
+     * @var float $chargedAmount
+     */
+    protected $chargedAmount;
 
     /**
      * @return float
@@ -16,6 +22,11 @@ class GetPaymentSummary
     public function getReservedAmount()
     {
         return $this->reveredAmount;
+    }
+
+    public function getChargedAmount()
+    {
+        return $this->chargedAmount;
     }
 
     /**
@@ -28,5 +39,13 @@ class GetPaymentSummary
         return $this;
     }
 
-
+    /**
+     * @param float $amount
+     * @return GetPaymentSummary
+     */
+    public function setChargedAmount($amount)
+    {
+        $this->chargedAmount = $amount;
+        return $this;
+    }
 }

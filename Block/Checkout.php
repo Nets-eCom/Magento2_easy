@@ -1,7 +1,6 @@
 <?php
 namespace Dibs\EasyCheckout\Block;
 
-
 class Checkout extends \Magento\Framework\View\Element\Template
 {
     /**
@@ -63,6 +62,15 @@ class Checkout extends \Magento\Framework\View\Element\Template
 
     protected $getCurrentDibsPaymentIdService;
 
+    /** @var string $dibsLocale */
+    protected $dibsLocale = "";
+
+    /** @var bool $useIframe */
+    protected $useIframe = true; // default
+
+    /** @var $checkoutRedirectUrl string */
+    protected $checkoutRedirectUrl;
+
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Tax\Helper\Data $taxHelper
@@ -85,8 +93,7 @@ class Checkout extends \Magento\Framework\View\Element\Template
         \Dibs\EasyCheckout\Service\GetCurrentQuote $getCurrentQuoteService,
         \Dibs\EasyCheckout\Service\GetCurrentDibsPaymentId $getCurrentDibsPaymentIdService,
         array $data = []
-    )
-    {
+    ) {
         $this->priceCurrency = $priceCurrency;
         $this->_taxHelper = $taxHelper;
         $this->_addressConfig = $addressConfig;
@@ -96,7 +103,6 @@ class Checkout extends \Magento\Framework\View\Element\Template
         $this->getCurrentQuoteService = $getCurrentQuoteService;
         parent::__construct($context, $data);
     }
-
 
     public function getCartCtrlKeyCookieName()
     {
@@ -113,27 +119,27 @@ class Checkout extends \Magento\Framework\View\Element\Template
         return $this->helper->subscribeNewsletter($this->getQuote());
     }
 
-
-    public function helper() {
+    public function helper()
+    {
         return $this->helper;
     }
 
-
     public function getQuote()
     {
-        if(!$this->_quote) {
+        if (!$this->_quote) {
             $this->_quote = $this->getCurrentQuoteService->getQuote();
         }
         return $this->_quote;
     }
 
-    public function getBlockFilter() {
+    public function getBlockFilter()
+    {
         return $this->filterProvider->getBlockFilter();
     }
-    public function filter($text) {
+    public function filter($text)
+    {
         return $this->filterProvider->getBlockFilter()->filter($text);
     }
-
 
     /**
      * Quote object setter
@@ -177,8 +183,35 @@ class Checkout extends \Magento\Framework\View\Element\Template
 
     public function getDibsLocale()
     {
-        // Todo remove hardcode
-        return "sv-SE";
+        return $this->dibsLocale;
+    }
+
+    public function setDibsLocale($locale)
+    {
+        $this->dibsLocale = $locale;
+        return $this;
+    }
+
+    public function setUseIframe($useIframe)
+    {
+        $this->useIframe = $useIframe;
+        return $this;
+    }
+
+    public function getUseIframe()
+    {
+        return $this->useIframe;
+    }
+
+    public function setCheckoutRedirectUrl($url)
+    {
+        $this->checkoutRedirectUrl = $url;
+        return $this;
+    }
+
+    public function getCheckoutRedirectUrl()
+    {
+        return $this->checkoutRedirectUrl;
     }
 
     public function getDibsCheckoutKey()
@@ -259,9 +292,6 @@ class Checkout extends \Magento\Framework\View\Element\Template
         return $this->_currentShippingRate;
     }
 
-
-
-
     /**
      * Set controller path
      *
@@ -301,9 +331,6 @@ class Checkout extends \Magento\Framework\View\Element\Template
         );
     }
 
-
-
-
     /**
      * Retrieve payment method and assign additional template values
      *
@@ -312,7 +339,6 @@ class Checkout extends \Magento\Framework\View\Element\Template
      */
     protected function _beforeToHtml()
     {
-
         if (!$this->getQuote()->getIsVirtual()) {
 
             // prepare shipping rates
@@ -347,6 +373,4 @@ class Checkout extends \Magento\Framework\View\Element\Template
 
         return parent::_beforeToHtml();
     }
-
 }
-

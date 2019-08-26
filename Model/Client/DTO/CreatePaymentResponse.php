@@ -1,13 +1,14 @@
 <?php
 namespace Dibs\EasyCheckout\Model\Client\DTO;
 
-
-class CreatePaymentResponse
+class CreatePaymentResponse implements PaymentResponseInterface
 {
-
 
     /** @var string $paymentId */
     protected $paymentId;
+
+    /** @var string $checkoutUrl */
+    protected $checkoutUrl;
 
     /**
      * CreatePaymentResponse constructor.
@@ -16,8 +17,12 @@ class CreatePaymentResponse
     public function __construct($response = "")
     {
         if ($response !== "") {
-            $data = json_decode($response);
-            $this->setPaymentId($data->paymentId);
+            $data = json_decode($response, true);
+            $this->setPaymentId($data['paymentId']);
+
+            if (isset($data['hostedPaymentPageUrl'])) {
+                $this->setCheckoutUrl($data['hostedPaymentPageUrl']);
+            }
         }
     }
 
@@ -29,7 +34,6 @@ class CreatePaymentResponse
         return $this->paymentId;
     }
 
-
     /**
      * @param string $paymentId
      */
@@ -37,5 +41,23 @@ class CreatePaymentResponse
     {
         $this->paymentId = $paymentId;
     }
+
+
+    /**
+     * @return string
+     */
+    public function getCheckoutUrl()
+    {
+        return $this->checkoutUrl;
+    }
+
+    /**
+     * @param string $checkoutUrl
+     */
+    public function setCheckoutUrl($checkoutUrl)
+    {
+        $this->checkoutUrl = $checkoutUrl;
+    }
+
 
 }

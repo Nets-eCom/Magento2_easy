@@ -52,14 +52,10 @@ switch ($type = $block->getType()) {
 <?php if ($exist && $block->isEnable()): ?>
 
 <div class="block dibs-<?= /* @escapeNotVerified */$class ?>">
-    <?php endif; ?>
     <div class="block-title title">
-        <span id="block-<?= /* @escapeNotVerified */
-        $class ?>-heading" role="heading" aria-level="2"><?= /* @escapeNotVerified */
-            $title ?></span>
+        <span id="block-<?= /* @escapeNotVerified */$class ?>-heading" role="heading" aria-level="2"><?= /* @escapeNotVerified */$title ?></span>
     </div>
-    <div class="block-content content" aria-labelledby="block-<?= /* @escapeNotVerified */
-    $class ?>-heading">
+    <div class="block-content content" aria-labelledby="block-<?= /* @escapeNotVerified */$class ?>-heading">
 
         <div class="products wrapper grid dibs-products-grid products-<?= /* @escapeNotVerified */
         $type ?>">
@@ -174,3 +170,4 @@ switch ($type = $block->getType()) {
         });
     });
 </script>
+<?php endif; ?>

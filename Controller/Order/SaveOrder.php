@@ -1,7 +1,7 @@
 <?php
 
-
 namespace Dibs\EasyCheckout\Controller\Order;
+
 use Dibs\EasyCheckout\Controller\Checkout;
 use Dibs\EasyCheckout\Model\CheckoutException;
 
@@ -18,7 +18,6 @@ class SaveOrder extends Checkout
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
-
         // todo? csrf...
         //$ctrlkey    = (string)$this->getRequest()->getParam('ctrlkey');
         $paymentId  = $this->getRequest()->getParam('pid');
@@ -34,25 +33,22 @@ class SaveOrder extends Checkout
 
         if ($orderPlaced) {
             $this->getResponse()->setBody(json_encode(
-                array(
+                [
                     'redirectTo' => $this->dibsCheckoutContext->getHelper()->getSuccessPageUrl()
-                )
+                ]
             ));
         } else {
             return $this->respondWithError("Unknown error that should not appear!");
-
         }
 
         return false;
     }
 
-
-    protected function respondWithError($message,$redirectTo = false, $extraData = [])
+    protected function respondWithError($message, $redirectTo = false, $extraData = [])
     {
-        $data = array('messages' => $message, "redirectTo" => $redirectTo);
+        $data = ['messages' => $message, "redirectTo" => $redirectTo];
         $data = array_merge($data, $extraData);
         $this->getResponse()->setBody(json_encode($data));
         return false;
     }
-
 }

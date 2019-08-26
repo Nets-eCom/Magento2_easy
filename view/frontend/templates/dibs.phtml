@@ -1,10 +1,10 @@
 <?php
 // @codingStandardsIgnoreFile
 
-
 /** @var $block Dibs\EasyCheckout\Block\Checkout */
 ?>
 <div id="dibsOrderJS">
+    <?php if ($block->getUseIframe()): ?>
     <script>
 
         var checkoutOptions = {
@@ -15,4 +15,5 @@
         };
         var _dibsCheckout = new Dibs.Checkout(checkoutOptions);
     </script>
+    <?php endif; ?>
 </div>

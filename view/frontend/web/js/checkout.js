@@ -533,14 +533,8 @@ define([
         },
         hidePaymentAndIframe: function () {
             var trigger = this.options.getShippingMethodButton;
-            var ifr = this.options.scrollTarget;
             var pay = this.options.scrollTrigger;
             jQuery(trigger).click(function () {
-                jQuery(ifr).css({
-                    'visibility': 'hidden',
-                    'height': '0',
-                    'overflow' : 'hidden'
-                });
                 jQuery(pay).css({
                     'display': 'none'
                 });

@@ -36,25 +36,6 @@
             <group id="settings" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Settings</label>
 
-                <field id="default_country" translate="label comment" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
-                    <label>Default Country</label>
-                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\Country</source_model>
-                    <comment>Only if multiple countries are allowed. If this is invalid, the first allowed country will be used</comment>
-                </field>
-
-                <field id="allowed_countries" translate="label comment" type="multiselect" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Allowed Payment Countries</label>
-                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\Country</source_model>
-                    <comment><![CDATA[Assure that selected countries are in <strong>Allow Countries</strong> list (<em>System &raquo; Configuration &raquo; General &raquo; General</em>)]]></comment>
-                </field>
-
-                <!--
-                <field id="allowed_shipping_countries" translate="label comment" type="multiselect" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Allowed Shipping Countries</label>
-                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ShippingCountry</source_model>
-                    <can_be_empty>1</can_be_empty>
-                </field>
-                -->
                 <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Checkout Allowed Customer Types</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
@@ -65,6 +46,12 @@
                     <label>Checkout Default Customer Type</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
                     <comment>Choose default customer type</comment>
+                </field>
+
+                <field id="checkout_flow" translate="label comment" type="select" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Checkout Flow</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\CheckoutFlow</source_model>
+                    <comment>Choose checkout flow.</comment>
                 </field>
 
 
@@ -101,6 +88,31 @@
                     <label>Add Dibs Css file</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[If yes, <strong>dibs.css</strong> will be added to the frontend <strong>(Only needed if styles-l.css and styles-m.css are removed or if magento default less file compiler is not been used)!</strong>]]></comment>
+                </field>
+            </group>
+
+
+            <group id="invoice" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Invoice Fee</label>
+                <field id="use_invoice_fee" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Use Invoice Fee</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="invoice_fee_label" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="320">
+                    <label>Invoice Fee Label</label>
+                    <comment>This will be displayed in the invoice row</comment>
+                    <depends>
+                        <field id="*/*/use_invoice_fee">1</field>
+                    </depends>
+                </field>
+
+                <field id="invoice_fee" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="320">
+                    <label>Invoice Fee</label>
+                    <comment>Invoice fee excl. Taxes. The tax will be calculated accordingly to the tax rates of the cart.</comment>
+                    <depends>
+                        <field id="*/*/use_invoice_fee">1</field>
+                    </depends>
                 </field>
             </group>
 

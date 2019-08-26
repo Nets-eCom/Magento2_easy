@@ -1,4 +1,4 @@
-# Dibs Easycheckout For Magento 2
+# Dibs Easy Checkout For Magento 2
 
 
 
