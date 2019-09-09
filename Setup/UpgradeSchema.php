@@ -21,6 +21,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             'comment' =>'Dibs Invoice Fee'
         ];
 
+
         $tables  = ['quote_address','quote_address','quote','sales_order','sales_invoice','sales_creditmemo'];
         foreach ($tables as $table) {
             $setup->getConnection()->addColumn($setup->getTable($table), "dibs_invoice_fee", $definition);

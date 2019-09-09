@@ -623,8 +623,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $invoiceFee = $this->getHelper()->getInvoiceFee() * 1.25; // TODO remove hardcode!
 
             $quote->setDibsInvoiceFee($invoiceFee);
-            $quote->setGrandTotal($quote->getGrandTotal() + $invoiceFee);
-            $quote->setBaseGrandTotal($quote->getGrandTotal() + $invoiceFee);
+           // $quote->setGrandTotal($quote->getGrandTotal() + $invoiceFee);
+           // $quote->setBaseGrandTotal($quote->getGrandTotal() + $invoiceFee);
 
             $quote->collectTotals();
         }
