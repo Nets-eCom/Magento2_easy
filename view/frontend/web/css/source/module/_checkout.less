@@ -18,7 +18,6 @@
 @dibs-border: 1px solid @dibs-color-border;
 @calc-width: 205px;
 
-
 //
 //  Mixins
 //  _____________________________________________
@@ -514,6 +513,10 @@ table {
       .price {
         .dibs-heading;
         display: block;
+      }
+
+      @media only screen and (max-width: 560px) {
+        margin-right: 0;
       }
     }
   }
@@ -1064,3 +1067,57 @@ button:not(.primary).dibs-primary {
   }
 }
 
+// --- Unifaun related CSS
+
+#nwt_unifaun_form {
+  label {
+    font-weight: 600;
+  }
+  .nwt_unifaun_form_agent {
+    label[for^="nwt_unifaun_form_agent_select_custom"]:first-child {
+      width: 100%;
+      margin-bottom: 0;
+    }
+    label[for="nwt_unifaun_postcode"] {
+      display: inline-block;
+      width: 100%;
+    }
+    .nwt_unifaun_postcode,
+    .nwt_unifaun_select_agent {
+      height: 35px;
+    }
+    .nwt_unifaun_postcode {
+      @media only screen and (max-width: 560px) {
+        width: 40% !important;
+      }
+    }
+    .nwt_unifaun_select_agent {
+      margin-bottom: 0;
+    }
+    button.nwtunifaun-choose-agent {
+      .dibs-btn;
+      height: 35px;
+      font-size: 14px;
+      margin-bottom: 5px;
+      margin-left: 15px;
+      @media only screen and (max-width: 1000px) {
+        margin-left: 0 !important;
+        width: 100% !important;
+      }
+      @media only screen and (max-width: 767px) {
+        margin-top: 10px;
+      }
+    }
+  }
+  #nwt_unifaun_form_cellphone {
+    #nwt_unifaun_cellphone {
+      height: 35px;
+    }
+  }
+  @media only screen and (max-width: 767px) {
+    input[type="text"] {
+      border-top: 1px solid #d1d1d1 !important;
+      border-radius: 4px !important;
+    }
+  }
+}
