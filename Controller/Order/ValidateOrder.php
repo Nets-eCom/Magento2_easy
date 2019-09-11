@@ -52,28 +52,11 @@ class ValidateOrder extends Update
             return $this->respondWithError("Please add shipping information.");
         }
 
-        $currentPostalCode = $payment->getConsumer()->getShippingAddress()->getPostalCode();
-        $currentCountryIso = $payment->getConsumer()->getShippingAddress()->getCountry(); // SWE, iso3
-        $currentCountryId = $this->dibsCheckoutContext->getDibsLocale()->getCountryIdByIso3Code($currentCountryIso);
-        // check other quote stuff
-
         try {
-            $oldPostCode = $quote->getShippingAddress()->getPostcode();
-            $oldCountryId = $quote->getShippingAddress()->getCountryId();
-
-            // we do nothing
-            if (!($oldCountryId == $currentCountryId && $oldPostCode == $currentPostalCode)) {
-                $checkout->getLogger()->error("Validate Order: Consumer has no shipping address.");
-                return $this->respondWithError("The country or postal code doesn't match with the one you entered earlier. Please re-enter the new postal code for the shipping above.", true, [
-                    'postalCode' => $currentPostalCode, 'countryId' => $currentCountryId
-                ]);
-            }
 
             if (!$quote->getShippingAddress()->getShippingMethod()) {
-                $checkout->getLogger()->error("Validate Order: Consumer has no shipping address.");
-                return $this->respondWithError("Please choose a shipping method.", true, [
-                    'postalCode' => $currentPostalCode, 'countryId' => $currentCountryId
-                ]);
+                $checkout->getLogger()->error("Validate Order: Consumer has not choosen a shipping method.");
+                return $this->respondWithError("Please choose a shipping method.");
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(

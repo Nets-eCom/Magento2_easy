@@ -289,7 +289,11 @@ class Checkout extends \Magento\Framework\View\Element\Template
      */
     public function getCurrentShippingRate()
     {
-        return $this->_currentShippingRate;
+       if ($this->_currentShippingRate) {
+            return $this->_currentShippingRate->getCode();
+       }
+
+        return "";
     }
 
     /**
