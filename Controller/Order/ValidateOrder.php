@@ -47,14 +47,14 @@ class ValidateOrder extends Update
             return $this->respondWithError("Something went wrong... Contact site admin.");
         }
 
-        if ($payment->getConsumer()->getShippingAddress() === null) {
+        if (!$quote->isVirtual() && $payment->getConsumer()->getShippingAddress() === null) {
             $checkout->getLogger()->error("Validate Order: Consumer has no shipping address.");
             return $this->respondWithError("Please add shipping information.");
         }
 
         try {
 
-            if (!$quote->getShippingAddress()->getShippingMethod()) {
+            if (!$quote->isVirtual() && !$quote->getShippingAddress()->getShippingMethod()) {
                 $checkout->getLogger()->error("Validate Order: Consumer has not choosen a shipping method.");
                 return $this->respondWithError("Please choose a shipping method.");
             }
