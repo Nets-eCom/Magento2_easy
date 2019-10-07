@@ -36,6 +36,7 @@
             <group id="settings" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Settings</label>
 
+
                 <field id="default_shipping_method" translate="label comment" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Default Shipping Method</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\AllowedShippingMethods</source_model>
@@ -49,13 +50,13 @@
                     <comment>Choose the default country used in checkout.</comment>
                 </field>
 
-                <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Allowed Customer Types</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
                     <comment>Choose at least one customer type that is allowed in the checkout.</comment>
                 </field>
 
-                <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Default Customer Type</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
                     <comment>Choose default customer type</comment>

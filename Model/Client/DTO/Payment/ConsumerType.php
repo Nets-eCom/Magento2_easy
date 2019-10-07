@@ -80,7 +80,7 @@ class ConsumerType extends AbstractRequest
 
         return [
             'default' => $this->getDefault(),
-            'supported_types' => $this->getSupportedTypes(),
+            'supportedTypes' => $this->getSupportedTypes(),
         ];
     }
 
