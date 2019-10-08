@@ -5,5 +5,6 @@ $quote = $block->getQuote();
 $shippingAddress = $quote->getShippingAddress();
 ?>
 <span class="shipping-price" id="dibs-easy-checkout_dibs_shipping_total">
+    <?= $quote->getData('quote_currency_code') ?>
     <?= ($shippingAddress === null || $shippingAddress->getShippingInclTax() === null ) ? __('_') : $shippingAddress->getShippingInclTax() ?>
 </span>
