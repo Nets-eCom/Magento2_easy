@@ -257,6 +257,7 @@ define([
         },
 
         _changeShippingMethod: function () {
+            if(!jQuery(this.options.shippingMethodFormSelector).serialize()) return; //no option selected
             this._ajaxFormSubmit(jQuery(this.options.shippingMethodFormSelector));
             jQuery(this.options.scrollTrigger).show();
         },
@@ -283,6 +284,7 @@ define([
          * Attempt to ajax submit order
          */
         _ajaxSubmit: function (url, data, method, beforeDIBSAjax, afterDIBSAjax) {
+            if(!data) return;
             if (!method) method = 'post';
             var _this = this;
             if (this.options.shippingAjaxInProgress === true) {
@@ -564,7 +566,7 @@ define([
                     jQuery(this).css('opacity', '1');
                     jQuery(this).parent().find('.dibs-easy-checkout-radio-row').not(this).css('opacity', '.5');
                 }
-            })
+            });
         }
     });
 
