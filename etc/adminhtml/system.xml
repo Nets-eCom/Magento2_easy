@@ -3,7 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Backend/etc/system_file.xsd">
     <system>
         <tab id="dibs" translate="label" sortOrder="999" class="dibs-extensions-tab">
-            <label>Dibs</label>
+            <label>Nets</label>
         </tab>
         <section id="dibs_easycheckout" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Easy Checkout</label>
