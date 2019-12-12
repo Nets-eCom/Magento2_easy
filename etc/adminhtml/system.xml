@@ -3,7 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Backend/etc/system_file.xsd">
     <system>
         <tab id="dibs" translate="label" sortOrder="999" class="dibs-extensions-tab">
-            <label>Dibs</label>
+            <label>Nets</label>
         </tab>
         <section id="dibs_easycheckout" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Easy Checkout</label>
@@ -36,13 +36,13 @@
             <group id="settings" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Settings</label>
 
-                <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Allowed Customer Types</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
                     <comment>Choose at least one customer type that is allowed in the checkout.</comment>
                 </field>
 
-                <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Default Customer Type</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
                     <comment>Choose default customer type</comment>
@@ -157,7 +157,7 @@
 
         <section id="payment">
             <group id="dibseasycheckout" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Dibs Easy Checkout</label>
+                <label>Nets Easy Checkout</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
