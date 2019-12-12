@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <add id="Dibs_EasyCheckout::dibs" title="DIBS" module="Dibs_EasyCheckout" sortOrder="100"
+        <add id="Dibs_EasyCheckout::dibs" title="NETS" module="Dibs_EasyCheckout" sortOrder="100"
              resource="Dibs_EasyCheckout::system_config"/>
         <add id="Dibs_EasyCheckout::dibs_easycheckout" title="Easy Checkout Configuration" module="Dibs_EasyCheckout" sortOrder="100"
              parent="Dibs_EasyCheckout::dibs" action="adminhtml/system_config/edit/section/dibs_easycheckout" resource="Dibs_EasyCheckout::system_config"/>
