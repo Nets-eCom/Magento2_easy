@@ -9,9 +9,6 @@ $counter = $this->helper('\Magento\Checkout\Helper\Cart');
     <div class="dibs-easy-checkout-cart dibs-easy-checkout-section" id="dibs-easy-checkout-cart">
         <div class="dibs-easy-checkout-title" data-role="title">
             <h1 id="dibs-easy-checkout-cart-heading" role="heading" aria-level="2">
-                <span class="dibs-payment-methods__img">
-                    <img src="<?= $block->getViewFileUrl('Dibs_EasyCheckout::images/payment-methods.svg') ?>"/>
-                </span>
                 <span><?= __('Basket') ?></span>
                 <span class="counter">
                    <?php if ($counter->getItemsCount() > 1): ?>
