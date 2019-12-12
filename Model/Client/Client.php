@@ -26,6 +26,11 @@ abstract class Client
     /** @var string $apiSecretKey */
     private $apiSecretKey;
 
+
+    /** @var bool $testMode */
+    protected $testMode;
+
+
     /** @var \GuzzleHttp\Client $httpClient */
     private $httpClient;
 
@@ -41,6 +46,8 @@ abstract class Client
         $this->apiContext = $apiContext;
 
         $this->apiSecretKey = $apiContext->getHelper()->getApiSecretKey();
+        $this->testMode = $apiContext->getHelper()->isTestMode();
+
         // init curl!
         $this->setGuzzleHttpClient($this->getHelper()->getApiUrl());
     }
@@ -123,7 +130,20 @@ abstract class Client
 
         try {
             $result = $this->httpClient->post($endpoint, $options);
-            return $result->getBody()->getContents();
+            $content =  $result->getBody()->getContents();
+
+
+            if ($this->testMode) {
+                $this->getLogger()->info("Sending request to dibs integration: POST $endpoint");
+                $this->getLogger()->info($request->toJSON());
+
+                $this->getLogger()->info("Response Headers from dibs:");
+                $this->getLogger()->info(json_encode($result->getHeaders()));
+                $this->getLogger()->info("Response Body from dibbs:");
+                $this->getLogger()->info($content);
+            }
+
+            return $content;
         } catch (BadResponseException $e) {
             $exception = $this->handleException($e);
         } catch (\Exception $e) {
@@ -160,7 +180,19 @@ abstract class Client
 
         try {
             $result = $this->httpClient->put($endpoint, $options);
-            return $result->getBody()->getContents();
+            $content =  $result->getBody()->getContents();
+
+            if ($this->testMode) {
+                $this->getLogger()->info("Sending request to dibs integration: PUT $endpoint");
+                $this->getLogger()->info($request->toJSON());
+
+                $this->getLogger()->info("Response Headers from dibs:");
+                $this->getLogger()->info(json_encode($result->getHeaders()));
+                $this->getLogger()->info("Response Body from dibbs:");
+                $this->getLogger()->info($content);
+            }
+
+            return $content;
         }  catch (BadResponseException $e) {
             $exception = $this->handleException($e);
         } catch (\Exception $e) {
