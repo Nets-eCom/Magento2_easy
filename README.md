@@ -1,4 +1,4 @@
-# Dibs Easy Checkout For Magento 2
+# Nets Easy Checkout For Magento 2
 
 
 
