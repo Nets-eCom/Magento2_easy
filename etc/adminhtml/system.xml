@@ -134,6 +134,14 @@
                     <label>Display Additional block</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="display_default_shipping_methods" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display default magento shipping methods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="display_dibs_shipping_methods" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display dibs shipping methods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
                 <field id="additional_block" translate="label" type="editor" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Additional block Content</label>
                     <frontend_model>Dibs\EasyCheckout\Block\Adminhtml\System\Config\Editor</frontend_model>

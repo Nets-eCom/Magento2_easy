@@ -559,6 +559,50 @@ table {
   }
 }
 
+body.dibs_easy_checkout-index-index {
+  #checkout {
+    width: 100%;
+    .opc-wrapper {
+      padding: 0;
+      left: 205px;
+      width:  ~"calc(100% - 205px)";
+      position: relative;
+      @media (max-width: 768px) {
+        left: auto;
+        width: 100%;
+      }
+      .form.methods-shipping {
+        @media (max-width: 639px) {
+          margin: 0;
+          padding: 0;
+          border: 0;
+          background: transparent;
+        }
+      }
+      .step-title {
+        font-size: 25px;
+        font-weight: 700;
+        color: @dibs-color-black;
+      }
+      .table-checkout-shipping-method {
+        @media (max-width: 1024px) {
+          min-width: 450px;
+        }
+        @media (max-width: 639px) {
+          min-width: 1px;
+        }
+      }
+      #checkout-shipping-method-load {
+        input[type='radio'] {
+          top: 0;
+          margin: 0;
+          box-shadow: none;
+        }
+      }
+    }
+  }
+}
+
 button:not(.primary).dibs-primary {
   .dibs-btn;
   height: 40px;
