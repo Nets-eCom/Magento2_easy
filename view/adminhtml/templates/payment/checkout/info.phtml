@@ -6,7 +6,11 @@
 <div class="order-payment-method-name"><?php echo $block->escapeHtml($block->getMethod()->getTitle()); ?></div>
 <table class="data-table admin__table-secondary">
     <tr>
-        <th><?php echo $block->escapeHtml(__('Dibs Easy Checkout Payment ID')); ?>:</th>
+        <th><?php echo $block->escapeHtml(__('Nets Easy Checkout Payment ID')); ?>:</th>
         <td><?php echo $block->escapeHtml($block->getInfo()->getAdditionalInformation('dibs_payment_id')); ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $block->escapeHtml(__('Net Easy Checkout Payment Method')); ?>:</th>
+        <td><?php echo $block->escapeHtml($block->getInfo()->getAdditionalInformation('dibs_payment_method')); ?></td>
     </tr>
 </table>

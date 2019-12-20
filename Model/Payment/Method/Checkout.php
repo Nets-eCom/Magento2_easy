@@ -69,6 +69,7 @@ class Checkout extends AbstractMethod
     {
         $this->getInfoInstance()
             ->setAdditionalInformation('dibs_payment_id', $data->getDibsPaymentId())
+            ->setAdditionalInformation('dibs_payment_method', $data->getDibsPaymentMethod())
             ->setAdditionalInformation('country_id', $data->getCountryId());
 
         return $this;
