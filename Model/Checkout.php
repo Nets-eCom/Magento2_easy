@@ -610,7 +610,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         $paymentData = (new DataObject())
             ->setDibsPaymentId($dibsPayment->getPaymentId())
-            ->setCountryId($shippingAddress->getCountryId());
+            ->setCountryId($shippingAddress->getCountryId())
+            ->setDibsPaymentMethod($dibsPayment->getPaymentDetails()->getPaymentMethod());
 
         $quote->getPayment()->getMethodInstance()->assignData($paymentData);
         $quote->setDibsPaymentId($dibsPayment->getPaymentId()); //this is used by pushAction
