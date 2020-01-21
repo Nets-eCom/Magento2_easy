@@ -26,6 +26,7 @@ define([
     'Magento_Checkout/js/checkout-data',
     'uiRegistry',
     'mage/translate',
+    'dibsEasyCheckout',
     'Magento_Checkout/js/model/shipping-rate-service'
 ], function (
     $,
@@ -49,7 +50,8 @@ define([
     checkoutDataResolver,
     checkoutData,
     registry,
-    $t
+    $t,
+    dibsEasyCheckout
 ) {
     'use strict';
 
@@ -236,8 +238,21 @@ define([
          * @return {Boolean}
          */
         selectShippingMethod: function (shippingMethod) {
+            let shippingMethodCode = shippingMethod['carrier_code'] + '_' + shippingMethod['method_code'];
+
             selectShippingMethodAction(shippingMethod);
-            checkoutData.setSelectedShippingRate(shippingMethod['carrier_code'] + '_' + shippingMethod['method_code']);
+            checkoutData.setSelectedShippingRate(shippingMethodCode);
+
+            quote.billingAddress(null);
+            checkoutDataResolver.resolveBillingAddress();
+            setShippingInformationAction().done(
+                function () {
+                    dibsEasyCheckout._proto._ajaxSubmit(
+                        window.checkoutConfig.saveShippingMethodUrl,
+                        {shipping_method: shippingMethodCode}
+                    );
+                }
+            );
 
             return true;
         },
