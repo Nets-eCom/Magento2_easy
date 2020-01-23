@@ -284,7 +284,6 @@ define([
          * Attempt to ajax submit order
          */
         _ajaxSubmit: function (url, data, method, beforeDIBSAjax, afterDIBSAjax) {
-            if(!data) return;
             if (!method) method = 'post';
             var _this = this;
             if (this.options.shippingAjaxInProgress === true) {
