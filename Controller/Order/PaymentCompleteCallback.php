@@ -52,7 +52,7 @@ class PaymentCompleteCallback extends Checkout
 
     public function execute()
     {
-        $this->logger->debug('Webhook body: ' . $this->getRequest()->getContent());
+        $this->logger->info('Webhook body: ' . $this->getRequest()->getContent());
         $data = json_decode($this->getRequest()->getContent(), true);
         $paymentId = null;
         $checkout = $this->getDibsCheckout();
