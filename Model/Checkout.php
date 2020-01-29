@@ -529,7 +529,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return mixed
      * @throws \Exception
      */
-    protected function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote)
+    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote)
     {
 
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
