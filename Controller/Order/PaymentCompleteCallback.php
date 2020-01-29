@@ -9,17 +9,20 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
 use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\QuoteFactory;
 use Dibs\EasyCheckout\Logger\Logger;
-use Magento\Quote\Model\ResourceModel\Quote\Collection as QuoteCollection;
+use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
+use \Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 
 class PaymentCompleteCallback extends Checkout
 {
     /** @var Logger */
     protected $logger;
 
-    /** @var QuoteCollection */
-    private $quoteCollection;
+    /** @var QuoteCollectionFactory */
+    private $quoteCollectionFactory;
+
+    /** @var OrderCollectionFactory */
+    private $orderCollectionFactory;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -32,10 +35,12 @@ class PaymentCompleteCallback extends Checkout
         DibsCheckout $dibsCheckout,
         DibsCheckoutCOntext $dibsCheckoutContext,
         Logger $logger,
-        QuoteCollection $quoteCollection
+        QuoteCollectionFactory $quoteCollectionFactory,
+        OrderCollectionFactory $orderCollectionFactory
     ) {
         $this->logger = $logger;
-        $this->quoteCollection = $quoteCollection;
+        $this->quoteCollectionFactory = $quoteCollectionFactory;
+        $this->orderCollectionFactory = $orderCollectionFactory;
 
         parent::__construct(
             $context,
@@ -59,10 +64,17 @@ class PaymentCompleteCallback extends Checkout
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
         if (isset($data['event']) && $data['event'] === CreatePaymentWebhook::EVENT_PAYMENT_CHECKOUT_COMPLETED) {
-            $paymentId = $data['data']['paymentId'] ?? $data['data']['paymentId'];
+            $paymentId = $data['data']['paymentId'] ?? null;
 
-            if ($paymentId) {
-                $quotes = $this->quoteCollection
+            $orderCollection = $this->orderCollectionFactory->create();
+            $ordersCount = $orderCollection
+                ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
+                ->load()
+                ->count();
+
+            if ($paymentId && $ordersCount === 0) {
+                $quoteCollection = $this->quoteCollectionFactory->create();
+                $quotes = $quoteCollection
                     ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
                     ->load()
                     ->getItems();
