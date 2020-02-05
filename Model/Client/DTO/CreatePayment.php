@@ -111,12 +111,16 @@ class CreatePayment extends AbstractRequest
         ];
 
         if ($this->webHooks) {
-            $data['notifications']['webHooks'] = $this->webHooks;
+            $webhooks = [];
+            foreach ($this->webHooks as $w) {
+                $webhooks[] = $w->toArray();
+            }
+            $data['notifications']['webhooks'] = $webhooks;
         }
 
         if ($this->paymentMethods) {
             $methods = [];
-            foreach($this->paymentMethods as $p) {
+            foreach ($this->paymentMethods as $p) {
                 $methods[] = $p->toArray();
             }
             $data['paymentMethods'] = $methods;
@@ -124,6 +128,4 @@ class CreatePayment extends AbstractRequest
 
         return $data;
     }
-
-
 }
