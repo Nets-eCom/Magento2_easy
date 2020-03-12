@@ -12,7 +12,6 @@ use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentMethod;
 use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
@@ -201,14 +200,6 @@ class Order
         $createPaymentRequest = new CreatePayment();
         $createPaymentRequest->setCheckout($paymentCheckout);
         $createPaymentRequest->setOrder($paymentOrder);
-
-        // create payment webhook
-        $webHookCheckoutComplete = new CreatePaymentWebhook();
-        $webHookCheckoutComplete->setEventName($webHookCheckoutComplete::EVENT_PAYMENT_CHECKOUT_COMPLETED);
-        $webHookCheckoutComplete->setUrl($this->storeManager->getStore()->getBaseUrl() . 'easycheckout/order/paymentCallback');
-        $webHookCheckoutComplete->setAuthorization($this->helper->generateHashSignatureByQuote($this->_quote));
-        $createPaymentRequest->setWebHooks([$webHookCheckoutComplete]);
-
 
         // add invoice fee
         if ($this->helper->useInvoiceFee()) {
