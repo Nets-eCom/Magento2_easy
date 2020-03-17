@@ -4,10 +4,12 @@
  */
 
 $quote = $block->getQuote();
+$cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
+$currency = $cartHelper->getCurrencySymbol();
 ?>
 <div id="dibs-easy-checkout_grand_total" class="dibs-easy-checkout-block grand-total">
     <h4 role="heading">
-        <span class="total-currency"><?= $quote->getData('quote_currency_code') ?></span>
+        <span class="total-currency"><?= $currency ?></span>
         <span class="total-amount"><?= $quote->getData('grand_total') ?></span>
         <span class="total-title"><?= __('Total,') ?></span>
     </h4>
