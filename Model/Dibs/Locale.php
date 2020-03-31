@@ -23,7 +23,7 @@ class Locale
      * @var array $allowedCurrencies
      */
     protected $allowedCurrencies = [
-      "SEK","NOK","DKK"
+      "SEK","NOK","DKK","EUR"
     ];
 
     /**
