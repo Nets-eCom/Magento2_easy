@@ -3,8 +3,11 @@
 
 $quote = $block->getQuote();
 $shippingAddress = $quote->getShippingAddress();
+$cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
+$currency = $cartHelper->getCurrencySymbol();
+
 ?>
 <span class="shipping-price" id="dibs-easy-checkout_dibs_shipping_total">
     <?= ($shippingAddress === null || $shippingAddress->getShippingInclTax() === null ) ? __('_') : $shippingAddress->getShippingInclTax() ?>
-    <?= $quote->getData('quote_currency_code')?>
+    <?= $currency ?>
 </span>

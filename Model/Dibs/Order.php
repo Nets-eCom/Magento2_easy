@@ -19,6 +19,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Invoice;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Order
 {
@@ -43,16 +44,21 @@ class Order
      */
     protected $_countryFactory;
 
+    /** @var StoreManagerInterface */
+    protected $storeManager;
+
     public function __construct(
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Magento\Directory\Model\CountryFactory $countryFactory,
-        Items $itemsHandler
+        Items $itemsHandler,
+        StoreManagerInterface $storeManager
     ) {
         $this->helper = $helper;
         $this->items = $itemsHandler;
         $this->paymentApi = $paymentApi;
         $this->_countryFactory  = $countryFactory;
+        $this->storeManager = $storeManager;
     }
 
     /** @var $_quote Quote */

@@ -29,7 +29,7 @@
                 </field>
                 <field id="secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Secret Key</label>
-                    <comment>The secret key found in the DIBS Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
+                    <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
                 </field>
             </group>
 
@@ -80,14 +80,14 @@
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                 </field>
                 <field id="replace_checkout" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="140">
-                    <label>Replace checkout url with Dibs Checkout</label>
+                    <label>Replace checkout url with Easy Checkout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If Yes, the "Go to Checkout" button in the minicart and cart will point to Dibs checkout.</comment>
+                    <comment>If Yes, the "Go to Checkout" button in the minicart and cart will point to Easy checkout.</comment>
                 </field>
                 <field id="add_css" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="150">
-                    <label>Add Dibs Css file</label>
+                    <label>Add Nets Css file</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment><![CDATA[If yes, <strong>dibs.css</strong> will be added to the frontend <strong>(Only needed if styles-l.css and styles-m.css are removed or if magento default less file compiler is not been used)!</strong>]]></comment>
+                    <comment><![CDATA[If yes, <strong>Nets.css</strong> will be added to the frontend <strong>(Only needed if styles-l.css and styles-m.css are removed or if magento default less file compiler is not been used)!</strong>]]></comment>
                 </field>
             </group>
 
@@ -134,6 +134,14 @@
                     <label>Display Additional block</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="display_default_shipping_methods" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display default magento shipping methods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="display_dibs_shipping_methods" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display Easy shipping methods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
                 <field id="additional_block" translate="label" type="editor" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Additional block Content</label>
                     <frontend_model>Dibs\EasyCheckout\Block\Adminhtml\System\Config\Editor</frontend_model>
@@ -144,9 +152,9 @@
             </group>
 
             <group id="crosssell" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Crosssell Products</label>
+                <label>Cross Sell Products</label>
                 <field id="display_crosssell" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display Crosssell Products</label>
+                    <label>Display Cross Sell Products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="crosssell_limit" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="20">
