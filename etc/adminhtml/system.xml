@@ -29,19 +29,7 @@
                 </field>
                 <field id="secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Secret Key</label>
-                    <comment>The secret key found in the Nets
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
+                    <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
                 </field>
             </group>
 
