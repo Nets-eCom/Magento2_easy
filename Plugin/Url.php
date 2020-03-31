@@ -19,16 +19,10 @@ class Url
 
     public function afterGetCheckoutUrl($subject,$result)
     {
-
-        if (!$this->helper->isEnabled()) {
-            return $this;
-        }
-
-        if ($this->helper->replaceCheckout()) {
+        if ($this->helper->isEnabled() && $this->helper->replaceCheckout()) {
             return $this->helper->getCheckoutUrl();
         }
 
         return $result;
-
     }
 }
