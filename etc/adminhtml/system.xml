@@ -70,6 +70,13 @@
                     <label>Subscribe Newsletter Checked by default</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+
+                <field id="checkout_add_options_to_name" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
+                    <label>Add Product Options to Name in Nets</label>
+                    <comment>If yes, the cart items will be sent to Nets appending the custom product options and values to the name. If you have lots of custom product options, then it would be a good idea to set this option to No.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
                 <field id="register_customer" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="120">
                     <label>Register Guest Customers</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
