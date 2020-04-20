@@ -31,6 +31,11 @@
                     <label>Secret Key</label>
                     <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
                 </field>
+
+                <field id="webhook_auth" type="password" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Webhook Authentication Password</label>
+                    <comment>Choose a password that we will send to Nets (with no spaces), they will then send this back to us when we try to create an order, with this way and other algorithms we can validate that the request comes from them.</comment>
+                </field>
             </group>
 
             <group id="settings" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">

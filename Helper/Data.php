@@ -247,6 +247,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * @param $quoteId
+     * @return string
+     */
+    public function getWebHookCallbackUrl($quoteId)
+    {
+        return $this->getCheckoutUrl("WebhookCallback/qid/" . $quoteId);
+    }
+
+    /**
+     * @param null $store
+     * @return string
+     */
+    public function getWebhookSecret($store = null)
+    {
+        $secret = $this->scopeConfig->getValue(
+            self::XML_PATH_CONNECTION . 'webhook_auth',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+
+        if (!$secret) {
+            return null;
+        }
+
+        return str_replace("=", "",base64_encode($secret));
+    }
+    /**
      * @param null $path
      * @param array $params
      * @return string

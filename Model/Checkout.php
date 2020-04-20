@@ -429,10 +429,16 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function tryToSaveDibsPayment($paymentId)
     {
+
+
+        sleep(20);
+
+        // TODO certain payment methods may be session independent
+
         $session = $this->getCheckoutSession();
+        $quote = $this->getQuote();
 
         $checkoutPaymentId = $session->getDibsPaymentId();
-        $quote = $this->getQuote();
 
         if (!$quote) {
             return $this->throwRedirectToCartException(__("Your session has expired. Quote missing."));
@@ -475,37 +481,61 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             return $this->throwReloadException(__("Something went wrong... Contact site admin."));
         }
 
-        if ($payment->getOrderDetails()->getReference() !== $this->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
-            $this->getLogger()->error("Save Order: The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
-            return $this->throwReloadException(__("Could not create an order. Invalid data. Contact admin."));
+        // an order should been created, lets wait 2 seconds to make sure it has been created!
+        sleep(2);
+
+        // LOAD ORDERS BY payment id! check if its has been created
+        $orderCollection = $this->context->getOrderCollectionFactory()->create();
+
+        /** @var \Magento\Sales\Model\Order $firstOrder */
+        $firstOrder = $orderCollection
+            ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
+            ->getFirstItem();
+
+        /** @var \Magento\Sales\Model\Order $order */
+        $order = null;
+        $createOrder = true;
+        if ($firstOrder && $firstOrder->getId()) {
+            $order = $firstOrder;
+            $createOrder = false;
         }
 
-        // In Swish there is no reserved amount?
-        if ($payment->getSummary()->getReservedAmount() === null && $payment->getSummary()->getChargedAmount() === null) {
-            $this->getLogger()->error("Save Order: Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
-            return $this->throwReloadException(__("We could not create your order... No reserved or charged amount found. Payment id: %1", $payment->getPaymentId()));
-        }
 
-        try {
-            $order = $this->placeOrder($payment, $quote);
-        } catch (\Exception $e) {
-            $this->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
-            $this->getLogger()->error("Error message:" . $e->getMessage());
+        if ($createOrder) {
 
-            return $this->throwReloadException(__("We could not create your order. Please contact the site admin with this error and payment id: %1", $payment->getPaymentId()));
-        }
+            if ($payment->getOrderDetails()->getReference() !== $this->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
+                $this->getLogger()->error("Save Order: The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
+                return $this->throwReloadException(__("Could not create an order. Invalid data. Contact admin."));
+            }
 
-        try {
-            $this->updateMagentoPaymentReference($order, $paymentId);
-        } catch (\Exception $e) {
-            $this->getLogger()->error(
-                "
-                Order created with ID: " . $order->getIncrementId() . ". 
-                But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: " . $quote->getId() . "...  Dibs Payment ID: " . $payment->getPaymentId()
-            );
+            // In Swish there is no reserved amount?
+            if ($payment->getSummary()->getReservedAmount() === null && $payment->getSummary()->getChargedAmount() === null) {
+                $this->getLogger()->error("Save Order: Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
+                return $this->throwReloadException(__("We could not create your order... No reserved or charged amount found. Payment id: %1", $payment->getPaymentId()));
+            }
 
-            // lets ignore this and save it in logs! let customer see his/her order confirmation!
-            $this->getLogger()->error("Error message:" . $e->getMessage());
+            try {
+                $order = $this->placeOrder($payment, $quote);
+            } catch (\Exception $e) {
+                $this->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
+                $this->getLogger()->error("Error message:" . $e->getMessage());
+
+                return $this->throwReloadException(__("We could not create your order. Please contact the site admin with this error and payment id: %1", $payment->getPaymentId()));
+            }
+
+            try {
+                $this->updateMagentoPaymentReference($order, $paymentId);
+            } catch (\Exception $e) {
+                $this->getLogger()->error(
+                    "
+                    Order created with ID: " . $order->getIncrementId() . ". 
+                    But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: " . $quote->getId() . "...  Dibs Payment ID: " . $payment->getPaymentId()
+                );
+
+                // lets ignore this and save it in logs! let customer see his/her order confirmation!
+                $this->getLogger()->error("Error message:" . $e->getMessage());
+            }
+
         }
 
         // clear old sessions
@@ -526,10 +556,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @param GetPaymentResponse $dibsPayment
      * @param Quote $quote
+     * @param bool $setSessionOrderId
      * @return mixed
      * @throws \Exception
      */
-    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote)
+    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote, $setSessionOrderId = true)
     {
 
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
@@ -655,11 +686,14 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             }
         }
 
-        // add order information to the session
-        $this->_checkoutSession
-            ->setLastOrderId($order->getId())
-            ->setLastRealOrderId($order->getIncrementId())
-            ->setLastOrderStatus($order->getStatus());
+        if ($setSessionOrderId) {
+            // add order information to the session
+            $this->_checkoutSession
+                ->setLastOrderId($order->getId())
+                ->setLastRealOrderId($order->getIncrementId())
+                ->setLastOrderStatus($order->getStatus());
+
+        }
 
         $this->_eventManager->dispatch(
             'checkout_submit_all_after',

@@ -13,6 +13,12 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Magento\Framework\App\Request\CsrfValidator">
+        <plugin name="nets_csrf_validator_skip" type="Dibs\EasyCheckout\Plugin\CsrfValidatorSkip" />
+    </type>
+
+
     <preference for="Magento\Checkout\Block\Cart\Crosssell" type="Dibs\EasyCheckout\Block\Checkout\Cart\Crosssell" />
     <type name="Magento\Checkout\Block\Onepage\Link">
         <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
