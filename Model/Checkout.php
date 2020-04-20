@@ -430,9 +430,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function tryToSaveDibsPayment($paymentId)
     {
 
-
-        sleep(20);
-
         // TODO certain payment methods may be session independent
 
         $session = $this->getCheckoutSession();
