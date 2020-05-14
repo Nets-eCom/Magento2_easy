@@ -19,11 +19,11 @@ class Locale
     ];
 
     /**
-     * Swedish, Norway, Danish Kronor
+     * Swedish, Norway, Danish, Euro and Dollar
      * @var array $allowedCurrencies
      */
     protected $allowedCurrencies = [
-      "SEK","NOK","DKK","EUR", "USD"
+      "SEK","NOK","DKK","EUR","USD"
     ];
 
     /**
