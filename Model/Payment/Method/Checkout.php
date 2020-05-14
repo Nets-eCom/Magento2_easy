@@ -86,7 +86,7 @@ class Checkout extends AbstractMethod
         return $this->_helper->canCapture($order ? $order->getStore() : null);
     }
 
-    
+
 
     public function canRefund()
     {
@@ -146,7 +146,7 @@ class Checkout extends AbstractMethod
       */
     public function canUseForCurrency($currencyCode)
     {
-        return in_array(strtoupper($currencyCode), ['SEK','NOK','DKK']);
+        return in_array(strtoupper($currencyCode), ['SEK','NOK','DKK','EUR','USD']);
     }
 
     /**
