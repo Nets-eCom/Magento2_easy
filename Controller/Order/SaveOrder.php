@@ -15,6 +15,7 @@ class SaveOrder extends Checkout
         }
         */
 
+
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 

@@ -86,7 +86,7 @@ class Checkout extends AbstractMethod
         return $this->_helper->canCapture($order ? $order->getStore() : null);
     }
 
-    
+
 
     public function canRefund()
     {

@@ -12,6 +12,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentMethod;
 use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
@@ -217,6 +218,16 @@ class Order
                 $createPaymentRequest->setPaymentMethods([$paymentFee]);
             }
         }
+
+
+        $webHookUrl = $this->helper->getWebHookCallbackUrl($quote->getId());
+        $webhookCheckoutComplete = new CreatePaymentWebhook();
+        $webhookCheckoutComplete->setEventName($webhookCheckoutComplete::EVENT_PAYMENT_CHECKOUT_COMPLETED);
+        $webhookCheckoutComplete->setUrl($webHookUrl);
+        if ($secret = $this->helper->getWebhookSecret()) {
+            $webhookCheckoutComplete->setAuthorization($secret);
+        }
+        $createPaymentRequest->setWebHooks([$webhookCheckoutComplete]);
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }

@@ -3,6 +3,8 @@
 namespace Dibs\EasyCheckout\Model;
 
 
+use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
+
 class CheckoutContext
 {
     /**
@@ -27,6 +29,9 @@ class CheckoutContext
     /** @var \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale */
     protected $dibsLocale;
 
+    /** @var OrderCollectionFactory */
+    protected $orderCollectionFactory;
+
    /**
      * Constructor
      *
@@ -35,6 +40,7 @@ class CheckoutContext
      * @param \Dibs\EasyCheckout\Logger\Logger $logger
      * @param \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale,
      * @param \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement
+     * @param OrderCollectionFactory $orderCollectionFactory
      * @param \Magento\Newsletter\Model\Subscriber $subscriber
      *
      */
@@ -44,6 +50,7 @@ class CheckoutContext
         \Dibs\EasyCheckout\Logger\Logger $logger,
         \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale,
         \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement,
+        OrderCollectionFactory $orderCollectionFactory,
         \Magento\Newsletter\Model\Subscriber $subscriber
     ) {
         $this->helper        = $helper;
@@ -52,6 +59,8 @@ class CheckoutContext
         $this->dibsLocale = $dibsLocale;
         $this->orderCustomerManagement = $orderCustomerManagement;
         $this->subscriber = $subscriber;
+        $this->orderCollectionFactory = $orderCollectionFactory;
+
     }
 
     /**
@@ -70,7 +79,7 @@ class CheckoutContext
         return $this->logger;
     }
 
-   /** @return \Dibs\EasyCheckout\Model\Dibs\Order */
+   /** @return Dibs\Order */
     public function getDibsOrderHandler()
     {
         return $this->dibsOrderHandler;
@@ -101,6 +110,12 @@ class CheckoutContext
     }
 
 
-
+    /**
+     * @return OrderCollectionFactory
+     */
+    public function getOrderCollectionFactory()
+    {
+        return $this->orderCollectionFactory;
+    }
 
 }

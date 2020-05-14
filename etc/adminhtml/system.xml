@@ -31,6 +31,11 @@
                     <label>Secret Key</label>
                     <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
                 </field>
+
+                <field id="webhook_auth" type="password" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Webhook Authentication Password</label>
+                    <comment>Choose a password that we will send to Nets (with no spaces), they will then send this back to us when we try to create an order, with this way and other algorithms we can validate that the request comes from them.</comment>
+                </field>
             </group>
 
             <group id="settings" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -70,6 +75,13 @@
                     <label>Subscribe Newsletter Checked by default</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+
+                <field id="checkout_add_options_to_name" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
+                    <label>Add Product Options to Name in Nets</label>
+                    <comment>If yes, the cart items will be sent to Nets appending the custom product options and values to the name. If you have lots of custom product options, then it would be a good idea to set this option to No.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
                 <field id="register_customer" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="120">
                     <label>Register Guest Customers</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

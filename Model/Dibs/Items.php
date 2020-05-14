@@ -37,6 +37,8 @@ class Items
     protected $_store = null;
     protected $_itemsArray = [];
 
+    protected $addCustomOptionsToItemName = null;
+
     public function __construct(
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Magento\Catalog\Helper\Product\Configuration $productConfig,
@@ -68,6 +70,13 @@ class Items
      */
     public function addItems($items)
     {
+        if ($this->addCustomOptionsToItemName === null) {
+            $shouldAdd = $this->_helper->addCustomOptionsToItemName();;
+            $this->addCustomOptionsToItemName = $shouldAdd ? true : false;
+        }
+
+        $addComments = $this->addCustomOptionsToItemName;
+
         $isQuote = null;
         foreach ($items as $magentoItem) {
             if (is_null($isQuote)) {
@@ -115,7 +124,7 @@ class Items
                     }
                 } else {
                     $allItems[] = $magentoItem; //add bundle product
-                    $parentComment         = "Bundle Product";
+                    $parentComment         = __("Bundle Product");
                 }
 
                 $children = $this->getChildrenItems($magentoItem);
@@ -156,33 +165,37 @@ class Items
                     $item->setQty($qty);
                 }
 
+                $comment = '';
                 $addPrices = true;
                 if ($bundle) {
                     if (!$mainItem->getParentItemId()) { //main product, add prices if not children calculated
                         $comment = $parentComment;
                         $addPrices = !$isChildrenCalculated;
                     } else { //children, add price only if children calculated
-                        $comment = '';
                         $addPrices = $isChildrenCalculated;
                     }
                 } else {
-                    $comment = [];
-                    //add configurable/children information, as comment
-                    if ($isQuote) {
-                        $options = $this->_productConfig->getOptions($item);
-                    } else {
-                        $options = null;
-                    }
 
-                    if ($options) {
-                        foreach ($options as $option) {
-                            if (isset($option['label']) && isset($option['value'])) {
-                                $comment[] = $option['label'] . ' : ' . $option['value'];
+
+                    if ($addComments) {
+                        $comment = [];
+                        //add configurable/children information, as comment
+                        if ($isQuote) {
+                            $options = $this->_productConfig->getOptions($item);
+                        } else {
+                            $options = null;
+                        }
+
+                        if ($options) {
+                            foreach ($options as $option) {
+                                if (isset($option['label']) && isset($option['value'])) {
+                                    $comment[] = $option['label'] . ' : ' . $option['value'];
+                                }
                             }
                         }
-                    }
 
-                    $comment = implode('; ', $comment);
+                        $comment = implode('; ', $comment);
+                    }
                 }
 
                 $vat = $mainItem->getTaxPercent();
@@ -221,11 +234,22 @@ class Items
                 $unitPrice = $addPrices ? $this->addZeroes($item->getPriceInclTax()) : 0;
                 $unitPriceExclTax = $addPrices ? $this->addZeroes($item->getPrice()) : 0;
 
+
+                $itemName = $item->getName();
+                if ($addComments && $comment) {
+                    $itemName .= ' ' . '('.$comment.')';
+                }
+
+                // max length!
+                if (strlen($itemName) > 128) {
+                    $itemName = substr($itemName, 0, 128);
+                }
+
                 //
                 $orderItem = new OrderItem();
                 $orderItem
                     ->setReference($sku)
-                    ->setName($item->getName() . " " . ($comment ? "({$comment})" : ""))
+                    ->setName($itemName)
                     ->setUnit("st")
                     ->setQuantity(round($qty, 0))
                     ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)

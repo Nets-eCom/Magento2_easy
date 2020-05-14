@@ -115,6 +115,21 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param null $store
      * @return bool
      */
+    public function addCustomOptionsToItemName($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SETTINGS . 'checkout_add_options_to_name',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+
+
+    /**
+     * @param null $store
+     * @return bool
+     */
     public function isTestMode($store = null)
     {
         return $this->scopeConfig->isSetFlag(
@@ -231,6 +246,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->_getUrl('easycheckout/order/success');
     }
 
+    /**
+     * @param $quoteId
+     * @return string
+     */
+    public function getWebHookCallbackUrl($quoteId)
+    {
+        return $this->getCheckoutUrl("WebhookCallback/qid/" . $quoteId);
+    }
+
+    /**
+     * @param null $store
+     * @return string
+     */
+    public function getWebhookSecret($store = null)
+    {
+        $secret = $this->scopeConfig->getValue(
+            self::XML_PATH_CONNECTION . 'webhook_auth',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+
+        if (!$secret) {
+            return null;
+        }
+
+        return str_replace("=", "",base64_encode($secret));
+    }
     /**
      * @param null $path
      * @param array $params
