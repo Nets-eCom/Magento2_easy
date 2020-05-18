@@ -7,11 +7,12 @@
 define([
     "jquery",
     'Magento_Ui/js/modal/alert',
+    'Magento_Checkout/js/model/quote',
     "jquery/ui",
     "mage/translate",
     "mage/mage",
     "mage/validation"
-], function (jQuery, alert) {
+], function (jQuery, alert, quoteModel) {
     "use strict";
     jQuery.widget('mage.nwtdibsCheckout', {
         options: {
@@ -263,6 +264,24 @@ define([
         },
 
         _loadShippingMethod: function () {
+            if (window.dibs_msuodc_enabled) {
+                var formData = jQuery(this.options.shippingMethodLoaderSelector)
+                    .serializeArray()
+                    .reduce(function(obj, item) {
+                        obj[item.name] = item.value;
+                        return obj;
+                    }, {});
+
+                if (formData && formData.postal !== undefined) {
+                    var quoteAddress = quoteModel.shippingAddress();
+                    quoteAddress.postcode = formData.postal;
+                    quoteAddress.countryId = formData.country_id;
+                    quoteModel.shippingAddress(quoteAddress)
+                }
+
+                return false;
+            }
+
             this._ajaxFormSubmit(jQuery(this.options.shippingMethodLoaderSelector));
             return false;
         },

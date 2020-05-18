@@ -156,6 +156,13 @@
                         <field id="display_additional_block">1</field>
                     </depends>
                 </field>
+                <field id="replace_shipping_mediastrategi_udc" translate="label" type="select" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Replace shipping block with Mediastrategi Unifaun Delivery Checkout</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="display_dibs_shipping_methods">1</field>
+                    </depends>
+                </field>
             </group>
 
             <group id="crosssell" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
