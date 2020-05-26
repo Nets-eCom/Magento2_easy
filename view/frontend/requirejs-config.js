@@ -13,3 +13,13 @@ var config = {
         }
     }
 };
+
+if (window.dibs_msuodc_enabled) {
+    config.config = {
+        mixins: {
+            'Dibs_EasyCheckout/js/checkout': {
+                'Dibs_EasyCheckout/js/view/mixin/easycheckout/checkout': true
+            }
+        }
+    };
+}
