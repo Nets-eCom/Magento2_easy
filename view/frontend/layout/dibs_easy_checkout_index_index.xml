@@ -16,7 +16,7 @@
 
         <referenceBlock name="require.js">
             <action method="setTemplate">
-                <argument name="template" xsi:type="string">Mediastrategi_UODC::checkout_head.phtml</argument>
+                <argument name="template" xsi:type="string">Dibs_EasyCheckout::checkout/uodc/checkout_head.phtml</argument>
             </action>
         </referenceBlock>
 
