@@ -48,6 +48,15 @@ class Cart extends AbstractHelper
     }
 
     /**
+     * @return Current Currency symbol
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function getCurrencySymbol()
+    {
+        return $this->storeManager->getStore()->getCurrentCurrency()->getCurrencySymbol();
+    }
+
+    /**
      * @param null $store
      * @return mixed
      */

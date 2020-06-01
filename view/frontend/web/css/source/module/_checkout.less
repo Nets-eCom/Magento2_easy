@@ -852,6 +852,11 @@ button:not(.primary).dibs-primary {
       }
     }
 
+    .col.item-desc,
+    .col.price{
+      display: none;
+    }
+
     .dibs-easy-checkout-cart {
       #dibs-easy-checkout-cart-heading {
         span.dibs-payment-methods__img {
@@ -916,7 +921,10 @@ button:not(.primary).dibs-primary {
             }
           }
         }
-
+        .price-excluding-tax, .price-including-tax{
+          white-space: inherit;
+        }
+        
         &.item-desc {
           .product-item-details {
             .product-item-info {

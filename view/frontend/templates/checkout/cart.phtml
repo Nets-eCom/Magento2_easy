@@ -12,7 +12,7 @@
 // dibs-easy-checkout_cart id is mandatory (it's used into ajax update blocks part)
 
 $cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
-$currency = $cartHelper->getCurrencyCode();
+$currency = $cartHelper->getCurrencySymbol();
 ?>
 <div id="dibs-easy-checkout_cart" class="table-wrapper order-items">
     <table id="details-table" class="dibs-easy-checkout-review" cellspacing="0" cellpadding="0" border="0">
@@ -33,7 +33,7 @@ $currency = $cartHelper->getCurrencyCode();
             <th class="col price" scope="col">
                 <span><?= /* @escapeNotVerified */
                     __('Price') ?></span>
-                <span class="currency"><?= $currency ?></span>
+                <span class="currency"><?= trim($currency) ?></span>
             </th>
         </tr>
         </thead>

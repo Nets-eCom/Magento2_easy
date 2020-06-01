@@ -115,6 +115,21 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param null $store
      * @return bool
      */
+    public function addCustomOptionsToItemName($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SETTINGS . 'checkout_add_options_to_name',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+
+
+    /**
+     * @param null $store
+     * @return bool
+     */
     public function isTestMode($store = null)
     {
         return $this->scopeConfig->isSetFlag(
