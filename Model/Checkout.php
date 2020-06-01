@@ -647,7 +647,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             ['order' => $order, 'quote' => $this->getQuote()]
         );
 
-        if ($order->getCanSendNewEmailFlag()) {
+        //check if order confirmation email was already sent ($order->getEmailSent() == true) to avoid sending it twice
+        if ($order->getCanSendNewEmailFlag() && !($order->getEmailSent())) {
             try {
                 $this->orderSender->send($order);
             } catch (\Exception $e) {
