@@ -98,7 +98,7 @@
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.coupon" as="coupon" template="Dibs_EasyCheckout::checkout/cart/coupon.phtml"
                                ifconfig="dibs_easycheckout/layout/display_discount"/>
                         <!-- Shipping Method -->
-                        <block class="Dibs\EasyCheckout\Block\Checkout\Shipping" name="dibs_easy_checkout.shipping" as="shipping" template="Dibs_EasyCheckout::checkout/shipping.phtml" ifconfig="dibs_easycheckout/layout/display_dibs_shipping_methods">
+                        <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping" as="shipping" template="Dibs_EasyCheckout::checkout/shipping.phtml" ifconfig="dibs_easycheckout/layout/display_dibs_shipping_methods">
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.dibs_shipping_total" as="dibs_shipping_total" template="Dibs_EasyCheckout::checkout/shipping/dibs_shipping_total.phtml"/>
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_method" as="shipping_method" template="Dibs_EasyCheckout::checkout/shipping/method.phtml"/>
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_address" as="shipping_address" template="Dibs_EasyCheckout::checkout/shipping/address.phtml"/>

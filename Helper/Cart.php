@@ -25,37 +25,21 @@ class Cart extends AbstractHelper
     protected $storeManager;
 
     /**
-     * @var \Magento\Directory\Model\AllowedCountries
-     */
-    protected $allowedCountryModel;
-
-    /**
-     * @var CountryFactory
-     */
-    protected $countryFactory;
-
-    /**
      * Cart constructor.
      * @param Context $context
      * @param StoreManagerInterface $storeManager
-     * @param AllowedCountries $allowedCountryModel
-     * @param CountryFactory $countryFactory
      */
     public function __construct(
         Context $context,
-        StoreManagerInterface $storeManager,
-        AllowedCountries $allowedCountryModel,
-        CountryFactory $countryFactory
+        StoreManagerInterface $storeManager
     )
     {
         $this->storeManager = $storeManager;
-        $this->allowedCountryModel = $allowedCountryModel;
-        $this->countryFactory = $countryFactory;
         parent::__construct($context);
     }
 
     /**
-     * @return Current Currency code
+     * @return string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCurrencyCode()
@@ -89,33 +73,4 @@ class Cart extends AbstractHelper
         );
     }
 
-    /**
-     * @return array
-     */
-    public function getAllowedCountriesNames()
-    {
-        $allowedCountriesNames = [];
-        $allowedCountries = $this->allowedCountryModel->getAllowedCountries();
-        foreach ($allowedCountries as $allowedCountryCode) {
-            $allowedCountriesNames[$allowedCountryCode] = $this->countryFactory->create()->loadByCode($allowedCountryCode)->getName();
-        }
-        return $allowedCountriesNames;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllowedCountriesList()
-    {
-        return $this->allowedCountryModel->getAllowedCountries();
-    }
-
-    /**
-     * @param $countryId
-     * @return Country Name
-     */
-    public function getCountryNameByCode($countryId)
-    {
-        return $this->countryFactory->create()->loadByCode($countryId)->getName();
-    }
 }
