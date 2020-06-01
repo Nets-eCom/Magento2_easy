@@ -270,7 +270,7 @@ define([
                     typeof(window.msuodc_widget_widget.configuration.resultCallback) == "function"
                     && typeof(window.msuodc_widget_widget.nwtWrapperApplied) == "undefined"
                 ) {
-                    window.msuodc_widget_widget.nwtWrapperApplie = true;
+                    window.msuodc_widget_widget.nwtWrapperApplied = true;
                     var msuodcCallback = window.msuodc_widget_widget.configuration.resultCallback;
 
                     window.msuodc_widget_widget.configuration.resultCallback = function(result) {
