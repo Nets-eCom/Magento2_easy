@@ -6,6 +6,13 @@
 if (! class_exists(\Mediastrategi\UODC\Helper\Environment::class)) {
     return;
 }
+
+/** @var \Dibs\EasyCheckout\Helper\EasycheckoutUdc $widgetHelper */
+$widgetHelper = $this->helper(\Dibs\EasyCheckout\Helper\EasycheckoutUdc::class);
+if (! $widgetHelper->isShippingBlockReplaced()) {
+    return;
+}
+
 $environmentHelper = $this->helper(\Mediastrategi\UODC\Helper\Environment::class);
 /** @var \Mediastrategi\UODC\Helper\Environment $environmentHelper */
 

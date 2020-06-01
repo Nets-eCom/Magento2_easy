@@ -21,7 +21,7 @@
         </referenceBlock>
 
         <referenceContainer name="header-wrapper">
-            <block class="Magento\Framework\View\Element\Template" name="top.udcheader" template="Dibs_EasyCheckout::checkout/head.phtml" />
+            <block class="Magento\Framework\View\Element\Template" ifconfig="dibs_easycheckout/layout/replace_shipping_mediastrategi_udc" name="top.udcheader" template="Dibs_EasyCheckout::checkout/head.phtml" />
         </referenceContainer>
 
         <referenceBlock name="head.additional">

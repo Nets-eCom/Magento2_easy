@@ -265,6 +265,22 @@ define([
 
         _loadShippingMethod: function () {
             if (window.dibs_msuodc_enabled) {
+                // We bind new callback, because we need to reload shipping methods
+                if (
+                    typeof(window.msuodc_widget_widget.configuration.resultCallback) == "function"
+                    && typeof(window.msuodc_widget_widget.nwtWrapperApplied) == "undefined"
+                ) {
+                    window.msuodc_widget_widget.nwtWrapperApplie = true;
+                    var msuodcCallback = window.msuodc_widget_widget.configuration.resultCallback;
+
+                    window.msuodc_widget_widget.configuration.resultCallback = function(result) {
+                        msuodcCallback(result);
+                        if (result.valid) {
+                            jQuery('#details-table').find('.ajax-qty-change').trigger('change');
+                        }
+                    };
+                }
+
                 var formData = jQuery(this.options.shippingMethodLoaderSelector)
                     .serializeArray()
                     .reduce(function(obj, item) {
