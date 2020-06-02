@@ -25,7 +25,7 @@
                 <active>1</active>
                 <model>Dibs\EasyCheckout\Model\Payment\Method\Checkout</model>
                 <order_status>pending</order_status>
-                <title>Dibs Easy Checkout</title>
+                <title>Nets Easy Checkout</title>
             </dibseasycheckout>
         </payment>
     </default>

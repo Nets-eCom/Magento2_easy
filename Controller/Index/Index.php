@@ -62,7 +62,7 @@ class Index extends Checkout
                 return;
             }
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage($e->getMessage() ? $e->getMessage() : __('Cannot initialize Dibs Easy Checkout (%1)', get_class($e)));
+            $this->messageManager->addErrorMessage($e->getMessage() ? $e->getMessage() : __('Cannot initialize Nets Easy Checkout (%1)', get_class($e)));
             $checkout->getLogger()->error("[" . __METHOD__ . "] (" . get_class($e) . ") {$e->getMessage()} ");
             $checkout->getLogger()->critical($e);
 
@@ -88,13 +88,13 @@ class Index extends Checkout
             $unsetPayment = false;
             // THIS might happen if the store owner changes integration flow, when a customer already started with the old flow!, for embedded
             if (!$checkoutUrl && !$useIframe) {
-                $checkout->getLogger()->error("Cannot initialize Dibs Easy Checkout! Hosted flow chosen but no checkout URL is returned from Dibs.");
+                $checkout->getLogger()->error("Cannot initialize Nets Easy Checkout! Hosted flow chosen but no checkout URL is returned from Dibs.");
                 $unsetPayment = true;
             }
 
             // THIS might also happen when store owner changes integration flow, when a customer already started the old flow, but for hosted
             if ($useIframe && $checkoutUrl) {
-                $checkout->getLogger()->error("Cannot initialize Dibs Easy Checkout! Embedded flow chosen but checkout URL is returned from Dibs.");
+                $checkout->getLogger()->error("Cannot initialize Nets Easy Checkout! Embedded flow chosen but checkout URL is returned from Dibs.");
                 $unsetPayment = true;
             }
 
@@ -108,7 +108,7 @@ class Index extends Checkout
         }
 
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set(__('Dibs Easy Checkout'));
+        $resultPage->getConfig()->getTitle()->set(__('Nets Easy Checkout'));
 
         // set variables we depend on in the block
         /** @var \Dibs\EasyCheckout\Block\Checkout $block */

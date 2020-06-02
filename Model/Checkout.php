@@ -83,7 +83,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->changeCountry($allowCountries[0], $save = false);
         } elseif (!in_array($shippingAddress->getCountryId(), $allowCountries)) {
             $this->_logger->info(__("Wrong country set %1, change to %2", $shippingAddress->getCountryId(), $allowCountries[0]));
-            $this->messageManager->addNoticeMessage(__("Dibs Easy checkout is not available for %1, country was changed to %2.", $shippingAddress->getCountryId(), $allowCountries[0]));
+            $this->messageManager->addNoticeMessage(__("Nets Easy checkout is not available for %1, country was changed to %2.", $shippingAddress->getCountryId(), $allowCountries[0]));
             $this->changeCountry($allowCountries[0], $save = false);
         }
 
@@ -164,7 +164,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         if (!$this->getHelper()->isEnabled()) {
-            $this->throwRedirectToCartException(__('The Dibs Easy Checkout is not enabled, please use an alternative checkout method.'));
+            $this->throwRedirectToCartException(__('The Nets Easy Checkout is not enabled, please use an alternative checkout method.'));
         }
 
         if (!$quote->hasItems()) {

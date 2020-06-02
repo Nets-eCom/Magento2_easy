@@ -7,7 +7,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Payment\Transaction;
 
 /**
- * Dibs Easy Checkout Payment method
+ * Nets Easy Checkout Payment method
  */
 class Checkout extends AbstractMethod
 {
@@ -86,7 +86,7 @@ class Checkout extends AbstractMethod
         return $this->_helper->canCapture($order ? $order->getStore() : null);
     }
 
-    
+
 
     public function canRefund()
     {

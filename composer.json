@@ -1,6 +1,6 @@
 {
   "name": "dibs/easycheckout",
-  "description": "Dibs Easy Checkout",
+  "description": "Nets Easy Checkout",
   "type": "magento2-module",
   "version": "1.0.5",
   "require": {
