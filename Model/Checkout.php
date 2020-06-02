@@ -6,6 +6,7 @@ use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentResponseInterface;
 use Magento\Customer\Api\Data\GroupInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
@@ -79,12 +80,17 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         if (!$shippingAddress->getCountryId()) {
-            $this->_logger->info(__("No country set, change to %1", $allowCountries[0]));
-            $this->changeCountry($allowCountries[0], $save = false);
+            $defaultCountryCode = $this->getDefaultCountryFromConfiguration($quote->getStoreId());
+            $countryCode = $defaultCountryCode ?: $allowCountries[0];
+            $this->_logger->info(__("No country set, change to %1", $countryCode));
+            $this->changeCountry($countryCode, $save = false);
         } elseif (!in_array($shippingAddress->getCountryId(), $allowCountries)) {
-            $this->_logger->info(__("Wrong country set %1, change to %2", $shippingAddress->getCountryId(), $allowCountries[0]));
-            $this->messageManager->addNoticeMessage(__("Dibs Easy checkout is not available for %1, country was changed to %2.", $shippingAddress->getCountryId(), $allowCountries[0]));
-            $this->changeCountry($allowCountries[0], $save = false);
+            $defaultCountryCode = $this->getDefaultCountryFromConfiguration($quote->getStoreId());
+            $countryCode = $defaultCountryCode ?: $allowCountries[0];
+
+            $this->_logger->info(__("Wrong country set %1, change to %2", $shippingAddress->getCountryId(), $countryCode));
+            $this->messageManager->addNoticeMessage(__("Dibs Easy checkout is not available for %1, country was changed to %2.", $shippingAddress->getCountryId(), $countryCode));
+            $this->changeCountry($countryCode, $save = false);
         }
 
         if (!$billingAddress->getCountryId() || $billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
@@ -140,6 +146,26 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         */
 
         return $this;
+    }
+
+    /**
+     * @param $storeId
+     *
+     * @return mixed
+     */
+    private function getDefaultCountryFromConfiguration($storeId)
+    {
+        /** @var \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig */
+        $scopeConfig = ObjectManager::getInstance()->create(
+            \Magento\Framework\App\Config\ScopeConfigInterface::class
+        );
+
+        return $scopeConfig->getValue(
+            'general/country/default',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
     }
 
     /**
