@@ -45,6 +45,19 @@ class Index extends Checkout
             }
         }
 
+        $redirectToHosted = false;
+        if ($this->getRequest()->getParam("checkRedirect") && $integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED) {
+            // ok the user should be redirected to the hosted gateway, but only if shipping method is set (if its not virtual)!
+            $q = $this->getDibsCheckout()->getQuote();
+            if ($q->isVirtual()) {
+                $redirectToHosted = true;
+            }
+
+            if (!$q->isVirtual() && $q->getShippingAddress() && $q->getShippingAddress()->getShippingMethod()) {
+                $redirectToHosted = true;
+            }
+        }
+
         // if not... :)
         $dibsPayment = null;
         try {
@@ -105,6 +118,14 @@ class Index extends Checkout
                 $this->_redirect('*'); // reload the page
                 return;
             }
+        }
+
+        if ($redirectToHosted && $checkoutUrl) {
+            // here we redirect to the hosted payment gateway, this only happens when ?checkRedirect param is used
+            // this param is set in the default magento checkout, when nets is choosen. $redirectToHosted is only true
+            // if hosted (redirect flow) is enabled in settings)
+            $this->_redirect($checkoutUrl);
+            return;
         }
 
         $resultPage = $this->resultPageFactory->create();

@@ -13,7 +13,7 @@ define(
                 template: 'Dibs_EasyCheckout/payment/checkout'
             },
             continueTodibs: function () {
-                $.mage.redirect(url.build('easycheckout'));
+                $.mage.redirect(url.build('easycheckout') + '?checkRedirect=1');
                 return false;
             }
         });
