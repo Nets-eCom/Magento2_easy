@@ -1,0 +1,10 @@
+<?php
+/** @var EasycheckoutUdc $widgetHelper */
+use Dibs\EasyCheckout\Helper\EasycheckoutUdc;
+
+$widgetHelper = $this->helper(EasycheckoutUdc::class);
+if ($widgetHelper->isShippingBlockReplaced()): ?>
+    <script type="text/javascript">
+        window.dibs_msuodc_enabled = true;
+    </script>
+<?php endif; ?>
