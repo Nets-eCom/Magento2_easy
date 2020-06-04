@@ -143,10 +143,6 @@ class Index extends Checkout
             // here we redirect to the hosted payment gateway, this only happens when ?checkRedirect param is used
             // this param is set in the default magento checkout, when nets is choosen. $redirectToHosted is only true
             // if hosted (redirect flow) is enabled in settings)
-
-            // we save quote!
-            // $this->getDibsCheckout()->saveQuote();
-
             $this->_redirect($checkoutUrl);
             return;
         }

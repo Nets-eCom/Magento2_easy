@@ -230,12 +230,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
     }
 
-    public function saveQuote()
-    {
-        $quote = $this->getQuote();
-        $quote->save(); // deprected, but since its used everywhere, use it here as well until updated
-    }
-
     /**
      * @param $country
      * @return array
