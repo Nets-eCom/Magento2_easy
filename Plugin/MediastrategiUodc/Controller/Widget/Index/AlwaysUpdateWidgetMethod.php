@@ -3,20 +3,17 @@
 namespace Dibs\EasyCheckout\Plugin\MediastrategiUodc\Controller\Widget\Index;
 
 use Magento\Framework\Controller\Result\Json;
-use Mediastrategi\UODC\Controller\Widget\Index;
 
 class AlwaysUpdateWidgetMethod
 {
     /**
-     * @param Index $subject
+     * @param \Mediastrategi\UODC\Controller\Widget\Index $subject
      * @param $result Json
      *
      * @return mixed
      */
-    public function afterExecute(
-        $subject,
-        $result
-    ) {
+    public function afterExecute($subject, $result)
+    {
         $resultObject = $this->getReflectionResult($result);
         if (is_null($resultObject)) {
             return $result;
