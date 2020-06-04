@@ -7,4 +7,8 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Mediastrategi\UODC\Controller\Widget\Index">
+        <plugin name="dibs_easycheckout_index" type="Dibs\EasyCheckout\Plugin\MediastrategiUodc\Controller\Widget\Index\AlwaysUpdateWidgetMethod" />
+    </type>
 </config>
