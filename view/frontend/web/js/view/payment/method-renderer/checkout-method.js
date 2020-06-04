@@ -4,16 +4,19 @@ define(
     [
         'jquery',
         'Magento_Checkout/js/view/payment/default',
-        'mage/url'
+        'mage/url',
+        'Dibs_EasyCheckout/js/action/before-order'
     ],
-    function ($,Component,url) {
+    function ($,Component,url, dibs) {
         'use strict';
         return Component.extend({
             defaults: {
                 template: 'Dibs_EasyCheckout/payment/checkout'
             },
             continueTodibs: function () {
-                $.mage.redirect(url.build('easycheckout') + '?checkRedirect=1');
+                dibs("dibseasycheckout", function () {
+                    $.mage.redirect(url.build('easycheckout') + '?checkRedirect=1');
+                });
                 return false;
             }
         });

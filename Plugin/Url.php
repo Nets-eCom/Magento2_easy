@@ -4,6 +4,8 @@
 namespace Dibs\EasyCheckout\Plugin;
 
 
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
+
 class Url
 {
 
@@ -21,7 +23,15 @@ class Url
     {
 
         if (!$this->helper->isEnabled()) {
-            return $this;
+            return $result;
+        }
+
+        $integrationType = $this->helper->getCheckoutFlow();
+        $useHostedCheckout = $integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED;
+
+        // hosted checkout should always go through default magento checkout!
+        if ($useHostedCheckout) {
+            return $result;
         }
 
         if ($this->helper->replaceCheckout()) {

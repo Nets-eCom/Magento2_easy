@@ -62,6 +62,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $quote  = $this->getQuote();
         $this->checkCart();
 
+
         //init checkout
         $customer = $this->getCustomerSession();
         if ($customer->getId()) {
@@ -227,6 +228,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->checkAndChangeCurrency();
             $quote->collectTotals()->save();
         }
+    }
+
+    public function saveQuote()
+    {
+        $quote = $this->getQuote();
+        $quote->save(); // deprected, but since its used everywhere, use it here as well until updated
     }
 
     /**
@@ -486,8 +493,24 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             return $this->throwReloadException(__("We could not create your order... No reserved or charged amount found. Payment id: %1", $payment->getPaymentId()));
         }
 
+        // by default (when embedded flow is used) we let nets handle customer data, if redirect flow is used then we handle it.
+
+        // when the solution is hosted, the checkout url is not matching our checkout url!
+        $weHandleConsumerData = false;
+        $changeUrl = true;
+        if ($this->getHelper()->getCheckoutUrl() !== $payment->getCheckoutUrl()) {
+            $weHandleConsumerData = true;
+            $changeUrl = false;
+        }
+
+        // HOWERE if quote is virtual, we let them handle consumer data, since we dont add these fields in our checkout!
+        if ($quote->isVirtual()) {
+            $weHandleConsumerData = false;
+        }
+
+
         try {
-            $order = $this->placeOrder($payment, $quote);
+            $order = $this->placeOrder($payment, $quote, $weHandleConsumerData);
         } catch (\Exception $e) {
             $this->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
             $this->getLogger()->error("Error message:" . $e->getMessage());
@@ -496,7 +519,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         try {
-            $this->updateMagentoPaymentReference($order, $paymentId);
+            $this->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
         } catch (\Exception $e) {
             $this->getLogger()->error(
                 "
@@ -526,10 +549,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @param GetPaymentResponse $dibsPayment
      * @param Quote $quote
+     * @param bool $weHandleConsumer
      * @return mixed
      * @throws \Exception
      */
-    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote)
+    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote, $weHandleConsumer = false)
     {
 
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
@@ -554,21 +578,32 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             // IGNORE
         }
 
-        $shipping = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($dibsPayment, $fallbackCountryId);
+        $billingAddress = $quote->getBillingAddress();
+        $shippingAddress = $quote->getShippingAddress();
+
+
+        // $weHandleConsumer = !$quote->isVirtual() && redirect flow used, then we get address info from quote!
+        if ($weHandleConsumer) {
+            $shipping = $this->getDibsPaymentHandler()->convertAddressToArray($quote);
+        } else {
+            $shipping = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($dibsPayment, $fallbackCountryId);
+        }
 
         // WE only get shipping address from dibs!
-        $billingAddress = $quote->getBillingAddress();
-        $billingAddress->addData($shipping)
+        $billingAddress->addData($shipping);
+        $billingAddress
             ->setCustomerAddressId(0)
             ->setSaveInAddressBook(0)
             ->setShouldIgnoreValidation(true);
 
-        $shippingAddress = $quote->getShippingAddress();
         $shippingAddress->addData($shipping)
             ->setSameAsBilling(1)
             ->setCustomerAddressId(0)
             ->setSaveInAddressBook(0)
             ->setShouldIgnoreValidation(true);
+
+
+
 
         $quote->setCustomerEmail($billingAddress->getEmail());
 
@@ -694,10 +729,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @param \Magento\Sales\Model\Order $order
      * @param $paymentId
+     * @param $changeUrl bool
      * @return void
      * @throws ClientException
      */
-    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
+    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId, $changeUrl = true)
     {
         $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId);
     }

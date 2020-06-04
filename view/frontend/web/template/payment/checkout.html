@@ -18,8 +18,7 @@
                         data-bind="
                         click: continueTodibs,
                         attr: {title: $t('Place Order')},
-                        enable: (getCode() == isChecked()),
-                        css: {disabled: !isPlaceOrderActionAllowed()}
+                        enable: (getCode() == isChecked())
                         "
                         disabled>
                     <span data-bind="i18n: 'Nets Easy Checkout'"></span>
