@@ -114,6 +114,19 @@ class WebhookCallback extends Checkout
             return $result;
         }
 
+        $weHandleConsumerData = false;
+        $changeUrl = true;
+        if ($this->getHelper()->getCheckoutUrl() !== $dibsPayment->getCheckoutUrl()) {
+            $weHandleConsumerData = true;
+            $changeUrl = false;
+        }
+
+        // HOWERE if quote is virtual, we let them handle consumer data, since we dont add these fields in our checkout!
+        if ($quote->isVirtual()) {
+            $weHandleConsumerData = false;
+        }
+
+
 
         // OK the payment exists, payment ids are matching... lets check no order has been placed
         $orderCollection = $this->dibsCheckoutContext->getOrderCollectionFactory()->create();
@@ -128,7 +141,7 @@ class WebhookCallback extends Checkout
         }
 
         try {
-            $order = $checkout->placeOrder($dibsPayment, $quote, false);
+            $order = $checkout->placeOrder($dibsPayment, $quote, $weHandleConsumerData, false);
         } catch (\Exception $e) {
             $this->logger->error("Could not place order for dibs payment with payment id: " . $dibsPayment->getPaymentId() . ", Quote ID:" . $quote->getId());
             $this->logger->error("Error message:" . $e->getMessage());
@@ -139,7 +152,7 @@ class WebhookCallback extends Checkout
         }
 
         try {
-            $checkout->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId);
+            $checkout->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
         } catch (\Exception $e) {
             $this->getLogger()->error(
                 "

@@ -7,7 +7,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Payment\Transaction;
 
 /**
- * Dibs Easy Checkout Payment method
+ * Nets Easy Checkout Payment method
  */
 class Checkout extends AbstractMethod
 {

@@ -171,11 +171,20 @@ class Order
         $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
 
         if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
-            // when we use hosted flow we set the url where customer should be redirected back
+            // when we use hosted flow we set the url where customer should be redirected, and we handle the consumer data
             $paymentCheckout->setReturnUrl($this->helper->getCheckoutUrl());
+
+            if ($quote->isVirtual()) {
+                // at the moment we allow nets to handle the merchant data when quote is virual for redirect flow...
+                $paymentCheckout->setMerchantHandlesConsumerData(false);
+            } else {
+                $paymentCheckout->setMerchantHandlesConsumerData(true);
+            }
+
         } else {
-            // when we use embedded, we set the url!
+            // when we use embedded, we set the url! and we allow nets to handle consumer data
             $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
+            $paymentCheckout->setMerchantHandlesConsumerData(false);
         }
 
         // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
@@ -183,7 +192,6 @@ class Order
         $paymentCheckout->setCharge(false);
 
         // we let dibs handle customer data! customer will be able to fill in info in their iframe, and choose addresses
-        $paymentCheckout->setMerchantHandlesConsumerData(false);
         $paymentCheckout->setMerchantHandlesShippingCost(true);
         //  Default value = false,
         // if set to true the checkout will not load any user data
@@ -235,14 +243,17 @@ class Order
     /**
      * @param \Magento\Sales\Model\Order $order
      * @param $paymentId
+     * @param $changeUrl bool
      * @return void
      * @throws ClientException
      */
-    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
+    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId, $changeUrl = true)
     {
         $reference = new UpdatePaymentReference();
         $reference->setReference($order->getIncrementId());
-        $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
+        if ($changeUrl) {
+            $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
+        }
         $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
 
@@ -253,6 +264,7 @@ class Order
      */
     public function convertDibsShippingToMagentoAddress(GetPaymentResponse $payment, $countryIdFallback = null)
     {
+
         if ($payment->getConsumer() === null) {
             return [];
         }
@@ -301,6 +313,37 @@ class Order
         if ($countryId) {
             $data['country_id'] = $countryId;
         }
+
+        return $data;
+    }
+
+
+    public function convertAddressToArray(Quote $quote)
+    {
+        $shipping = $quote->getShippingAddress();
+        $email = "";
+        if ($quote->getCustomerEmail()) {
+            $email = $quote->getCustomerEmail();
+        } elseif ($quote->getBillingAddress() && $quote->getBillingAddress()->getEmail()) {
+            $email = $quote->getBillingAddress()->getEmail();
+        } elseif($shipping->getEmail()) {
+            $email = $shipping->getEmail();
+        }
+
+        if (!$email) {
+            throw new LocalizedException(__("E-mail address not found."));
+        }
+
+        $data = [
+            'firstname' => $shipping->getFirstname(),
+            'lastname' => $shipping->getLastname(),
+            'company' => $shipping->getCompany(),
+            'telephone' => $shipping->getTelephone(),
+            'email' => $email,
+            'street' => $shipping->getStreet(),
+            'city' => $shipping->getCity(),
+            'postcode' => $shipping->getPostcode(),
+        ];
 
         return $data;
     }

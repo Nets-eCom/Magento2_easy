@@ -62,10 +62,14 @@ class UpdatePaymentReference extends AbstractRequest
 
     public function toArray()
     {
-        return [
+        $data = [
             'reference' => $this->getReference(),
-            'checkoutUrl' => $this->getCheckoutUrl()
         ];
+
+        if ($this->getCheckoutUrl()) {
+            $data['checkoutUrl'] = $this->getCheckoutUrl();
+        }
+        return $data;
     }
 
 

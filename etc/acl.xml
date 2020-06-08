@@ -6,7 +6,7 @@
                 <resource id="Magento_Backend::stores">
                     <resource id="Magento_Backend::stores_settings">
                         <resource id="Magento_Config::config">
-                            <resource id="Dibs_EasyCheckout::system_config" title="Dibs Easy Checkout" />
+                            <resource id="Dibs_EasyCheckout::system_config" title="Nets Easy Checkout" />
                         </resource>
                     </resource>
                 </resource>
