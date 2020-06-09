@@ -2,6 +2,7 @@ var config = {
     map: {
         '*': {
             dibsEasyCheckout: 'Dibs_EasyCheckout/js/checkout',
+            'Magento_Checkout/js/model/shipping-save-processor/default': 'Dibs_EasyCheckout/js/mixin/model/muodc/shipping-rate-processor'
         }
     },
     paths: {
@@ -13,13 +14,3 @@ var config = {
         }
     }
 };
-
-if (window.dibs_msuodc_enabled) {
-    config.config = {
-        mixins: {
-            'Dibs_EasyCheckout/js/checkout': {
-                'Dibs_EasyCheckout/js/view/mixin/easycheckout/checkout': true
-            }
-        }
-    };
-}
