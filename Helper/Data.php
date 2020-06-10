@@ -70,6 +70,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Dibs\EasyCheckout\Model\Dibs\Locale $locale
      * @param \Magento\Framework\App\State $state
      * @param \Magento\Sales\Model\OrderRepository $orderRepository
+     * @param \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -78,12 +79,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Directory\Model\AllowedCountries $allowedCountryModel,
         \Magento\Framework\App\State $state,
         \Magento\Sales\Model\OrderRepository $orderRepository
+	    \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
     ) {
         $this->dibsLocale = $locale;
         $this->storeManager = $storeManager;
         $this->allowedCountryModel = $allowedCountryModel;
         $this->state = $state;
         $this->orderRepository = $orderRepository;
+	    $this->_cmsPage = $_cmsPage;
 
         parent::__construct($context);
     }
@@ -321,6 +324,29 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         //if there are multiple pages with same url key; magento will generate options with key|id
         $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'terms_url', $store));
         return $this->_getUrl($url[0]);
+    }
+
+    /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyUrl($store = null)
+    {
+        //if there are multiple pages with same url key; magento will generate options with key|id
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
+	return $this->_getUrl($url[0]);
+    }
+
+    /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyLabel($store = null)
+    {
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
+	$identifier = $url[0];
+	$result = $this->_cmsPage->execute($identifier, $store)->getTitle();
+	return $result;
     }
 
     /**
