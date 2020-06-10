@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <title>Dibs Easy Checkout</title>
+        <title>Nets Easy Checkout</title>
     </head>
     <update handle="checkout_item_price_renderers" />
     <body>
@@ -13,6 +13,16 @@
         <referenceBlock name="catalog.topnav" remove="true"/>
         <referenceContainer name="footer-container" remove="true"/>
         <referenceBlock name="authentication-popup" remove="true" />
+
+        <referenceBlock name="require.js">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Dibs_EasyCheckout::checkout/uodc/checkout_head.phtml</argument>
+            </action>
+        </referenceBlock>
+
+        <referenceContainer name="header-wrapper">
+            <block class="Magento\Framework\View\Element\Template" ifconfig="dibs_easycheckout/layout/replace_shipping_mediastrategi_udc" name="top.udcheader" template="Dibs_EasyCheckout::checkout/head.phtml" />
+        </referenceContainer>
 
         <referenceBlock name="head.additional">
             <block class="Dibs\EasyCheckout\Block\Script" name="dibs_easy_checkout_script" template="Dibs_EasyCheckout::js/dibscheckout.phtml"/>
@@ -97,14 +107,18 @@
                         <!-- Apply Discount Code -->
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.coupon" as="coupon" template="Dibs_EasyCheckout::checkout/cart/coupon.phtml"
                                ifconfig="dibs_easycheckout/layout/display_discount"/>
+
                         <!-- Shipping Method -->
-                        <block class="Dibs\EasyCheckout\Block\Checkout\Shipping" name="dibs_easy_checkout.shipping" as="shipping" template="Dibs_EasyCheckout::checkout/shipping.phtml" ifconfig="dibs_easycheckout/layout/display_dibs_shipping_methods">
+                        <block class="Dibs\EasyCheckout\Block\Checkout\Shipping" name="dibs_easy_checkout.shipping" as="shipping" >
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.dibs_shipping_total" as="dibs_shipping_total" template="Dibs_EasyCheckout::checkout/shipping/dibs_shipping_total.phtml"/>
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_method" as="shipping_method" template="Dibs_EasyCheckout::checkout/shipping/method.phtml"/>
                             <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.shipping_address" as="shipping_address" template="Dibs_EasyCheckout::checkout/shipping/address.phtml"/>
                         </block>
 
-                        <block class="Magento\Checkout\Block\Onepage" name="checkout.root" template="Magento_Checkout::onepage.phtml" cacheable="false" ifconfig="dibs_easycheckout/layout/display_default_shipping_methods">
+                        <!-- Block with hiden areas to inject dependency-->
+                        <block class="Magento\Checkout\Block\Onepage" name="checkout.root"
+                               template="Magento_Checkout::onepage.phtml"
+                               cacheable="false">
                             <arguments>
                                 <argument name="jsLayout" xsi:type="array">
                                     <item name="types" xsi:type="array">
@@ -131,20 +145,10 @@
                                                     <item name="children" xsi:type="array">
                                                     </item>
                                                 </item>
-                                                <item name="estimation" xsi:type="array">
-                                                    <item name="sortOrder" xsi:type="string">10</item>
-                                                    <item name="component" xsi:type="string">Magento_Checkout/js/view/estimation</item>
-                                                    <item name="displayArea" xsi:type="string">estimation</item>
-                                                    <item name="config" xsi:type="array">
-                                                        <item name="template" xsi:type="string">Magento_Checkout/estimation</item>
-                                                        <item name="deps" xsi:type="array">
-                                                            <item name="0" xsi:type="string">checkout.sidebar</item>
-                                                        </item>
-                                                    </item>
-                                                </item>
+
                                                 <item name="steps" xsi:type="array">
                                                     <item name="component" xsi:type="string">uiComponent</item>
-                                                    <item name="displayArea" xsi:type="string">steps</item>
+                                                    <item name="displayArea" xsi:type="string">steps_hidden</item>
                                                     <item name="children" xsi:type="array">
                                                         <item name="shipping-step" xsi:type="array">
                                                             <item name="component" xsi:type="string">uiComponent</item>
@@ -262,12 +266,10 @@
                                                                                 </item>
                                                                             </item>
                                                                         </item>
-                                                                        <!-- merge your payment methods here -->
                                                                         <item name="afterMethods" xsi:type="array">
                                                                             <item name="component" xsi:type="string">uiComponent</item>
                                                                             <item name="displayArea" xsi:type="string">afterMethods</item>
                                                                             <item name="children" xsi:type="array">
-                                                                                <!-- merge additional data after payment methods here -->
                                                                             </item>
                                                                         </item>
                                                                     </item>
@@ -319,6 +321,8 @@
                                 </argument>
                             </arguments>
                         </block>
+
+
 
                         <!-- Subscribe to Newsletter -->
                         <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.newsletter" as="newsletter" template="Dibs_EasyCheckout::checkout/subscribe.phtml"

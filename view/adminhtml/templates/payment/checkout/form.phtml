@@ -3,7 +3,7 @@
 /**
  * @var $block \Dibs\EasyCheckout\Block\Payment\Checkout\Form
  */
- 
+
  //NOT USED YET
 ?>
 <fieldset class="admin__fieldset payment-method" id="payment_form_<?php echo $block->escapeHtml($block->getMethodCode()) ?>" style="display: none">
@@ -11,7 +11,7 @@
         <label for="dibseasycheckout_id" class="admin__field-label"><span><?php echo $block->escapeHtml(__('Dibs Payment ID')) ?></span></label>
         <div class="admin__field-control">
             <input type="text" id="dibseasycheckout_id" name="payment[dibs_payment_id]"
-                   title="<?php echo $block->escapeHtml(__("Dibs Easy Checkout Payment ID")) ?>" class="required-entry admin__control-text"
+                   title="<?php echo $block->escapeHtml(__("Nets Easy Checkout Payment ID")) ?>" class="required-entry admin__control-text"
                    value="<?php /* @noEscape */ echo $block->getInfoData('dibs_payment_id') ?>"/>
         </div>
     </div>

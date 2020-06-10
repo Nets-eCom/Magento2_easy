@@ -1,0 +1,39 @@
+<script>var BASE_URL = '<?= $block->escapeUrl($block->getBaseUrl()) ?>';</script>
+<script>var require = { "baseUrl": "<?php /* @escapeNotVerified */ echo $block->getViewFileUrl('/') ?>" };</script>
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+
+if (! class_exists(\Mediastrategi\UODC\Helper\Environment::class)) {
+    return;
+}
+
+/** @var \Dibs\EasyCheckout\Helper\EasycheckoutUdc $widgetHelper */
+$widgetHelper = $this->helper(\Dibs\EasyCheckout\Helper\EasycheckoutUdc::class);
+if (! $widgetHelper->isShippingBlockReplaced()) {
+    return;
+}
+
+$environmentHelper = $this->helper(\Mediastrategi\UODC\Helper\Environment::class);
+/** @var \Mediastrategi\UODC\Helper\Environment $environmentHelper */
+
+$widgetHelper = $this->helper(\Mediastrategi\UODC\Helper\Widget::class);
+/** @var \Mediastrategi\UODC\Helper\Widget $widgetHelper */
+
+if ($environmentHelper->isEnabled()) {
+    echo '<script type="text/javascript">' . "\n";
+    echo 'window.msuodc_enabled = true;' . "\n";
+    echo 'window.msuodc_debug = ' . ($environmentHelper->getDebugStatus() ? 'true' : 'false') . ';' . "\n";
+    if ($environmentHelper->isCustomRegionSelectorEnabled()) {
+        echo 'window.msuodc_customRegionSelectorSettings = ' . json_encode($environmentHelper->getCustomRegionSelectorSettings()) . ';' . "\n";
+    }
+    echo '</script>';
+
+    if ($widgetHelper->isEnabled()) {
+        echo '<script type="text/javascript">window.msuodc_widget_url = "' . $block->getUrl('uodc-widget/widget/index') . '";</script>' . "\n";
+        echo '        <script type="text/javascript">window.msuodc_widget_settings = ' . json_encode($widgetHelper->getSettings()) . ';</script>' . "\n";
+        echo '        <script type="text/javascript" src="https://api.unifaun.com/rs-extapi/v1/delivery-checkouts-widget/unifaun-checkout-all.min.js"></script>' . "\n";
+    }
+}
+?>
+
+

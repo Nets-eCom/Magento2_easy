@@ -6,6 +6,7 @@ use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentResponseInterface;
 use Magento\Customer\Api\Data\GroupInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
@@ -62,6 +63,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $quote  = $this->getQuote();
         $this->checkCart();
 
+
         //init checkout
         $customer = $this->getCustomerSession();
         if ($customer->getId()) {
@@ -79,12 +81,19 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         if (!$shippingAddress->getCountryId()) {
-            $this->_logger->info(__("No country set, change to %1", $allowCountries[0]));
-            $this->changeCountry($allowCountries[0], $save = false);
+            $defaultCountryCode = $this->getDefaultCountryFromConfiguration($quote->getStoreId());
+            $countryCode = $defaultCountryCode ?: $allowCountries[0];
+            $this->_logger->info(__("No country set, change to %1", $countryCode));
+            $this->changeCountry($countryCode, $save = false);
         } elseif (!in_array($shippingAddress->getCountryId(), $allowCountries)) {
-            $this->_logger->info(__("Wrong country set %1, change to %2", $shippingAddress->getCountryId(), $allowCountries[0]));
-            $this->messageManager->addNoticeMessage(__("Dibs Easy checkout is not available for %1, country was changed to %2.", $shippingAddress->getCountryId(), $allowCountries[0]));
-            $this->changeCountry($allowCountries[0], $save = false);
+
+            $defaultCountryCode = $this->getDefaultCountryFromConfiguration($quote->getStoreId());
+            $countryCode = $defaultCountryCode ?: $allowCountries[0];
+
+            $this->_logger->info(__("Wrong country set %1, change to %2", $shippingAddress->getCountryId(), $countryCode));
+            $this->messageManager->addNoticeMessage(__("Nets Easy checkout is not available for %1, country was changed to %2.", $shippingAddress->getCountryId(), $countryCode));
+            $this->changeCountry($countryCode, $save = false);
+
         }
 
         if (!$billingAddress->getCountryId() || $billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
@@ -143,6 +152,26 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
     /**
+     * @param $storeId
+     *
+     * @return mixed
+     */
+    private function getDefaultCountryFromConfiguration($storeId)
+    {
+        /** @var \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig */
+        $scopeConfig = ObjectManager::getInstance()->create(
+            \Magento\Framework\App\Config\ScopeConfigInterface::class
+        );
+
+        return $scopeConfig->getValue(
+            'general/country/default',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+    }
+
+    /**
      * @return string
      */
     public function getQuoteSignature()
@@ -164,7 +193,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         if (!$this->getHelper()->isEnabled()) {
-            $this->throwRedirectToCartException(__('The Dibs Easy Checkout is not enabled, please use an alternative checkout method.'));
+            $this->throwRedirectToCartException(__('The Nets Easy Checkout is not enabled, please use an alternative checkout method.'));
         }
 
         if (!$quote->hasItems()) {
@@ -484,10 +513,26 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         // LOAD ORDERS BY payment id! check if its has been created
         $orderCollection = $this->context->getOrderCollectionFactory()->create();
 
+
         /** @var \Magento\Sales\Model\Order $firstOrder */
         $firstOrder = $orderCollection
             ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
             ->getFirstItem();
+
+        // by default (when embedded flow is used) we let nets handle customer data, if redirect flow is used then we handle it.
+
+        // when the solution is hosted, the checkout url is not matching our checkout url!
+        $weHandleConsumerData = false;
+        $changeUrl = true;
+        if ($this->getHelper()->getCheckoutUrl() !== $payment->getCheckoutUrl()) {
+            $weHandleConsumerData = true;
+            $changeUrl = false;
+        }
+
+        // HOWERE if quote is virtual, we let them handle consumer data, since we dont add these fields in our checkout!
+        if ($quote->isVirtual()) {
+            $weHandleConsumerData = false;
+        }
 
         /** @var \Magento\Sales\Model\Order $order */
         $order = null;
@@ -512,7 +557,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             }
 
             try {
-                $order = $this->placeOrder($payment, $quote);
+                $order = $this->placeOrder($payment, $quote, $weHandleConsumerData);
             } catch (\Exception $e) {
                 $this->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
                 $this->getLogger()->error("Error message:" . $e->getMessage());
@@ -521,7 +566,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             }
 
             try {
-                $this->updateMagentoPaymentReference($order, $paymentId);
+                $this->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
             } catch (\Exception $e) {
                 $this->getLogger()->error(
                     "
@@ -553,11 +598,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @param GetPaymentResponse $dibsPayment
      * @param Quote $quote
+     * @param bool $weHandleConsumer
      * @param bool $setSessionOrderId
      * @return mixed
      * @throws \Exception
      */
-    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote, $setSessionOrderId = true)
+    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote, $weHandleConsumer = false, $setSessionOrderId = true)
     {
 
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
@@ -582,21 +628,32 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             // IGNORE
         }
 
-        $shipping = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($dibsPayment, $fallbackCountryId);
+        $billingAddress = $quote->getBillingAddress();
+        $shippingAddress = $quote->getShippingAddress();
+
+
+        // $weHandleConsumer = !$quote->isVirtual() && redirect flow used, then we get address info from quote!
+        if ($weHandleConsumer) {
+            $shipping = $this->getDibsPaymentHandler()->convertAddressToArray($quote);
+        } else {
+            $shipping = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($dibsPayment, $fallbackCountryId);
+        }
 
         // WE only get shipping address from dibs!
-        $billingAddress = $quote->getBillingAddress();
-        $billingAddress->addData($shipping)
+        $billingAddress->addData($shipping);
+        $billingAddress
             ->setCustomerAddressId(0)
             ->setSaveInAddressBook(0)
             ->setShouldIgnoreValidation(true);
 
-        $shippingAddress = $quote->getShippingAddress();
         $shippingAddress->addData($shipping)
             ->setSameAsBilling(1)
             ->setCustomerAddressId(0)
             ->setSaveInAddressBook(0)
             ->setShouldIgnoreValidation(true);
+
+
+
 
         $quote->setCustomerEmail($billingAddress->getEmail());
 
@@ -725,12 +782,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @param \Magento\Sales\Model\Order $order
      * @param $paymentId
+     * @param $changeUrl bool
      * @return void
      * @throws ClientException
      */
-    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
+    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId, $changeUrl = true)
     {
-        $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId);
+        $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
     }
 
     /**

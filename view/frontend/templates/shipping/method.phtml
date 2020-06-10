@@ -1,0 +1,54 @@
+<?php
+
+use Dibs\EasyCheckout\Helper\EasycheckoutUdc;
+
+// @codingStandardsIgnoreFile
+// Following original convention
+$cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
+$allowedCountries = $cartHelper->getAllowedCountriesNames();
+$quote = $block->getQuote();
+$shippingAddress = $quote->getShippingAddress();
+
+/** @var EasycheckoutUdc $widgetHelper */
+$widgetHelper = $this->helper(EasycheckoutUdc::class);
+?>
+<div class="dibs-easy-checkout-shipping dibs-easy-checkout-section mobile-show"
+     id="dibs-easy-checkout-shipping">
+    <div class="dibs-easy-checkout-title" data-role="title">
+        <h4 id="dibs-easy-checkout-review-heading" role="heading" aria-level="2">
+            <?php echo $block->escapeHtml(__('Shipping Method')) ?>
+        </h4>
+        <?php echo $block->getChildHtml('dibs_shipping_total'); ?>
+    </div>
+    <div class="dibs-easy-checkout-section-shipping">
+        <form method="post" id="shipping-method-loader" class="form"
+              action="<?= $block->escapeUrl($block->getShippingMethodUrl()) ?>">
+            <select name="country_id" class="country" id="country-box">
+                <option><?= __('Country') ?></option>
+                <?php foreach ($allowedCountries as $key => $country): ?>
+                    <option data-title="<?= $country ?>" value="<?= $key ?>"
+                        <?= ($shippingAddress !== null && $shippingAddress->getCountryId() == $key) ? 'selected="selected"' : __('') ?>
+                    ><?= $country ?></option>
+                <?php endforeach; ?>
+            </select>
+            <input class="postcode" type="text" id="postcode-box" name="postal"
+                   placeholder="<?php echo __('Postal code') ?>"
+                   value="<?= ($shippingAddress === null || !$shippingAddress->getPostcode()) ? __('') : $shippingAddress->getPostcode() ?>" autofocus />
+            <button type="submit" id="shipping-method-button"
+                    class="action dibs-primary" title="<?php echo __('Choose Delivery'); ?>">
+                <span><?php echo __('Choose Delivery'); ?></span>
+            </button>
+        </form>
+    </div>
+    <?php
+    if ($widgetHelper->isShippingBlockReplaced()): ?>
+        <div id="checkout-step-shipping_method"
+             class="step-content"
+             data-role="content"
+             role="tabpanel"
+             aria-hidden="false">
+        </div>
+    <?php endif;
+    ?>
+    </div>
+</div>

@@ -3,7 +3,7 @@ namespace Dibs\EasyCheckout\Model\Payment\Method;
 
 
 /**
- * Dibs EasyCheckout Abstract Payment method
+ * Nets EasyCheckout Abstract Payment method
  */
 abstract class AbstractMethod extends \Magento\Payment\Model\Method\AbstractMethod
 {
