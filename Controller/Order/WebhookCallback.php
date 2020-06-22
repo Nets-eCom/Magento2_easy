@@ -116,7 +116,7 @@ class WebhookCallback extends Checkout
 
         $weHandleConsumerData = false;
         $changeUrl = true;
-        if ($this->getHelper()->getCheckoutUrl() !== $dibsPayment->getCheckoutUrl()) {
+        if ($this->dibsCheckoutContext->getHelper()->getCheckoutUrl() !== $dibsPayment->getCheckoutUrl()) {
             $weHandleConsumerData = true;
             $changeUrl = false;
         }
