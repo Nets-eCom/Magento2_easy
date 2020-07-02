@@ -54,20 +54,36 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $allowedCountryModel;
 
     /**
+     * @var \Magento\Framework\App\State
+     */
+    protected $state;
+
+    /**
+     * @var \Magento\Sales\Model\OrderRepository
+     */
+    protected $orderRepository;
+
+    /**
      * Data constructor.
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Dibs\EasyCheckout\Model\Dibs\Locale $locale
+     * @param \Magento\Framework\App\State $state
+     * @param \Magento\Sales\Model\OrderRepository $orderRepository
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Dibs\EasyCheckout\Model\Dibs\Locale $locale,
-        \Magento\Directory\Model\AllowedCountries $allowedCountryModel
+        \Magento\Directory\Model\AllowedCountries $allowedCountryModel,
+        \Magento\Framework\App\State $state,
+        \Magento\Sales\Model\OrderRepository $orderRepository
     ) {
         $this->dibsLocale = $locale;
         $this->storeManager = $storeManager;
         $this->allowedCountryModel = $allowedCountryModel;
+        $this->state = $state;
+        $this->orderRepository = $orderRepository;
 
         parent::__construct($context);
     }
@@ -78,6 +94,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getApiSecretKey($store = null)
     {
+        if ($this->state->getAreaCode() == \Magento\Framework\App\Area::AREA_ADMINHTML) {
+            // in admin area
+            $orderId = $this->_request->getParam('order_id', null);
+            if ($orderId) {
+                $order = $this->orderRepository->get($orderId);
+                $storeId = $order->getStoreId();
+                $store = $this->storeManager->getStore($storeId);
+            }
+        }
+
         return $this->scopeConfig->getValue(
             self::XML_PATH_CONNECTION . 'secret_key',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -151,7 +177,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getInvoiceFeeLabel($store = null)
     {
         return $this->scopeConfig->getValue(
-           self::XML_PATH_SETTINGS_INVOICE . 'invoice_fee_label',
+            self::XML_PATH_SETTINGS_INVOICE . 'invoice_fee_label',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
@@ -160,7 +186,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getInvoiceFee($store = null)
     {
         return $this->scopeConfig->getValue(
-           self::XML_PATH_SETTINGS_INVOICE . 'invoice_fee',
+            self::XML_PATH_SETTINGS_INVOICE . 'invoice_fee',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );

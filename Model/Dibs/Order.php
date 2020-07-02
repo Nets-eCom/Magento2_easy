@@ -254,6 +254,11 @@ class Order
         if ($changeUrl) {
             $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
         }
+        if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
+            $payment = $this->paymentApi->getPayment($paymentId);
+            $checkoutUrl = $payment->getCheckoutUrl();
+            $reference->setCheckoutUrl($checkoutUrl);
+        }
         $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
 
