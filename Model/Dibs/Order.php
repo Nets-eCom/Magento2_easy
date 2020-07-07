@@ -182,6 +182,7 @@ class Order
             }
 
         } else {
+            $paymentCheckout->setReturnUrl($this->helper->getCheckoutUrl());
             // when we use embedded, we set the url! and we allow nets to handle consumer data
             $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
             $paymentCheckout->setMerchantHandlesConsumerData(false);
@@ -202,7 +203,7 @@ class Order
 
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
         $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));
-        $paymentOrder->setAmount($dibsAmount);
+        $paymentOrder->setAmount((int) $dibsAmount);
         $paymentOrder->setItems($items);
 
         // create payment object

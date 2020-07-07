@@ -254,9 +254,9 @@ class Items
                     ->setQuantity(round($qty, 0))
                     ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
                     ->setTaxAmount($this->getTotalTaxAmount($unitPrice * $qty, $vat, false)) // total tax amount
-                    ->setUnitPrice($unitPriceExclTax) // excl. tax price per item
-                    ->setNetTotalAmount($unitPriceExclTax * $qty) // excl. tax
-                    ->setGrossTotalAmount($unitPrice * $qty); // incl. tax
+                    ->setUnitPrice((int) $unitPriceExclTax) // excl. tax price per item
+                    ->setNetTotalAmount((int) ($unitPriceExclTax * $qty)) // excl. tax
+                    ->setGrossTotalAmount((int) ($unitPrice * $qty)); // incl. tax
 
                 // add to array
                 $this->_cart[$sku] = $orderItem;
@@ -698,6 +698,6 @@ class Items
 
     public function addZeroes($amount)
     {
-        return round($amount * 100, 0);
+        return (int) round($amount * 100, 0);
     }
 }
