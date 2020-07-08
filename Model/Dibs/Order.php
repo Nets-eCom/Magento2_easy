@@ -182,7 +182,6 @@ class Order
             }
 
         } else {
-            $paymentCheckout->setReturnUrl($this->helper->getCheckoutUrl());
             // when we use embedded, we set the url! and we allow nets to handle consumer data
             $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
             $paymentCheckout->setMerchantHandlesConsumerData(false);
