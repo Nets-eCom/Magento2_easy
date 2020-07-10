@@ -202,7 +202,7 @@ class Order
 
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
         $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));
-        $paymentOrder->setAmount($dibsAmount);
+        $paymentOrder->setAmount((int) $dibsAmount);
         $paymentOrder->setItems($items);
 
         // create payment object
