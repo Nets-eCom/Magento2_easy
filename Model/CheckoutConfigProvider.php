@@ -19,6 +19,7 @@ class CheckoutConfigProvider implements \Magento\Checkout\Model\ConfigProviderIn
     public function getConfig()
     {
         $output['saveShippingMethodUrl'] = $this->_urlBuilder->getUrl("{$this->_controllerPath}/SaveShippingMethod");
+        $output['saveUdcShippingMethodUrl'] = $this->_urlBuilder->getUrl("{$this->_controllerPath}/SaveUdcShipping");
 
         return $output;
     }

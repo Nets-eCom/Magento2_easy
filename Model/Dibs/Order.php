@@ -202,7 +202,7 @@ class Order
 
         $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
         $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));
-        $paymentOrder->setAmount($dibsAmount);
+        $paymentOrder->setAmount((int) $dibsAmount);
         $paymentOrder->setItems($items);
 
         // create payment object
@@ -253,6 +253,11 @@ class Order
         $reference->setReference($order->getIncrementId());
         if ($changeUrl) {
             $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
+        }
+        if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
+            $payment = $this->paymentApi->getPayment($paymentId);
+            $checkoutUrl = $payment->getCheckoutUrl();
+            $reference->setCheckoutUrl($checkoutUrl);
         }
         $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
     }
