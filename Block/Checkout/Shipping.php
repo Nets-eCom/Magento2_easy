@@ -14,6 +14,7 @@ class Shipping extends Checkout
     {
         parent::_construct();
 
+        $this->setTemplate('Dibs_EasyCheckout::checkout/shipping.phtml');
         if ($this->_scopeConfig->getValue("dibs_easycheckout/layout/display_dibs_shipping_methods", ScopeInterface::SCOPE_STORE)) {
             $this->setTemplate('Dibs_EasyCheckout::checkout/shipping.phtml');
         }
