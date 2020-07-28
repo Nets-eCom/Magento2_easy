@@ -71,7 +71,6 @@ class SwishResponseHandler
             return;
         }
         $this->invoiceOrder($order);
-
         $order
             ->setStatus($status)
             ->setState($status);
@@ -102,11 +101,11 @@ class SwishResponseHandler
 
             $invoice->capture();
 
+            $order->setIsInProcess(true);
             //send notification code
             $order->addStatusHistoryComment(
                 __('Notified customer about invoice #%1.', $invoice->getId())
             )->setIsCustomerNotified(true);
-            $this->orderRepository->save($order);
         } catch (\Exception $e) {
             // We cannot brake transaction
         }
