@@ -557,6 +557,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 return $this->throwReloadException(__("We could not create your order. Please contact the site admin with this error and payment id: %1", $payment->getPaymentId()));
             }
 
+            // Handle swish orders
+            if ($this->isSwishPaymentValid($payment)) {
+                $this->handleSwishOrder($payment, $order);
+            }
+
             try {
                 $this->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
             } catch (\Exception $e) {
@@ -569,10 +574,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 // lets ignore this and save it in logs! let customer see his/her order confirmation!
                 $this->getLogger()->error("Error message:" . $e->getMessage());
             }
-        }
-
-        if ($this->isSwishPaymentValid($payment)) {
-            $this->handleSwishOrder($payment, $order);
         }
 
         // clear old sessions
