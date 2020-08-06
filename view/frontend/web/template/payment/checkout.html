@@ -9,12 +9,13 @@
 
     <div class="payment-method-content">
         <div class="payment-method-note">
-            <!-- ko i18n: 'You will be redirected to the Nets easy Checkout page.' --><!-- /ko -->
+            <!-- ko i18n: 'A pop-up for the Nets Easy Checkout will appear.' --><!-- /ko -->
         </div>
         <div class="actions-toolbar">
             <div class="primary">
                 <button class="action primary checkout"
                         type="submit"
+                        data-trigger="trigger"
                         data-bind="
                         click: continueTodibs,
                         attr: {title: $t('Place Order')},
@@ -23,6 +24,20 @@
                         disabled>
                     <span data-bind="i18n: 'Nets Easy Checkout'"></span>
                 </button>
+            </div>
+        </div>
+        <div data-bind="mageInit: {
+            'Magento_Ui/js/modal/modal':{
+                'type': 'popup',
+                'title': 'Nets Easy Checkout',
+                'trigger': '.action.primary.checkout[data-trigger=trigger]',
+                'responsive': true,
+                'modalClass': 'nets-popup-wrapper'
+            }}">
+            <div class="content">
+                <iframe id="nets-popup-iframe" src="#" frameborder="0"
+                        data-bind="attr: {src: getNetsUrl()}">
+                </iframe>
             </div>
         </div>
     </div>
