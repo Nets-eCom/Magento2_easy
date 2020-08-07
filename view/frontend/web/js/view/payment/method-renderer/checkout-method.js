@@ -19,9 +19,7 @@ define(
                 template: 'Dibs_EasyCheckout/payment/checkout'
             },
             continueTodibs: function () {
-                // dibs("dibseasycheckout", function () {
-                //     $.mage.redirect(url.build('easycheckout') + '?checkRedirect=1');
-                // });
+                dibs("dibseasycheckout", function () {});
                 return false;
             },
             getNetsUrl: function () {
