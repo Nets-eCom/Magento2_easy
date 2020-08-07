@@ -13,15 +13,9 @@ class Shipping extends Checkout
     public function _construct()
     {
         parent::_construct();
-
-        if ($this->_scopeConfig->getValue("dibs_easycheckout/layout/display_dibs_shipping_methods", ScopeInterface::SCOPE_STORE)) {
-            $this->setTemplate('Dibs_EasyCheckout::checkout/shipping.phtml');
-        }
-
         if ($this->_scopeConfig->getValue('dibs_easycheckout/layout/replace_shipping_mediastrategi_udc', ScopeInterface::SCOPE_STORE)) {
             $this->setTemplate('Dibs_EasyCheckout::shipping/method.phtml');
         }
-
     }
 
     public function getShippingMethodUrl()
