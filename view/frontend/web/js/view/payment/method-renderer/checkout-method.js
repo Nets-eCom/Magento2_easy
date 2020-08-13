@@ -18,7 +18,13 @@ define(
             defaults: {
                 template: 'Dibs_EasyCheckout/payment/checkout'
             },
-            continueTodibs: function () {
+            continueToDibsRedirect: function () {
+                dibs("dibseasycheckout", function () {
+                    $.mage.redirect(url.build('easycheckout') + '?checkRedirect=1');
+                });
+                return false;
+            },
+            continueToDibs: function () {
                 dibs("dibseasycheckout", function () {});
                 return false;
             },

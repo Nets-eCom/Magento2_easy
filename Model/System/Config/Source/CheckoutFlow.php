@@ -19,6 +19,10 @@ class CheckoutFlow implements \Magento\Framework\Option\ArrayInterface
                'value' => 'HostedPaymentPage',
                'label' => __('Redirect')
         ];
+        $options[] = [
+            'value' => 'OverlayPayment',
+            'label' => __('Overlay')
+        ];
 
         return $options;
     }
