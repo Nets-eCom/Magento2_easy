@@ -10,6 +10,7 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
+use Magento\Sales\Model\Order;
 
 class Checkout extends \Magento\Checkout\Model\Type\Onepage
 {
@@ -63,7 +64,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $quote  = $this->getQuote();
         $this->checkCart();
 
-
         //init checkout
         $customer = $this->getCustomerSession();
         if ($customer->getId()) {
@@ -86,14 +86,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->_logger->info(__("No country set, change to %1", $countryCode));
             $this->changeCountry($countryCode, $save = false);
         } elseif (!in_array($shippingAddress->getCountryId(), $allowCountries)) {
-
             $defaultCountryCode = $this->getDefaultCountryFromConfiguration($quote->getStoreId());
             $countryCode = $defaultCountryCode ?: $allowCountries[0];
 
             $this->_logger->info(__("Wrong country set %1, change to %2", $shippingAddress->getCountryId(), $countryCode));
             $this->messageManager->addNoticeMessage(__("Nets Easy checkout is not available for %1, country was changed to %2.", $shippingAddress->getCountryId(), $countryCode));
             $this->changeCountry($countryCode, $save = false);
-
         }
 
         if (!$billingAddress->getCountryId() || $billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
@@ -168,7 +166,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
         );
-
     }
 
     /**
@@ -244,7 +241,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function changeCountry($country, $saveQuote = false)
     {
-
         $blankAddress = $this->getBlankAddress($country);
         $quote        = $this->getQuote();
 
@@ -458,7 +454,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function tryToSaveDibsPayment($paymentId)
     {
-
         // TODO certain payment methods may be session independent
 
         $session = $this->getCheckoutSession();
@@ -513,7 +508,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         // LOAD ORDERS BY payment id! check if its has been created
         $orderCollection = $this->context->getOrderCollectionFactory()->create();
 
-
         /** @var \Magento\Sales\Model\Order $firstOrder */
         $firstOrder = $orderCollection
             ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
@@ -542,9 +536,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $createOrder = false;
         }
 
-
         if ($createOrder) {
-
             if ($payment->getOrderDetails()->getReference() !== $this->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
                 $this->getLogger()->error("Save Order: The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
                 return $this->throwReloadException(__("Could not create an order. Invalid data. Contact admin."));
@@ -565,6 +557,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 return $this->throwReloadException(__("We could not create your order. Please contact the site admin with this error and payment id: %1", $payment->getPaymentId()));
             }
 
+            // Handle swish orders
+            if ($this->isSwishPaymentValid($payment)) {
+                $this->handleSwishOrder($payment, $order);
+            }
+
             try {
                 $this->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
             } catch (\Exception $e) {
@@ -577,7 +574,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 // lets ignore this and save it in logs! let customer see his/her order confirmation!
                 $this->getLogger()->error("Error message:" . $e->getMessage());
             }
-
         }
 
         // clear old sessions
@@ -631,7 +627,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $billingAddress = $quote->getBillingAddress();
         $shippingAddress = $quote->getShippingAddress();
 
-
         // $weHandleConsumer = !$quote->isVirtual() && redirect flow used, then we get address info from quote!
         if ($weHandleConsumer) {
             $shipping = $this->getDibsPaymentHandler()->convertAddressToArray($quote);
@@ -651,9 +646,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             ->setCustomerAddressId(0)
             ->setSaveInAddressBook(0)
             ->setShouldIgnoreValidation(true);
-
-
-
 
         $quote->setCustomerEmail($billingAddress->getEmail());
 
@@ -709,8 +701,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $invoiceFee = $this->getHelper()->getInvoiceFee() * 1.25; // TODO remove hardcode!
 
             $quote->setDibsInvoiceFee($invoiceFee);
-           // $quote->setGrandTotal($quote->getGrandTotal() + $invoiceFee);
-           // $quote->setBaseGrandTotal($quote->getGrandTotal() + $invoiceFee);
+            // $quote->setGrandTotal($quote->getGrandTotal() + $invoiceFee);
+            // $quote->setBaseGrandTotal($quote->getGrandTotal() + $invoiceFee);
 
             $quote->collectTotals();
         }
@@ -746,7 +738,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 ->setLastOrderId($order->getId())
                 ->setLastRealOrderId($order->getIncrementId())
                 ->setLastOrderStatus($order->getStatus());
-
         }
 
         $this->_eventManager->dispatch(
@@ -846,6 +837,27 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function getDibsPaymentHandler()
     {
         return $this->context->getDibsOrderHandler();
+    }
+
+    /**
+     * Handle Swish payment response
+     *
+     * @param GetPaymentResponse $paymentResponse
+     *
+     * @return bool
+     */
+    private function isSwishPaymentValid(GetPaymentResponse $paymentResponse)
+    {
+        return $this->context->getSwishHandler()->isSwishOrderValid($paymentResponse);
+    }
+
+    /**
+     * @param GetPaymentResponse $paymentResponse
+     * @param Order $order
+     */
+    public function handleSwishOrder(GetPaymentResponse $paymentResponse, Order $order)
+    {
+        $this->context->getSwishHandler()->saveOrder($paymentResponse, $order);
     }
 
     /**

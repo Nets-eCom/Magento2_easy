@@ -1,0 +1,41 @@
+.modal-popup.modal-slide.nets-popup-wrapper {
+  @media only screen and (max-width: 767px) {
+    left: 0;
+    .action-close {
+      margin-top: 3rem;
+    }
+  }
+  .modal-inner-wrap {
+    height: ~"calc(100% - 10rem)";
+    @media only screen and (max-width: 767px) {
+      height: 100%;
+    }
+    .modal-header {
+      @media only screen and (max-width: 767px) {
+        padding-left: 25px;
+        padding-right: 25px;
+      }
+      h1 {
+        border-bottom: 0;
+      }
+    }
+    .modal-content,
+    .modal-content div {
+      height: 100%;
+    }
+    .modal-content {
+      @media only screen and (max-width: 767px) {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+    .modal-footer {
+      display: none;
+    }
+  }
+}
+
+#nets-popup-iframe {
+  width: 100%;
+  height: 100%;
+}

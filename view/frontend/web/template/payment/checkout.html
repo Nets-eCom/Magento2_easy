@@ -9,21 +9,57 @@
 
     <div class="payment-method-content">
         <div class="payment-method-note">
-            <!-- ko i18n: 'You will be redirected to the Nets easy Checkout page.' --><!-- /ko -->
+            <!-- ko if: window.overlayIframe -->
+                <!-- ko i18n: 'A pop-up for the Nets Easy Checkout will appear.' --><!-- /ko -->
+            <!--/ko-->
+            <!-- ko ifnot: window.overlayIframe -->
+                <!-- ko i18n: 'You will be redirected to the Nets easy Checkout page.' --><!-- /ko -->
+            <!-- /ko -->
         </div>
         <div class="actions-toolbar">
             <div class="primary">
+                <!-- ko if: window.overlayIframe -->
                 <button class="action primary checkout"
                         type="submit"
+                        data-trigger="trigger"
                         data-bind="
-                        click: continueTodibs,
+                        click: continueToDibs,
                         attr: {title: $t('Place Order')},
                         enable: (getCode() == isChecked())
                         "
                         disabled>
                     <span data-bind="i18n: 'Nets Easy Checkout'"></span>
                 </button>
+                <!--/ko-->
+                <!-- ko ifnot: window.overlayIframe -->
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="
+                        click: continueToDibsRedirect,
+                        attr: {title: $t('Place Order')},
+                        enable: (getCode() == isChecked())
+                        "
+                        disabled>
+                    <span data-bind="i18n: 'Nets Easy Checkout'"></span>
+                </button>
+                <!-- /ko -->
             </div>
         </div>
+        <!-- ko if: window.overlayIframe -->
+        <div data-bind="mageInit: {
+            'Magento_Ui/js/modal/modal':{
+                'type': 'popup',
+                'title': 'Nets Easy Checkout',
+                'trigger': '.action.primary.checkout[data-trigger=trigger]',
+                'responsive': true,
+                'modalClass': 'nets-popup-wrapper'
+            }}">
+            <div class="content">
+                <iframe id="nets-popup-iframe" src="#" frameborder="0"
+                        data-bind="attr: {src: getNetsUrl()}">
+                </iframe>
+            </div>
+        </div>
+        <!--/ko-->
     </div>
 </div>

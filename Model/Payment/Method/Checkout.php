@@ -83,10 +83,24 @@ class Checkout extends AbstractMethod
 
         $payment = $this->getInfoInstance();
         $order   = $payment->getOrder();
+
+        $paymentDefails = $this->getInfoInstance()->getAdditionalInformation();
+        if ($paymentMethod = $paymentDefails['dibs_payment_method'] ?? false) {
+            if (in_array($paymentMethod, $this->getExcludedPaymentOptions())) {
+                return false;
+            }
+        }
+
         return $this->_helper->canCapture($order ? $order->getStore() : null);
     }
 
-
+    /**
+     * @return array
+     */
+    private function getExcludedPaymentOptions()
+    {
+        return ['Swish'];
+    }
 
     public function canRefund()
     {

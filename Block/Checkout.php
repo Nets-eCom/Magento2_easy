@@ -1,5 +1,8 @@
 <?php
+
 namespace Dibs\EasyCheckout\Block;
+
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 
 class Checkout extends \Magento\Framework\View\Element\Template
 {
@@ -71,6 +74,12 @@ class Checkout extends \Magento\Framework\View\Element\Template
     /** @var $checkoutRedirectUrl string */
     protected $checkoutRedirectUrl;
 
+    /** @var \Dibs\EasyCheckout\Model\Checkout $dibsCheckout */
+    protected $dibsCheckout;
+
+    /** @var \Dibs\EasyCheckout\Model\CheckoutContext $dibsCheckout */
+    protected $dibsCheckoutContext;
+
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Tax\Helper\Data $taxHelper
@@ -92,6 +101,8 @@ class Checkout extends \Magento\Framework\View\Element\Template
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Dibs\EasyCheckout\Service\GetCurrentQuote $getCurrentQuoteService,
         \Dibs\EasyCheckout\Service\GetCurrentDibsPaymentId $getCurrentDibsPaymentIdService,
+        \Dibs\EasyCheckout\Model\Checkout $dibsCheckout,
+        \Dibs\EasyCheckout\Model\CheckoutContext $dibsCheckoutContext,
         array $data = []
     ) {
         $this->priceCurrency = $priceCurrency;
@@ -101,6 +112,8 @@ class Checkout extends \Magento\Framework\View\Element\Template
         $this->helper = $helper;
         $this->getCurrentDibsPaymentIdService = $getCurrentDibsPaymentIdService;
         $this->getCurrentQuoteService = $getCurrentQuoteService;
+        $this->dibsCheckout = $dibsCheckout;
+        $this->dibsCheckoutContext = $dibsCheckoutContext;
         parent::__construct($context, $data);
     }
 
@@ -201,6 +214,18 @@ class Checkout extends \Magento\Framework\View\Element\Template
     public function getUseIframe()
     {
         return $this->useIframe;
+    }
+
+    public function getUseOverlayIframe()
+    {
+        $this->dibsCheckout->setCheckoutContext($this->dibsCheckoutContext);
+        $integrationType = $this->dibsCheckout->getHelper()->getCheckoutFlow();
+
+        if ($integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY) {
+            return true;
+        }
+
+        return false;
     }
 
     public function setCheckoutRedirectUrl($url)
