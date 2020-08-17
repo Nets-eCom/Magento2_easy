@@ -41,6 +41,20 @@
             <group id="settings" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Settings</label>
 
+
+                <field id="default_shipping_method" translate="label comment" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Default Shipping Method</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\AllowedShippingMethods</source_model>
+                    <comment>Choose a default shipping method.</comment>
+                    <can_be_empty>0</can_be_empty>
+                </field>
+
+                <field id="default_country" translate="label comment" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
+                    <label>Default Country</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                    <comment>Choose the default country used in checkout.</comment>
+                </field>
+
                 <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Allowed Customer Types</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
