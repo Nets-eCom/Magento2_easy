@@ -10,6 +10,8 @@ class Index extends Checkout
 
     const cartPath = 'checkout/cart';
 
+    const magentoCheckout = 'checkout';
+
     /**
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|\Magento\Framework\View\Result\Page|void
      */
@@ -20,6 +22,12 @@ class Index extends Checkout
 
         $integrationType = $this->getDibsCheckout()->getHelper()->getCheckoutFlow();
         $useHostedCheckout = $integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED;
+
+        if ($integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY) {
+            $integrationType = CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED;
+            $useHostedCheckout = true;
+            $isOverlayType = true;
+        } else $isOverlayType = false;
 
         // if hosted flow is used, OR if customer pays with card and is redirected, they will be sent back here, and we will try to place the order
         // dibs seems to send back both these parameters, so we test them both...
@@ -132,17 +140,22 @@ class Index extends Checkout
             $q = $this->getDibsCheckout()->getQuote();
 
             if (!$q->isVirtual() && $q->getShippingAddress() && !$q->getShippingAddress()->getShippingMethod()) {
-                $this->messageManager->addNoticeMessage(__('You need to choose a shipping method..'));
-                $this->_redirect(self::cartPath);
-                return;
+                if ($isOverlayType) {
+                    $this->_redirect(self::magentoCheckout);
+                    return;
+                } else {
+                    $this->messageManager->addNoticeMessage(__('You need to choose a shipping method..'));
+                    $this->_redirect(self::cartPath);
+                    return;
+                }
             }
 
         }
 
         if ($redirectToHosted && $checkoutUrl) {
             // here we redirect to the hosted payment gateway, this only happens when ?checkRedirect param is used
-            // this param is set in the default magento checkout, when nets is choosen. $redirectToHosted is only true
-            // if hosted (redirect flow) is enabled in settings)
+            // this param is set in the default magento checkout, when nets is chosen. $redirectToHosted is only true
+            // if hosted (redirect flow or overlay) is enabled in settings)
             $this->_redirect($checkoutUrl);
             return;
         }

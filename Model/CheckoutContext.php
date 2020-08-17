@@ -2,7 +2,7 @@
 
 namespace Dibs\EasyCheckout\Model;
 
-
+use Dibs\EasyCheckout\Helper\SwishResponseHandler;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 
 class CheckoutContext
@@ -32,7 +32,12 @@ class CheckoutContext
     /** @var OrderCollectionFactory */
     protected $orderCollectionFactory;
 
-   /**
+    /**
+     * @var SwishResponseHandler
+     */
+    private $swishHandler;
+
+    /**
      * Constructor
      *
      * @param \Dibs\EasyCheckout\Helper\Data $helper
@@ -51,7 +56,8 @@ class CheckoutContext
         \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale,
         \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement,
         OrderCollectionFactory $orderCollectionFactory,
-        \Magento\Newsletter\Model\Subscriber $subscriber
+        \Magento\Newsletter\Model\Subscriber $subscriber,
+        SwishResponseHandler $swishHandler
     ) {
         $this->helper        = $helper;
         $this->logger = $logger;
@@ -60,7 +66,7 @@ class CheckoutContext
         $this->orderCustomerManagement = $orderCustomerManagement;
         $this->subscriber = $subscriber;
         $this->orderCollectionFactory = $orderCollectionFactory;
-
+        $this->swishHandler = $swishHandler;
     }
 
     /**
@@ -118,4 +124,11 @@ class CheckoutContext
         return $this->orderCollectionFactory;
     }
 
+    /**
+     * @return SwishResponseHandler
+     */
+    public function getSwishHandler(): SwishResponseHandler
+    {
+        return $this->swishHandler;
+    }
 }

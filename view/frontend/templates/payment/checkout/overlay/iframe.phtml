@@ -1,0 +1,18 @@
+<?php
+// @codingStandardsIgnoreFile
+/**
+ * @var \Dibs\EasyCheckout\Block\Checkout $block
+ */
+?>
+
+<?php if ($block->getUseOverlayIframe()): ?>
+    <script type="text/x-magento-init">
+        {
+        "*": {
+            "isOverlayIframe": {
+                    "isOverlay": <?= $block->getUseOverlayIframe() ?>
+                }
+            }
+        }
+    </script>
+<?php endif; ?>

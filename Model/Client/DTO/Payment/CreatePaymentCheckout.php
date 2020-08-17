@@ -8,6 +8,7 @@ class CreatePaymentCheckout extends AbstractRequest
 
     const INTEGRATION_TYPE_EMBEDDED = "EmbeddedCheckout";
     const INTEGRATION_TYPE_HOSTED = "HostedPaymentPage";
+    const INTEGRATION_TYPE_OVERLAY = "OverlayPayment";
 
     /**
      * Required|Optional (if $integrationType = EmbeddedCheckout, default!)
@@ -56,7 +57,7 @@ class CreatePaymentCheckout extends AbstractRequest
     protected $charge;
 
     /**
-     * HostedPaymentPage OR EmbeddedCheckout, default value = EmbeddedCheckout
+     * HostedPaymentPage, EmbeddedCheckout OR OverlayPayment, default value = EmbeddedCheckout
      * @var $integrationType string|null
      */
     protected $integrationType;
