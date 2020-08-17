@@ -78,7 +78,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Dibs\EasyCheckout\Model\Dibs\Locale $locale,
         \Magento\Directory\Model\AllowedCountries $allowedCountryModel,
         \Magento\Framework\App\State $state,
-        \Magento\Sales\Model\OrderRepository $orderRepository
+        \Magento\Sales\Model\OrderRepository $orderRepository,
 	    \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
     ) {
         $this->dibsLocale = $locale;
