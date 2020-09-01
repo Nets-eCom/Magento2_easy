@@ -3,6 +3,7 @@
 namespace Dibs\EasyCheckout\Model;
 
 use Dibs\EasyCheckout\Helper\SwishResponseHandler;
+use Dibs\EasyCheckout\Model\Cache\PaymentMutex;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 
 class CheckoutContext
@@ -38,16 +39,22 @@ class CheckoutContext
     private $swishHandler;
 
     /**
+     * @var PaymentMutex
+     */
+    private $paymentMutex;
+
+    /**
      * Constructor
      *
      * @param \Dibs\EasyCheckout\Helper\Data $helper
      * @param \Dibs\EasyCheckout\Model\Dibs\Order $dibsOrderHandler
      * @param \Dibs\EasyCheckout\Logger\Logger $logger
-     * @param \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale,
+     * @param \Dibs\EasyCheckout\Model\Dibs\Locale $dibsLocale ,
      * @param \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement
      * @param OrderCollectionFactory $orderCollectionFactory
      * @param \Magento\Newsletter\Model\Subscriber $subscriber
-     *
+     * @param SwishResponseHandler $swishHandler
+     * @param PaymentMutex $paymentMutex
      */
     public function __construct(
         \Dibs\EasyCheckout\Helper\Data $helper,
@@ -57,9 +64,10 @@ class CheckoutContext
         \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement,
         OrderCollectionFactory $orderCollectionFactory,
         \Magento\Newsletter\Model\Subscriber $subscriber,
-        SwishResponseHandler $swishHandler
+        SwishResponseHandler $swishHandler,
+        PaymentMutex $paymentMutex
     ) {
-        $this->helper        = $helper;
+        $this->helper = $helper;
         $this->logger = $logger;
         $this->dibsOrderHandler = $dibsOrderHandler;
         $this->dibsLocale = $dibsLocale;
@@ -67,6 +75,7 @@ class CheckoutContext
         $this->subscriber = $subscriber;
         $this->orderCollectionFactory = $orderCollectionFactory;
         $this->swishHandler = $swishHandler;
+        $this->paymentMutex = $paymentMutex;
     }
 
     /**
@@ -85,7 +94,9 @@ class CheckoutContext
         return $this->logger;
     }
 
-   /** @return Dibs\Order */
+    /**
+     * @return Dibs\Order
+     */
     public function getDibsOrderHandler()
     {
         return $this->dibsOrderHandler;
@@ -115,7 +126,6 @@ class CheckoutContext
         return $this->dibsLocale;
     }
 
-
     /**
      * @return OrderCollectionFactory
      */
@@ -130,5 +140,13 @@ class CheckoutContext
     public function getSwishHandler(): SwishResponseHandler
     {
         return $this->swishHandler;
+    }
+
+    /**
+     * @return PaymentMutex
+     */
+    public function getPaymentMutex(): PaymentMutex
+    {
+        return $this->paymentMutex;
     }
 }

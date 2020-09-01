@@ -241,7 +241,7 @@ class Checkout extends \Magento\Framework\View\Element\Template
 
     public function getDibsCheckoutKey()
     {
-        return $this->helper->getApiCheckoutKey();
+        return $this->helper->getApiCheckoutKey($this->getQuote()->getStore());
     }
 
     public function getDibsPaymentId()

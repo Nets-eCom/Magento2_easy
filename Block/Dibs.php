@@ -37,7 +37,7 @@ class Dibs extends \Magento\Framework\View\Element\Template
 
     public function getDibsCheckoutKey()
     {
-        return $this->getHelper()->getApiCheckoutKey();
+        return $this->getHelper()->getApiCheckoutKey($this->getQuote()->getStore());
     }
 
     public function getDibsPaymentId()
