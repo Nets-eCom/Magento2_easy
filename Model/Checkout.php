@@ -646,6 +646,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote, $weHandleConsumer = false, $setSessionOrderId = true)
     {
+        $paymentMutex = $this->context->getPaymentMutex();
+        if ($paymentMutex->test($dibsPayment->getPaymentId())) {
+            throw new \Exception('Payment id already has been processing.');
+        }
 
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
         $this->setDoNotMarkCartDirty(true);
@@ -758,8 +762,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         //!
         // Now we create the order from the quote
         try {
+            // Lock payment id to prevent double order creation
+            $paymentMutex->lock($dibsPayment->getPaymentId());
             $order = $this->quoteManagement->submit($quote);
         } catch (\Exception $e) {
+            $paymentMutex->release($dibsPayment->getPaymentId());
             $this->_logger->error($e);
             throw $e;
         }
@@ -811,6 +818,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 $this->_logger->error("Cannot subscribe customer ({$order->getCustomerEmail()}) to the Newsletter: " . $e->getMessage());
             }
         }
+
+        // Release the lock
+        $paymentMutex->release($dibsPayment->getPaymentId());
 
         return $order;
     }
