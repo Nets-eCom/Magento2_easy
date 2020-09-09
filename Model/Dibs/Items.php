@@ -39,6 +39,13 @@ class Items
 
     protected $addCustomOptionsToItemName = null;
 
+    /**
+     * Items constructor.
+     *
+     * @param \Dibs\EasyCheckout\Helper\Data $helper
+     * @param \Magento\Catalog\Helper\Product\Configuration $productConfig
+     * @param \Magento\Tax\Model\Calculation $calculationTool
+     */
     public function __construct(
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Magento\Catalog\Helper\Product\Configuration $productConfig,
@@ -52,6 +59,11 @@ class Items
         $this->init();
     }
 
+    /**
+     * @param null $store
+     *
+     * @return $this
+     */
     public function init($store = null)
     {
         $this->_store = $store;
@@ -71,7 +83,7 @@ class Items
     public function addItems($items)
     {
         if ($this->addCustomOptionsToItemName === null) {
-            $shouldAdd = $this->_helper->addCustomOptionsToItemName();;
+            $shouldAdd = $this->_helper->addCustomOptionsToItemName();
             $this->addCustomOptionsToItemName = $shouldAdd ? true : false;
         }
 
@@ -175,8 +187,6 @@ class Items
                         $addPrices = $isChildrenCalculated;
                     }
                 } else {
-
-
                     if ($addComments) {
                         $comment = [];
                         //add configurable/children information, as comment
@@ -234,10 +244,9 @@ class Items
                 $unitPrice = $addPrices ? $this->addZeroes($item->getPriceInclTax()) : 0;
                 $unitPriceExclTax = $addPrices ? $this->addZeroes($item->getPrice()) : 0;
 
-
                 $itemName = $item->getName();
                 if ($addComments && $comment) {
-                    $itemName .= ' ' . '('.$comment.')';
+                    $itemName .= ' ' . '(' . $comment . ')';
                 }
 
                 // max length!
@@ -253,7 +262,7 @@ class Items
                     ->setUnit("st")
                     ->setQuantity(round($qty, 0))
                     ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-                    ->setTaxAmount($this->addZeroes($this->getTotalTaxAmount($unitPrice * $qty, $vat, false))) // total tax amount
+                    ->setTaxAmount((int) $this->getTotalTaxAmount($unitPrice * $qty, $vat, false)) // total tax amount
                     ->setUnitPrice((int) $unitPriceExclTax) // excl. tax price per item
                     ->setNetTotalAmount((int) ($unitPriceExclTax * $qty)) // excl. tax
                     ->setGrossTotalAmount((int) ($unitPrice * $qty)); // incl. tax
@@ -299,6 +308,11 @@ class Items
         return $this;
     }
 
+    /**
+     * @param $address
+     *
+     * @return $this
+     */
     public function addShipping($address)
     {
         if ($this->_toInvoice && $address->getBaseShippingAmount() <= $address->getBaseShippingInvoiced()) {
@@ -440,6 +454,12 @@ class Items
     }
 
     // TODO!!
+
+    /**
+     * @param $couponCode
+     *
+     * @return $this
+     */
     public function addDiscounts($couponCode)
     {
         foreach ($this->_discounts as $vat=> $amountInclTax) {
@@ -451,10 +471,6 @@ class Items
             if ($this->_toInvoice) {
                 $reference = 'discount-toinvoice';
             }
-
-            // var_dump($vat);
-            //var_dump($amount);
-            //die;
 
             $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
             $amountInclTax = $this->addZeroes($amountInclTax);
@@ -478,6 +494,12 @@ class Items
         return $this;
     }
 
+    /**
+     * @param $grandTotal
+     *
+     * @return $this
+     * @throws CheckoutException
+     */
     public function validateTotals($grandTotal)
     {
         //calculate Dibs total
@@ -577,11 +599,7 @@ class Items
         $this->init($quote->getStore());
 
         $billingAddress = $quote->getBillingAddress();
-        if ($quote->isVirtual()) {
-            $shippingAddress = $billingAddress;
-        } else {
-            $shippingAddress = $quote->getShippingAddress();
-        }
+        $shippingAddress = $quote->isVirtual() ? $billingAddress : $quote->getShippingAddress();
 
         /*Get all cart items*/
         $cartItems = $quote->getAllVisibleItems(); //getItemParentId is null and !isDeleted
@@ -592,6 +610,7 @@ class Items
         }
 
         $this->addDiscounts($quote->getCouponCode());
+        $this->addCustomTotals($quote->getTotals());
 
         try {
             $this->validateTotals($quote->getGrandTotal());
@@ -604,6 +623,13 @@ class Items
     }
 
     //generate Dibs items from Magento Order
+
+    /**
+     * @param Order $order
+     *
+     * @return array
+     * @throws CheckoutException
+     */
     public function fromOrder(Order $order)
     {
         $this->init($order->getStore());
@@ -677,16 +703,29 @@ class Items
         $this->addDiscounts($order->getCouponCode()); //coupon code is not copied to invoice
     }
 
+    /**
+     * @return int
+     */
     public function getMaxVat()
     {
         return $this->_maxvat;
     }
 
+    /**
+     * @return array
+     */
     public function getCart()
     {
         return $this->_cart;
     }
 
+    /**
+     * @param $price
+     * @param $vat
+     * @param bool $addZeroes
+     *
+     * @return float|int
+     */
     public function getTotalTaxAmount($price, $vat, $addZeroes = true)
     {
         if ($addZeroes) {
@@ -696,8 +735,51 @@ class Items
         }
     }
 
+    /**
+     * @param $amount
+     *
+     * @return int
+     */
     public function addZeroes($amount)
     {
         return (int) round($amount * 100, 0);
+    }
+
+    /**
+     * @param array $totals
+     */
+    private function addCustomTotals(array $totals)
+    {
+        $customTotals = array_diff(array_keys($totals), [
+            'subtotal',
+            'grand_total',
+            'tax',
+            'shipping'
+        ]);
+
+        foreach ($customTotals as $customTotal) {
+            /** @var \Magento\Quote\Model\Quote\Address\Total $total */
+            $total = $totals[$customTotal];
+            $amountInclTax = $total->getValue();
+            $vat = 25;
+
+            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountExclTax = $amountInclTax - $taxAmount;
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setReference($total->getCode())
+                ->setName($total->getTitle() ?: $total->getCode())
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate((int) $this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount((int)  $taxAmount) // total tax amount
+                ->setUnitPrice(0) // excl. tax price per item
+                ->setNetTotalAmount((int)  $amountExclTax) // excl. tax
+                ->setGrossTotalAmount((int)  $amountInclTax); // incl. tax
+
+            $this->_cart[$total->getCode()] = $orderItem;
+        }
     }
 }
