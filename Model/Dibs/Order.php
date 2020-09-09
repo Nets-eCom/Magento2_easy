@@ -502,7 +502,7 @@ class Order
      */
     protected function fixPrice($price)
     {
-        return $price * 100;
+        return (int) round($price * 100, 0);
     }
 
     /**
