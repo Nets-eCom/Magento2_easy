@@ -60,6 +60,11 @@ define([
                     quote.setTotals(response.totals);
                     paymentService.setPaymentMethods(methodConverter(response['payment_methods']));
 
+                    // Update DIBS iframe in overlay mode if exists
+                    if (null !== document.getElementById('nets-popup-iframe')) {
+                        document.getElementById('nets-popup-iframe').src += '';
+                    }
+
                     var dibsCheckout = uiRegistry.get('nwtdibsCheckout');
                     if (window.dibs_msuodc_enabled && dibsCheckout) {
                         dibsCheckout._ajaxSubmit(
