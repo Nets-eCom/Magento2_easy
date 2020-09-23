@@ -58,7 +58,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function initCheckout($reloadIfCurrencyChanged = true)
     {
         if (!($this->context instanceof CheckoutContext)) {
-            throw new \Exception("Context must set first!");
+            throw new \Exception("Dibs Context must be set first!");
         }
 
         $quote  = $this->getQuote();
@@ -67,12 +67,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         //init checkout
         $customer = $this->getCustomerSession();
         if ($customer->getId()) {
-            //$this->_logger->info(__("Set customer %1",$customer->getId()));
             $quote->assignCustomer($customer->getCustomerDataObject()); //this will set also primary billing/shipping address as billing address
-            //$quote->setCustomer($customer->getCustomerDataObject());
+            $quote->setCustomer($customer->getCustomerDataObject());
         }
 
-        $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked into $this->checkCart())
+        $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked in $this->checkCart())
+        $defaultCountry = $this->getHelper()->getDefaultCountry();
+
         $billingAddress  = $quote->getBillingAddress();
         if ($quote->isVirtual()) {
             $shippingAddress = $billingAddress;
@@ -95,7 +96,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         if (!$billingAddress->getCountryId() || $billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
-            //$this->_logger->info(__("Billing country [%1] != shipping [%2]",$billingAddress->getCountryId(),$shippingAddress->getCountryId()));
             $this->changeCountry($shippingAddress->getCountryId(), $save = false);
         }
 
@@ -115,10 +115,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $shippingAddress->setPaymentMethod($payment->getMethod())->setCollectShippingRates(true);
         }
 
-        //TODO: ADD MINIMUM AOUNT TEST here
 
-        // do not set shipping method
-        //   $method = $this->checkAndChangeShippingMethod();
+        // Set shipping method. It's required!
+        $selectedShippingMethod = $this->checkAndChangeShippingMethod();
 
         try {
             $quote->setTotalsCollectedFlag(false)->collectTotals()->save(); //REQUIRED (maybe shipping amount was changed)
@@ -140,11 +139,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->throwReloadException(__('Checkout was reloaded.'));
         }
 
-        /*
-        if($method === false) {
-            throw new LocalizedException(__('No shipping method'));
+        if($selectedShippingMethod === false) {
+            throw new LocalizedException(__('Missing shipping method.'));
         }
-        */
 
         return $this;
     }
@@ -210,13 +207,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->throwRedirectToCartException($error);
         }
 
+        if ($quote->getGrandTotal() <= 0) {
+            $this->throwRedirectToCartException(__("Subtotal cannot be 0. Please choose another payment method."));
+        }
+
         return true;
     }
 
-    /**
-     * @return bool
-     * @throws LocalizedException
-     */
     public function checkAndChangeCurrency()
     {
         $quote  = $this->getQuote();
@@ -232,6 +229,54 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         return false;
+    }
+
+    /**
+     * @return bool
+     * @throws LocalizedException
+     */
+    public function checkAndChangeShippingMethod()
+    {
+        $quote = $this->getQuote();
+        if ($quote->isVirtual()) {
+            return true;
+        }
+
+        //this is needed by shipping method with minimum amount
+        $quote->collectTotals();
+
+        $shipping = $quote->getShippingAddress()->setCollectShippingRates(true)->collectShippingRates();
+        $allRates = $shipping->getAllShippingRates();
+
+        if (!count($allRates)) {
+            return false;
+        }
+
+        $rates = [];
+        foreach($allRates as $rate) {
+            /** @var $rate Quote\Address\Rate  **/
+            $rates[$rate->getCode()] = $rate->getCode();
+        }
+
+        // check if selected shipping method exists
+        $method = $shipping->getShippingMethod();
+        if($method && isset($rates[$method])) {
+            return $method;
+        }
+
+        // check if default shipping method exists, use it then!
+        $method = $this->getHelper()->getDefaultShippingMethod();
+        if($method && isset($rates[$method])) {
+            $shipping->setShippingMethod($method);
+            return $method;
+        }
+
+        // fallback, use first shipping method found
+        $rate = $allRates[0];
+        $method = $rate->getCode();
+        $shipping->setShippingMethod($method);
+        return $method;
+
     }
 
     /**

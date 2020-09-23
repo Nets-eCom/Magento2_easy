@@ -70,6 +70,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Dibs\EasyCheckout\Model\Dibs\Locale $locale
      * @param \Magento\Framework\App\State $state
      * @param \Magento\Sales\Model\OrderRepository $orderRepository
+     * @param \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -77,13 +78,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Dibs\EasyCheckout\Model\Dibs\Locale $locale,
         \Magento\Directory\Model\AllowedCountries $allowedCountryModel,
         \Magento\Framework\App\State $state,
-        \Magento\Sales\Model\OrderRepository $orderRepository
+        \Magento\Sales\Model\OrderRepository $orderRepository,
+	    \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
     ) {
         $this->dibsLocale = $locale;
         $this->storeManager = $storeManager;
         $this->allowedCountryModel = $allowedCountryModel;
         $this->state = $state;
         $this->orderRepository = $orderRepository;
+	    $this->_cmsPage = $_cmsPage;
 
         parent::__construct($context);
     }
@@ -324,6 +327,29 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyUrl($store = null)
+    {
+        //if there are multiple pages with same url key; magento will generate options with key|id
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
+	return $this->_getUrl($url[0]);
+    }
+
+    /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyLabel($store = null)
+    {
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
+	$identifier = $url[0];
+	$result = $this->_cmsPage->execute($identifier, $store)->getTitle();
+	return $result;
+    }
+
+    /**
      * @return string
      */
     public function getCartCtrlKeyCookieName()
@@ -350,6 +376,25 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'newsletter_subscribe', $quote->getStore()->getId());
         }
     }
+
+    public function getDefaultShippingMethod($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'default_shipping_method',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getDefaultCountry($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'default_country',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
 
     /**
      * @param null $store
