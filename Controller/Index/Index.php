@@ -17,7 +17,9 @@ class Index extends Checkout
     public function execute()
     {
         if ($this->getRequest()->getParam('paymentFailed')) {
-            throw new CheckoutException(__("The payment was canceled or failed."), '*/*');
+            $this->messageManager->addErrorMessage(__('The payment was canceled or failed.'));
+            $this->dibsCheckoutContext->getLogger()->error("[Index][{$this->getRequest()->getParam('paymentId')}] The payment was canceled or failed");
+            return $this->_redirect('*/*');
         }
 
         // Fetching order id after redirect
