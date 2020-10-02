@@ -1,7 +1,6 @@
 <?php
 namespace Dibs\EasyCheckout\Observer;
 
-
 use Magento\Framework\Event\Observer as EventObserver;
 use Magento\Framework\Event\ObserverInterface;
 
@@ -25,7 +24,6 @@ class MarkCartDirtyObserver implements ObserverInterface
     /** @var \Magento\Framework\Stdlib\Cookie\CookieMetadataFactory  */
     protected $cookieMetadataFactory;
 
-
     public function __construct(
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Dibs\EasyCheckout\Model\Checkout $dibsOrderHandler,
@@ -40,7 +38,6 @@ class MarkCartDirtyObserver implements ObserverInterface
         $this->sessionConfig = $sessionConfig;
     }
 
-
     public function execute(EventObserver $observer)
     {
         if (!$this->helper->isEnabled()) {
@@ -50,13 +47,11 @@ class MarkCartDirtyObserver implements ObserverInterface
         /** @var \Magento\Checkout\Model\Cart $cart */
         $cart = $observer->getEvent()->getCart();
 
-
         // if we havent started the checkout yet, ignore this!
-        $oldHash = $cart->getCheckoutSession()->getDibsQuoteSignature();
+        $oldHash = $cart->getQuote()->getHashSignature();
         if (!$oldHash) {
             return $this;
         }
-
 
         //this is used in thank you page, we do not want that in checkout page, it should not reload the page while we are still in thank you page
         if ($this->dibsOrderHandler->getDoNotMarkCartDirty()) {
@@ -79,7 +74,6 @@ class MarkCartDirtyObserver implements ObserverInterface
      */
     private function setCookie($cookieValue)
     {
-
         $cookieMetadata = $this->cookieMetadataFactory->createPublicCookieMetadata()
             ->setPath($this->sessionConfig->getCookiePath())
             ->setDomain($this->sessionConfig->getCookieDomain())
@@ -88,5 +82,4 @@ class MarkCartDirtyObserver implements ObserverInterface
 
         $this->cookieManager->setPublicCookie($this->helper->getCartCtrlKeyCookieName(), $cookieValue, $cookieMetadata);
     }
-
 }

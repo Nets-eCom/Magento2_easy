@@ -115,6 +115,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $shippingAddress->setPaymentMethod($payment->getMethod())->setCollectShippingRates(true);
         }
 
+        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
+        $quote->setHashSignature($newSignature);
+
         //TODO: ADD MINIMUM AOUNT TEST here
 
         // do not set shipping method
@@ -302,17 +305,16 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $paymentId = $this->getCheckoutSession()->getDibsPaymentId(); //check session for Dibs Payment Id
         if ($paymentId) {
             try {
-
                 // this will try to load the dibs payment if it exists
                 $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
 
                 // here we should check if we need to update the dibs payment!
-                if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $this->getCheckoutSession()->getDibsQuoteSignature())) {
+                if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $this->getQuote()->getHashSignature())) {
                     // try to update dibs payment data
                     $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
 
                     // Update new dibs quote signature!
-                    $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
+                    $quote->setHashSignature($newSignature)->save();
                 }
             } catch (\Exception $e) {
 
@@ -328,7 +330,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
                 //save the payment id and quote signature in checkout/session
                 $this->getCheckoutSession()->setDibsPaymentId($newPaymentId);
-                $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
+                $quote->setHashSignature($newSignature)->save();
 
                 // We log this!
                 $this->getLogger()->error("Trying to create a new payment because we could not Update Dibs Checkout Payment for ID: {$paymentId}, Error: {$e->getMessage()} (see exception.log)");
@@ -342,7 +344,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
             //save dibs uri in checkout/session
             $this->getCheckoutSession()->setDibsPaymentId($paymentId);
-            $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
+            $quote->setHashSignature($newSignature)->save();
         }
 
         return $payment;
@@ -372,7 +374,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
 
         // Update new dibs quote signature!
-        $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
+        $quote->setHashSignature($newSignature)->save();
     }
 
     //Checkout ajax updates

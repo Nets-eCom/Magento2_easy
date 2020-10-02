@@ -7,16 +7,24 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 
 class Index extends Checkout
 {
-
-    const cartPath = 'checkout/cart';
-
-    const magentoCheckout = 'checkout';
+    const URL_CHECKOUT_CART_PATH = 'checkout/cart';
+    const URL_CHECKOUT_PATH      = 'checkout';
 
     /**
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|\Magento\Framework\View\Result\Page|void
+     * @throws CheckoutException
      */
     public function execute()
     {
+        if ($this->getRequest()->getParam('paymentFailed')) {
+            throw new CheckoutException(__("The payment was canceled or failed."), '*/*');
+        }
+
+        // Fetching order id after redirect
+        if ($paymentId = $this->getPaymentId()) {
+            return $this->fetchOrderByPaymentId($paymentId);
+        }
+
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
@@ -27,44 +35,14 @@ class Index extends Checkout
             $integrationType = CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED;
             $useHostedCheckout = true;
             $isOverlayType = true;
-        } else $isOverlayType = false;
-
-        // if hosted flow is used, OR if customer pays with card and is redirected, they will be sent back here, and we will try to place the order
-        // dibs seems to send back both these parameters, so we test them both...
-        $paymentId = $this->getRequest()->getParam("paymentId");
-        if (!$paymentId) {
-            $paymentId = $this->getRequest()->getParam("paymentid");
+        } else {
+            $isOverlayType = false;
         }
 
-        // if the customer has payed with card and is redirected back here
-        if ($paymentId) {
-            try {
-                $orderSaved = $this->checkIfOrderShouldBeSaved($paymentId);
-                if ($orderSaved) {
-                    // redirect to thank you!
-                    return $this->_redirect($checkout->getHelper()->getSuccessPageUrl());
-                }
-            } catch (CheckoutException $e) {
-                if ($e->isReload()) {
-                    $this->messageManager->addNoticeMessage($e->getMessage());
-                } else {
-                    $this->messageManager->addErrorMessage($e->getMessage());
-                }
-
-                if ($useHostedCheckout) {
-                    $this->_redirect(self::cartPath);
-                } else {
-                    $this->_redirect($e->getRedirect());
-                }
-                return;
-            }
-        }
-
-        // if not... :)
         $dibsPayment = null;
         try {
-            $checkout->initCheckout(false); // magento business logic
-            $dibsPayment = $checkout->initDibsCheckout($integrationType); // handles magento and DIBS business logic
+            $checkout->initCheckout(false);
+            $dibsPayment = $checkout->initDibsCheckout($integrationType);
         } catch (CheckoutException $e) {
             if ($e->isReload()) {
                 $this->messageManager->addNoticeMessage($e->getMessage());
@@ -73,10 +51,8 @@ class Index extends Checkout
             }
 
             if ($e->getRedirect()) {
-
                 if ($useHostedCheckout) {
-                    $this->_redirect(self::cartPath);
-
+                    $this->_redirect(self::URL_CHECKOUT_CART_PATH);
                 } else {
                     $this->_redirect($e->getRedirect());
                 }
@@ -87,20 +63,20 @@ class Index extends Checkout
             $checkout->getLogger()->error("[" . __METHOD__ . "] (" . get_class($e) . ") {$e->getMessage()} ");
             $checkout->getLogger()->critical($e);
 
-            $this->_redirect(self::cartPath);
+            $this->_redirect(self::URL_CHECKOUT_PATH);
             return;
         }
 
         $useIframe = $integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_EMBEDDED; // the embedded type is used with iframe
         $locale = $checkout->getLocale();
-        $checkoutUrl = "";
+        $checkoutUrl = '';
         if ($dibsPayment) {
             // used for hosted integration type
             $checkoutUrl = $dibsPayment->getCheckoutUrl();
 
             // make sure its not OUR checkout url, this will be the case when we use embedded flow
             if ($checkoutUrl == $this->getDibsCheckout()->getHelper()->getCheckoutUrl()) {
-                $checkoutUrl = "";
+                $checkoutUrl = '';
             }
             if ($checkoutUrl) {
                 $checkoutUrl .= "&language=" . $locale;
@@ -125,7 +101,7 @@ class Index extends Checkout
                 $this->getCheckoutSession()->unsDibsPaymentId(); // unset this payment id, it wont work anymore!
 
                 if ($useHostedCheckout) {
-                    $this->_redirect(self::cartPath);
+                    $this->_redirect(self::URL_CHECKOUT_CART_PATH);
                 } else {
                     $this->_redirect('*'); // reload the page
                 }
@@ -141,15 +117,14 @@ class Index extends Checkout
 
             if (!$q->isVirtual() && $q->getShippingAddress() && !$q->getShippingAddress()->getShippingMethod()) {
                 if ($isOverlayType) {
-                    $this->_redirect(self::magentoCheckout);
+                    $this->_redirect(self::URL_CHECKOUT_PATH);
                     return;
                 } else {
-                    $this->messageManager->addNoticeMessage(__('You need to choose a shipping method..'));
-                    $this->_redirect(self::cartPath);
+                    $this->messageManager->addNoticeMessage(__('You need to choose a shipping method.'));
+                    $this->_redirect(self::URL_CHECKOUT_CART_PATH);
                     return;
                 }
             }
-
         }
 
         if ($redirectToHosted && $checkoutUrl) {
@@ -162,7 +137,7 @@ class Index extends Checkout
 
         // if we reached here and use hosted checkout is on, redirect to standard checkout!
         if ($useHostedCheckout) {
-            $this->_redirect(self::cartPath);
+            $this->_redirect(self::URL_CHECKOUT_CART_PATH);
             return;
         }
 
@@ -187,19 +162,52 @@ class Index extends Checkout
 
     /**
      * @param $paymentId
-     * @return true|void
+     *
+     * @return \Magento\Framework\App\ResponseInterface
      * @throws CheckoutException
      */
-    protected function checkIfOrderShouldBeSaved($paymentId)
+    private function fetchOrderByPaymentId($paymentId)
     {
-        $checkout = $this->getDibsCheckout();
-        $checkout->setCheckoutContext($this->dibsCheckoutContext);
+        $this->dibsCheckoutContext->getLogger()->info("[Index][$paymentId] Waiting for an order to be created from webhook.");
+        $handleTimeout = $this->dibsCheckoutContext->getHelper()->getWebhookHandleTimeout() ?: 40;
 
-        if ($this->getRequest()->getParam('paymentFailed')) {
-            throw new CheckoutException(__("The payment was canceled or failed."), '*/*');
+        for ($sleepCounter = 1; $sleepCounter < $handleTimeout; $sleepCounter++) {
+            $orderCollection = $this->dibsCheckoutContext->getOrderCollectionFactory()->create();
+            $ordersCollection = $orderCollection
+                ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
+                ->load();
+
+            if ($ordersCollection->count()) {
+                $this->dibsCheckoutContext->getLogger()->info("[Index][{$paymentId}] Order found!  Redirecting to " . $this->dibsCheckoutContext->getHelper()->getSuccessPageUrl());
+                $session =  $this->getCheckoutSession();
+                $session->clearHelperData();
+                $session->clearQuote()->clearStorage();
+
+                $order = $ordersCollection->getFirstItem();
+                $session
+                    ->setLastQuoteId($order->getQuoteId())
+                    ->setLastSuccessQuoteId($order->getQuoteId())
+                    ->setLastOrderId($order->getId())
+                    ->setLastRealOrderId($order->getIncrementId())
+                    ->setLastOrderStatus($order->getStatus());
+
+                return $this->_redirect($this->dibsCheckoutContext->getHelper()->getSuccessPageUrl());
+            }
+            $this->dibsCheckoutContext->getLogger()->info('[Index] Orders not found. Sleep 1s. ' . $paymentId);
+            sleep(1);
         }
 
-        // it will validate the payment id and everything before trying to place the order
-        return $checkout->tryToSaveDibsPayment($paymentId);
+        $this->messageManager->addErrorMessage(__('We cannot verify you payment on Nets side, timeout is reached. Your payment ID is %1', $paymentId));
+        $this->dibsCheckoutContext->getLogger()->error("[Webhook][{$paymentId}] Timeout is reached after {$handleTimeout} seconds.");
+
+        return $this->_redirect(self::URL_CHECKOUT_CART_PATH);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPaymentId()
+    {
+        return $this->getRequest()->getParam('paymentId') ?: $this->getRequest()->getParam('paymentid');
     }
 }

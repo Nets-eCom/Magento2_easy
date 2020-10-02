@@ -5,6 +5,7 @@
             <connection>
                 <enabled>0</enabled>
                 <webhook_auth>PleaseChangeMe</webhook_auth>
+                <webhook_timeout>40</webhook_timeout>
             </connection>
             <settings>
                 <add_css>0</add_css>
