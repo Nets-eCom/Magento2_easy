@@ -120,7 +120,6 @@ class Order
     /**
      * @param Quote $quote
      * @param $paymentId
-     * @return Update
      * @throws \Exception
      */
     public function updateCheckoutPaymentByQuoteAndPaymentId(Quote $quote, $paymentId)
@@ -133,7 +132,10 @@ class Order
 
         $payment->setShippingCostSpecified(true);
 
-        return $this->paymentApi->UpdatePaymentCart($payment, $paymentId);
+        $this->paymentApi->UpdatePaymentCart($payment, $paymentId);
+
+        $quoteHashSignature = $this->helper->generateHashSignatureByQuote($quote);
+        $quote->setHashSignature($quoteHashSignature)->save();
     }
 
     /**
@@ -180,7 +182,6 @@ class Order
             } else {
                 $paymentCheckout->setMerchantHandlesConsumerData(true);
             }
-
         } else {
             // when we use embedded, we set the url! and we allow nets to handle consumer data
             $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
@@ -227,7 +228,6 @@ class Order
             }
         }
 
-
         $webHookUrl = $this->helper->getWebHookCallbackUrl($quote->getId());
         $webhookCheckoutComplete = new CreatePaymentWebhook();
         $webhookCheckoutComplete->setEventName($webhookCheckoutComplete::EVENT_PAYMENT_CHECKOUT_COMPLETED);
@@ -269,7 +269,6 @@ class Order
      */
     public function convertDibsShippingToMagentoAddress(GetPaymentResponse $payment, $countryIdFallback = null)
     {
-
         if ($payment->getConsumer() === null) {
             return [];
         }
@@ -322,7 +321,6 @@ class Order
         return $data;
     }
 
-
     public function convertAddressToArray(Quote $quote)
     {
         $shipping = $quote->getShippingAddress();
@@ -331,7 +329,7 @@ class Order
             $email = $quote->getCustomerEmail();
         } elseif ($quote->getBillingAddress() && $quote->getBillingAddress()->getEmail()) {
             $email = $quote->getBillingAddress()->getEmail();
-        } elseif($shipping->getEmail()) {
+        } elseif ($shipping->getEmail()) {
             $email = $shipping->getEmail();
         }
 
