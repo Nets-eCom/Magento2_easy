@@ -3,20 +3,18 @@
 namespace Dibs\EasyCheckout\Controller\Order;
 
 use Dibs\EasyCheckout\Controller\Checkout;
+use Dibs\EasyCheckout\Logger\Logger;
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
 use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutCOntext;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
 use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Quote\Model\Quote;
-use Dibs\EasyCheckout\Logger\Logger;
-use \Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 
 class WebhookCallback extends Checkout
 {
     /** @var Logger */
     protected $logger;
-
 
     /** @var \Magento\Quote\Model\QuoteFactory $quoteFactory */
     protected $quoteFactory;
@@ -25,8 +23,6 @@ class WebhookCallback extends Checkout
      * @var \Magento\Framework\Controller\Result\JsonFactory
      */
     protected $jsonResultFactory;
-
-
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -66,19 +62,15 @@ class WebhookCallback extends Checkout
         $result = $this->jsonResultFactory->create();
         $result->setData([]);
 
-
-        if (!isset($data['event']) || $data['event'] !== CreatePaymentWebhook::EVENT_PAYMENT_CHECKOUT_COMPLETED || !isset($data['data']['paymentId'])){
+        if (!isset($data['event']) || $data['event'] !== CreatePaymentWebhook::EVENT_PAYMENT_CHECKOUT_COMPLETED || !isset($data['data']['paymentId'])) {
             $result->setHttpResponseCode(200);
             return $result;
         }
 
-        $paymentId = $data['data']['paymentId'];
-
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
-
-        // validate authorization
+        // Validate authorization
         $ourSecret = $checkout->getHelper()->getWebhookSecret();
         if ($ourSecret && $ourSecret != $this->getRequest()->getHeader("Authorization")) {
             $result->setHttpResponseCode(401);
@@ -96,9 +88,10 @@ class WebhookCallback extends Checkout
         }
 
         try {
+            $paymentId = $data['data']['paymentId'];
             $dibsPayment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
         } catch (\Exception $e) {
-            $this->logger->error("Could not load dibs payment (id: " . $paymentId . ") for quote (id: ".$quoteId.")");
+            $this->logger->error("Could not load dibs payment (id: " . $paymentId . ") for quote (id: " . $quoteId . ")");
             $this->logger->error($e);
 
             // maybe nets is down
@@ -106,9 +99,14 @@ class WebhookCallback extends Checkout
             return $result;
         }
 
+        if ($this->dibsCheckoutContext->getHelper()->generateHashSignatureByQuote($quote) !== $quote->getHashSignature()) {
+            $this->logger->error("[Webhook][{$paymentId}] Quote signature doesn't match. Probably customer cart was changed.");
+            $result->setHttpResponseCode(400);
+            return $result;
+        }
+
         // we check that its the correct quote
         if ($checkout->getDibsPaymentHandler()->generateReferenceByQuoteId($quoteId) !== $dibsPayment->getOrderDetails()->getReference()) {
-
             // either its wrong, or order has been placed already! (since we update reference when order is placed to magento order id)
             $result->setHttpResponseCode(200);
             return $result;
@@ -126,8 +124,6 @@ class WebhookCallback extends Checkout
             $weHandleConsumerData = false;
         }
 
-
-
         // OK the payment exists, payment ids are matching... lets check no order has been placed
         $orderCollection = $this->dibsCheckoutContext->getOrderCollectionFactory()->create();
         $ordersCount = $orderCollection
@@ -136,16 +132,17 @@ class WebhookCallback extends Checkout
             ->count();
 
         if ($ordersCount > 0) {
+            $this->dibsCheckoutContext->getLogger()->error("[Webhook][{$paymentId}] order is already created");
             $result->setHttpResponseCode(200);
             return $result;
         }
 
         try {
             $order = $checkout->placeOrder($dibsPayment, $quote, $weHandleConsumerData, false);
+            $this->dibsCheckoutContext->getLogger()->error('[Webhook] Order is placed!' . $dibsPayment->getPaymentId());
         } catch (\Exception $e) {
             $this->logger->error("Could not place order for dibs payment with payment id: " . $dibsPayment->getPaymentId() . ", Quote ID:" . $quote->getId());
             $this->logger->error("Error message:" . $e->getMessage());
-
 
             $result->setHttpResponseCode(500);
             return $result;
@@ -169,6 +166,7 @@ class WebhookCallback extends Checkout
         $result->setHttpResponseCode(200);
         return $result;
     }
+
 
     /**
      * @param $quoteId
@@ -197,5 +195,4 @@ class WebhookCallback extends Checkout
 
         return $quote;
     }
-
 }

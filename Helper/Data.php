@@ -314,6 +314,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * @param null $store
+     *
+     * @return bool
+     */
+    public function getWebhookHandleTimeout($store = null)
+    {
+        return $this->getStoreConfig(self::XML_PATH_CONNECTION . 'webhook_timeout', $store);
+    }
+
+    /**
+     * @param null $store
      * @return string
      */
     public function getTermsUrl($store = null)
