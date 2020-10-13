@@ -324,6 +324,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * @param null $store
+     *
+     * @return mixed
+     */
+    public function doesHandleCustomerData($store = null)
+    {
+        return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'handle_customer_data', $store);
+    }
+
+    /**
+     * @param null $store
      * @return string
      */
     public function getTermsUrl($store = null)
