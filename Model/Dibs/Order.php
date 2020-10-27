@@ -48,10 +48,26 @@ class Order
     /** @var StoreManagerInterface */
     protected $storeManager;
 
+    /**
+     * @var \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory
+     */
+    private $consumerDataProviderFactory;
+
+    /**
+     * Order constructor.
+     *
+     * @param Payment $paymentApi
+     * @param \Dibs\EasyCheckout\Helper\Data $helper
+     * @param \Magento\Directory\Model\CountryFactory $countryFactory
+     * @param \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory
+     * @param Items $itemsHandler
+     * @param StoreManagerInterface $storeManager
+     */
     public function __construct(
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Magento\Directory\Model\CountryFactory $countryFactory,
+        \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory,
         Items $itemsHandler,
         StoreManagerInterface $storeManager
     ) {
@@ -60,6 +76,7 @@ class Order
         $this->paymentApi = $paymentApi;
         $this->_countryFactory  = $countryFactory;
         $this->storeManager = $storeManager;
+        $this->consumerDataProviderFactory = $consumerDataProviderFactory;
     }
 
     /** @var $_quote Quote */
@@ -180,7 +197,10 @@ class Order
                 // at the moment we allow nets to handle the merchant data when quote is virual for redirect flow...
                 $paymentCheckout->setMerchantHandlesConsumerData(false);
             } else {
-                $paymentCheckout->setMerchantHandlesConsumerData(true);
+                $handleCustomerData = $this->helper->doesHandleCustomerData();
+                $paymentCheckout->setMerchantHandlesConsumerData($handleCustomerData);
+                $consumerProvider = $this->consumerDataProviderFactory->create();
+                $paymentCheckout->setConsumer($consumerProvider->getFromQuote($quote));
             }
         } else {
             // when we use embedded, we set the url! and we allow nets to handle consumer data
