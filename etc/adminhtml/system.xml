@@ -79,6 +79,11 @@
                     <comment>Choose checkout flow.</comment>
                 </field>
 
+                <field id="handle_customer_data" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="60">
+                    <label>Handle customer data</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enables the merchant to full fill the NETS payment popup with customer data from Magento Checkout. Note, that invoices can be not available if address is invalid.</comment>
+                </field>
 
                 <field id="can_capture" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Capture/Refund payment</label>
