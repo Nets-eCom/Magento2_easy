@@ -65,6 +65,11 @@
                     <comment>Choose checkout flow.</comment>
                 </field>
 
+                <field id="handle_customer_data" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="60">
+                    <label>Handle customer data</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Will fill the NETS Easy payment checkout with logged customer data from Magento store. Customers don't need to enter twice their personal information. Note 1: customers can only update their information in Magento store. Note 2: invoices may not be available in case of incomplete profiles or invalid address.</comment>
+                </field>
 
                 <field id="can_capture" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Capture/Refund payment</label>
