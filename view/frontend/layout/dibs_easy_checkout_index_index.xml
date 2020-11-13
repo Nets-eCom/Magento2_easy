@@ -97,6 +97,20 @@
                                     </block>
                                 </block>
 
+                                <!-- Downloadable renderer-->
+                                <block class="Magento\Downloadable\Block\Checkout\Cart\Item\Renderer"
+                                       name="checkout.cart.item.renderers.downloadable" as="downloadable"
+                                       template="Dibs_EasyCheckout::checkout/cart/item/item.phtml">
+                                    <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions"
+                                           name="checkout.cart.item.renderers.downloadable.actions" as="actions">
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Edit"
+                                               name="checkout.cart.item.renderers.downloadable.actions.edit"
+                                               template="Magento_Checkout::cart/item/renderer/actions/edit.phtml"/>
+                                        <block class="Magento\Checkout\Block\Cart\Item\Renderer\Actions\Remove"
+                                               name="checkout.cart.item.renderers.downloadable.actions.remove"
+                                               template="Magento_Checkout::cart/item/renderer/actions/remove.phtml"/>
+                                    </block>
+                                </block>
 
                                 <block class="Magento\Bundle\Block\Checkout\Cart\Item\Renderer" as="grouped"
                                        template="Dibs_EasyCheckout::checkout/cart/item/item.phtml"/>
