@@ -8,6 +8,11 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPrivatePerson;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerShippingAddress;
 use Magento\Quote\Model\Quote;
 
+/**
+ * Class ConsumerDataProvider
+ *
+ * @package Dibs\EasyCheckout\Model\Quote
+ */
 class ConsumerDataProvider
 {
     /**
@@ -17,6 +22,9 @@ class ConsumerDataProvider
 
     /**
      * @param Quote $quote
+     *
+     * @return Consumer
+     * @throws \Exception
      */
     public function getFromQuote(Quote $quote) : Consumer
     {
@@ -66,14 +74,21 @@ class ConsumerDataProvider
 
     /**
      * @return ConsumerShippingAddress
+     * @throws \Exception
      */
     private function getAddressData()
     {
         $shippingAddress = $this->quote->getShippingAddress();
+        $city = $shippingAddress->getCity();
+        $addressLine1 = $shippingAddress->getStreetLine(1);
+
+        if (empty($city) || empty($addressLine1)) {
+            throw new \Exception('Address data is missing');
+        }
 
         $paymentShippingAddress = new ConsumerShippingAddress();
-        $paymentShippingAddress->setCity($shippingAddress->getCity());
-        $paymentShippingAddress->setAddressLine1($shippingAddress->getStreetLine(1));
+        $paymentShippingAddress->setCity($city);
+        $paymentShippingAddress->setAddressLine1($addressLine1);
         $paymentShippingAddress->setAddressLine2($shippingAddress->getStreetLine(2));
         $paymentShippingAddress->setCountry($this->getExtendedCountry($shippingAddress->getCountryId()));
         $paymentShippingAddress->setPostalCode(preg_replace('/\s+/','',$shippingAddress->getPostcode()));
