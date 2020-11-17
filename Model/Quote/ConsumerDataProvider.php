@@ -43,6 +43,7 @@ class ConsumerDataProvider
 
     /**
      * @return ConsumerPhoneNumber
+     * @throws \Exception
      */
     private function getPhoneNumber() : ConsumerPhoneNumber
     {
@@ -51,10 +52,14 @@ class ConsumerDataProvider
 
         $matches = [];
         if ($phone && preg_match_all('^\+(45|46|358|47)(\d{8,15})$^', $phone, $matches)) {
-            $number->setPrefix(isset($matches[1][0]) ? '+' . $matches[1][0]  : null);
+            $number->setPrefix(isset($matches[1][0]) ? '+' . $matches[1][0] : null);
             $number->setNumber($matches[2][0] ?? null);
         } else {
             $number->setNumber($phone);
+        }
+
+        if (empty($number->getPhoneNumber()) || empty($number->getPhoneNumber())) {
+            throw new \Exception('Missing phone data');
         }
 
         return $number;
@@ -86,12 +91,20 @@ class ConsumerDataProvider
             throw new \Exception('Address data is missing');
         }
 
+        $city = $shippingAddress->getCity();
+        $address1 = $shippingAddress->getStreetLine(1);
+        $postCode = preg_replace('/\s+/','',$shippingAddress->getPostcode());
+
+        if (! $city || !$address1 || !$postCode) {
+            throw new \Exception('Address data is missing');
+        }
+
         $paymentShippingAddress = new ConsumerShippingAddress();
         $paymentShippingAddress->setCity($city);
         $paymentShippingAddress->setAddressLine1($addressLine1);
         $paymentShippingAddress->setAddressLine2($shippingAddress->getStreetLine(2));
         $paymentShippingAddress->setCountry($this->getExtendedCountry($shippingAddress->getCountryId()));
-        $paymentShippingAddress->setPostalCode(preg_replace('/\s+/','',$shippingAddress->getPostcode()));
+        $paymentShippingAddress->setPostalCode($postCode);
 
         return $paymentShippingAddress;
     }
@@ -112,5 +125,4 @@ class ConsumerDataProvider
 
         return $countries[$countryId] ?? $countryId;
     }
-
 }
