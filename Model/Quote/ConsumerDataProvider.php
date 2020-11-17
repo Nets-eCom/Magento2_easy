@@ -17,6 +17,9 @@ class ConsumerDataProvider
 
     /**
      * @param Quote $quote
+     *
+     * @return Consumer
+     * @throws \Exception
      */
     public function getFromQuote(Quote $quote) : Consumer
     {
@@ -35,6 +38,7 @@ class ConsumerDataProvider
 
     /**
      * @return ConsumerPhoneNumber
+     * @throws \Exception
      */
     private function getPhoneNumber() : ConsumerPhoneNumber
     {
@@ -43,10 +47,14 @@ class ConsumerDataProvider
 
         $matches = [];
         if (preg_match_all('^\+(45|46|358|47)(\d{8,15})$^', $phone, $matches)) {
-            $number->setPrefix(isset($matches[1][0]) ? '+' . $matches[1][0]  : null);
+            $number->setPrefix(isset($matches[1][0]) ? '+' . $matches[1][0] : null);
             $number->setNumber($matches[2][0] ?? null);
         } else {
             $number->setNumber($phone);
+        }
+
+        if (empty($number->getPhoneNumber()) || empty($number->getPhoneNumber())) {
+            throw new \Exception('Missing phone data');
         }
 
         return $number;
@@ -71,12 +79,20 @@ class ConsumerDataProvider
     {
         $shippingAddress = $this->quote->getShippingAddress();
 
+        $city = $shippingAddress->getCity();
+        $address1 = $shippingAddress->getStreetLine(1);
+        $postCode = $shippingAddress->getPostcode();
+
+        if (! $city || !$address1 || !$postCode) {
+            throw new \Exception('Address data is missing');
+        }
+
         $paymentShippingAddress = new ConsumerShippingAddress();
-        $paymentShippingAddress->setCity($shippingAddress->getCity());
-        $paymentShippingAddress->setAddressLine1($shippingAddress->getStreetLine(1));
+        $paymentShippingAddress->setCity($city);
+        $paymentShippingAddress->setAddressLine1($address1);
         $paymentShippingAddress->setAddressLine2($shippingAddress->getStreetLine(2));
         $paymentShippingAddress->setCountry($this->getExtendedCountry($shippingAddress->getCountryId()));
-        $paymentShippingAddress->setPostalCode($shippingAddress->getPostcode());
+        $paymentShippingAddress->setPostalCode($postCode);
 
         return $paymentShippingAddress;
     }
@@ -97,5 +113,4 @@ class ConsumerDataProvider
 
         return $countries[$countryId] ?? $countryId;
     }
-
 }

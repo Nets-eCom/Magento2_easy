@@ -197,10 +197,14 @@ class Order
                 // at the moment we allow nets to handle the merchant data when quote is virual for redirect flow...
                 $paymentCheckout->setMerchantHandlesConsumerData(false);
             } else {
-                $handleCustomerData = $this->helper->doesHandleCustomerData();
-                $paymentCheckout->setMerchantHandlesConsumerData($handleCustomerData);
-                $consumerProvider = $this->consumerDataProviderFactory->create();
-                $paymentCheckout->setConsumer($consumerProvider->getFromQuote($quote));
+                try {
+                    $handleCustomerData = $this->helper->doesHandleCustomerData();
+                    $paymentCheckout->setMerchantHandlesConsumerData($handleCustomerData);
+                    $consumerProvider = $this->consumerDataProviderFactory->create();
+                    $paymentCheckout->setConsumer($consumerProvider->getFromQuote($quote));
+                } catch (\Exception $e) {
+                    $paymentCheckout->setMerchantHandlesConsumerData(false);
+                }
             }
         } else {
             // when we use embedded, we set the url! and we allow nets to handle consumer data
