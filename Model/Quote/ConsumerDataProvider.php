@@ -79,12 +79,20 @@ class ConsumerDataProvider
     {
         $shippingAddress = $this->quote->getShippingAddress();
 
+        $city = $shippingAddress->getCity();
+        $address1 = $shippingAddress->getStreetLine(1);
+        $postCode = $shippingAddress->getPostcode();
+
+        if (! $city || !$address1 || !$postCode) {
+            throw new \Exception('Address data is missing');
+        }
+
         $paymentShippingAddress = new ConsumerShippingAddress();
-        $paymentShippingAddress->setCity($shippingAddress->getCity());
-        $paymentShippingAddress->setAddressLine1($shippingAddress->getStreetLine(1));
+        $paymentShippingAddress->setCity($city);
+        $paymentShippingAddress->setAddressLine1($address1);
         $paymentShippingAddress->setAddressLine2($shippingAddress->getStreetLine(2));
         $paymentShippingAddress->setCountry($this->getExtendedCountry($shippingAddress->getCountryId()));
-        $paymentShippingAddress->setPostalCode($shippingAddress->getPostcode());
+        $paymentShippingAddress->setPostalCode($postCode);
 
         return $paymentShippingAddress;
     }
