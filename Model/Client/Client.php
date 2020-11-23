@@ -154,7 +154,7 @@ abstract class Client
             $this->getLogger()->error("Failed sending request to dibs integration: POST $endpoint");
             $this->getLogger()->error(json_encode($this->removeAuthForLogging($options)));
             $this->getLogger()->error($request->toJSON());
-            $this->getLogger()->error($exception->getMessage());
+            $this->getLogger()->error(mb_convert_encoding($exception->getMessage(), "UTF-8", "UTF-8"));
             $this->getLogger()->error($exception->getHttpStatusCode());
             $this->getLogger()->error($exception->getResponseBody());
             throw $exception;
