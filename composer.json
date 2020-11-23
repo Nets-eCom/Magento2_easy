@@ -2,7 +2,7 @@
   "name": "dibs/easycheckout",
   "description": "Dibs Easy Checkout",
   "type": "magento2-module",
-  "version": "1.1.4",
+  "version": "1.1.6",
   "autoload": {
     "files": [
       "registration.php"
