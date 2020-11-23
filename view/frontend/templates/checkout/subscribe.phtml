@@ -14,7 +14,7 @@ $privacyLabel = $block->helper()->getPrivacyLabel($storeId);
                    id="newsletter" title="<?php echo __('Sign Up for Our Newsletter') ?>" class="checkbox"/>
 	    <label for="newsletter"><span class="tick"></span> <?php echo __('Sign Up for Our Newsletter') ?></label>
 	    <?php if($privacyLabel) :?>
-	    <a href="<?php echo $privacyUrl; ?>" style="color: #444;"> (<?php echo  $privacyLabel; ?>)</a>
+	        <a href="<?php echo $privacyUrl; ?>" style="color: #444;"> (<?php echo  $privacyLabel; ?>)</a>
 	    <?php endif;?>
         </div>
     </form>

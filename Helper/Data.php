@@ -64,6 +64,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $orderRepository;
 
     /**
+     * @var \Magento\Cms\Api\GetPageByIdentifierInterface
+     */
+    private $_cmsPage;
+
+    /**
      * Data constructor.
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
@@ -79,14 +84,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Directory\Model\AllowedCountries $allowedCountryModel,
         \Magento\Framework\App\State $state,
         \Magento\Sales\Model\OrderRepository $orderRepository,
-	    \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
+        \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
     ) {
         $this->dibsLocale = $locale;
         $this->storeManager = $storeManager;
         $this->allowedCountryModel = $allowedCountryModel;
         $this->state = $state;
         $this->orderRepository = $orderRepository;
-	    $this->_cmsPage = $_cmsPage;
+        $this->_cmsPage = $_cmsPage;
 
         parent::__construct($context);
     }
@@ -152,8 +157,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-
-
 
     /**
      * @param null $store
@@ -300,7 +303,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return null;
         }
 
-        return str_replace("=", "",base64_encode($secret));
+        return str_replace("=", "", base64_encode($secret));
     }
     /**
      * @param null $path
@@ -354,7 +357,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         //if there are multiple pages with same url key; magento will generate options with key|id
         $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
-	return $this->_getUrl($url[0]);
+
+        return $this->_getUrl($url[0]);
     }
 
     /**
@@ -363,10 +367,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getPrivacyLabel($store = null)
     {
-        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
-	$identifier = $url[0];
-	$result = $this->_cmsPage->execute($identifier, $store)->getTitle();
-	return $result;
+        $cmsPages = (string) $this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store);
+        if (! $cmsPages) {
+            return null;
+        }
+
+        $url = explode('|', $cmsPages);
+        return isset($url[0]) ? $this->_cmsPage->execute($url[0], $store)->getTitle() : null;
     }
 
     /**
@@ -415,7 +422,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-
     /**
      * @param null $store
      * @return array|null
@@ -427,7 +433,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-
 
     public function getDefaultConsumerType($store = null)
     {

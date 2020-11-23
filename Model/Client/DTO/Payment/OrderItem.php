@@ -232,12 +232,6 @@ class OrderItem extends AbstractRequest
     }
 
 
-
-    public function toJSON()
-    {
-        return json_encode($this->toArray());
-    }
-
     public function toArray()
     {
 
