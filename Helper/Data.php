@@ -64,6 +64,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $orderRepository;
 
     /**
+     * @var \Magento\Cms\Api\GetPageByIdentifierInterface
+     */
+    private $_cmsPage;
+
+    /**
      * @var \Magento\Framework\Serialize\SerializerInterface
      */
     private $serializer;
@@ -159,8 +164,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-
-
 
     /**
      * @param null $store
@@ -307,7 +310,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return null;
         }
 
-        return str_replace("=", "",base64_encode($secret));
+        return str_replace("=", "", base64_encode($secret));
     }
     /**
      * @param null $path
@@ -371,11 +374,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getPrivacyLabel($store = null)
     {
-        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
-        $identifier = $url[0];
-        $result = $this->_cmsPage->execute($identifier, $store)->getTitle();
+        $cmsPages = (string) $this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store);
+        if (! $cmsPages) {
+            return null;
+        }
 
-        return $result;
+        $url = explode('|', $cmsPages);
+        return isset($url[0]) ? $this->_cmsPage->execute($url[0], $store)->getTitle() : null;
     }
 
     /**
@@ -423,7 +428,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-
 
     /**
      * @param null $store
