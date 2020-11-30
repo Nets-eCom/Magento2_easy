@@ -775,7 +775,7 @@ class Items
                 ->setQuantity(1)
                 ->setTaxRate((int) $this->addZeroes($vat)) // the tax rate i.e 25% (2500)
                 ->setTaxAmount((int)  $taxAmount) // total tax amount
-                ->setUnitPrice(0) // excl. tax price per item
+                ->setUnitPrice((int)  $amountExclTax) // excl. tax price per item
                 ->setNetTotalAmount((int)  $amountExclTax) // excl. tax
                 ->setGrossTotalAmount((int)  $amountInclTax); // incl. tax
 

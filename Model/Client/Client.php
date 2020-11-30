@@ -113,6 +113,24 @@ abstract class Client
     }
 
     /**
+     * @param $mixed
+     *
+     * @return array|false|mixed|string|string[]|null
+     */
+    public function utf8ize($mixed)
+    {
+        if (is_array($mixed)) {
+            foreach ($mixed as $key => $value) {
+                $mixed[$key] = $this->utf8ize($value);
+            }
+        } elseif (is_string($mixed)) {
+            return mb_convert_encoding($mixed, "UTF-8", "UTF-8");
+        }
+
+        return $mixed;
+    }
+
+    /**
      * @param $endpoint
      * @param AbstractRequest $request
      * @param array $options
@@ -125,7 +143,8 @@ abstract class Client
         }
 
         $options = array_merge($options, $this->getDefaultOptions());
-        $options[RequestOptions::JSON] = $request->toArray();
+        $options[RequestOptions::JSON] = $this->utf8ize($request->toArray());;
+
         $exception = null;
 
         try {
@@ -154,7 +173,7 @@ abstract class Client
             $this->getLogger()->error("Failed sending request to dibs integration: POST $endpoint");
             $this->getLogger()->error(json_encode($this->removeAuthForLogging($options)));
             $this->getLogger()->error($request->toJSON());
-            $this->getLogger()->error($exception->getMessage());
+            $this->getLogger()->error(mb_convert_encoding($exception->getMessage(), "UTF-8", "UTF-8"));
             $this->getLogger()->error($exception->getHttpStatusCode());
             $this->getLogger()->error($exception->getResponseBody());
             throw $exception;

@@ -96,11 +96,6 @@ class CreatePaymentWebhook extends AbstractRequest
 
 
 
-    public function toJSON()
-    {
-        return json_encode($this->toArray());
-    }
-
     public function toArray()
     {
         if (!in_array($this->getEventName(), self::validEvents)) {

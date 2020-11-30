@@ -64,11 +64,6 @@ class ConsumerType extends AbstractRequest
     }
 
 
-    public function toJSON()
-    {
-        return json_encode($this->toArray());
-    }
-
     /**
      * @return array
      * @throws \Exception
