@@ -414,7 +414,6 @@ define([
 
             var self = this;
             window._dibsCheckout.on('payment-completed', function (response) {
-
                 jQuery.ajax({
                     url: BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId,
                     type: "POST",
@@ -422,15 +421,15 @@ define([
                     data: "",
                     dataType: 'json',
                     beforeSend: function () {
+                        jQuery('#review-please-wait').show();
                         self._hideDibsCheckout();
                     },
                     complete: function () {
                         self._showDibsCheckout();
+                        jQuery('#review-please-wait').hide();
                     },
                     success: function (response) {
-
                         if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
-
                             if (response.chooseShippingMethod) {
                                 self.checkShippingMethod();
                                 self._hideDibsCheckout();
@@ -453,6 +452,7 @@ define([
                         }
                     },
                     error: function(data) {
+                        jQuery('#review-please-wait').hide();
                         alert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                         });
@@ -464,7 +464,6 @@ define([
             });
 
             window._dibsCheckout.on('pay-initialized', function (response) {
-
                 jQuery.ajax({
                     url: BASE_URL + "easycheckout/order/ValidateOrder",
                     type: "POST",
@@ -473,14 +472,13 @@ define([
                     dataType: 'json',
                     beforeSend: function () {
                         self._hideDibsCheckout();
+                        jQuery('#review-please-wait').show();
                     },
                     complete: function () {
                         self._showDibsCheckout();
                     },
                     success: function (response) {
-
                         if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
-
                             if (response.error) {
                                 window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
                             } else {
@@ -493,21 +491,22 @@ define([
                             }
 
                             if (response.messages) {
+                                jQuery('#review-please-wait').hide();
                                 alert({
                                     content: jQuery.mage.__(response.messages)
                                 });
                             }
                         } else {
-
                             // tell dibs not to finish order!
                             window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
-
+                            jQuery('#review-please-wait').hide();
                             alert({
                                 content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                             });
                         }
                     },
                     error: function(data) {
+                        jQuery('#review-please-wait').hide();
                         // tell dibs not to finish order!
                         window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
 

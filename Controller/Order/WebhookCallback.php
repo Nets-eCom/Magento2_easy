@@ -24,6 +24,22 @@ class WebhookCallback extends Checkout
      */
     protected $jsonResultFactory;
 
+    /**
+     * WebhookCallback constructor.
+     *
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param AccountManagementInterface $accountManagement
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
+     * @param \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory
+     * @param DibsCheckout $dibsCheckout
+     * @param DibsCheckoutCOntext $dibsCheckoutContext
+     * @param Logger $logger
+     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
+     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Customer\Model\Session $customerSession,
@@ -55,6 +71,9 @@ class WebhookCallback extends Checkout
         );
     }
 
+    /**
+     * @inheridoc
+     */
     public function execute()
     {
         $quoteId = $this->getRequest()->getParam('qid');
@@ -99,11 +118,14 @@ class WebhookCallback extends Checkout
             return $result;
         }
 
-        if ($this->dibsCheckoutContext->getHelper()->generateHashSignatureByQuote($quote) !== $quote->getHashSignature()) {
+        $newSignature = $this->dibsCheckoutContext->getHelper()->generateHashSignatureByQuote($quote);
+        if ($newSignature !== $quote->getHashSignature()) {
             $this->logger->error("[Webhook][{$paymentId}] Quote signature doesn't match. Probably customer cart was changed.");
             $result->setHttpResponseCode(400);
             return $result;
         }
+
+        $this->logger->error("[Webhook][{$paymentId}] Qoute signature is OK");
 
         // we check that its the correct quote
         if ($checkout->getDibsPaymentHandler()->generateReferenceByQuoteId($quoteId) !== $dibsPayment->getOrderDetails()->getReference()) {
@@ -139,10 +161,10 @@ class WebhookCallback extends Checkout
 
         try {
             $order = $checkout->placeOrder($dibsPayment, $quote, $weHandleConsumerData, false);
-            $this->dibsCheckoutContext->getLogger()->error('[Webhook] Order is placed!' . $dibsPayment->getPaymentId());
+            $this->dibsCheckoutContext->getLogger()->error("[Webhook][{$paymentId}] Order is placed.'");
         } catch (\Exception $e) {
-            $this->logger->error("Could not place order for dibs payment with payment id: " . $dibsPayment->getPaymentId() . ", Quote ID:" . $quote->getId());
-            $this->logger->error("Error message:" . $e->getMessage());
+            $this->logger->error("[Webhook][{$paymentId}] Could not place order for dibs payment Quote id: " . $quote->getId());
+            $this->logger->error("[Webhook][{$paymentId}] Error message: {$e->getMessage()}");
 
             $result->setHttpResponseCode(500);
             return $result;
@@ -152,15 +174,12 @@ class WebhookCallback extends Checkout
             $checkout->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
         } catch (\Exception $e) {
             $this->getLogger()->error(
-                "
-                Order created with ID: " . $order->getIncrementId() . ". 
+                "Order created with ID: " . $order->getIncrementId() . ". 
                 But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: " . $quote->getId() . "...  Dibs Payment ID: " . $paymentId
             );
 
             // lets ignore this and save it in logs! let customer see his/her order confirmation!
             $this->getLogger()->error("Error message:" . $e->getMessage());
-
-            // ... ignore this error...
         }
 
         $result->setHttpResponseCode(200);
