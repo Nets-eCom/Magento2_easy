@@ -352,7 +352,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
 
         $newSignature = $helper->generateHashSignatureByQuote($quote);
-        $paymentId = $checkoutSession->getDibsPaymentId(); //check session for Dibs Payment Id
+        $paymentId = $checkoutSession->getDibsPaymentId();
         if ($paymentId) {
             try {
                 $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);

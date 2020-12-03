@@ -3,6 +3,7 @@
 namespace Dibs\EasyCheckout\Controller\Order;
 
 use Dibs\EasyCheckout\Controller\Checkout;
+use Magento\Quote\Model\Quote;
 
 class SaveOrder extends Checkout
 {
@@ -19,8 +20,19 @@ class SaveOrder extends Checkout
             return $this->respondWithError('Invalid payment id');
         }
 
-        if (! $this->checkLockedQuoteSignature()) {
-            return $this->respondWithError("Seems your has been modified after payment is complete. Your payment id: {$paymentId}");
+        try {
+            $quote = $this->getCheckoutSession()->getQuote();
+            // If hash signature is missing, it means, that order has been
+            // already submitted during webhook (also signature is verified),
+            // so we got new cleared quote - else we check locked signature
+            // with calculated signature of current quote
+            if ($quote->getHashSignature()) {
+                $this->checkLockedQuoteSignature($quote);
+            }
+        } catch (\Magento\Framework\Exception\NoSuchEntityException $exception) {
+            return $this->respondWithError("Your session has expired");
+        } catch (\Exception $e) {
+            return $this->respondWithError($e->getMessage());
         }
 
         return $this->respondWithPaymentId($paymentId);
@@ -43,21 +55,19 @@ class SaveOrder extends Checkout
     }
 
     /**
-     * @return bool
+     * @param Quote $quote
+     *
+     * @throws \Exception
      */
-    private function checkLockedQuoteSignature() : bool
+    private function checkLockedQuoteSignature(Quote $quote)
     {
-        try {
-            $quote = $this->getCheckoutSession()->getQuote();
-        } catch (\Exception $e) {
-            return false;
-        }
-
         $helper             = $this->dibsCheckoutContext->getHelper();
         $quoteSignature     = $quote->getHashSignature();
         $currentSignature   = $helper->generateHashSignatureByQuote($quote);
 
-        return $quoteSignature === $currentSignature;
+        if ($quoteSignature !== $currentSignature) {
+            throw new \Exception("Seems your has been modified after payment is complete.");
+        }
     }
 
     /**
