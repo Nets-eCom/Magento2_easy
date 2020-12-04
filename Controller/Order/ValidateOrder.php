@@ -6,6 +6,11 @@ use Dibs\EasyCheckout\Model\Client\ClientException;
 
 class ValidateOrder extends Update
 {
+    /**
+     * Validate order before sending to Nets
+     *
+     * @inheridoc
+     */
     public function execute()
     {
         $checkout = $this->getDibsCheckout();
@@ -53,20 +58,6 @@ class ValidateOrder extends Update
         }
 
         try {
-
-//            $oldPostCode = $quote->getShippingAddress()->getPostcode();
-//            $oldCountryId = $quote->getShippingAddress()->getCountryId();
-
-            // we do nothing
-          /** HOTFIX  
-	  if (!($oldCountryId == $currentCountryId && $oldPostCode == $currentPostalCode)) {
-                $checkout->getLogger()->error("Validate Order: Consumer has no shipping address.");
-                return $this->respondWithError("The country or postal code doesn't match with the one you entered earlier. Please re-enter the new postal code for the shipping above.", true, [
-                    'postalCode' => $currentPostalCode, 'countryId' => $currentCountryId
-                ]);
-            }
-	  **/
-
             if (!$quote->isVirtual() && !$quote->getShippingAddress()->getShippingMethod()) {
                 $checkout->getLogger()->error("Validate Order: Consumer has not choosen a shipping method.");
                 return $this->respondWithError("Please choose a shipping method.");
@@ -81,6 +72,7 @@ class ValidateOrder extends Update
             return $this->respondWithError("Something went wrong... Contact site admin.");
         }
 
+        $this->dibsCheckout->getHelper()->lockQuoteSignature($quote);
         $this->getResponse()->setBody(json_encode(['chooseShippingMethod' => false, 'error' => false]));
         return false;
     }

@@ -51,8 +51,6 @@ abstract class Update extends \Dibs\EasyCheckout\Controller\Checkout
                     if (!$dibsPaymentId) {
                         throw new CheckoutException(__("The session has expired."), '*/*');
                     }
-
-                    //
                     $checkout->updateDibsPayment($dibsPaymentId);
                 }
             } catch (CheckoutException $e) {
