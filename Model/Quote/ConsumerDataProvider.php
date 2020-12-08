@@ -16,6 +16,16 @@ class ConsumerDataProvider
     private $quote;
 
     /**
+     * @var string[]
+     */
+    protected $prefixes = [
+        'SE' => '+46',
+        'DK' => '+45',
+        'FI' => '+358',
+        'NO' => '+47',
+    ];
+
+    /**
      * @param Quote $quote
      *
      * @return Consumer
@@ -43,19 +53,18 @@ class ConsumerDataProvider
     private function getPhoneNumber() : ConsumerPhoneNumber
     {
         $number = new ConsumerPhoneNumber();
+        $address = $this->quote->getShippingAddress();
         $phone = $this->quote->getShippingAddress()->getTelephone();
 
         $matches = [];
-        if (preg_match_all('^\+(45|46|358|47)(\d{8,15})$^', $phone, $matches)) {
-            $number->setPrefix(isset($matches[1][0]) ? '+' . $matches[1][0] : null);
-            $number->setNumber($matches[2][0] ?? null);
-        } else {
-            $number->setNumber($phone);
-        }
-
-        if (empty($number->getPhoneNumber()) || empty($number->getPhoneNumber())) {
+        preg_match_all('/^(\+)?(45|46|358|47)?(\d{8,10})$/', $phone, $matches);
+        $prefix = $this->prefixes[$address->getCountryId()] ?? null;
+        if (empty($matches[3][0]) || !$prefix) {
             throw new \Exception('Missing phone data');
         }
+
+        $number->setPrefix($prefix);
+        $number->setNumber($matches[3][0]);
 
         return $number;
     }
