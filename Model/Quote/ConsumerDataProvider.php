@@ -55,9 +55,10 @@ class ConsumerDataProvider
         $number = new ConsumerPhoneNumber();
         $address = $this->quote->getShippingAddress();
         $phone = $this->quote->getShippingAddress()->getTelephone();
+        $string = str_replace([' ', '-', '(', ')'], '', $phone);
 
         $matches = [];
-        preg_match_all('/^(\+)?(45|46|358|47)?(\d{8,10})$/', $phone, $matches);
+        preg_match_all('/^(\+)?(45|46|358|47)?(\d{8,10})$/', $string, $matches);
         $prefix = $this->prefixes[$address->getCountryId()] ?? null;
         if (empty($matches[3][0]) || !$prefix) {
             throw new \Exception('Missing phone data');
