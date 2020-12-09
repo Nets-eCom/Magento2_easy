@@ -16,17 +16,6 @@ class Index extends Checkout
      */
     public function execute()
     {
-        if ($this->getRequest()->getParam('paymentFailed')) {
-            $this->messageManager->addErrorMessage(__('The payment was canceled or failed.'));
-            $this->dibsCheckoutContext->getLogger()->error("[Index][{$this->getRequest()->getParam('paymentId')}] The payment was canceled or failed");
-            return $this->_redirect('*/*');
-        }
-
-        // Fetching order id after redirect
-        if ($paymentId = $this->getPaymentId()) {
-            return $this->fetchOrderByPaymentId($paymentId);
-        }
-
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
@@ -130,6 +119,10 @@ class Index extends Checkout
         }
 
         if ($redirectToHosted && $checkoutUrl) {
+            // Locking quote hash before redirect to verify the signature in webhook
+            $quote = $this->getDibsCheckout()->getQuote();
+            $this->getDibsCheckout()->getHelper()->lockQuoteSignature($quote);
+
             // here we redirect to the hosted payment gateway, this only happens when ?checkRedirect param is used
             // this param is set in the default magento checkout, when nets is chosen. $redirectToHosted is only true
             // if hosted (redirect flow or overlay) is enabled in settings)
@@ -163,53 +156,21 @@ class Index extends Checkout
     }
 
     /**
-     * @param $paymentId
-     *
-     * @return \Magento\Framework\App\ResponseInterface
-     * @throws CheckoutException
+     * @return \Magento\Framework\Message\ManagerInterface
      */
-    private function fetchOrderByPaymentId($paymentId)
+    public function getMessageManager()
     {
-        $this->dibsCheckoutContext->getLogger()->info("[Index][$paymentId] Waiting for an order to be created from webhook.");
-        $handleTimeout = $this->dibsCheckoutContext->getHelper()->getWebhookHandleTimeout() ?: 40;
-
-        for ($sleepCounter = 1; $sleepCounter < $handleTimeout; $sleepCounter++) {
-            $orderCollection = $this->dibsCheckoutContext->getOrderCollectionFactory()->create();
-            $ordersCollection = $orderCollection
-                ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
-                ->load();
-
-            if ($ordersCollection->count()) {
-                $this->dibsCheckoutContext->getLogger()->info("[Index][{$paymentId}] Order found!  Redirecting to " . $this->dibsCheckoutContext->getHelper()->getSuccessPageUrl());
-                $session =  $this->getCheckoutSession();
-                $session->clearHelperData();
-                $session->clearQuote()->clearStorage();
-
-                $order = $ordersCollection->getFirstItem();
-                $session
-                    ->setLastQuoteId($order->getQuoteId())
-                    ->setLastSuccessQuoteId($order->getQuoteId())
-                    ->setLastOrderId($order->getId())
-                    ->setLastRealOrderId($order->getIncrementId())
-                    ->setLastOrderStatus($order->getStatus());
-
-                return $this->_redirect($this->dibsCheckoutContext->getHelper()->getSuccessPageUrl());
-            }
-            $this->dibsCheckoutContext->getLogger()->info('[Index] Orders not found. Sleep 1s. ' . $paymentId);
-            sleep(1);
-        }
-
-        $this->messageManager->addErrorMessage(__('We cannot verify you payment on Nets side, timeout is reached. Your payment ID is %1', $paymentId));
-        $this->dibsCheckoutContext->getLogger()->error("[Webhook][{$paymentId}] Timeout is reached after {$handleTimeout} seconds.");
-
-        return $this->_redirect(self::URL_CHECKOUT_CART_PATH);
+        return $this->messageManager;
     }
 
     /**
-     * @return mixed
+     * @param string $path
+     * @param array $arguments
+     *
+     * @return \Magento\Framework\App\ResponseInterface|mixed
      */
-    public function getPaymentId()
+    public function redirect($path, $arguments = [])
     {
-        return $this->getRequest()->getParam('paymentId') ?: $this->getRequest()->getParam('paymentid');
+        return $this->_redirect($path, $arguments);
     }
 }

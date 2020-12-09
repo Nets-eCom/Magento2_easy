@@ -58,11 +58,6 @@ class ConsumerPhoneNumber extends AbstractRequest
         return $this->getPrefix() . $this->getNumber();
     }
 
-    public function toJSON()
-    {
-        return json_encode($this->toArray());
-    }
-
     public function toArray()
     {
         return [

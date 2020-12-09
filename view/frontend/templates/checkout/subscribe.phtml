@@ -1,7 +1,9 @@
 <?php
 // @codingStandardsIgnoreFile
 $subscribe = $block->subscribeNewsletter();
-
+$storeId = $block->getQuote()->getStoreId();
+$privacyUrl = $block->helper()->getPrivacyUrl($storeId);
+$privacyLabel = $block->helper()->getPrivacyLabel($storeId);
 ?>
 <div id="dibs-easy-checkout_newsletter" class="dibs-easy-checkout-block newsletter">
     <?php $customerComment = $block->getQuote()->getCustomerNote(); ?>
@@ -10,7 +12,10 @@ $subscribe = $block->subscribeNewsletter();
         <div class="fieldset comment">
             <input type="checkbox" name="newsletter" value="1" <?php echo $subscribe ? 'checked="checked"' : ''; ?>
                    id="newsletter" title="<?php echo __('Sign Up for Our Newsletter') ?>" class="checkbox"/>
-            <label for="newsletter"><span class="tick"></span> <?php echo __('Sign Up for Our Newsletter') ?></label>
+	    <label for="newsletter"><span class="tick"></span> <?php echo __('Sign Up for Our Newsletter') ?></label>
+	    <?php if($privacyLabel) :?>
+	        <a href="<?php echo $privacyUrl; ?>" style="color: #444;"> (<?php echo  $privacyLabel; ?>)</a>
+	    <?php endif;?>
         </div>
     </form>
 </div>

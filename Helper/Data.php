@@ -64,12 +64,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $orderRepository;
 
     /**
+     * @var \Magento\Cms\Api\GetPageByIdentifierInterface
+     */
+    private $_cmsPage;
+
+    /**
+     * @var \Magento\Framework\Serialize\SerializerInterface
+     */
+    private $serializer;
+
+    /**
      * Data constructor.
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Dibs\EasyCheckout\Model\Dibs\Locale $locale
      * @param \Magento\Framework\App\State $state
      * @param \Magento\Sales\Model\OrderRepository $orderRepository
+     * @param \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -77,13 +88,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Dibs\EasyCheckout\Model\Dibs\Locale $locale,
         \Magento\Directory\Model\AllowedCountries $allowedCountryModel,
         \Magento\Framework\App\State $state,
-        \Magento\Sales\Model\OrderRepository $orderRepository
+        \Magento\Sales\Model\OrderRepository $orderRepository,
+        \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage,
+        \Magento\Framework\Serialize\SerializerInterface $serializer
     ) {
         $this->dibsLocale = $locale;
         $this->storeManager = $storeManager;
         $this->allowedCountryModel = $allowedCountryModel;
         $this->state = $state;
         $this->orderRepository = $orderRepository;
+        $this->_cmsPage = $_cmsPage;
+        $this->serializer = $serializer;
 
         parent::__construct($context);
     }
@@ -149,8 +164,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-
-
 
     /**
      * @param null $store
@@ -297,7 +310,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return null;
         }
 
-        return str_replace("=", "",base64_encode($secret));
+        return str_replace("=", "", base64_encode($secret));
     }
     /**
      * @param null $path
@@ -344,6 +357,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyUrl($store = null)
+    {
+        //if there are multiple pages with same url key; magento will generate options with key|id
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
+
+        return $this->_getUrl($url[0]);
+    }
+
+    /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyLabel($store = null)
+    {
+        $cmsPages = (string) $this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store);
+        if (! $cmsPages) {
+            return null;
+        }
+
+        $url = explode('|', $cmsPages);
+        return isset($url[0]) ? $this->_cmsPage->execute($url[0], $store)->getTitle() : null;
+    }
+
+    /**
      * @return string
      */
     public function getCartCtrlKeyCookieName()
@@ -369,6 +409,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             //get default value from settings
             return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'newsletter_subscribe', $quote->getStore()->getId());
         }
+    }
+
+    public function getDefaultShippingMethod($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'default_shipping_method',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getDefaultCountry($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'default_country',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
     }
 
     /**
@@ -414,6 +472,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * This function returns a hash, we will use it to check for changes in the Quote
+     *
+     * @param Quote $quote
+     */
+    public function lockQuoteSignature(Quote $quote)
+    {
+        try {
+            $newSignature = $this->generateHashSignatureByQuote($quote);
+            $quote->setHashSignature($newSignature);
+            $quote->save();
+        } catch (\Exception $e) {
+            $this->_logger->error("Unable to save signature by exception: {$e->getMessage()}");
+        }
+    }
+
+
+    /**
      * This function returns a hash, we will use it to check for changes in the quote!
      * @param Quote $quote
      * @return string
@@ -444,7 +519,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $info['items'][$item->getId()] = sprintf("%.2f", round($item->getQty()*$item->getBasePriceInclTax(), 2));
         }
         ksort($info['items']);
-        return md5(serialize($info));
+        return hash('sha256', $this->serializer->serialize($info));
     }
 
     /**

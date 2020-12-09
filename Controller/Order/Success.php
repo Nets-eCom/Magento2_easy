@@ -3,10 +3,11 @@ namespace Dibs\EasyCheckout\Controller\Order;
 
 class Success extends \Dibs\EasyCheckout\Controller\Checkout
 {
-
+    /**
+     * @inheridoc
+     */
     public function execute()
     {
-
         $session = $this->getCheckoutSession();
         if (!$this->_objectManager->get('Magento\Checkout\Model\Session\SuccessValidator')->isValid()) {
             return $this->resultRedirectFactory->create()->setPath('checkout/cart');

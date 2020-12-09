@@ -48,7 +48,7 @@ class MarkCartDirtyObserver implements ObserverInterface
         $cart = $observer->getEvent()->getCart();
 
         // if we havent started the checkout yet, ignore this!
-        $oldHash = $cart->getQuote()->getHashSignature();
+        $oldHash = $cart->getCheckoutSession()->getDibsQuoteSignature();
         if (!$oldHash) {
             return $this;
         }

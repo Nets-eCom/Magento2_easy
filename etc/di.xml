@@ -29,4 +29,8 @@
     <type name="Magento\Checkout\Block\Cart">
         <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
     </type>
+
+    <type name="\Dibs\EasyCheckout\Controller\Index\Index">
+        <plugin name="fetch_order_by_payment" type="\Dibs\EasyCheckout\Plugin\Controller\Index\FetchOrderByPaymentId" sortOrder="10"/>
+    </type>
 </config>

@@ -58,7 +58,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function initCheckout($reloadIfCurrencyChanged = true)
     {
         if (!($this->context instanceof CheckoutContext)) {
-            throw new \Exception("Context must set first!");
+            throw new \Exception("Dibs Context must be set first!");
         }
 
         $quote  = $this->getQuote();
@@ -67,12 +67,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         //init checkout
         $customer = $this->getCustomerSession();
         if ($customer->getId()) {
-            //$this->_logger->info(__("Set customer %1",$customer->getId()));
             $quote->assignCustomer($customer->getCustomerDataObject()); //this will set also primary billing/shipping address as billing address
-            //$quote->setCustomer($customer->getCustomerDataObject());
+            $quote->setCustomer($customer->getCustomerDataObject());
         }
 
-        $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked into $this->checkCart())
+        $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked in $this->checkCart())
+
         $billingAddress  = $quote->getBillingAddress();
         if ($quote->isVirtual()) {
             $shippingAddress = $billingAddress;
@@ -95,7 +95,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         if (!$billingAddress->getCountryId() || $billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
-            //$this->_logger->info(__("Billing country [%1] != shipping [%2]",$billingAddress->getCountryId(),$shippingAddress->getCountryId()));
             $this->changeCountry($shippingAddress->getCountryId(), $save = false);
         }
 
@@ -115,13 +114,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $shippingAddress->setPaymentMethod($payment->getMethod())->setCollectShippingRates(true);
         }
 
-        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
-        $quote->setHashSignature($newSignature);
-
         //TODO: ADD MINIMUM AOUNT TEST here
 
-        // do not set shipping method
-        //   $method = $this->checkAndChangeShippingMethod();
+        $this->checkAndChangeShippingMethod();
 
         try {
             $quote->setTotalsCollectedFlag(false)->collectTotals()->save(); //REQUIRED (maybe shipping amount was changed)
@@ -213,6 +208,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->throwRedirectToCartException($error);
         }
 
+        if ($quote->getGrandTotal() <= 0) {
+            $this->throwRedirectToCartException(__("Subtotal cannot be 0. Please choose another payment method."));
+        }
+
         return true;
     }
 
@@ -235,6 +234,58 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         return false;
+    }
+
+    /**
+     * @return bool|mixed|string|void
+     */
+    public function checkAndChangeShippingMethod()
+    {
+        // If we have already set shipping method, then we're fine
+        if ($this->getQuote()->getShippingAddress()->getShippingMethod()) {
+            return;
+        }
+
+        $quote = $this->getQuote();
+        if ($quote->isVirtual()) {
+            return true;
+        }
+
+        //this is needed by shipping method with minimum amount
+        $quote->collectTotals();
+
+        $shipping = $quote->getShippingAddress()->setCollectShippingRates(true)->collectShippingRates();
+        $allRates = $shipping->getAllShippingRates();
+
+        if (!count($allRates)) {
+            return false;
+        }
+
+        $rates = [];
+        foreach($allRates as $rate) {
+            /** @var $rate Quote\Address\Rate  **/
+            $rates[$rate->getCode()] = $rate->getCode();
+        }
+
+        // check if selected shipping method exists
+        $method = $shipping->getShippingMethod();
+        if($method && isset($rates[$method])) {
+            return $method;
+        }
+
+        // check if default shipping method exists, use it then!
+        $method = $this->getHelper()->getDefaultShippingMethod();
+        if($method && isset($rates[$method])) {
+            $shipping->setShippingMethod($method);
+            return $method;
+        }
+
+        // fallback, use first shipping method found
+        $rate = $allRates[0];
+        $method = $rate->getCode();
+        $shipping->setShippingMethod($method);
+        return $method;
+
     }
 
     /**
@@ -295,56 +346,45 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function initDibsCheckout($integrationType)
     {
+        $helper = $this->getHelper();
+        $checkoutSession = $this->getCheckoutSession();
         $quote       = $this->getQuote();
-        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
+        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
 
-        // a signature is a md5 hashed value of the customer quote. Using this we can store the hash in session and compare the values
-        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
-
-        // check if we already have started a payment flow with dibs
-        $paymentId = $this->getCheckoutSession()->getDibsPaymentId(); //check session for Dibs Payment Id
+        $newSignature = $helper->generateHashSignatureByQuote($quote);
+        $paymentId = $checkoutSession->getDibsPaymentId();
         if ($paymentId) {
             try {
-                // this will try to load the dibs payment if it exists
                 $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
-
-                // here we should check if we need to update the dibs payment!
-                if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $this->getQuote()->getHashSignature())) {
-                    // try to update dibs payment data
+                if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $checkoutSession->getDibsQuoteSignature())) {
                     $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
-
-                    // Update new dibs quote signature!
-                    $quote->setHashSignature($newSignature)->save();
+                    $checkoutSession->setDibsQuoteSignature($newSignature);
                 }
             } catch (\Exception $e) {
-
                 // If we couldn't update the dibs payment flow for any reason, we try to create an new one...
-
                 // remove sessions
-                $this->getCheckoutSession()->unsDibsPaymentId(); //remove payment id from session
-                $this->getCheckoutSession()->unsDibsQuoteSignature(); //remove signature from session
+                $checkoutSession->unsDibsPaymentId();
+                $checkoutSession->unsDibsQuoteSignature();
 
                 // this will create an api call to dibs and initiaze an new payment
                 $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
                 $newPaymentId = $payment->getPaymentId();
 
                 //save the payment id and quote signature in checkout/session
-                $this->getCheckoutSession()->setDibsPaymentId($newPaymentId);
-                $quote->setHashSignature($newSignature)->save();
+                $checkoutSession->setDibsPaymentId($newPaymentId);
 
                 // We log this!
                 $this->getLogger()->error("Trying to create a new payment because we could not Update Dibs Checkout Payment for ID: {$paymentId}, Error: {$e->getMessage()} (see exception.log)");
                 $this->getLogger()->error($e);
             }
         } else {
-
             // this will create an api call to dibs and initiaze a new payment
             $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
             $paymentId = $payment->getPaymentId();
 
             //save dibs uri in checkout/session
-            $this->getCheckoutSession()->setDibsPaymentId($paymentId);
-            $quote->setHashSignature($newSignature)->save();
+            $checkoutSession->setDibsPaymentId($paymentId);
+            $checkoutSession->setDibsQuoteSignature($newSignature);
         }
 
         return $payment;
@@ -366,15 +406,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function updateDibsPayment($paymentId)
     {
         $quote       = $this->getQuote();
-        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
-
-        // a signature is a md5 hashed value of the customer quote. Using this we can store the hash in session and compare the values
-        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
-
+        // This will also validate the quote!
+        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
         $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
 
         // Update new dibs quote signature!
-        $quote->setHashSignature($newSignature)->save();
+        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
+        $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
     }
 
     //Checkout ajax updates
