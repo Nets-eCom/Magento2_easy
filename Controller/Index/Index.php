@@ -119,6 +119,10 @@ class Index extends Checkout
         }
 
         if ($redirectToHosted && $checkoutUrl) {
+            // Locking quote hash before redirect to verify the signature in webhook
+            $quote = $this->getDibsCheckout()->getQuote();
+            $this->getDibsCheckout()->getHelper()->lockQuoteSignature($quote);
+
             // here we redirect to the hosted payment gateway, this only happens when ?checkRedirect param is used
             // this param is set in the default magento checkout, when nets is chosen. $redirectToHosted is only true
             // if hosted (redirect flow or overlay) is enabled in settings)

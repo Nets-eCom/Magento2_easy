@@ -508,7 +508,12 @@ class Items
     private function addDiscountByCartRule(Quote  $quote) : void
     {
         foreach (explode(',', $quote->getAppliedRuleIds()) as $ruleId) {
-            $rule = $this->ruleRepository->getById($ruleId);
+            try {
+                $rule = $this->ruleRepository->getById($ruleId);
+            } catch (\Exception $e) {
+                continue;
+            }
+
             if ($rule->getSimpleAction() != 'cart_fixed') {
                 continue;
             }
