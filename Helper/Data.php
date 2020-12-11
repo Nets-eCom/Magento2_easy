@@ -472,6 +472,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * This function returns a hash, we will use it to check for changes in the Quote
+     *
+     * @param Quote $quote
+     */
+    public function lockQuoteSignature(Quote $quote)
+    {
+        try {
+            $newSignature = $this->generateHashSignatureByQuote($quote);
+            $quote->setHashSignature($newSignature);
+            $quote->save();
+        } catch (\Exception $e) {
+            $this->_logger->error("Unable to save signature by exception: {$e->getMessage()}");
+        }
+    }
+
+
+    /**
      * This function returns a hash, we will use it to check for changes in the quote!
      * @param Quote $quote
      * @return string

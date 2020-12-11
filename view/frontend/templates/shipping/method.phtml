@@ -4,8 +4,8 @@ use Dibs\EasyCheckout\Helper\EasycheckoutUdc;
 
 // @codingStandardsIgnoreFile
 // Following original convention
-$cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
-$allowedCountries = $cartHelper->getAllowedCountriesNames();
+$dataHelper = $this->helper('Dibs\EasyCheckout\Helper\Data');
+$allowedCountries = $dataHelper->getCountries();
 $quote = $block->getQuote();
 $shippingAddress = $quote->getShippingAddress();
 

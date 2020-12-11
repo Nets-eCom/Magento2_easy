@@ -114,13 +114,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $shippingAddress->setPaymentMethod($payment->getMethod())->setCollectShippingRates(true);
         }
 
-        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
-        $quote->setHashSignature($newSignature);
-
         //TODO: ADD MINIMUM AOUNT TEST here
 
-        // do not set shipping method
-        //   $method = $this->checkAndChangeShippingMethod();
+        $this->checkAndChangeShippingMethod();
 
         try {
             $quote->setTotalsCollectedFlag(false)->collectTotals()->save(); //REQUIRED (maybe shipping amount was changed)
@@ -241,11 +237,15 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
     /**
-     * @return bool
-     * @throws LocalizedException
+     * @return bool|mixed|string|void
      */
     public function checkAndChangeShippingMethod()
     {
+        // If we have already set shipping method, then we're fine
+        if ($this->getQuote()->getShippingAddress()->getShippingMethod()) {
+            return;
+        }
+
         $quote = $this->getQuote();
         if ($quote->isVirtual()) {
             return true;
@@ -346,56 +346,45 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      */
     public function initDibsCheckout($integrationType)
     {
+        $helper = $this->getHelper();
+        $checkoutSession = $this->getCheckoutSession();
         $quote       = $this->getQuote();
-        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
+        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
 
-        // a signature is a md5 hashed value of the customer quote. Using this we can store the hash in session and compare the values
-        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
-
-        // check if we already have started a payment flow with dibs
-        $paymentId = $this->getCheckoutSession()->getDibsPaymentId(); //check session for Dibs Payment Id
+        $newSignature = $helper->generateHashSignatureByQuote($quote);
+        $paymentId = $checkoutSession->getDibsPaymentId();
         if ($paymentId) {
             try {
-                // this will try to load the dibs payment if it exists
                 $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
-
-                // here we should check if we need to update the dibs payment!
-                if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $this->getQuote()->getHashSignature())) {
-                    // try to update dibs payment data
+                if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $checkoutSession->getDibsQuoteSignature())) {
                     $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
-
-                    // Update new dibs quote signature!
-                    $quote->setHashSignature($newSignature)->save();
+                    $checkoutSession->setDibsQuoteSignature($newSignature);
                 }
             } catch (\Exception $e) {
-
                 // If we couldn't update the dibs payment flow for any reason, we try to create an new one...
-
                 // remove sessions
-                $this->getCheckoutSession()->unsDibsPaymentId(); //remove payment id from session
-                $this->getCheckoutSession()->unsDibsQuoteSignature(); //remove signature from session
+                $checkoutSession->unsDibsPaymentId();
+                $checkoutSession->unsDibsQuoteSignature();
 
                 // this will create an api call to dibs and initiaze an new payment
                 $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
                 $newPaymentId = $payment->getPaymentId();
 
                 //save the payment id and quote signature in checkout/session
-                $this->getCheckoutSession()->setDibsPaymentId($newPaymentId);
-                $quote->setHashSignature($newSignature)->save();
+                $checkoutSession->setDibsPaymentId($newPaymentId);
 
                 // We log this!
                 $this->getLogger()->error("Trying to create a new payment because we could not Update Dibs Checkout Payment for ID: {$paymentId}, Error: {$e->getMessage()} (see exception.log)");
                 $this->getLogger()->error($e);
             }
         } else {
-
             // this will create an api call to dibs and initiaze a new payment
             $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
             $paymentId = $payment->getPaymentId();
 
             //save dibs uri in checkout/session
-            $this->getCheckoutSession()->setDibsPaymentId($paymentId);
-            $quote->setHashSignature($newSignature)->save();
+            $checkoutSession->setDibsPaymentId($paymentId);
+            $checkoutSession->setDibsQuoteSignature($newSignature);
         }
 
         return $payment;
@@ -417,15 +406,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function updateDibsPayment($paymentId)
     {
         $quote       = $this->getQuote();
-        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote); // this will also validate the quote!
-
-        // a signature is a md5 hashed value of the customer quote. Using this we can store the hash in session and compare the values
-        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
-
+        // This will also validate the quote!
+        $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
         $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
 
         // Update new dibs quote signature!
-        $quote->setHashSignature($newSignature)->save();
+        $newSignature = $this->getHelper()->generateHashSignatureByQuote($quote);
+        $this->getCheckoutSession()->setDibsQuoteSignature($newSignature);
     }
 
     //Checkout ajax updates

@@ -146,13 +146,9 @@ class Order
         $payment = new UpdatePaymentCart();
         $payment->setAmount($this->fixPrice($quote->getGrandTotal()));
         $payment->setItems($items);
-
         $payment->setShippingCostSpecified(true);
 
         $this->paymentApi->UpdatePaymentCart($payment, $paymentId);
-
-        $quoteHashSignature = $this->helper->generateHashSignatureByQuote($quote);
-        $quote->setHashSignature($quoteHashSignature)->save();
     }
 
     /**
