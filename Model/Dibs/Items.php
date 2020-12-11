@@ -38,6 +38,10 @@ class Items
     protected $_itemsArray = [];
 
     protected $addCustomOptionsToItemName = null;
+    /**
+     * @var \Magento\SalesRule\Api\RuleRepositoryInterface
+     */
+    private $ruleRepository;
 
     /**
      * Items constructor.
@@ -49,7 +53,8 @@ class Items
     public function __construct(
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Magento\Catalog\Helper\Product\Configuration $productConfig,
-        \Magento\Tax\Model\Calculation $calculationTool
+        \Magento\Tax\Model\Calculation $calculationTool,
+        \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository
     ) {
         $this->_helper = $helper;
         $this->_productConfig = $productConfig;
@@ -57,6 +62,7 @@ class Items
 
         // resets all values
         $this->init();
+        $this->ruleRepository = $ruleRepository;
     }
 
     /**
@@ -453,11 +459,9 @@ class Items
         return $feeItem;
     }
 
-    // TODO!!
-
     /**
-     * @param $couponCode
      *
+     * @param $couponCode
      * @return $this
      */
     public function addDiscounts($couponCode)
@@ -492,6 +496,75 @@ class Items
         }
 
         return $this;
+    }
+
+    /**
+     * Check if discount was applied for whole cart
+     *
+     * @param Quote $quote
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    private function addDiscountByCartRule(Quote  $quote) : void
+    {
+        foreach (explode(',', $quote->getAppliedRuleIds()) as $ruleId) {
+            $rule = $this->ruleRepository->getById($ruleId);
+            if ($rule->getSimpleAction() != 'cart_fixed') {
+                continue;
+            }
+
+            $discount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
+            $discount = $this->addZeroes($discount);
+            $orderItem = new OrderItem();
+            $reference = $rule->getName();
+            $orderItem
+                ->setReference($reference)
+                ->setName($quote->getCouponCode() ? (string)__('Discount (%1)', $quote->getCouponCode()) : (string)__('Discount'))
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate($this->addZeroes(0)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount(0) // total tax amount
+                ->setUnitPrice(-$discount) // excl. tax price per item
+                ->setNetTotalAmount(-$discount) // excl. tax
+                ->setGrossTotalAmount(-$discount); // incl. tax
+
+            $this->_cart[$reference] = $orderItem;
+        }
+    }
+
+    /**
+     * @param $couponCode
+     */
+    private function getDiscountByItems($couponCode) : void
+    {
+        foreach ($this->_discounts as $vat=> $amountInclTax) {
+            if ($amountInclTax==0) {
+                continue;
+            }
+
+            $reference  = 'discount' . (int)$vat;
+            if ($this->_toInvoice) {
+                $reference = 'discount-toinvoice';
+            }
+
+            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountExclTax = $amountInclTax - $taxAmount;
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setReference($reference)
+                ->setName($couponCode ? (string)__('Discount (%1)', $couponCode) : (string)__('Discount'))
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount($taxAmount) // total tax amount
+                ->setUnitPrice(-$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount(-$amountExclTax) // excl. tax
+                ->setGrossTotalAmount(-$amountInclTax); // incl. tax
+
+            $this->_cart[$reference] = $orderItem;
+        }
     }
 
     /**
@@ -609,7 +682,13 @@ class Items
             $this->addShipping($shippingAddress);
         }
 
-        $this->addDiscounts($quote->getCouponCode());
+        // If there is no discount per items, but code does exist
+        // it means, that discount was applied on whole cart
+        // @TODO: Refactor this to external model
+        count($this->_discounts)
+            ? $this->addDiscounts($quote->getCouponCode())
+            : $this->addDiscountByCartRule($quote);
+
         $this->addCustomTotals($quote->getTotals());
 
         try {
@@ -622,7 +701,6 @@ class Items
         return array_values($this->_cart);
     }
 
-    //generate Dibs items from Magento Order
 
     /**
      * @param Order $order
