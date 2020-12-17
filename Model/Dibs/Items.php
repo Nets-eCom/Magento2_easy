@@ -212,11 +212,13 @@ class Items
                     $qty = $qty*$parentQty; //parentQty will be != 1 only for quote, when item qty need to be multiplied with parent qty (for bundle)
                 }
 
-                $sku  = $item->getSku();
-                //make sku unique (sku could not be unique when we have product with options)
-                if (isset($this->_cart[$sku])) {
-                    $sku = $sku . '-' . $item->getId();
+                // Always suffix it with quote_item_id to support partial invoice
+                $quoteId = $item->getId();
+                if ($item instanceof \Magento\Sales\Model\Order\Invoice\Item ||
+                    $item instanceof \Magento\Sales\Model\Order\Creditmemo\Item) {
+                    $quoteId = $item->getOrderItem()->getQuoteItemId();
                 }
+                $sku = $item->getSku() . '-' . $quoteId;
 
                 $unitPrice = $addPrices ? $this->addZeroes($item->getPriceInclTax()) : 0;
                 $unitPriceExclTax = $addPrices ? $this->addZeroes($item->getPrice()) : 0;
