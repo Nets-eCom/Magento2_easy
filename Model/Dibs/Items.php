@@ -502,12 +502,15 @@ class Items
      * Check if discount was applied for whole cart
      *
      * @param Quote $quote
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     private function addDiscountByCartRule(Quote  $quote) : void
     {
-        foreach (explode(',', $quote->getAppliedRuleIds()) as $ruleId) {
+        $ruleIds = $quote->getAppliedRuleIds();
+        if (!$ruleIds) {
+            return;
+        }
+
+        foreach (explode(',', $ruleIds) as $ruleId) {
             try {
                 $rule = $this->ruleRepository->getById($ruleId);
             } catch (\Exception $e) {

@@ -286,6 +286,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Can be used for local callback handling by ngrok tool
+     * @example: replace return to:
+     * return "https://cbe2415e0e5d.eu.ngrok.io/easycheckout/order/WebhookCallback/qid/$quoteId";
+     *
      * @param $quoteId
      * @return string
      */
