@@ -287,14 +287,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Can be used for local callback handling by ngrok tool
-     * @example: replace return to:
-     * return "https://cbe2415e0e5d.eu.ngrok.io/easycheckout/order/WebhookCallback/qid/$quoteId";
+     *
+     * For local development please inject WebHook domain url variable in dev/nets/webhook_domain
+     * Example: dev/nets/webhook_domain -> https://xxx.eu.ngrok.io
      *
      * @param $quoteId
      * @return string
      */
     public function getWebHookCallbackUrl($quoteId)
     {
+        if ($ngrokDomain = $this->getStoreConfig('dev/nets/webhook_domain')) {
+            return "$ngrokDomain/easycheckout/order/WebhookCallback/qid/$quoteId";
+        }
+
         return $this->getCheckoutUrl("WebhookCallback/qid/" . $quoteId);
     }
 
