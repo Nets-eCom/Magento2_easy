@@ -5,6 +5,7 @@ namespace Dibs\EasyCheckout\Model;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentResponseInterface;
+use \Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DataObject;
@@ -353,7 +354,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         $newSignature = $helper->generateHashSignatureByQuote($quote);
         $paymentId = $checkoutSession->getDibsPaymentId();
-        if ($paymentId) {
+
+        // Always instantiate new payment in redirect & overlay modes
+        if ($integrationType == CreatePaymentCheckout::INTEGRATION_TYPE_EMBEDDED && $paymentId) {
             try {
                 $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
                 if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $checkoutSession->getDibsQuoteSignature())) {
@@ -436,42 +439,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
         }
     }
-
-    /**
-        // TODO
-     * Update shipping address
-     *
-     * @param string $methodCode
-     * @return void
-
-    public function updateShippingAddress($data)
-    {
-        $quote = $this->getQuote();
-        if($quote->isVirtual()) {
-            return $this;
-        }
-        $addr = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($data,$withEmpty = false);
-        if(!$addr) return $this;
-
-        $shippingAddress = $quote->getShippingAddress();
-
-
-        $cnt = 0;
-        foreach($addr as $field=>$value) {
-            $kValue = trim(strtolower($value));
-            $mValue = trim(strtolower((string)$shippingAddress->getData($field)));
-            if($kValue != $mValue) {
-                $shippingAddress->setData($field,$value);
-                $cnt++;
-            }
-        }
-        if($cnt) {
-            $shippingAddress->setShouldIgnoreValidation(true)->setCollectShippingRates(true);
-            $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
-        }
-
-    }
-     */
 
     /**
      * Make sure addresses will be saved without validation errors
