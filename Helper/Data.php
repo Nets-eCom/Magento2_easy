@@ -445,6 +445,20 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
+    /**
+     * @param null $store
+     *
+     * @return bool
+     */
+    public function isSendTransactionalEmail($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SETTINGS . 'send_transaction_mails',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
 
     public function getDefaultConsumerType($store = null)
     {
