@@ -64,6 +64,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $orderRepository;
 
     /**
+     * @var \Magento\Framework\Serialize\SerializerInterface
+     */
+    private $serializer;
+
+    /**
      * @var \Magento\Cms\Api\GetPageByIdentifierInterface
      */
     private $_cmsPage;
@@ -286,11 +291,20 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Can be used for local callback handling by ngrok tool
+     *
+     * For local development please inject WebHook domain url variable in dev/nets/webhook_domain
+     * Example: dev/nets/webhook_domain -> https://xxx.eu.ngrok.io
+     *
      * @param $quoteId
      * @return string
      */
     public function getWebHookCallbackUrl($quoteId)
     {
+        if ($ngrokDomain = $this->getStoreConfig('dev/nets/webhook_domain')) {
+            return "$ngrokDomain/easycheckout/order/WebhookCallback/qid/$quoteId";
+        }
+
         return $this->getCheckoutUrl("WebhookCallback/qid/" . $quoteId);
     }
 
@@ -384,6 +398,29 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyUrl($store = null)
+    {
+        //if there are multiple pages with same url key; magento will generate options with key|id
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
+        return $this->_getUrl($url[0]);
+    }
+
+    /**
+     * @param null $store
+     * @return string
+     */
+    public function getPrivacyLabel($store = null)
+    {
+        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
+        $identifier = $url[0];
+        $result = $this->_cmsPage->execute($identifier, $store)->getTitle();
+        return $result;
+    }
+
+    /**
      * @return string
      */
     public function getCartCtrlKeyCookieName()
@@ -428,6 +465,25 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
+
+    public function getDefaultShippingMethod($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'default_shipping_method',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getDefaultCountry($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'default_country',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
 
     /**
      * @param null $store

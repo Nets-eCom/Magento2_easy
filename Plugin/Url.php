@@ -21,7 +21,6 @@ class Url
 
     public function afterGetCheckoutUrl($subject,$result)
     {
-
         if (!$this->helper->isEnabled()) {
             return $result;
         }
