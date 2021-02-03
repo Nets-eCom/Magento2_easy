@@ -208,9 +208,10 @@ class Order
             $paymentCheckout->setMerchantHandlesConsumerData(false);
         }
 
-        // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
-        // we will call charge in capture online instead! so we set it to false
-        $paymentCheckout->setCharge(false);
+        //If set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
+        //If false we will call charge in capture online
+        $charge = $this->helper->getCharge($quote->getStoreId());
+        $paymentCheckout->setCharge($charge);
 
         // we let dibs handle customer data! customer will be able to fill in info in their iframe, and choose addresses
         $paymentCheckout->setMerchantHandlesShippingCost(true);

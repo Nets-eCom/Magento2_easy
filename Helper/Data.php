@@ -267,6 +267,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'can_capture_partial', $store);
     }
 
+    /**
+     * @param null $store
+     * @return bool
+     */
+    public function getCharge($store = null)
+    {
+        return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'charge', $store);
+    }
+
     /** Helpers */
     public function getCheckoutPath($path = null)
     {

@@ -96,6 +96,12 @@
                     <comment>If NO, you cannot make partial invoices/refunds</comment>
                 </field>
 
+                <field id="charge" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Charge </label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set to true the transaction will be charged automatically</comment>
+                </field>
+
                 <field id="newsletter_subscribe" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
                     <label>Subscribe Newsletter Checked by default</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

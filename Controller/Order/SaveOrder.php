@@ -35,6 +35,14 @@ class SaveOrder extends Checkout
             return $this->respondWithError($e->getMessage());
         }
 
+        //if charge is set to yes create order and invoice dirctly
+        $charge = $this->dibsCheckoutContext->getHelper()->getCharge($quote->getStoreId());
+        if ($charge) {
+            $checkout = $this->getDibsCheckout();
+            $checkout->setCheckoutContext($this->dibsCheckoutContext);
+            $this->dibsCheckout->tryToSaveDibsPayment($paymentId);
+        }
+
         return $this->respondWithPaymentId($paymentId);
     }
 
