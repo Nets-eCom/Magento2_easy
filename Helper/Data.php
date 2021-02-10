@@ -3,10 +3,6 @@ namespace Dibs\EasyCheckout\Helper;
 
 use Magento\Quote\Model\Quote;
 
-/**
- * Class Data
- * @package Dibs\EasyCheckout\Helper
- */
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
@@ -72,11 +68,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @var \Magento\Cms\Api\GetPageByIdentifierInterface
      */
     private $_cmsPage;
-
-    /**
-     * @var \Magento\Framework\Serialize\SerializerInterface
-     */
-    private $serializer;
 
     /**
      * Data constructor.
@@ -398,29 +389,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @param null $store
-     * @return string
-     */
-    public function getPrivacyUrl($store = null)
-    {
-        //if there are multiple pages with same url key; magento will generate options with key|id
-        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
-        return $this->_getUrl($url[0]);
-    }
-
-    /**
-     * @param null $store
-     * @return string
-     */
-    public function getPrivacyLabel($store = null)
-    {
-        $url = explode('|', (string)$this->getStoreConfig(self::XML_PATH_SETTINGS . 'privacy_url', $store));
-        $identifier = $url[0];
-        $result = $this->_cmsPage->execute($identifier, $store)->getTitle();
-        return $result;
-    }
-
-    /**
      * @return string
      */
     public function getCartCtrlKeyCookieName()
@@ -466,25 +434,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-    public function getDefaultShippingMethod($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS . 'default_shipping_method',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getDefaultCountry($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_SETTINGS . 'default_country',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-
     /**
      * @param null $store
      * @return array|null
@@ -496,7 +445,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-
 
     public function getDefaultConsumerType($store = null)
     {
@@ -543,6 +491,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
+    /**
+     * @param null $store
+     *
+     * @return bool
+     */
+    public function isSendTransactionalEmail($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_SETTINGS . 'send_transaction_mails',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
 
     /**
      * This function returns a hash, we will use it to check for changes in the quote!

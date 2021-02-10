@@ -771,7 +771,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             ['order' => $order, 'quote' => $this->getQuote()]
         );
 
-        if ($order->getCanSendNewEmailFlag()) {
+        if ($this->getHelper()->isSendTransactionalEmail() && $order->getCanSendNewEmailFlag()) {
             try {
                 $this->orderSender->send($order);
             } catch (\Exception $e) {
