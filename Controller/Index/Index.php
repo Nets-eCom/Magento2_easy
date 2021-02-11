@@ -136,7 +136,7 @@ class Index extends Checkout
             return;
         }
 
-        $resultPage = $this->resultPageFactory->create();
+        $resultPage = $this->createLayoutPage();
         $resultPage->getConfig()->getTitle()->set(__('Nets Easy Checkout'));
 
         // set variables we depend on in the block
@@ -172,5 +172,15 @@ class Index extends Checkout
     public function redirect($path, $arguments = [])
     {
         return $this->_redirect($path, $arguments);
+    }
+
+    /**
+     * Plugin extension point for extending the layout
+     *
+     * @return \Magento\Framework\View\Result\Page
+     */
+    public function createLayoutPage()
+    {
+        return $this->resultPageFactory->create();
     }
 }
