@@ -97,9 +97,9 @@
                 </field>
 
                 <field id="charge" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Charge </label>
+                    <label>Enable Auto-capture</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If set to true the transaction will be charged automatically</comment>
+                    <comment>If enabled your customers will be charged immediately. You do not need to confirm order's fulfilment in Magento to capture the payment. Only enable for compliant products/services.</comment>
                 </field>
 
                 <field id="newsletter_subscribe" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">

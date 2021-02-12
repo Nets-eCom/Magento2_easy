@@ -256,7 +256,10 @@ class Order
         if ($secret = $this->helper->getWebhookSecret()) {
             $webhookCheckoutComplete->setAuthorization($secret);
         }
-        $createPaymentRequest->setWebHooks([$webhookCheckoutComplete]);
+        $charge = $this->helper->getCharge($quote->getStoreId());
+        if(!$charge) {
+            $createPaymentRequest->setWebHooks([$webhookCheckoutComplete]);
+        }
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }
