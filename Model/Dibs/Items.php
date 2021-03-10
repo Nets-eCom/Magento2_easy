@@ -10,7 +10,6 @@ use Magento\Sales\Model\Order;
 /**
  * Dibs (Checkout) Order Items Model
  */
-
 class Items
 {
 
@@ -29,15 +28,22 @@ class Items
      */
     protected $_productConfig;
 
-    protected $_cart     = [];
+    protected $_cart = [];
+
     protected $_discounts = [];
+
     protected $_maxvat = 0;
+
     protected $_inclTAX = false;
+
     protected $_toInvoice = false;
+
     protected $_store = null;
+
     protected $_itemsArray = [];
 
     protected $addCustomOptionsToItemName = null;
+
     /**
      * @var \Magento\SalesRule\Api\RuleRepositoryInterface
      */
@@ -84,6 +90,7 @@ class Items
 
     /**
      * @param $items mixed
+     *
      * @return $this
      */
     public function addItems($items)
@@ -124,15 +131,15 @@ class Items
                 $magentoItem->setQty($qty);
             }
 
-            $allItems             = [];
-            $bundle               = false;
+            $allItems = [];
+            $bundle = false;
             $isChildrenCalculated = false;
-            $parentQty            = 1;
+            $parentQty = 1;
             $parentComment = null;
 
             //for bundle product, want to add also the bundle, with price 0 if is children calculated
             if ($mainItem->getProductType() == 'bundle' || ($mainItem->getHasChildren() && $mainItem->isChildrenCalculated())) {
-                $bundle               = true;
+                $bundle = true;
                 $isChildrenCalculated = $mainItem->isChildrenCalculated();
                 if ($isChildrenCalculated) {
                     if ($isQuote) {
@@ -142,7 +149,7 @@ class Items
                     }
                 } else {
                     $allItems[] = $magentoItem; //add bundle product
-                    $parentComment         = __("Bundle Product");
+                    $parentComment = __("Bundle Product");
                 }
 
                 $children = $this->getChildrenItems($magentoItem);
@@ -238,46 +245,49 @@ class Items
 
                 $qty = $item->getQty();
                 if ($isQuote && $item->getParentItemId()) {
-                    $qty = $qty*$parentQty; //parentQty will be != 1 only for quote, when item qty need to be multiplied with parent qty (for bundle)
+                    $qty = $qty * $parentQty; //parentQty will be != 1 only for quote, when item qty need to be multiplied with parent qty (for bundle)
                 }
 
-                $sku  = $item->getSku();
+                $sku = $item->getSku();
                 //make sku unique (sku could not be unique when we have product with options)
                 if (isset($this->_cart[$sku])) {
                     $sku = $sku . '-' . $item->getId();
                 }
-
-                $unitPrice = $addPrices ? $this->addZeroes($item->getPriceInclTax()) : 0;
-                $unitPriceExclTax = $addPrices ? $this->addZeroes($item->getPrice()) : 0;
 
                 $itemName = $item->getName();
                 if ($addComments && $comment) {
                     $itemName .= ' ' . '(' . $comment . ')';
                 }
 
-                // max length!
+                // Set length!
                 if (strlen($itemName) > 128) {
                     $itemName = substr($itemName, 0, 128);
                 }
 
-                //
+                $unitPriceExclTax = $addPrices ? $item->getPrice() : 0;
+                if ($addPrices) {
+                    $unitPriceInclTax = $vat ? $item->getPrice() * (1 + $vat / 100) : $item->getPrice();
+                } else {
+                    $unitPriceInclTax = 0;
+                }
+                $taxAmount = $this->getTotalTaxAmount($unitPriceInclTax * $qty, $vat, true);
+
                 $orderItem = new OrderItem();
                 $orderItem
                     ->setReference($sku)
                     ->setName($itemName)
                     ->setUnit("st")
                     ->setQuantity(round($qty, 0))
-                    ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-                    ->setTaxAmount((int) $this->getTotalTaxAmount($unitPrice * $qty, $vat, false)) // total tax amount
-                    ->setUnitPrice((int) $unitPriceExclTax) // excl. tax price per item
-                    ->setNetTotalAmount((int) ($unitPriceExclTax * $qty)) // excl. tax
-                    ->setGrossTotalAmount((int) ($unitPrice * $qty)); // incl. tax
+                    ->setTaxRate($this->addZeroes($vat))
+                    ->setTaxAmount((int)$taxAmount)
+                    ->setUnitPrice((int)$this->addZeroes($unitPriceExclTax))
+                    ->setNetTotalAmount((int)$this->addZeroes($unitPriceExclTax * $qty))
+                    ->setGrossTotalAmount((int)$this->addZeroes($unitPriceInclTax * $qty));
 
-                // add to array
+                // Add to array
                 $this->_cart[$sku] = $orderItem;
 
                 if ($addPrices) {
-
                     //keep discounts grouped by VAT
                     //if catalog prices include tax, then discount INCLUDE TAX (tax coresponding to that discount is set onto discount_tax_compensation_amount)
                     //if catalog prices exclude tax, alto the discount excl. tax
@@ -292,9 +302,9 @@ class Items
                         //check if Taxes are applied BEFORE or AFTER the discount
                         //if taxes are applied BEFORE the discount we have row_total_incl_tax = row_total+tax_amount
 
-                        if ($vat != 0 && abs($item->getRowTotalInclTax() - ($item->getRowTotal()+$item->getTaxAmount())) < .001) {
+                        if ($vat != 0 && abs($item->getRowTotalInclTax() - ($item->getRowTotal() + $item->getTaxAmount())) < .001) {
                             //add discount without VAT (is not OK for EU, but, it is customer setting/choice
-                            $vat =0;
+                            $vat = 0;
                         }
 
                         if (!isset($this->_discounts[$vat])) {
@@ -302,10 +312,10 @@ class Items
                         }
 
                         if ($vat != 0 && $item->getDiscountTaxCompensationAmount() == 0) { //discount without taxes, we want discount INCL taxes
-                            $discountAmount += $discountAmount*$vat/100;
+                            $discountAmount += $discountAmount * $vat / 100;
                         }
 
-                        $this->_discounts[$vat] +=  $discountAmount; //keep products discount, per tax percent
+                        $this->_discounts[$vat] += $discountAmount; //keep products discount, per tax percent
                     }
                 }
             }
@@ -326,19 +336,19 @@ class Items
         }
 
         $taxAmount = $address->getShippingTaxAmount() + $address->getShippingHiddenTaxAmount();
-        $exclTax    = $address->getShippingAmount();
-        $inclTax    = $address->getShippingInclTax();
-        $tax        = $inclTax-$exclTax;
+        $exclTax = $address->getShippingAmount();
+        $inclTax = $address->getShippingInclTax();
+        $tax = $inclTax - $exclTax;
 
         //
         if ($exclTax != 0 && $tax > 0) {
-            $vat = $tax /  $exclTax  * 100;
+            $vat = $tax / $exclTax * 100;
         } else {
             $vat = 0;
         }
 
         $vat = round($vat, 0);
-        if ($vat>$this->_maxvat) {
+        if ($vat > $this->_maxvat) {
             $this->_maxvat = $vat;
         }
 
@@ -369,9 +379,9 @@ class Items
 
             //check if Taxes are applied BEFORE or AFTER the discount
             //if taxes are applied BEFORE the discount we have shipping_incl_tax = shipping_amount + shipping_tax_amount
-            if ($vat != 0 && abs($address->getShippingInclTax() - ($address->getShippingAmount()+$address->getShippingTaxAmount())) < .001) {
+            if ($vat != 0 && abs($address->getShippingInclTax() - ($address->getShippingAmount() + $address->getShippingTaxAmount())) < .001) {
                 //the taxes are applied BEFORE discount; add discount without VAT (is not OK for EU, but, is customer settings
-                $vat =0;
+                $vat = 0;
             }
 
             if (!isset($this->_discounts[$vat])) {
@@ -379,7 +389,7 @@ class Items
             }
 
             if ($vat != 0 && $address->getShippingDiscountTaxCompensationAmount() == 0) {   //prices (and discount) EXCL taxes,
-                $discountAmount += $discountAmount*$vat/100;
+                $discountAmount += $discountAmount * $vat / 100;
             }
 
             // set for later
@@ -411,6 +421,7 @@ class Items
      * @param $invoiceLabel
      * @param $invoiceFee
      * @param $vatIncluded
+     *
      * @return OrderItem
      */
     public function generateInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded)
@@ -462,16 +473,17 @@ class Items
     /**
      *
      * @param $couponCode
+     *
      * @return $this
      */
     public function addDiscounts($couponCode)
     {
-        foreach ($this->_discounts as $vat=> $amountInclTax) {
-            if ($amountInclTax==0) {
+        foreach ($this->_discounts as $vat => $amountInclTax) {
+            if ($amountInclTax == 0) {
                 continue;
             }
 
-            $reference  = 'discount' . (int)$vat;
+            $reference = 'discount' . (int)$vat;
             if ($this->_toInvoice) {
                 $reference = 'discount-toinvoice';
             }
@@ -503,7 +515,7 @@ class Items
      *
      * @param Quote $quote
      */
-    private function addDiscountByCartRule(Quote  $quote) : void
+    private function addDiscountByCartRule(Quote $quote): void
     {
         $ruleIds = $quote->getAppliedRuleIds();
         if (!$ruleIds) {
@@ -543,14 +555,14 @@ class Items
     /**
      * @param $couponCode
      */
-    private function getDiscountByItems($couponCode) : void
+    private function getDiscountByItems($couponCode): void
     {
-        foreach ($this->_discounts as $vat=> $amountInclTax) {
-            if ($amountInclTax==0) {
+        foreach ($this->_discounts as $vat => $amountInclTax) {
+            if ($amountInclTax == 0) {
                 continue;
             }
 
-            $reference  = 'discount' . (int)$vat;
+            $reference = 'discount' . (int)$vat;
             if ($this->_toInvoice) {
                 $reference = 'discount-toinvoice';
             }
@@ -588,28 +600,26 @@ class Items
         //           else... the dibs tax total will differ
 
         $calculatedTotal = 0;
-        $calculatedTax   = 0;
+        $calculatedTax = 0;
         foreach ($this->_cart as $item) {
             /** @var $item OrderItem */
-
             //the algorithm used by Dibs seems to be (need to confirm with Dibs)
             //total_price_including_tax = unit_price*quantity; //no round because dibs doesn't have decimals; all numbers are * 100
             //total_price_excluding_tax = total_price_including_tax / (1+taxrate/100000) //is 10000 because taxrate is already multiplied by 100
             //total_tax_amount = total_price_including_tax - total_price_excluding_tax
             $total_price_including_tax = $item->getGrossTotalAmount();
-            if ($item->getTaxRate() != 0) {
-                $total_price_excluding_tax = $item->getNetTotalAmount();
-            } else {
-                $total_price_excluding_tax = $total_price_including_tax;
-            }
+            $total_price_excluding_tax = $item->getTaxRate() > 0
+                ? $item->getNetTotalAmount()
+                : $total_price_including_tax;
+
             $total_tax_amount = round($total_price_including_tax - $total_price_excluding_tax, 0); //round is not required, alreay int
-            $calculatedTax   += $total_tax_amount;
+            $calculatedTax += $total_tax_amount;
             $calculatedTotal += $total_price_including_tax;
         }
 
         //quote/order/invoice/creditmemo total taxes
         $grandTotal = $this->addZeroes($grandTotal);
-        $difference    = $grandTotal-$calculatedTotal;
+        $difference = $grandTotal - $calculatedTotal;
 
         //no correction required
         if ($difference == 0) {
@@ -623,6 +633,7 @@ class Items
      * Getting all available children for Invoice, Shipment or CreditMemo item
      *
      * @param \Magento\Framework\DataObject $item
+     *
      * @return array
      */
     public function getChildrenItems($item)
@@ -649,7 +660,7 @@ class Items
         } elseif ($item instanceof \Magento\Sales\Model\Order\Item) {
             return $item->getChildrenItems();
         } else { //quote
-            return  $item->getChildren();
+            return $item->getChildren();
         }
 
         if ($items) {
@@ -672,6 +683,7 @@ class Items
 
     /**
      * @param Quote $quote
+     *
      * @return array
      * @throws \Exception
      */
@@ -709,7 +721,6 @@ class Items
         return array_values($this->_cart);
     }
 
-
     /**
      * @param Order $order
      *
@@ -732,25 +743,26 @@ class Items
 
     /**
      * @param Order\Invoice $invoice
+     *
      * @return void
      */
     public function addDibsItemsByInvoice(Order\Invoice $invoice)
     {
-        $order  = $invoice->getOrder();
+        $order = $invoice->getOrder();
 
         $this
             ->init($order->getStore())
             ->addItems($invoice->getAllItems());
 
-        if ($invoice->getShippingAmount() != 0 && $order->getShippingDiscountAmount() !=0 && $invoice->getShippingDiscountAmount() == 0) {
+        if ($invoice->getShippingAmount() != 0 && $order->getShippingDiscountAmount() != 0 && $invoice->getShippingDiscountAmount() == 0) {
             //copy discount shipping discount amount from order (because is not copied to the invoice)
             $oShippingDiscount = $order->getShippingDiscountAmount();
             $iShipping = $invoice->getShippingAmount();
             $oShipping = $order->getShippingAmount();
 
             //this should never happen but if it does , we will adjust shipping discount amoutn
-            if ($iShipping != $oShipping && $oShipping>0) {
-                $oShippingDiscount = round($iShipping*$oShippingDiscount/$oShipping, 4);
+            if ($iShipping != $oShipping && $oShipping > 0) {
+                $oShippingDiscount = round($iShipping * $oShippingDiscount / $oShipping, 4);
             }
 
             $invoice->setShippingDiscountAmount($oShippingDiscount);
@@ -768,7 +780,9 @@ class Items
      * This will help us generate Dibs Order Items for which will be sent as a refund or partial refund.
      * We don't add discounts or shipping here even though the invoice has discounts, we only add items to be refunded.
      * Shipping amount is added IF it should be refunded as well.
+     *
      * @param Order\Creditmemo $creditMemo
+     *
      * @return void
      */
     public function addDibsItemsByCreditMemo(Order\Creditmemo $creditMemo)
@@ -828,7 +842,7 @@ class Items
      */
     public function addZeroes($amount)
     {
-        return (int) round($amount * 100, 0);
+        return (int)round($amount * 100, 0);
     }
 
     /**
@@ -859,11 +873,11 @@ class Items
                 ->setName($total->getTitle() ?: $total->getCode())
                 ->setUnit("st")
                 ->setQuantity(1)
-                ->setTaxRate((int) $this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-                ->setTaxAmount((int)  $taxAmount) // total tax amount
-                ->setUnitPrice((int)  $amountExclTax) // excl. tax price per item
-                ->setNetTotalAmount((int)  $amountExclTax) // excl. tax
-                ->setGrossTotalAmount((int)  $amountInclTax); // incl. tax
+                ->setTaxRate((int)$this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount((int)$taxAmount) // total tax amount
+                ->setUnitPrice((int)$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount((int)$amountExclTax) // excl. tax
+                ->setGrossTotalAmount((int)$amountInclTax); // incl. tax
 
             $this->_cart[$total->getCode()] = $orderItem;
         }
