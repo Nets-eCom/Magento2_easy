@@ -86,7 +86,14 @@ class Locale
     protected $localeMap = [
         "SE" => "sv-SE",
         "NO" => "nb-NO",
-        "DK" => "da-DK"
+        "DK" => "da-DK",
+        "DE" => "de-DE",
+        "PL" => "pl-PL",
+        "FR" => "fr-FR",
+        "ES" => "es-ES",
+        "IT" => "it-IT",
+        "NL" => "nl-NL",
+        "FI" => "fi-FI",
     ];
 
     public function getCountryIdByIso3Code($iso3)
@@ -124,10 +131,6 @@ class Locale
      */
     public function getLocaleByCountryCode($countryCode)
     {
-        if (array_key_exists($countryCode, $this->localeMap)) {
-            return $this->localeMap[$countryCode];
-        }
-
-        return "en-GB";
+        return $this->localeMap[$countryCode] ?? 'en-GB';
     }
 }
