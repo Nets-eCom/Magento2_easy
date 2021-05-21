@@ -61,28 +61,28 @@
                     <comment>Choose the default country used in checkout.</comment>
                 </field>
 
-                <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Checkout Allowed Customer Types</label>
-                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
-                    <comment>Choose at least one customer type that is allowed in the checkout.</comment>
-                </field>
-
-                <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Checkout Default Customer Type</label>
-                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
-                    <comment>Choose default customer type</comment>
-                </field>
-
                 <field id="checkout_flow" translate="label comment" type="select" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Checkout Flow</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\CheckoutFlow</source_model>
                     <comment>Choose checkout flow.</comment>
                 </field>
 
+                <field id="cancel_url" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="87">
+                    <label>Cancel / Return url</label>
+                    <validate>validate-url</validate>
+                    <comment>Url, a customer should be redirected after he cancel the payment on Nets side (Works only in redirect / overlay flows).</comment>
+                </field>
+
                 <field id="handle_customer_data" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="60">
                     <label>Handle customer data</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Enables the merchant to full fill the NETS payment popup with customer data from Magento Checkout. Note, that invoices can be not available if address is invalid.</comment>
+                </field>
+
+                <field id="split_addresses" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="61">
+                    <label>Split billing and shipping addresses</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Please note, that you should support shipping to different countries.</comment>
                 </field>
 
                 <field id="can_capture" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -94,6 +94,12 @@
                     <label>Can capture partial </label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>If NO, you cannot make partial invoices/refunds</comment>
+                </field>
+
+                <field id="charge" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable Auto-capture</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If enabled your customers will be charged immediately. You do not need to confirm order's fulfilment in Magento to capture the payment. Only enable for compliant products/services.</comment>
                 </field>
 
                 <field id="newsletter_subscribe" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
@@ -137,7 +143,6 @@
                     <comment><![CDATA[If yes, <strong>Nets.css</strong> will be added to the frontend <strong>(Only needed if styles-l.css and styles-m.css are removed or if magento default less file compiler is not been used)!</strong>]]></comment>
                 </field>
             </group>
-
 
             <group id="invoice" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Invoice Fee</label>

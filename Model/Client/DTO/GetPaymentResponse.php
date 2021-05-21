@@ -104,6 +104,22 @@ class GetPaymentResponse implements PaymentResponseInterface
                     $consumer->setShippingAddress($shippingAddress);
                 }
 
+                if (!empty((array)$p->consumer->billingAddress)) {
+                    $s = $p->consumer->billingAddress;
+                    $billingAddress = new GetConsumerShippingAddress();
+
+                    $billingAddress->setPostalCode($this->_get($s, 'postalCode'));
+                    $billingAddress->setCountry($this->_get($s, 'country'));
+                    $billingAddress->setCity($this->_get($s, 'city'));
+                    $billingAddress->setReceiverLine($this->_get($s, 'receiverLine'));
+                    $billingAddress->setAddressLine1($this->_get($s, 'addressLine1'));
+                    if (isset($s->addressLine2)) {
+                        $billingAddress->setAddressLine2($s->addressLine2);
+                    }
+
+                    $consumer->setBillingAddress($billingAddress);
+                }
+
                 if (!empty((array)$p->consumer->privatePerson)) {
                     $priv = $p->consumer->privatePerson;
                     $pp = new GetConsumerPrivatePerson();

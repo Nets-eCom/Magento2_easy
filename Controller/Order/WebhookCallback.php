@@ -164,10 +164,14 @@ class WebhookCallback extends Checkout
         } catch (\Exception $e) {
             $this->logger->error("[Webhook][{$paymentId}] Could not place order for dibs payment Quote id: {$quote->getId()}" );
             $this->logger->error("[Webhook][{$paymentId}] Error message: {$e->getMessage()}");
+            $this->logger->error("[Webhook][{$paymentId}] Stack trace: {$e->getPrevious()->getTraceAsString()}");
 
             $result->setHttpResponseCode(500);
             return $result;
         }
+
+        $output = ob_get_contents();
+        $this->logger->info("[Webhook][{$paymentId}] IO Buffering : {$output}");
 
         try {
             $checkout->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId, $changeUrl);

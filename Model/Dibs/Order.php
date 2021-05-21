@@ -21,6 +21,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Store\Model\StoreManagerInterface;
+use Dibs\EasyCheckout\Api\CheckoutFlow;
 
 class Order
 {
@@ -103,13 +104,13 @@ class Order
 
     /**
      * @param Quote $quote
-     * @param string $integrationType
+     * @param array $checkoutInfo
      * @return CreatePaymentResponse
      * @throws \Exception
      */
-    public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote, $integrationType)
+    public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote, $checkoutInfo)
     {
-        return $this->createNewDibsPayment($quote, $integrationType);
+        return $this->createNewDibsPayment($quote, $checkoutInfo);
     }
 
     /**
@@ -156,38 +157,53 @@ class Order
      * The payment ID which is returned in the response will be added to the DIBS javascript API, to load the payment iframe.
      *
      * @param Quote $quote
-     * @param $integrationType string
+     * @param array $checkoutInfo
      * @throws ClientException
      * @return CreatePaymentResponse
      */
-    protected function createNewDibsPayment(Quote $quote, $integrationType)
+    protected function createNewDibsPayment(Quote $quote, $checkoutInfo)
     {
         $dibsAmount = $this->fixPrice($quote->getGrandTotal());
 
         // let it throw exception, should be handled somewhere else
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
-        // set consumer type(s)
-        $defaultConsumerType = $this->helper->getDefaultConsumerType();
-        $consumerTypes = $this->helper->getConsumerTypes();
-
         $consumerType = new ConsumerType();
-        // if no settings are added, add B2C
-        if (!$defaultConsumerType || !$consumerTypes) {
-            $consumerType->setUseB2cOnly();
+        $isCompany = !empty($quote->getShippingAddress()->getCompany());
+        if ($isCompany) {
+            $consumerType->setDefault('B2B');
+            $consumerType->setSupportedTypes(['B2B']);
         } else {
-            $consumerType->setDefault($defaultConsumerType);
-            $consumerType->setSupportedTypes($consumerTypes);
+            $consumerType->setDefault('B2C');
+            $consumerType->setSupportedTypes(['B2C']);
         }
 
+        $integrationType = (isset($checkoutInfo['integrationType'])) ? $checkoutInfo['integrationType'] : '';
+        $checkoutFlow = (isset($checkoutInfo['checkoutFlow'])) ? $checkoutInfo['checkoutFlow'] : '';
+        $flowIsVanilla = $checkoutFlow === CheckoutFlow::FLOW_VANILLA;
+        
         $paymentCheckout = new CreatePaymentCheckout();
+        if ($this->helper->getSplitAddresses()) {
+            $paymentCheckout->enableBillingAddress();
+        }
         $paymentCheckout->setConsumerType($consumerType);
         $paymentCheckout->setIntegrationType($integrationType);
         $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
+        if ($cancelUrl = $this->helper->getCancelUrl()) {
+            $paymentCheckout->setCancelUrl($cancelUrl);
+        }
 
-        if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
-            // when we use hosted flow we set the url where customer should be redirected, and we handle the consumer data
-            $paymentCheckout->setReturnUrl($this->helper->getCheckoutUrl());
+        if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED || $flowIsVanilla) {
+            // when we use hosted flow we set the url where customer should be redirected,
+            // and we handle the consumer data
+            if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
+                $paymentCheckout->setReturnUrl($this->helper->getCheckoutUrl());
+            }
+
+            // If it's the vanilla checkout flow, we instead set checkout URL
+            if ($flowIsVanilla) {
+                $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
+            }
 
             if ($quote->isVirtual()) {
                 // at the moment we allow nets to handle the merchant data when quote is virual for redirect flow...
@@ -208,9 +224,10 @@ class Order
             $paymentCheckout->setMerchantHandlesConsumerData(false);
         }
 
-        // Default value = false, if set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
-        // we will call charge in capture online instead! so we set it to false
-        $paymentCheckout->setCharge(false);
+        //If set to true the transaction will be charged automatically after reservation have been accepted without calling the Charge API.
+        //If false we will call charge in capture online
+        $charge = $this->helper->getCharge($quote->getStoreId());
+        $paymentCheckout->setCharge($charge);
 
         // we let dibs handle customer data! customer will be able to fill in info in their iframe, and choose addresses
         $paymentCheckout->setMerchantHandlesShippingCost(true);
@@ -252,10 +269,14 @@ class Order
         $webhookCheckoutComplete = new CreatePaymentWebhook();
         $webhookCheckoutComplete->setEventName($webhookCheckoutComplete::EVENT_PAYMENT_CHECKOUT_COMPLETED);
         $webhookCheckoutComplete->setUrl($webHookUrl);
+
         if ($secret = $this->helper->getWebhookSecret()) {
             $webhookCheckoutComplete->setAuthorization($secret);
         }
-        $createPaymentRequest->setWebHooks([$webhookCheckoutComplete]);
+        $charge = $this->helper->getCharge($quote->getStoreId());
+        if(!$charge) {
+            $createPaymentRequest->setWebHooks([$webhookCheckoutComplete]);
+        }
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }
@@ -287,7 +308,7 @@ class Order
      * @param null $countryIdFallback
      * @return array
      */
-    public function convertDibsShippingToMagentoAddress(GetPaymentResponse $payment, $countryIdFallback = null)
+    public function convertDibsAddress(GetPaymentResponse $payment, $countryIdFallback = null, $isShipping = true)
     {
         if ($payment->getConsumer() === null) {
             return [];
@@ -311,7 +332,10 @@ class Order
             $email = $private->getEmail();
         }
 
-        $address = $payment->getConsumer()->getShippingAddress();
+        $address = $isShipping
+            ? $payment->getConsumer()->getShippingAddress()
+            : $payment->getConsumer()->getBillingAddress();
+
         $streets[] = $address->getAddressLine1();
         if ($address->getAddressLine2()) {
             $streets[] = $address->getAddressLine2();

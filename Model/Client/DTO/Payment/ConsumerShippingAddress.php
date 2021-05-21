@@ -128,11 +128,19 @@ class ConsumerShippingAddress extends AbstractRequest
         return [
             'addressLine1' => $this->getAddressLine1(),
             'addressLine2' => $this->getAddressLine2(),
-            'postalCode' => $this->getPostalCode(),
+            'postalCode' => $this->formatPostalCode(),
             'city' => $this->getCity(),
             'country' => $this->getCountry(),
         ];
     }
 
-
+    /**
+     * Makes postal code compatible with the API's required format
+     *
+     * @return string
+     */
+    private function formatPostalCode()
+    {
+        return str_replace(' ', '', $this->postalCode);
+    }
 }

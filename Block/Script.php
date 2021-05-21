@@ -1,10 +1,8 @@
 <?php
 namespace Dibs\EasyCheckout\Block;
 
-
 class Script extends \Magento\Framework\View\Element\Template
 {
-
     const DIBS_JAVASCRIPT_TEST = "https://test.checkout.dibspayment.eu/v1/checkout.js?v=1";
     const DIBS_JAVASCRIPT_LIVE = "https://checkout.dibspayment.eu/v1/checkout.js?v=1";
 
@@ -13,24 +11,23 @@ class Script extends \Magento\Framework\View\Element\Template
      */
     protected $helper;
 
-
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Dibs\EasyCheckout\Helper\Data $helper
      * @param array $data
      */
-
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Dibs\EasyCheckout\Helper\Data $helper,
         array $data = []
-    )
-    {
+    ) {
         $this->helper = $helper;
         parent::__construct($context, $data);
     }
 
-
+    /**
+     * @return string
+     */
     public function getSource()
     {
         if ($this->helper->isTestMode()) {
@@ -38,8 +35,5 @@ class Script extends \Magento\Framework\View\Element\Template
         } else {
             return self::DIBS_JAVASCRIPT_LIVE;
         }
-
     }
-
 }
-

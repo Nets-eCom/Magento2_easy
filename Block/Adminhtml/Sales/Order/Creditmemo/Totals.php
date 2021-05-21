@@ -3,6 +3,7 @@
 
 namespace Dibs\EasyCheckout\Block\Adminhtml\Sales\Order\Creditmemo;
 
+use Magento\Framework\DataObject;
 
 class Totals extends \Magento\Framework\View\Element\Template
 {
@@ -62,7 +63,7 @@ class Totals extends \Magento\Framework\View\Element\Template
             return $this;
         }
         
-        $total = new \Magento\Framework\DataObject([
+        $total = new DataObject([
             'code' => 'dibs_invoice_fee',
             'value' => $this->getSource()->getDibsInvoiceFee(),
             'label' => $this->_dibsHelper->getInvoiceFeeLabel(),

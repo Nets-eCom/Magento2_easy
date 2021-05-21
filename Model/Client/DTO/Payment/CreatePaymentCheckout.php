@@ -32,6 +32,11 @@ class CreatePaymentCheckout extends AbstractRequest
     protected $termsUrl;
 
     /**
+     * @var mixed
+     */
+    protected $cancelUrl;
+
+    /**
      * Optional
      * if merchantHandlesConsumerData = false specify which consumerTypes should be available in checkout. (B2B or B2C),
      * if merchantHandlesConsumerData=true these parameters will be ignored.
@@ -88,6 +93,10 @@ class CreatePaymentCheckout extends AbstractRequest
     /** @var Consumer $consumer */
     protected $consumer;
 
+    /**
+     * @var bool
+     */
+    private $enableBillingAddress;
 
     /**
      * @return string
@@ -233,6 +242,11 @@ class CreatePaymentCheckout extends AbstractRequest
         return $this;
     }
 
+    public function enableBillingAddress()
+    {
+        $this->enableBillingAddress = true;
+    }
+
     /**
      * @return bool
      */
@@ -319,6 +333,10 @@ class CreatePaymentCheckout extends AbstractRequest
             $data['merchantHandlesShippingCost'] = $this->getMerchantHandlesShippingCost();
         }
 
+        if ($this->enableBillingAddress) {
+            $data['shipping']['enableBillingAddress'] = $this->enableBillingAddress;
+        }
+
         // optional
         if ($this->consumerType instanceof ConsumerType) {
             $data['consumerType'] = $this->getConsumerType()->toArray();
@@ -337,6 +355,10 @@ class CreatePaymentCheckout extends AbstractRequest
             $data['returnUrl'] = $this->getReturnUrl();
         }
 
+        if ($this->cancelUrl) {
+            $data['cancelUrl'] = $this->getCancelUrl();
+        }
+
         // url is required when we use EmbeddedCheckout as integration type. Which is default!
         if ($this->integrationType === null || $this->integrationType === "EmbeddedCheckout") {
             $data['url'] = $this->getUrl();
@@ -345,5 +367,20 @@ class CreatePaymentCheckout extends AbstractRequest
         return $data;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getCancelUrl()
+    {
+        return $this->cancelUrl;
+    }
+
+    /**
+     * @param mixed $cancelUrl
+     */
+    public function setCancelUrl($cancelUrl): void
+    {
+        $this->cancelUrl = $cancelUrl;
+    }
 
 }

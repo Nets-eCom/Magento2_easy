@@ -8,14 +8,25 @@
     </div>
 
     <div class="payment-method-content">
-        <div class="payment-method-note">
-            <!-- ko if: window.overlayIframe -->
-                <!-- ko i18n: 'A pop-up for the Nets Easy Checkout will appear.' --><!-- /ko -->
+            <!-- ko if: window.isVanillaEmbeded -->
+            <div class="payment-method-note">
+                <div id="nets-placeholder" style="width: 102%;">
+                    <p id="nets-loader" data-bind="css: {'hiden': hideLoader()}">
+                        <a href="https://info.dibs.se/hubfs/spinner_ani.gif">
+                            <img alt="" src="https://info.dibs.se/hubfs/spinner_ani.gif" style="width: 52px; height: 50px;">
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko if: window.overlayIframe  -->
+            <!-- ko i18n: 'A pop-up for the Nets Easy Checkout will appear.' --><!-- /ko -->
             <!--/ko-->
-            <!-- ko ifnot: window.overlayIframe -->
-                <!-- ko i18n: 'You will be redirected to the Nets easy Checkout page.' --><!-- /ko -->
+            <!-- ko if: (window.overlayIframe == false && window.isVanillaEmbeded == false)  -->
+            <!-- ko i18n: 'You will be redirected to the Nets easy Checkout page.' --><!-- /ko -->
             <!-- /ko -->
         </div>
+        <!-- ko ifnot: window.isVanillaEmbeded -->
         <div class="actions-toolbar">
             <div class="primary">
                 <!-- ko if: window.overlayIframe -->
@@ -45,6 +56,7 @@
                 <!-- /ko -->
             </div>
         </div>
+        <!-- /ko -->
         <!-- ko if: window.overlayIframe -->
         <div data-bind="mageInit: {
             'Magento_Ui/js/modal/modal':{
@@ -63,3 +75,8 @@
         <!--/ko-->
     </div>
 </div>
+<style>
+    .hiden {
+        display: none;
+    }
+</style>
