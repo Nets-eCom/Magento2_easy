@@ -5,6 +5,7 @@ namespace Dibs\EasyCheckout\Model;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentResponseInterface;
+use \Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DataObject;
@@ -55,7 +56,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @throws CheckoutException
      * @throws LocalizedException
      */
-    public function initCheckout($reloadIfCurrencyChanged = true)
+    public function initCheckout($reloadIfCurrencyChanged = true, $useDefaultAddresses = true)
     {
         if (!($this->context instanceof CheckoutContext)) {
             throw new \Exception("Dibs Context must be set first!");
@@ -67,8 +68,11 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         //init checkout
         $customer = $this->getCustomerSession();
         if ($customer->getId()) {
-            $quote->assignCustomer($customer->getCustomerDataObject()); //this will set also primary billing/shipping address as billing address
             $quote->setCustomer($customer->getCustomerDataObject());
+            if ($useDefaultAddresses) {
+                //this will set also primary billing/shipping address as billing address
+                $quote->assignCustomer($customer->getCustomerDataObject());
+            }
         }
 
         $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked in $this->checkCart())
@@ -340,20 +344,25 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
     /**
-     * @param $integrationType string
+     * @param array $checkoutInfo
+     * @param bool $forceNew
+     *
      * @return PaymentResponseInterface
      * @throws LocalizedException
      */
-    public function initDibsCheckout($integrationType)
+    public function initDibsCheckout($checkoutInfo, $forceNew = false)
     {
         $helper = $this->getHelper();
         $checkoutSession = $this->getCheckoutSession();
         $quote       = $this->getQuote();
         $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
+        $integrationType = $checkoutInfo['integrationType'];
 
         $newSignature = $helper->generateHashSignatureByQuote($quote);
         $paymentId = $checkoutSession->getDibsPaymentId();
-        if ($paymentId) {
+
+        // Always instantiate new payment in redirect & overlay modes
+        if ($integrationType == CreatePaymentCheckout::INTEGRATION_TYPE_EMBEDDED && $paymentId && !$forceNew) {
             try {
                 $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
                 if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $checkoutSession->getDibsQuoteSignature())) {
@@ -367,7 +376,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 $checkoutSession->unsDibsQuoteSignature();
 
                 // this will create an api call to dibs and initiaze an new payment
-                $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
+                $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $checkoutInfo);
                 $newPaymentId = $payment->getPaymentId();
 
                 //save the payment id and quote signature in checkout/session
@@ -379,7 +388,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             }
         } else {
             // this will create an api call to dibs and initiaze a new payment
-            $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $integrationType);
+            $payment = $dibsHandler->initNewDibsCheckoutPaymentByQuote($quote, $checkoutInfo);
             $paymentId = $payment->getPaymentId();
 
             //save dibs uri in checkout/session
@@ -436,42 +445,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
         }
     }
-
-    /**
-        // TODO
-     * Update shipping address
-     *
-     * @param string $methodCode
-     * @return void
-
-    public function updateShippingAddress($data)
-    {
-        $quote = $this->getQuote();
-        if($quote->isVirtual()) {
-            return $this;
-        }
-        $addr = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($data,$withEmpty = false);
-        if(!$addr) return $this;
-
-        $shippingAddress = $quote->getShippingAddress();
-
-
-        $cnt = 0;
-        foreach($addr as $field=>$value) {
-            $kValue = trim(strtolower($value));
-            $mValue = trim(strtolower((string)$shippingAddress->getData($field)));
-            if($kValue != $mValue) {
-                $shippingAddress->setData($field,$value);
-                $cnt++;
-            }
-        }
-        if($cnt) {
-            $shippingAddress->setShouldIgnoreValidation(true)->setCollectShippingRates(true);
-            $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
-        }
-
-    }
-     */
 
     /**
      * Make sure addresses will be saved without validation errors
@@ -649,18 +622,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         //prevent observer to mark quote dirty, we will check here if quote was changed and, if yes, will redirect to checkout
         $this->setDoNotMarkCartDirty(true);
 
-        /* // TODO
-        try {
-            $this->validateDibsPayment($dibsPayment,$quote);
-        } catch (\Exception $e) {
-            throw $e;
-        }
-        */
-
-        //this will be saved in order
+        // This will be saved in order
         $quote->setDibsPaymentId($dibsPayment->getPaymentId());
 
-        // we use this country id if we fail converting dibs country id
+        // We use this country id if we fail converting dibs country id
         $fallbackCountryId = null;
         try {
             $fallbackCountryId = $quote->getShippingAddress()->getCountryId();
@@ -671,25 +636,36 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $billingAddress = $quote->getBillingAddress();
         $shippingAddress = $quote->getShippingAddress();
 
-        // $weHandleConsumer = !$quote->isVirtual() && redirect flow used, then we get address info from quote!
-        if ($weHandleConsumer) {
-            $shipping = $this->getDibsPaymentHandler()->convertAddressToArray($quote);
+        if (!$weHandleConsumer || $this->getHelper()->getSplitAddresses()) {
+            $billing = $this->getDibsPaymentHandler()->convertDibsAddress($dibsPayment, $fallbackCountryId, false);
+            $billingAddress->addData($billing);
+            $billingAddress
+                ->setCustomerAddressId(0)
+                ->setSaveInAddressBook(0)
+                ->setShouldIgnoreValidation(true);
+
+            $shipping = $this->getDibsPaymentHandler()->convertDibsAddress($dibsPayment, $fallbackCountryId);
+            $shippingAddress->addData($shipping)
+                ->setSameAsBilling(1)
+                ->setCustomerAddressId(0)
+                ->setSaveInAddressBook(0)
+                ->setShouldIgnoreValidation(true);
         } else {
-            $shipping = $this->getDibsPaymentHandler()->convertDibsShippingToMagentoAddress($dibsPayment, $fallbackCountryId);
+            $shipping = $this->getDibsPaymentHandler()->convertAddressToArray($quote);
+            $billingAddress->addData($shipping);
+            $billingAddress
+                ->setCustomerAddressId(0)
+                ->setSaveInAddressBook(0)
+                ->setShouldIgnoreValidation(true);
+
+            $shippingAddress->addData($shipping)
+                ->setSameAsBilling(1)
+                ->setCustomerAddressId(0)
+                ->setSaveInAddressBook(0)
+                ->setShouldIgnoreValidation(true);
         }
 
         // WE only get shipping address from dibs!
-        $billingAddress->addData($shipping);
-        $billingAddress
-            ->setCustomerAddressId(0)
-            ->setSaveInAddressBook(0)
-            ->setShouldIgnoreValidation(true);
-
-        $shippingAddress->addData($shipping)
-            ->setSameAsBilling(1)
-            ->setCustomerAddressId(0)
-            ->setSaveInAddressBook(0)
-            ->setShouldIgnoreValidation(true);
 
         $quote->setCustomerEmail($billingAddress->getEmail());
 

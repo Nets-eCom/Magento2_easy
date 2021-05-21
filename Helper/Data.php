@@ -2,6 +2,7 @@
 namespace Dibs\EasyCheckout\Helper;
 
 use Magento\Quote\Model\Quote;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -263,6 +264,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'can_capture_partial', $store);
     }
 
+    /**
+     * @param null $store
+     * @return bool
+     */
+    public function getCharge($store = null)
+    {
+        return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'charge', $store);
+    }
+
     /** Helpers */
     public function getCheckoutPath($path = null)
     {
@@ -348,6 +358,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function doesHandleCustomerData($store = null)
     {
         return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'handle_customer_data', $store);
+    }
+
+    /**
+     * @param null $store
+     *
+     * @return bool
+     */
+    public function getSplitAddresses($store = null)
+    {
+        return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'split_addresses', $store);
     }
 
     /**
@@ -446,6 +466,30 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
+    /**
+     * @param null $store
+     *
+     * @return mixed
+     */
+    public function getCancelUrl($store = null)
+    {
+        // Not available in Embeded
+        $integrations = [
+            CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY,
+            CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED
+        ];
+
+        if (!in_array($this->getCheckoutFlow(), $integrations)) {
+            return null;
+        }
+
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'cancel_url',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
     public function getDefaultConsumerType($store = null)
     {
         return $this->scopeConfig->getValue(
@@ -468,11 +512,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getCheckoutFlow($store = null)
     {
-        return $this->scopeConfig->getValue(
+        $flow = $this->scopeConfig->getValue(
             self::XML_PATH_SETTINGS . 'checkout_flow',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
+
+        return $flow;
     }
 
     /**

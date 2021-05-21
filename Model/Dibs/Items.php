@@ -265,12 +265,8 @@ class Items
                 }
 
                 $unitPriceExclTax = $addPrices ? $item->getPrice() : 0;
-                if ($addPrices) {
-                    $unitPriceInclTax = $vat ? $item->getPrice() * (1 + $vat / 100) : $item->getPrice();
-                } else {
-                    $unitPriceInclTax = 0;
-                }
-                $taxAmount = $this->getTotalTaxAmount($unitPriceInclTax * $qty, $vat, true);
+                $taxAmount = $this->addZeroes($item->getTaxAmount());
+                $unitPriceInclTax = $addPrices ? $item->getPriceInclTax() : 0;
 
                 $orderItem = new OrderItem();
                 $orderItem
@@ -574,7 +570,11 @@ class Items
             $orderItem = new OrderItem();
             $orderItem
                 ->setReference($reference)
-                ->setName($couponCode ? (string)__('Discount (%1)', $couponCode) : (string)__('Discount'))
+                ->setName(
+                    $couponCode
+                        ? (string)__('Discount (%1)', $couponCode)
+                        : (string)__('Discount')
+                )
                 ->setUnit("st")
                 ->setQuantity(1)
                 ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
@@ -612,6 +612,7 @@ class Items
                 ? $item->getNetTotalAmount()
                 : $total_price_including_tax;
 
+            // (485,87 / 25 - 19,43) * 25
             $total_tax_amount = round($total_price_including_tax - $total_price_excluding_tax, 0); //round is not required, alreay int
             $calculatedTax += $total_tax_amount;
             $calculatedTotal += $total_price_including_tax;
@@ -620,6 +621,7 @@ class Items
         //quote/order/invoice/creditmemo total taxes
         $grandTotal = $this->addZeroes($grandTotal);
         $difference = $grandTotal - $calculatedTotal;
+
 
         //no correction required
         if ($difference == 0) {

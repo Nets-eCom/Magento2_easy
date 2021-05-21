@@ -221,11 +221,18 @@ class Checkout extends \Magento\Framework\View\Element\Template
         $this->dibsCheckout->setCheckoutContext($this->dibsCheckoutContext);
         $integrationType = $this->dibsCheckout->getHelper()->getCheckoutFlow();
 
-        if ($integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY) {
-            return true;
-        }
+        return $integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY;
+    }
 
-        return false;
+    /**
+     * @return bool
+     */
+    public function getUseEmbededVanillaFlow()
+    {
+        $this->dibsCheckout->setCheckoutContext($this->dibsCheckoutContext);
+        $integrationType = $this->dibsCheckout->getHelper()->getCheckoutFlow();
+
+        return $integrationType === \Dibs\EasyCheckout\Api\CheckoutFlow::FLOW_VANILLA;
     }
 
     public function setCheckoutRedirectUrl($url)
@@ -314,7 +321,11 @@ class Checkout extends \Magento\Framework\View\Element\Template
      */
     public function getCurrentShippingRate()
     {
-        return $this->_currentShippingRate;
+        if ($this->_currentShippingRate) {
+            return $this->_currentShippingRate->getCode();
+        }
+
+        return "";
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 namespace Dibs\EasyCheckout\Controller\Index;
 
+use Dibs\EasyCheckout\Api\CheckoutFlow;
 use Dibs\EasyCheckout\Controller\Checkout;
 use Dibs\EasyCheckout\Model\CheckoutException;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
@@ -19,8 +20,13 @@ class Index extends Checkout
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
-        $integrationType = $this->getDibsCheckout()->getHelper()->getCheckoutFlow();
+        $integrationType = $this->initPaymentFlow();
+        if ($integrationType == CheckoutFlow::FLOW_VANILLA) {
+            return $this->redirect('checkout');
+        }
+
         $useHostedCheckout = $integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED;
+
 
         if ($integrationType === CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY) {
             $integrationType = CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED;
@@ -33,7 +39,7 @@ class Index extends Checkout
         $dibsPayment = null;
         try {
             $checkout->initCheckout(false);
-            $dibsPayment = $checkout->initDibsCheckout($integrationType);
+            $dibsPayment = $checkout->initDibsCheckout(['integrationType' => $integrationType]);
         } catch (CheckoutException $e) {
             if ($e->isReload()) {
                 $this->messageManager->addNoticeMessage($e->getMessage());
@@ -136,7 +142,7 @@ class Index extends Checkout
             return;
         }
 
-        $resultPage = $this->resultPageFactory->create();
+        $resultPage = $this->createLayoutPage();
         $resultPage->getConfig()->getTitle()->set(__('Nets Easy Checkout'));
 
         // set variables we depend on in the block
@@ -146,6 +152,7 @@ class Index extends Checkout
             ->setUseIframe($useIframe)
             ->setCheckoutRedirectUrl($checkoutUrl);
 
+
         /** @var \Dibs\EasyCheckout\Block\Checkout $block */
         $block = $resultPage->getLayout()->getBlock('dibs_easy_checkout.to_payment');
         $block->setDibsLocale($locale)
@@ -153,6 +160,14 @@ class Index extends Checkout
             ->setCheckoutRedirectUrl($checkoutUrl);
 
         return $resultPage;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    private function initPaymentFlow()
+    {
+        return $this->getDibsCheckout()->getHelper()->getCheckoutFlow();
     }
 
     /**
@@ -172,5 +187,15 @@ class Index extends Checkout
     public function redirect($path, $arguments = [])
     {
         return $this->_redirect($path, $arguments);
+    }
+
+    /**
+     * Plugin extension point for extending the layout
+     *
+     * @return \Magento\Framework\View\Result\Page
+     */
+    public function createLayoutPage()
+    {
+        return $this->resultPageFactory->create();
     }
 }

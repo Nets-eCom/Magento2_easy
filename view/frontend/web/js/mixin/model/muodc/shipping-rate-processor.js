@@ -14,7 +14,8 @@ define([
     'Magento_Checkout/js/model/full-screen-loader',
     'Magento_Checkout/js/action/select-billing-address',
     'Magento_Checkout/js/model/shipping-save-processor/payload-extender',
-    'uiRegistry'
+    'uiRegistry',
+    'vanillaCheckoutHandler'
 ], function (
     ko,
     quote,
@@ -26,7 +27,8 @@ define([
     fullScreenLoader,
     selectBillingAddressAction,
     payloadExtender,
-    uiRegistry
+    uiRegistry,
+    vanillaCheckoutHandler
 ) {
     'use strict';
 
@@ -66,6 +68,10 @@ define([
                     }
 
                     var dibsCheckout = uiRegistry.get('nwtdibsCheckout');
+                    if (dibsCheckout) {
+                        dibsCheckout.initializeNewPayment();
+                    }
+
                     if (window.dibs_msuodc_enabled && dibsCheckout) {
                         dibsCheckout._ajaxSubmit(
                             window.checkoutConfig.saveUdcShippingMethodUrl, {

@@ -21,6 +21,10 @@ class GetPaymentConsumer
      */
     protected $company;
 
+    /**
+     * @var GetConsumerShippingAddress
+     */
+    private $billingAddress;
 
     /**
      * @return GetConsumerShippingAddress
@@ -37,6 +41,16 @@ class GetPaymentConsumer
     public function setShippingAddress($shippingAddress)
     {
         $this->shippingAddress = $shippingAddress;
+        return $this;
+    }
+
+    /**
+     * @param GetConsumerShippingAddress $billingAddress
+     * @return GetPaymentConsumer
+     */
+    public function setBillingAddress($billingAddress)
+    {
+        $this->billingAddress = $billingAddress;
         return $this;
     }
 
@@ -76,5 +90,12 @@ class GetPaymentConsumer
         return $this;
     }
 
+    /**
+     * @return GetConsumerShippingAddress
+     */
+    public function getBillingAddress()
+    {
+        return $this->billingAddress;
+    }
 
 }

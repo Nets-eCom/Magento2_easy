@@ -4,9 +4,12 @@
         <referenceContainer name="after.body.start">
             <container name="dibs_easy_checkout.overlay.container" htmlTag="div">
                 <block class="Dibs\EasyCheckout\Block\Checkout" name="dibs_easy_checkout.overlay"
-                       template="Dibs_EasyCheckout::payment/checkout/overlay/iframe.phtml" />
+                       template="Dibs_EasyCheckout::payment/checkout/flow/flows-init.phtml" >
+                    <block class="Dibs\EasyCheckout\Block\Script" name="dibs_easy_checkout_script" template="Dibs_EasyCheckout::js/dibscheckout.phtml"/>
+                </block>
             </container>
         </referenceContainer>
+
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
