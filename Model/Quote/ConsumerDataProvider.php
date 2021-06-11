@@ -7,9 +7,21 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPhoneNumber;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPrivatePerson;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerShippingAddress;
 use Magento\Quote\Model\Quote;
+use Dibs\EasyCheckout\Model\Dibs\LocaleFactory;
 
 class ConsumerDataProvider
 {
+    /**
+     * @var LocaleFactory
+     */
+    private $localeFactory;
+
+    public function __construct(
+        LocaleFactory $localeFactory
+    ) {
+        $this->localeFactory = $localeFactory;
+    }
+
     /**
      * @var Quote
      */
@@ -23,6 +35,7 @@ class ConsumerDataProvider
         'DK' => '+45',
         'FI' => '+358',
         'NO' => '+47',
+        'AT' => '+43',
     ];
 
     /**
@@ -101,26 +114,13 @@ class ConsumerDataProvider
         $paymentShippingAddress->setCity($city);
         $paymentShippingAddress->setAddressLine1($address1);
         $paymentShippingAddress->setAddressLine2($shippingAddress->getStreetLine(2));
-        $paymentShippingAddress->setCountry($this->getExtendedCountry($shippingAddress->getCountryId()));
         $paymentShippingAddress->setPostalCode($postCode);
 
+        // Country must be in iso3 format
+        $localeModel = $this->localeFactory->create();
+        $iso3Country = $localeModel->getIso3CountryCode($shippingAddress->getCountryId());
+        $paymentShippingAddress->setCountry($iso3Country);
+
         return $paymentShippingAddress;
-    }
-
-    /**
-     * @param $countryId
-     *
-     * @return string
-     */
-    private function getExtendedCountry($countryId)
-    {
-        $countries = [
-            'SE' => 'SWE',
-            'NO' => 'NOR',
-            'FI' => 'FIN',
-            'DK' => 'DEN'
-        ];
-
-        return $countries[$countryId] ?? $countryId;
     }
 }
