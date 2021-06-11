@@ -79,6 +79,24 @@
                     <comment>Enables the merchant to full fill the NETS payment popup with customer data from Magento Checkout. Note, that invoices can be not available if address is invalid.</comment>
                 </field>
 
+                <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Checkout Allowed Customer Types</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
+                    <comment>Choose at least one customer type that is allowed in the checkout. Only applies when "Handle customer data" is disabled.</comment>
+                    <depends>
+                        <field id="handle_customer_data">0</field>
+                    </depends>
+                </field>
+
+                <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Checkout Default Customer Type</label>
+                    <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
+                    <comment>Choose default customer type. Only applies when "Handle customer data" is disabled.</comment>
+                    <depends>
+                        <field id="handle_customer_data">0</field>
+                    </depends>
+                </field>
+
                 <field id="split_addresses" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="61">
                     <label>Split billing and shipping addresses</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

@@ -94,6 +94,7 @@ class Locale
         "IT" => "it-IT",
         "NL" => "nl-NL",
         "FI" => "fi-FI",
+        "AT" => "de-DE"
     ];
 
     public function getCountryIdByIso3Code($iso3)
@@ -132,5 +133,17 @@ class Locale
     public function getLocaleByCountryCode($countryCode)
     {
         return $this->localeMap[$countryCode] ?? 'en-GB';
+    }
+
+    /**
+     * Get iso3 country code for provided iso2 country code
+     *
+     * @param string $countryCode The iso2 country code
+     * @return string
+     */
+    public function getIso3CountryCode($countryCode)
+    {
+        $allowedCountries = array_flip($this->allowedShippingCountries);
+        return $allowedCountries[$countryCode] ?? '';
     }
 }

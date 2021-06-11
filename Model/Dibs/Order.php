@@ -10,6 +10,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerType;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerTypeFactory;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
@@ -42,6 +43,11 @@ class Order
     protected $helper;
 
     /**
+     * @var ConsumerTypeFactory
+     */
+    protected $consumerTypeFactory;
+
+    /**
      * @var \Magento\Directory\Model\CountryFactory
      */
     protected $_countryFactory;
@@ -67,12 +73,14 @@ class Order
     public function __construct(
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
         \Dibs\EasyCheckout\Helper\Data $helper,
+        ConsumerTypeFactory $consumerTypeFactory,
         \Magento\Directory\Model\CountryFactory $countryFactory,
         \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory,
         Items $itemsHandler,
         StoreManagerInterface $storeManager
     ) {
         $this->helper = $helper;
+        $this->consumerTypeFactory = $consumerTypeFactory;
         $this->items = $itemsHandler;
         $this->paymentApi = $paymentApi;
         $this->_countryFactory  = $countryFactory;
@@ -168,15 +176,7 @@ class Order
         // let it throw exception, should be handled somewhere else
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
-        $consumerType = new ConsumerType();
-        $isCompany = !empty($quote->getShippingAddress()->getCompany());
-        if ($isCompany) {
-            $consumerType->setDefault('B2B');
-            $consumerType->setSupportedTypes(['B2B']);
-        } else {
-            $consumerType->setDefault('B2C');
-            $consumerType->setSupportedTypes(['B2C']);
-        }
+        $consumerType = $this->generateConsumerType($quote);
 
         $integrationType = (isset($checkoutInfo['integrationType'])) ? $checkoutInfo['integrationType'] : '';
         $checkoutFlow = (isset($checkoutInfo['checkoutFlow'])) ? $checkoutInfo['checkoutFlow'] : '';
@@ -562,5 +562,43 @@ class Order
     public function generateReferenceByQuoteId($quoteId)
     {
         return "quote_id_" . $quoteId;
+    }
+
+    /**
+     * Generate consumer types based on current config
+     *
+     * @param Quote $quote
+     * @return ConsumerType
+     */
+    private function generateConsumerType($quote)
+    {
+        $consumerType = $this->consumerTypeFactory->create();
+
+        // If we handle consumer data, consumer type is set based on customer address
+        $weHandleConsumer = $this->helper->doesHandleCustomerData();
+        if ($weHandleConsumer) {
+            $isCompany = !empty($quote->getShippingAddress()->getCompany());
+            if ($isCompany) {
+                $consumerType->setUseB2bOnly();
+                return $consumerType;
+            }
+
+            $consumerType->setUseB2cOnly();
+            return $consumerType;
+        }
+
+        // If we don't handle customer data, use the configured settings
+        $defaultConsumerType = $this->helper->getDefaultConsumerType();
+        $consumerTypes = $this->helper->getConsumerTypes();
+
+        // Default to B2C if no config detected
+        if (!$defaultConsumerType || !$consumerTypes) {
+            $consumerType->setUseB2cOnly();
+            return $consumerType;
+        }
+
+        $consumerType->setDefault($defaultConsumerType);
+        $consumerType->setSupportedTypes($consumerTypes);
+        return $consumerType;
     }
 }
