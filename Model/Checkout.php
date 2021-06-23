@@ -11,6 +11,7 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 
 class Checkout extends \Magento\Checkout\Model\Type\Onepage
@@ -266,20 +267,20 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         $rates = [];
-        foreach($allRates as $rate) {
+        foreach ($allRates as $rate) {
             /** @var $rate Quote\Address\Rate  **/
             $rates[$rate->getCode()] = $rate->getCode();
         }
 
         // check if selected shipping method exists
         $method = $shipping->getShippingMethod();
-        if($method && isset($rates[$method])) {
+        if ($method && isset($rates[$method])) {
             return $method;
         }
 
         // check if default shipping method exists, use it then!
         $method = $this->getHelper()->getDefaultShippingMethod();
-        if($method && isset($rates[$method])) {
+        if ($method && isset($rates[$method])) {
             $shipping->setShippingMethod($method);
             return $method;
         }
@@ -289,7 +290,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $method = $rate->getCode();
         $shipping->setShippingMethod($method);
         return $method;
-
     }
 
     /**
@@ -360,6 +360,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         $newSignature = $helper->generateHashSignatureByQuote($quote);
         $paymentId = $checkoutSession->getDibsPaymentId();
+
+        // Force new payment ID if order exists for this
+        $pendingOrder = $this->context->loadPendingOrder($paymentId);
+        if ($pendingOrder->getId()) {
+            $forceNew = true;
+        }
 
         // Always instantiate new payment in redirect & overlay modes
         if ($integrationType == CreatePaymentCheckout::INTEGRATION_TYPE_EMBEDDED && $paymentId && !$forceNew) {
@@ -461,49 +467,24 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
     /**
-     * @param $paymentId
-     * @return true|void
-     * @throws CheckoutException
+     * @param string $paymentId
+     * @param Order $order
+     * @return void
      */
-    public function tryToSaveDibsPayment($paymentId)
+    public function saveDibsPayment($paymentId, $order)
     {
-        // TODO certain payment methods may be session independent
-
-        $session = $this->getCheckoutSession();
-        $quote = $this->getQuote();
-
-        $checkoutPaymentId = $session->getDibsPaymentId();
-
-        if (!$quote) {
-            return $this->throwRedirectToCartException(__("Your session has expired. Quote missing."));
-        }
-
-        if (!$paymentId || !$checkoutPaymentId || ($paymentId != $checkoutPaymentId)) {
-            $this->getLogger()->error("Invalid request");
-            if (!$checkoutPaymentId) {
-                $this->getLogger()->error("Save Order: No dibs checkout payment id in session.");
-                return $this->throwRedirectToCartException(__("Your session has expired."));
-            }
-
-            if ($paymentId != $checkoutPaymentId) {
-                return $this->getLogger()->error("Save Order: The session has expired or is wrong.");
-            }
-
-            return $this->getLogger()->error("Save Order: Invalid data.");
-        }
-
         try {
             $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
         } catch (ClientException $e) {
             if ($e->getHttpStatusCode() == 404) {
                 $this->getLogger()->error("Save Order: The dibs payment with ID: " . $paymentId . " was not found in dibs.");
-                return $this->throwReloadException(__("Could not create an order. The payment was not found in dibs."));
+                return;
             } else {
                 $this->getLogger()->error("Save Order: Something went wrong when we tried to fetch the payment ID from Dibs. Http Status code: " . $e->getHttpStatusCode());
                 $this->getLogger()->error("Error message:" . $e->getMessage());
                 $this->getLogger()->debug($e->getResponseBody());
 
-                return $this->throwReloadException(__("Could not create an order, please contact site admin. Dibs seems to be down!"));
+                return;
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
@@ -511,108 +492,44 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
                 __('Something went wrong.')
             );
 
-            $this->getLogger()->error("Save Order: Something went wrong. Might have been the request parser. Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
-            return $this->throwReloadException(__("Something went wrong... Contact site admin."));
+            $this->getLogger()->error("Save Order: Something went wrong. Might have been the request parser. Payment ID: " . $paymentId . "... Error message:" . $e->getMessage());
+            return;
         }
 
-        // an order should been created, lets wait 2 seconds to make sure it has been created!
-        sleep(2);
-
-        // LOAD ORDERS BY payment id! check if its has been created
-        $orderCollection = $this->context->getOrderCollectionFactory()->create();
-
-        /** @var \Magento\Sales\Model\Order $firstOrder */
-        $firstOrder = $orderCollection
-            ->addFieldToFilter('dibs_payment_id', ['eq' => $paymentId])
-            ->getFirstItem();
-
-        // by default (when embedded flow is used) we let nets handle customer data, if redirect flow is used then we handle it.
-
-        // when the solution is hosted, the checkout url is not matching our checkout url!
-        $weHandleConsumerData = false;
-        $changeUrl = true;
-        if ($this->getHelper()->getCheckoutUrl() !== $payment->getCheckoutUrl()) {
-            $weHandleConsumerData = true;
-            $changeUrl = false;
+        // If Reference is already set to this order's increment ID, no need to continue
+        if ($payment->getOrderDetails()->getReference() === $order->getIncrementId()) {
+            return;
         }
 
-        // HOWERE if quote is virtual, we let them handle consumer data, since we dont add these fields in our checkout!
-        if ($quote->isVirtual()) {
-            $weHandleConsumerData = false;
+        try {
+            $this->updateMagentoPaymentReference($order, $paymentId);
+        } catch (\Exception $e) {
+            $this->getLogger()->error(
+                "Order created with ID: " . $order->getIncrementId() . ".
+                But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: " . $this->getQuote()->getId() . "...  Dibs Payment ID: " . $payment->getPaymentId()
+            );
+
+            // lets ignore this and save it in logs! let customer see his/her order confirmation!
+            $this->getLogger()->error("Error message:" . $e->getMessage());
         }
 
-        /** @var \Magento\Sales\Model\Order $order */
-        $order = null;
-        $createOrder = true;
-        if ($firstOrder && $firstOrder->getId()) {
-            $order = $firstOrder;
-            $createOrder = false;
-        }
-
-        if ($createOrder) {
-            if ($payment->getOrderDetails()->getReference() !== $this->getDibsPaymentHandler()->generateReferenceByQuoteId($quote->getId())) {
-                $this->getLogger()->error("Save Order: The customer Quote ID doesn't match with the dibs payment reference: " . $payment->getOrderDetails()->getReference());
-                return $this->throwReloadException(__("Could not create an order. Invalid data. Contact admin."));
-            }
-
-            // In Swish there is no reserved amount?
-            if ($payment->getSummary()->getReservedAmount() === null && $payment->getSummary()->getChargedAmount() === null) {
-                $this->getLogger()->error("Save Order: Found no summary for the payment id: " . $payment->getPaymentId() . "... This must mean that they customer hasn't checked out yet!");
-                return $this->throwReloadException(__("We could not create your order... No reserved or charged amount found. Payment id: %1", $payment->getPaymentId()));
-            }
-
-            try {
-                $order = $this->placeOrder($payment, $quote, $weHandleConsumerData);
-            } catch (\Exception $e) {
-                $this->getLogger()->error("Could not place order for dibs payment with payment id: " . $payment->getPaymentId() . ", Quote ID:" . $quote->getId());
-                $this->getLogger()->error("Error message:" . $e->getMessage());
-
-                return $this->throwReloadException(__("We could not create your order. Please contact the site admin with this error and payment id: %1", $payment->getPaymentId()));
-            }
-
-            // Handle swish orders
-            if ($this->isSwishPaymentValid($payment)) {
-                $this->handleSwishOrder($payment, $order);
-            }
-
-            try {
-                $this->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
-            } catch (\Exception $e) {
-                $this->getLogger()->error(
-                    "
-                    Order created with ID: " . $order->getIncrementId() . ". 
-                    But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: " . $quote->getId() . "...  Dibs Payment ID: " . $payment->getPaymentId()
-                );
-
-                // lets ignore this and save it in logs! let customer see his/her order confirmation!
-                $this->getLogger()->error("Error message:" . $e->getMessage());
-            }
-        }
-
-        // clear old sessions
-        $session->clearHelperData();
-        $session->clearQuote()->clearStorage();
-
-        // we set new sessions
-        $session
-            ->setLastQuoteId($order->getQuoteId())
-            ->setLastSuccessQuoteId($order->getQuoteId())
-            ->setLastOrderId($order->getId())
-            ->setLastRealOrderId($order->getIncrementId())
-            ->setLastOrderStatus($order->getStatus());
-
-        return true;
+        // Add info comment
+        try {
+            $order->addCommentToStatusHistory("Updated Nets Payment reference to: " . $order->getIncrementId());
+            $this->context->getOrderRepository()->save($order);
+        } catch (\Exception $e) {
+            // lets ignore this and save it in logs! let customer see order confirmation!
+            $this->getLogger()->error("Error message:" . $e->getMessage());
+        };
     }
 
     /**
      * @param GetPaymentResponse $dibsPayment
      * @param Quote $quote
-     * @param bool $weHandleConsumer
-     * @param bool $setSessionOrderId
-     * @return mixed
+     * @return Order
      * @throws \Exception
      */
-    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote, $weHandleConsumer = false, $setSessionOrderId = true)
+    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote)
     {
         $paymentMutex = $this->context->getPaymentMutex();
         if ($paymentMutex->test($dibsPayment->getPaymentId())) {
@@ -636,7 +553,19 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $billingAddress = $quote->getBillingAddress();
         $shippingAddress = $quote->getShippingAddress();
 
-        if (!$weHandleConsumer || $this->getHelper()->getSplitAddresses()) {
+        // When embedded flow is used we let nets handle customer data, if redirect flow is used then we handle it.
+        // when the solution is hosted, the checkout url is not matching our checkout url!
+        $weHandleConsumerData = false;
+        if ($this->getHelper()->getCheckoutUrl() !== $dibsPayment->getCheckoutUrl()) {
+            $weHandleConsumerData = true;
+        }
+
+        // HOWERE if quote is virtual, we let them handle consumer data, since we dont add these fields in our checkout!
+        if ($quote->isVirtual()) {
+            $weHandleConsumerData = false;
+        }
+
+        if (!$weHandleConsumerData || $this->getHelper()->getSplitAddresses()) {
             $billing = $this->getDibsPaymentHandler()->convertDibsAddress($dibsPayment, $fallbackCountryId, false);
             $billingAddress->addData($billing);
             $billingAddress
@@ -668,6 +597,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         // WE only get shipping address from dibs!
 
         $quote->setCustomerEmail($billingAddress->getEmail());
+
+        // Prevent sending confirmation email at this stage
+        // Happens later instead when order updates to Processing status
+        $quote->setData('easy_checkout_prevent_email', true);
+        $quote->setCustomerNote("Temporary Nets reference is: quote_id_" . $quote->getId());
+        $quote->setCustomerNoteNotify(false);
 
         $customer      = $quote->getCustomer(); //this (customer_id) is set into self::init
         $createCustomer = false;
@@ -713,20 +648,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $quote->getPayment()->getMethodInstance()->assignData($paymentData);
         $quote->setDibsPaymentId($dibsPayment->getPaymentId()); //this is used by pushAction
 
-        // we need to add invoice fee here to order if its enabled
-        if ($this->getHelper()->useInvoiceFee()
-            && $dibsPayment->getPaymentDetails()->getPaymentType() === "INVOICE"
-            && $dibsPayment->getPaymentDetails()->getPaymentMethod() === "EasyInvoice"
-        ) {
-            $invoiceFee = $this->getHelper()->getInvoiceFee() * 1.25; // TODO remove hardcode!
-
-            $quote->setDibsInvoiceFee($invoiceFee);
-            // $quote->setGrandTotal($quote->getGrandTotal() + $invoiceFee);
-            // $quote->setBaseGrandTotal($quote->getGrandTotal() + $invoiceFee);
-
-            $quote->collectTotals();
-        }
-
         //- do not recollect totals
         $quote->setTotalsCollectedFlag(true);
 
@@ -734,6 +655,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         // Now we create the order from the quote
         try {
             // Lock payment id to prevent double order creation
+            $this->_eventManager->dispatch('checkout_submit_before', ['quote' => $quote]);
             $paymentMutex->lock($dibsPayment->getPaymentId());
             $order = $this->quoteManagement->submit($quote);
         } catch (\Exception $e) {
@@ -746,22 +668,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             'checkout_type_onepage_save_order_after',
             ['order' => $order, 'quote' => $this->getQuote()]
         );
-
-        if ($this->getHelper()->isSendTransactionalEmail() && $order->getCanSendNewEmailFlag()) {
-            try {
-                $this->orderSender->send($order);
-            } catch (\Exception $e) {
-                $this->_logger->critical($e);
-            }
-        }
-
-        if ($setSessionOrderId) {
-            // add order information to the session
-            $this->_checkoutSession
-                ->setLastOrderId($order->getId())
-                ->setLastRealOrderId($order->getIncrementId())
-                ->setLastOrderStatus($order->getStatus());
-        }
 
         $this->_eventManager->dispatch(
             'checkout_submit_all_after',
@@ -797,23 +703,23 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     }
 
     /**
-     * @param \Magento\Sales\Model\Order $order
+     * @param Order $order
      * @param $paymentId
      * @param $changeUrl bool
      * @return void
      * @throws ClientException
      */
-    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId, $changeUrl = true)
+    public function updateMagentoPaymentReference(Order $order, $paymentId)
     {
-        $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId, $changeUrl);
+        $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId);
     }
 
     /**
-     * @param \Magento\Sales\Model\Order $order
+     * @param Order $order
      * @return bool
      * @throws \Exception
      */
-    protected function orderSubscribeToNewsLetter(\Magento\Sales\Model\Order $order)
+    protected function orderSubscribeToNewsLetter(Order $order)
     {
         $email = $order->getCustomerEmail();
         if (!$email) {
@@ -863,27 +769,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     public function getDibsPaymentHandler()
     {
         return $this->context->getDibsOrderHandler();
-    }
-
-    /**
-     * Handle Swish payment response
-     *
-     * @param GetPaymentResponse $paymentResponse
-     *
-     * @return bool
-     */
-    private function isSwishPaymentValid(GetPaymentResponse $paymentResponse)
-    {
-        return $this->context->getSwishHandler()->isSwishOrderValid($paymentResponse);
-    }
-
-    /**
-     * @param GetPaymentResponse $paymentResponse
-     * @param Order $order
-     */
-    public function handleSwishOrder(GetPaymentResponse $paymentResponse, Order $order)
-    {
-        $this->context->getSwishHandler()->saveOrder($paymentResponse, $order);
     }
 
     /**

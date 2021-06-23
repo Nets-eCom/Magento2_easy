@@ -8,7 +8,7 @@ use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
-use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutCOntext;
+use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
 use Magento\Checkout\Controller\Action;
 
 abstract class Checkout extends Action
@@ -33,7 +33,7 @@ abstract class Checkout extends Action
     protected $storeManager;
 
 
-    /** @var DibsCheckoutCOntext $dibsCheckoutContext */
+    /** @var DibsCheckoutContext $dibsCheckoutContext */
     protected $dibsCheckoutContext;
 
     public function __construct(
@@ -45,8 +45,7 @@ abstract class Checkout extends Action
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         DibsCheckout $dibsCheckout,
-        DibsCheckoutCOntext $dibsCheckoutContext
-
+        DibsCheckoutContext $dibsCheckoutContext
     ) {
         $this->dibsCheckout = $dibsCheckout;
         $this->resultPageFactory = $resultPageFactory;

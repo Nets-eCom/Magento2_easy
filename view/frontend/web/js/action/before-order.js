@@ -45,7 +45,6 @@ define(
                 JSON.stringify(payload)
             ).done(
                 function () {
-                    fullScreenLoader.stopLoader(true);
 
                     if (typeof afterSuccess === 'function') {
                         afterSuccess();

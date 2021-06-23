@@ -9,11 +9,12 @@ define([
     'Magento_Ui/js/modal/alert',
     'Magento_Checkout/js/model/quote',
     'uiRegistry',
+    'mage/url',
     "jquery/ui",
     "mage/translate",
     "mage/mage",
     "mage/validation"
-], function (jQuery, alert, quoteModel, uiRegistry) {
+], function (jQuery, alert, quoteModel, uiRegistry, mageurl) {
     "use strict";
     jQuery.widget('mage.nwtdibsCheckout', {
         options: {
@@ -341,7 +342,7 @@ define([
                             }
 
                             if (response.redirect) {
-                                window.location.href = response.redirect;
+                                jQuery.mage.redirect(response.redirect);
                             } else {
                                 window.location.reload();
                             }
@@ -415,10 +416,10 @@ define([
             var self = this;
             window._dibsCheckout.on('payment-completed', function (response) {
                 jQuery.ajax({
-                    url: BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId,
+                    url: mageurl.build("easycheckout/order/confirmOrder/"),
                     type: "POST",
                     context: this,
-                    data: "",
+                    data: {pid: response.paymentId},
                     dataType: 'json',
                     beforeSend: function () {
                         jQuery('#dibs_easy_checkoutSidebar').show();
@@ -429,46 +430,25 @@ define([
                         jQuery('#dibs_easy_checkoutSidebar').show();
                     },
                     success: function (response) {
-                        if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
-                            if (response.chooseShippingMethod) {
-                                self.checkShippingMethod();
-                                self._hideDibsCheckout();
-                            }
-
-                            if (response.messages) {
-                                alert({
-                                    content: jQuery.mage.__(response.messages)
-                                });
-                            }
-
-                            if (response.redirectTo) {
-                                window.location.href = response.redirectTo;
-                            }
-
-                        } else {
-                            alert({
-                                content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
-                            });
+                        if (response.messages) {
+                            alert(jQuery.mage.__(response.messages));
+                        }
+                        if (response.redirectTo) {
+                            window.location.href = response.redirectTo;
                         }
                     },
-                    error: function(data) {
-                        jQuery('#dibs_easy_checkoutSidebar').show();
-                        alert({
-                            content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
-                        });
-
-                    }
-
+                    error: function(_jqXhr) {
+                        alert(jQuery.mage.__('Sorry, there has been an error processing your order. Please contact customer support.'));
+                    },
                 });
-
             });
 
-             window._dibsCheckout.on('pay-initialized', function (response) {
+             window._dibsCheckout.on('pay-initialized', function (paymentId) {
                 jQuery.ajax({
-                    url: BASE_URL + "easycheckout/order/ValidateOrder",
+                    url: mageurl.build("easycheckout/order/SaveOrder"),
                     type: "POST",
                     context: this,
-                    data: "",
+                    data: {pid: paymentId},
                     dataType: 'json',
                     beforeSend: function () {
                         self._hideDibsCheckout();
@@ -481,16 +461,13 @@ define([
                         if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
                             window._dibsCheckout.sendPaymentOrderFinalizedEvent(!response.error);
 
-                            if (response.chooseShippingMethod) {
-                                self.checkShippingMethod();
-                                self._hideDibsCheckout();
-                            }
-
                             if (response.messages) {
                                 jQuery('#dibs_easy_checkoutSidebar').show();
-                                alert({
-                                    content: jQuery.mage.__(response.messages)
-                                });
+                                alert(jQuery.mage.__(response.messages));
+                            }
+
+                            if (response.redirect) {
+                                jQuery.mage.redirect(response.redirect);
                             }
                         } else {
                             // tell dibs not to finish order!

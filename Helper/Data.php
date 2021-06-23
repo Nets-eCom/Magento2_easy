@@ -273,6 +273,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'charge', $store);
     }
 
+    /**
+     * @param null $store
+     * @return mixed
+     */
+    public function getProcessingOrderStatus($store = null)
+    {
+        return $this->getStoreConfig(self::XML_PATH_SETTINGS . 'processing_order_status', $store);
+    }
+
     /** Helpers */
     public function getCheckoutPath($path = null)
     {
@@ -297,16 +306,16 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * For local development please inject WebHook domain url variable in dev/nets/webhook_domain
      * Example: dev/nets/webhook_domain -> https://xxx.eu.ngrok.io
      *
-     * @param $quoteId
+     * @param string $controller
      * @return string
      */
-    public function getWebHookCallbackUrl($quoteId)
+    public function getWebHookCallbackUrl($controller)
     {
         if ($ngrokDomain = $this->getStoreConfig('dev/nets/webhook_domain')) {
-            return "$ngrokDomain/easycheckout/order/WebhookCallback/qid/$quoteId";
+            return "$ngrokDomain/easycheckout/webhook/{$controller}/";
         }
 
-        return $this->getCheckoutUrl("WebhookCallback/qid/" . $quoteId);
+        return $this->getWebhookUrl($controller);
     }
 
     /**
@@ -338,6 +347,28 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->_getUrl('easycheckout', $params);
         }
         return $this->_getUrl($this->getCheckoutPath($path), $params);
+    }
+
+    /**
+     * Get the vanilla checkout URL, i.e. the standard Magento checkout URL
+     *
+     * @param array $params
+     * @return void
+     */
+    public function getVanillaCheckoutUrl($params = [])
+    {
+        return $this->_getUrl('checkout', $params);
+    }
+
+    /**
+     * Get webhook URL
+     *
+     * @param string $path
+     * @return string
+     */
+    public function getWebhookUrl($path)
+    {
+        return $this->_getUrl('easycheckout/webhook/' . trim(ltrim($path, '/')));
     }
 
     /**

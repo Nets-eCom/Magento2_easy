@@ -10,8 +10,6 @@ class GetPaymentConfiguration extends Checkout
     const URL_CHECKOUT_CART_PATH = 'checkout/cart';
     const URL_CHECKOUT_PATH      = 'checkout';
 
-    private const INTEGRATION_TYPE = CreatePaymentCheckout::INTEGRATION_TYPE_EMBEDDED;
-
     /**
      * @inheridoc
      */
@@ -22,7 +20,12 @@ class GetPaymentConfiguration extends Checkout
         $vanillaParam = $this->getRequest()->getParam('vanilla', 0);
         $vanillaCheckout = (int)$vanillaParam === 1;
         $checkoutFlow = ($vanillaCheckout) ? CheckoutFlow::FLOW_VANILLA : 'custom';
-        $integrationType = self::INTEGRATION_TYPE;
+        $integrationType = $this->dibsCheckoutContext->getHelper()->getCheckoutFlow();
+
+        // We treat Vanilla as Embedded integration type here, and send checkoutFlow => Vanilla instead
+        if ($integrationType === CheckoutFlow::FLOW_VANILLA) {
+            $integrationType = CheckoutFlow::FLOW_EMBEDED;
+        }
 
         $checkoutInfo = ['integrationType' => $integrationType, 'checkoutFlow' => $checkoutFlow];
 
@@ -38,7 +41,8 @@ class GetPaymentConfiguration extends Checkout
         $paymentResponse = [
             'checkoutKey' => $this->getDibsCheckoutKey(),
             'paymentId'   => $dibsPayment->getPaymentId(),
-            'language'    => $this->getDibsCheckout()->getLocale()
+            'language'    => $this->getDibsCheckout()->getLocale(),
+            'checkoutUrl' => $dibsPayment->getCheckoutUrl() . '&language=' .  $this->getDibsCheckout()->getLocale()
         ];
 
         $quote = $this->getDibsCheckout()->getQuote();
