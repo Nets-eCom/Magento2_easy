@@ -6,6 +6,7 @@ define(
         'Magento_Checkout/js/view/payment/default',
         'mage/url',
         'Dibs_EasyCheckout/js/action/before-order',
+        'Magento_Checkout/js/model/full-screen-loader',
         'uiRegistry',
         'vanillaCheckoutHandler',
         'Magento_SalesRule/js/action/set-coupon-code',
@@ -16,6 +17,7 @@ define(
         Component,
         url,
         dibs,
+        fullScreenLoader,
         uiRegistry,
         vanillaCheckoutHandler,
         setCouponCodeAction,
@@ -31,8 +33,36 @@ define(
             eventsInstantiated: false,
             continueToDibsRedirect: function () {
                 dibs("dibseasycheckout", function () {
-                    $.mage.redirect(url.build('easycheckout') + '?checkRedirect=1');
-                });
+                    let callback = function(paymentConfiguration) {
+                        $.ajax({
+                            url: url.build('easycheckout/order/saveOrder'),
+                            data: {pid: paymentConfiguration.paymentId},
+                            type: 'POST',
+                            dataType: 'json',
+                            beforeSend: function() {
+                                fullScreenLoader.startLoader();
+                            },
+                            success: function(response) {
+                                if(response.error) {
+                                    alert($.mage.__(response.messages));
+                                    return false;
+                                }
+                                if(response.redirectTo) {
+                                    $.mage.redirect(response.redirectTo);
+                                }
+                                $.mage.redirect(paymentConfiguration.checkoutUrl);
+                            },
+                            error: function() {
+                                alert($.mage.__('Sorry, something went wrong. Please try again later.'));
+                            },
+                            complete: function() {
+                                fullScreenLoader.stopLoader()
+                            }
+                        });
+                    };
+
+                    this.initPaymentConfiguration(0, callback);
+                }.bind(this));
                 return false;
             },
             continueToDibs: function () {
@@ -65,8 +95,8 @@ define(
                     placehplder.innerHTML = "";
                 }
 
-                var self = this;
-                $.getJSON(url.build('easycheckout/checkout/getPaymentConfiguration'), {'vanilla':1}, function (paymentConfiguration) {
+                let callback = function(paymentConfiguration) {
+                    let self = this;
                     let checkoutOptions = {
                         checkoutKey: paymentConfiguration.checkoutKey,
                         paymentId: paymentConfiguration.paymentId,
@@ -83,14 +113,21 @@ define(
                     }
 
                     self.hideLoader(true);
-                })
-                .fail(function() {
-                    alert("Payment init fail");
-                })
+                }.bind(this);
+                this.initPaymentConfiguration(1, callback);
             },
             getPayment: function () {
                 return this.dibsPayment;
             },
+            initPaymentConfiguration: function(vanilla, callback) {
+                $.getJSON(
+                    url.build('easycheckout/checkout/getPaymentConfiguration'),
+                    {'vanilla':vanilla},
+                    callback
+                ).fail( function() {
+                     alert('Payment init fail')
+                });
+            }
         });
 
         return component

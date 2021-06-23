@@ -11,6 +11,7 @@
                 <add_css>0</add_css>
                 <checkout_add_options_to_name>1</checkout_add_options_to_name>
                 <checkout_flow>EmbeddedCheckout</checkout_flow>
+                <processing_order_status>processing</processing_order_status>
             </settings>
             <layout>
                 <display_newsletter>1</display_newsletter>
@@ -26,7 +27,7 @@
             <dibseasycheckout>
                 <active>1</active>
                 <model>Dibs\EasyCheckout\Model\Payment\Method\Checkout</model>
-                <order_status>pending</order_status>
+                <order_status>pending_payment</order_status>
                 <title>Nets Easy Checkout</title>
             </dibseasycheckout>
         </payment>

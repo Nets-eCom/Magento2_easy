@@ -29,5 +29,4 @@ class Success extends \Dibs\EasyCheckout\Controller\Checkout
 
         return $resultPage;
     }
-
 }

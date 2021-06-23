@@ -167,10 +167,15 @@ class Order
      * @param Quote $quote
      * @param array $checkoutInfo
      * @throws ClientException
+     * @throws LocalizedException
      * @return CreatePaymentResponse
      */
     protected function createNewDibsPayment(Quote $quote, $checkoutInfo)
     {
+        if (!$this->helper->getWebhookSecret()) {
+            throw new LocalizedException(__("Webhook secret configuration missing!"));
+        }
+
         $dibsAmount = $this->fixPrice($quote->getGrandTotal());
 
         // let it throw exception, should be handled somewhere else
@@ -197,12 +202,14 @@ class Order
             // when we use hosted flow we set the url where customer should be redirected,
             // and we handle the consumer data
             if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
-                $paymentCheckout->setReturnUrl($this->helper->getCheckoutUrl());
+                $paymentCheckout->setReturnUrl(
+                    $this->helper->getCheckoutUrl('confirmOrder'),
+                );
             }
 
             // If it's the vanilla checkout flow, we instead set checkout URL
             if ($flowIsVanilla) {
-                $paymentCheckout->setUrl($this->helper->getCheckoutUrl());
+                $paymentCheckout->setUrl($this->helper->getVanillaCheckoutUrl());
             }
 
             if ($quote->isVirtual()) {
@@ -265,18 +272,26 @@ class Order
             }
         }
 
-        $webHookUrl = $this->helper->getWebHookCallbackUrl($quote->getId());
-        $webhookCheckoutComplete = new CreatePaymentWebhook();
-        $webhookCheckoutComplete->setEventName($webhookCheckoutComplete::EVENT_PAYMENT_CHECKOUT_COMPLETED);
-        $webhookCheckoutComplete->setUrl($webHookUrl);
+        $webhookReservationCreated = new CreatePaymentWebhook();
+        $webhookReservationCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_RESERVATION_CREATED);
+        $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookReservationCreated->getControllerName());
+        $webhookReservationCreated->setUrl($webHookUrl);
+        $webhooks = [$webhookReservationCreated];
 
-        if ($secret = $this->helper->getWebhookSecret()) {
-            $webhookCheckoutComplete->setAuthorization($secret);
+        // We want to use the payment.checkout.completed webhook only with Hosted integration
+        if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
+            $webhookCheckoutCompleted = new CreatePaymentWebhook();
+            $webhookCheckoutCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHECKOUT_COMPLETED);
+            $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
+            $webhookCheckoutCompleted->setUrl($webHookUrl);
+            $webhooks[] = $webhookCheckoutCompleted;
         }
-        $charge = $this->helper->getCharge($quote->getStoreId());
-        if(!$charge) {
-            $createPaymentRequest->setWebHooks([$webhookCheckoutComplete]);
+
+        foreach ($webhooks as $webhook) {
+            $webhook->setAuthorization($this->helper->getWebhookSecret());
         }
+
+        $createPaymentRequest->setWebHooks($webhooks);
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
     }
@@ -284,17 +299,14 @@ class Order
     /**
      * @param \Magento\Sales\Model\Order $order
      * @param $paymentId
-     * @param $changeUrl bool
      * @return void
      * @throws ClientException
      */
-    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId, $changeUrl = true)
+    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
     {
         $reference = new UpdatePaymentReference();
         $reference->setReference($order->getIncrementId());
-        if ($changeUrl) {
-            $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
-        }
+        $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
         if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
             $payment = $this->paymentApi->getPayment($paymentId);
             $checkoutUrl = $payment->getCheckoutUrl();
@@ -404,7 +416,6 @@ class Order
     {
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
         if ($paymentId) {
-
             // we load the payment from dibs api instead, then we will get full amount!
             $payment = $this->loadDibsPaymentById($paymentId);
 

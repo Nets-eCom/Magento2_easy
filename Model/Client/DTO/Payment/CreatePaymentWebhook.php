@@ -17,18 +17,20 @@ class CreatePaymentWebhook extends AbstractRequest
     const EVENT_PAYMENT_CANCEL_CREATED = 'payment.cancel.created';
     const EVENT_PAYMENT_CANCEL_FAILED = 'payment.cancel.failed';
 
-
-    const validEvents = [
-        self::EVENT_PAYMENT_CREATED,
-        self::EVENT_PAYMENT_RESERVATION_CREATED,
-        self::EVENT_PAYMENT_CHECKOUT_COMPLETED,
-        self::EVENT_PAYMENT_CHARGE_CREATED,
-        self::EVENT_PAYMENT_CHARGE_FAILED,
-        self::EVENT_PAYMENT_REFUND_INITIATED,
-        self::EVENT_PAYMENT_REFUND_FAILED,
-        self::EVENT_PAYMENT_REFUND_COMPLETED,
-        self::EVENT_PAYMENT_CANCEL_CREATED,
-        self::EVENT_PAYMENT_CANCEL_FAILED,
+    /**
+     * Valid events with corresponding Webhook Controller name (if it exists)
+     */
+    const VALID_EVENTS = [
+        self::EVENT_PAYMENT_CREATED => '',
+        self::EVENT_PAYMENT_RESERVATION_CREATED => 'ReservationCreated',
+        self::EVENT_PAYMENT_CHECKOUT_COMPLETED => 'CheckoutCompleted',
+        self::EVENT_PAYMENT_CHARGE_CREATED => '',
+        self::EVENT_PAYMENT_CHARGE_FAILED => '',
+        self::EVENT_PAYMENT_REFUND_INITIATED => '',
+        self::EVENT_PAYMENT_REFUND_FAILED => '',
+        self::EVENT_PAYMENT_REFUND_COMPLETED => '',
+        self::EVENT_PAYMENT_CANCEL_CREATED => '',
+        self::EVENT_PAYMENT_CANCEL_FAILED => '',
     ];
 
     /** @var $eventName string */
@@ -94,11 +96,19 @@ class CreatePaymentWebhook extends AbstractRequest
         return $this;
     }
 
-
+    /**
+     * Get controller name for set event
+     *
+     * @return string
+     */
+    public function getControllerName()
+    {
+        return self::VALID_EVENTS[$this->eventName] ?? '';
+    }
 
     public function toArray()
     {
-        if (!in_array($this->getEventName(), self::validEvents)) {
+        if (!in_array($this->getEventName(), array_keys(self::VALID_EVENTS))) {
             throw new \Exception("The event '" . $this->getEventName() . "' is not a valid event name");
         }
 
@@ -108,6 +118,4 @@ class CreatePaymentWebhook extends AbstractRequest
             'authorization' => $this->getAuthorization(),
         ];
     }
-
-
 }

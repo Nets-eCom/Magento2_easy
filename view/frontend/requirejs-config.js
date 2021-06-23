@@ -5,7 +5,8 @@ var config = {
             'Magento_Checkout/js/model/shipping-save-processor/default': 'Dibs_EasyCheckout/js/mixin/model/muodc/shipping-rate-processor',
             checkIframe: 'Dibs_EasyCheckout/js/action/check-iframe',
             vanillaCheckoutHandler: 'Dibs_EasyCheckout/js/action/checkout-handler',
-            checkoutMode: 'Dibs_EasyCheckout/js/action/checkoutMode'
+            checkoutMode: 'Dibs_EasyCheckout/js/action/checkoutMode',
+            successActions: 'Dibs_EasyCheckout/js/action/success-actions'
         }
     },
     paths: {

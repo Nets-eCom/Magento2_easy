@@ -5,6 +5,8 @@ namespace Dibs\EasyCheckout\Model\Payment\Method;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Payment\Transaction;
+use Magento\Sales\Model\Order\Payment;
+use Magento\Sales\Model\Order;
 
 /**
  * Nets Easy Checkout Payment method
@@ -38,7 +40,7 @@ class Checkout extends AbstractMethod
     protected $_canVoid = true;   //the payment will be canceled when order is canceled
     protected $_canUseInternal = false; //cannot be used internal (backend)
     protected $_canUseCheckout = true; //used in checkout (will redirect the user to the /dibs/checkout)
-    protected $_isInitializeNeeded = true;  //will use initialize to authorize and set state/status to new/pending (with authorize the state is set to processing)
+    protected $_isInitializeNeeded = true;  //will use initialize to authorize and set state/status to pending_payment (with authorize the state is set to processing)
     protected $_canFetchTransactionInfo = false;
     protected $_canReviewPayment = false;
     protected $_canCancelInvoice = false; //is not yet implemented?!? (Magento 2.0.4)
@@ -82,9 +84,9 @@ class Checkout extends AbstractMethod
         }
 
         $payment = $this->getInfoInstance();
-        $order   = $payment->getOrder();
+        $order   = $this->getOrder();
 
-        $paymentDefails = $this->getInfoInstance()->getAdditionalInformation();
+        $paymentDefails = $payment->getAdditionalInformation();
         if ($paymentMethod = $paymentDefails['dibs_payment_method'] ?? false) {
             if (in_array($paymentMethod, $this->getExcludedPaymentOptions())) {
                 return false;
@@ -108,10 +110,9 @@ class Checkout extends AbstractMethod
             return false;
         }
 
-        $payment = $this->getInfoInstance();
-        $order   = $payment->getOrder();
+        $order = $this->getOrder();
 
-        // same settings for canCapture adn canRefund!
+        // same settings for canCapture and canRefund!
         return $this->_helper->canCapture($order ? $order->getStore() : null);
     }
 
@@ -121,8 +122,7 @@ class Checkout extends AbstractMethod
             return false;
         }
 
-        $payment = $this->getInfoInstance();
-        $order   = $payment->getOrder();
+        $order = $this->getOrder();
         return $this->_helper->canCapturePartial($order ? $order->getStore() : null);
     }
 
@@ -191,32 +191,15 @@ class Checkout extends AbstractMethod
     {
         //$paymentAction not used, we will "authorize" by default
         $payment = $this->getInfoInstance();
-        $order   = $payment->getOrder();
+        $order   = $this->getOrder();
 
         //import quote data
         $order->setDibsPaymentId($payment->getAdditionalInformation('dibs_payment_id'));
 
-        $orderState = \Magento\Sales\Model\Order::STATE_NEW;
-        $orderStatus = $this->getConfigData('order_status');
+        $orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
 
         $stateObject->setState($orderState);
-        if (!$orderStatus) {
-            $orderStatus = $order->getConfig()->getStateDefaultStatus($orderState);
-        } else {
-
-            //check which state we have (NEW or PROCESSING)
-
-            $statuses = $order->getConfig()->getStateStatuses($orderState);
-            if (!isset($statuses[$orderState])) {
-                //check if we have  "processing" status
-                $orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
-                $statuses = $order->getConfig()->getStateStatuses($orderState);
-                if (isset($statuses[$orderStatus])) {
-                    //set state = processing
-                    $stateObject->setState($orderState);
-                }
-            }
-        }
+        $orderStatus = $order->getConfig()->getStateDefaultStatus($orderState);
 
         $stateObject->setStatus($orderStatus);
         $stateObject->setIsNotified(false);
@@ -329,5 +312,21 @@ class Checkout extends AbstractMethod
     public function detach(\Magento\Payment\Model\InfoInterface $payment)
     {
         throw new LocalizedException(__('Detach is not available.'));
+    }
+
+    /**
+     * @return Payment
+     */
+    private function infoInstanceOverride()
+    {
+        return $this->getInfoInstance();
+    }
+
+    /**
+     * @return Order
+     */
+    private function getOrder()
+    {
+        return $this->infoInstanceOverride()->getOrder();
     }
 }

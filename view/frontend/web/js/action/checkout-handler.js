@@ -1,52 +1,17 @@
 define([
     'jquery',
     'Magento_Checkout/js/model/full-screen-loader',
-    'uiRegistry'
-    ], function ($, checkoutLoader, uiRegistry) {
+    'uiRegistry',
+    'mage/url'
+    ], function ($, checkoutLoader, uiRegistry, mageurl) {
         'use strict';
 
         return {
             onCheckoutCompleteAction: function (response) {
                 $.ajax({
-                    url: BASE_URL + "easycheckout/order/SaveOrder/pid/" + response.paymentId,
                     type: "POST",
-                    context: this,
-                    data: "",
-                    dataType: 'json',
-                    beforeSend: function () {
-                        checkoutLoader.startLoader();
-                    },
-                    complete: function () {
-                        checkoutLoader.startLoader();
-                    },
-                    success: function (response) {
-                        if (response.redirectTo) {
-                            window.location.href = response.redirectTo;
-                        }
-                    },
-                    error: function(data) {
-                        console.log(response); alert('Payment ERROR')
-                    }
-                });
-            },
-            updatePayment: function() {
-                $.ajax({
-                    type: "POST",
-                    context: this,
-                    url: BASE_URL + "easycheckout/order/cart/",
-                    complete: function () {
-                        let payment = uiRegistry.get('nwtdibsCheckout').getPayment();
-                        payment.freezeCheckout();
-                        payment.thawCheckout();
-                    }
-                });
-            },
-            validatePayment: function(response) {
-                $.ajax({
-                    url: BASE_URL + "easycheckout/order/ValidateOrder",
-                    type: "POST",
-                    context: this,
-                    data: "",
+                    url: mageurl.build("easycheckout/order/confirmOrder/"),
+                    data: {pid: response.paymentId},
                     dataType: 'json',
                     beforeSend: function () {
                         checkoutLoader.startLoader();
@@ -55,25 +20,61 @@ define([
                         checkoutLoader.stopLoader();
                     },
                     success: function (response) {
-                        if (jQuery.type(response) === 'object' && !jQuery.isEmptyObject(response)) {
+                        if (response.error && response.messages) {
+                            alert($.mage.__(response.messages));
+                            return false;
+                        }
+
+                        if (response.redirectTo) {
+                            $.mage.redirect(mageurl.build(response.redirectTo));
+                        }
+                    },
+                    error: function(_jqXhr) {
+                        alert($.mage.__('Sorry, there has been an error processing your order. Please contact customer support.'));
+                    }
+                });
+            },
+            updatePayment: function() {
+                $.ajax({
+                    type: "POST",
+                    context: this,
+                    url: mageurl.build("easycheckout/order/cart/"),
+                    complete: function () {
+                        let payment = uiRegistry.get('nwtdibsCheckout').getPayment();
+                        payment.freezeCheckout();
+                        payment.thawCheckout();
+                    }
+                });
+            },
+            validatePayment: function(paymentId) {
+                $.ajax({
+                    url: mageurl.build("easycheckout/order/SaveOrder"),
+                    type: "POST",
+                    context: this,
+                    data: {pid: paymentId},
+                    dataType: 'json',
+                    beforeSend: function () {
+                        checkoutLoader.startLoader();
+                    },
+                    complete: function () {
+                        checkoutLoader.stopLoader();
+                    },
+                    success: function (response) {
+                        if ($.type(response) === 'object' && !$.isEmptyObject(response)) {
                             this.sendPaymentOrderFinalizedEvent(!response.error);
                             if (response.messages) {
-                                alert({
-                                    content: jQuery.mage.__(response.messages)
-                                });
+                                alert(jQuery.mage.__(response.messages));
                             }
                         } else {
                             checkoutLoader.stopLoader();
                             this.sendPaymentOrderFinalizedEvent(false);
-                            alert({content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')});
+                            alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
                         }
                     },
                     error: function(data) {
                         // tell dibs not to finish order!
                         this.sendPaymentOrderFinalizedEvent(false);
-                        alert({
-                            content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
-                        });
+                        alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
                     }
                 });
             }

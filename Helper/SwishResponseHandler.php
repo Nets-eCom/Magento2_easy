@@ -60,21 +60,19 @@ class SwishResponseHandler
      *
      * @param GetPaymentResponse $paymentResponse
      * @param Order $order
-     * @param string $status
      */
     public function saveOrder(
         GetPaymentResponse $paymentResponse,
-        Order $order,
-        $status = \Magento\Sales\Model\Order::STATE_PROCESSING
+        Order $order
     ) {
-        if (! $this->isSwishOrderValid($paymentResponse)) {
+        if (!$this->isSwishOrderValid($paymentResponse)) {
             return;
         }
         $this->invoiceOrder($order);
         $order
-            ->setStatus($status)
-            ->setState($status);
-
+            ->setState(\Magento\Sales\Model\Order::STATE_PROCESSING)
+            ->addCommentToStatusHistory('Swish Payment completed', true, true)
+        ;
         $this->orderRepository->save($order);
     }
 
@@ -83,7 +81,7 @@ class SwishResponseHandler
      */
     private function invoiceOrder(Order $order) : void
     {
-        if(! $order->canInvoice()) {
+        if (!$order->canInvoice()) {
             return;
         }
 
@@ -103,7 +101,7 @@ class SwishResponseHandler
 
             $order->setIsInProcess(true);
             //send notification code
-            $order->addStatusHistoryComment(
+            $order->addCommentToStatusHistory(
                 __('Notified customer about invoice #%1.', $invoice->getId())
             )->setIsCustomerNotified(true);
         } catch (\Exception $e) {

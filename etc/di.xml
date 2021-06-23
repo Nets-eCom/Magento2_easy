@@ -13,6 +13,20 @@
             </argument>
         </arguments>
     </type>
+    <type name="Dibs\EasyCheckout\Controller\Webhook\ReservationCreated">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.reservation.created</argument>
+            <argument name="successComment" xsi:type="string">Reservation created for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">true</argument>
+        </arguments>
+    </type>
+    <type name="Dibs\EasyCheckout\Controller\Webhook\CheckoutCompleted">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.checkout.completed</argument>
+            <argument name="successComment" xsi:type="string">Checkout completed for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
 
     <type name="Magento\Framework\App\Request\CsrfValidator">
         <plugin name="nets_csrf_validator_skip" type="Dibs\EasyCheckout\Plugin\CsrfValidatorSkip" />
@@ -30,7 +44,7 @@
         <plugin name="dibscheckout_url" type="Dibs\EasyCheckout\Plugin\Url" sortOrder="10" disabled="false"/>
     </type>
 
-    <type name="\Dibs\EasyCheckout\Controller\Index\Index">
-        <plugin name="fetch_order_by_payment" type="\Dibs\EasyCheckout\Plugin\Controller\Index\FetchOrderByPaymentId" sortOrder="10"/>
+    <type name="Magento\Quote\Observer\SubmitObserver">
+        <plugin name="set_can_send_email_flag" type="Dibs\EasyCheckout\Plugin\Quote\SubmitObserverPlugin" />
     </type>
 </config>
