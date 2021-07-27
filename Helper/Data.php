@@ -289,8 +289,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return 'easycheckout';
         }
 
-        return 'easycheckout/order/' . trim(ltrim($path, '/'));
-
+        $nets_successpage = $this->getStoreConfig(self::XML_PATH_SETTINGS . 'nets_successpage');
+        if ($nets_successpage == 1) {
+            return 'easycheckout/order/' . trim(ltrim($path, '/'));
+        } else {
+            return 'checkout/onepage/success';
+        }
     }
 
     /**

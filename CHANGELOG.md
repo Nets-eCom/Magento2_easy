@@ -12,6 +12,10 @@
 
 ## CHANGELOG
 
+### Version 1.1.2 - Released 2021-07-27
+* Update - Added system configuration for success page
+
+
 ### Version 1.1.1 - Released 2021-07-27
 * Fixed - Amount issue for discount and tax
 * Docs - Added changelog file
