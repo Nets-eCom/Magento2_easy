@@ -110,10 +110,19 @@ class ConsumerDataProvider
             throw new \Exception('Address data is missing');
         }
 
+        if (strlen($address1) > 128) {
+            $address1 = substr($address1, 0, 128);
+        }
+
+        $shippingAddressLine2 = '';
+        if (strlen($shippingAddress->getStreetLine(2)) > 128) {
+            $shippingAddressLine2 = substr($shippingAddress->getStreetLine(2), 0, 128);
+        }
+
         $paymentShippingAddress = new ConsumerShippingAddress();
         $paymentShippingAddress->setCity($city);
         $paymentShippingAddress->setAddressLine1($address1);
-        $paymentShippingAddress->setAddressLine2($shippingAddress->getStreetLine(2));
+        $paymentShippingAddress->setAddressLine2($shippingAddressLine2);
         $paymentShippingAddress->setPostalCode($postCode);
 
         // Country must be in iso3 format

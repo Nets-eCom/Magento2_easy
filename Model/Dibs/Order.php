@@ -193,7 +193,12 @@ class Order
         }
         $paymentCheckout->setConsumerType($consumerType);
         $paymentCheckout->setIntegrationType($integrationType);
-        $paymentCheckout->setTermsUrl($this->helper->getTermsUrl());
+
+        $termsUrl = $this->helper->getTermsUrl();
+        if (strlen($termsUrl) > 128) {
+            $termsUrl = substr($termsUrl, 0, 128);
+        }
+        $paymentCheckout->setTermsUrl($termsUrl);
         if ($cancelUrl = $this->helper->getCancelUrl()) {
             $paymentCheckout->setCancelUrl($cancelUrl);
         }
