@@ -289,11 +289,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return 'easycheckout';
         }
 
-        if ($path == 'success') {
-            return 'checkout/onepage/success';
-        }else {
-            return 'easycheckout/order/' . trim(ltrim($path, '/'));
-        }
+        return 'easycheckout/order/' . trim(ltrim($path, '/'));
 
     }
 
