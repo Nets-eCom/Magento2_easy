@@ -208,7 +208,7 @@ class Order
             // and we handle the consumer data
             if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
                 $paymentCheckout->setReturnUrl(
-                    $this->helper->getCheckoutUrl('confirmOrder'),
+                    $this->helper->getCheckoutUrl('confirmOrder')
                 );
             }
 

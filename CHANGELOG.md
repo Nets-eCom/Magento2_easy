@@ -1,0 +1,17 @@
+# NETS A/S - Magento 2 Payment Module
+============================================
+
+|Module | Nets Easy Payment Module for Magento 2
+|------|----------
+|Author | `Nets eCom`
+|Prefix | `EASY-M2`
+|Shop Version | `2.3+`
+|Version | `1.1.1`
+|Guide | https://tech.nets.eu/shopmodules
+|Github | https://github.com/DIBS-Payment-Services/Magento2_easy
+
+## CHANGELOG
+
+### Version 1.1.1 - Released 2021-07-27
+* Fixed - Amount issue for discount and tax
+* Docs - Added changelog file
