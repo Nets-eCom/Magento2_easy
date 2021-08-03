@@ -104,10 +104,12 @@ abstract class Update extends \Dibs\EasyCheckout\Controller\Checkout
 
         $response['ok'] = true;
         if ($blocks) {
-            $this->_view->loadLayout('dibs_easy_checkout_order_update');
+            $page = $this->resultPageFactory->create();
+            $page->addHandle('dibs_easy_checkout_order_update');
+            $page->getLayout()->getUpdate()->load();
             foreach ($blocks as $id) {
                 $name = "dibs_easy_checkout.{$id}";
-                $block = $this->_view->getLayout()->getBlock($name);
+                $block = $page->getLayout()->getBlock($name);
                 if ($block) {
                     $response['updates'][$id] = $block->toHtml();
                 }
