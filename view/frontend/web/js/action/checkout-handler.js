@@ -2,8 +2,9 @@ define([
     'jquery',
     'Magento_Checkout/js/model/full-screen-loader',
     'uiRegistry',
-    'mage/url'
-    ], function ($, checkoutLoader, uiRegistry, mageurl) {
+    'mage/url',
+    'Magento_Ui/js/modal/alert'
+    ], function ($, checkoutLoader, uiRegistry, mageurl, mageAlert) {
         'use strict';
 
         return {
@@ -21,7 +22,7 @@ define([
                     },
                     success: function (response) {
                         if (response.error && response.messages) {
-                            alert($.mage.__(response.messages));
+                            mageAlert({content: $.mage.__(response.messages)});
                             return false;
                         }
 
@@ -30,7 +31,7 @@ define([
                         }
                     },
                     error: function(_jqXhr) {
-                        alert($.mage.__('Sorry, there has been an error processing your order. Please contact customer support.'));
+                        mageAlert({content: $.mage.__('Sorry, there has been an error processing your order. Please contact customer support.')});
                     }
                 });
             },
@@ -63,18 +64,18 @@ define([
                         if ($.type(response) === 'object' && !$.isEmptyObject(response)) {
                             this.sendPaymentOrderFinalizedEvent(!response.error);
                             if (response.messages) {
-                                alert(jQuery.mage.__(response.messages));
+                                mageAlert({content: $.mage.__(response.messages)});
                             }
                         } else {
                             checkoutLoader.stopLoader();
                             this.sendPaymentOrderFinalizedEvent(false);
-                            alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
+                            mageAlert({content: $.mage.__('Sorry, something went wrong. Please try again later.')});
                         }
                     },
                     error: function(data) {
                         // tell dibs not to finish order!
                         this.sendPaymentOrderFinalizedEvent(false);
-                        alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
+                        mageAlert({content: $.mage.__('Sorry, something went wrong. Please try again later.')});
                     }
                 });
             }

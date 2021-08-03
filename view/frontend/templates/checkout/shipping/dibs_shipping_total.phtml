@@ -4,7 +4,8 @@
 $quote = $block->getQuote();
 $shippingAddress = $quote->getShippingAddress();
 $cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
-$currency = $cartHelper->getCurrencySymbol();
+$priceHelper = $this->helper('Magento\Framework\Pricing\Helper\Data');
+/** @var Magento\Framework\Pricing\Helper\Data $priceHelper */
 
 $widgetHelper = $this->helper(\Dibs\EasyCheckout\Helper\EasycheckoutUdc::class);
 if ($widgetHelper->isShippingBlockReplaced()) {
@@ -13,6 +14,5 @@ if ($widgetHelper->isShippingBlockReplaced()) {
 
 ?>
 <span class="shipping-price" id="dibs-easy-checkout_dibs_shipping_total">
-    <?= ($shippingAddress === null || $shippingAddress->getShippingInclTax() === null ) ? __('_') : $shippingAddress->getShippingInclTax() ?>
-    <?= $currency ?>
+    <?= ($shippingAddress === null || $shippingAddress->getShippingInclTax() === null ) ? __('_') : $priceHelper->currency($shippingAddress->getShippingInclTax()) ?>
 </span>

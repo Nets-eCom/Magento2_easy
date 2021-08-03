@@ -5,12 +5,12 @@
 
 $quote = $block->getQuote();
 $cartHelper = $this->helper('Dibs\EasyCheckout\Helper\Cart');
-$currency = $cartHelper->getCurrencySymbol();
+$priceHelper = $this->helper('Magento\Framework\Pricing\Helper\Data');
+/** @var Magento\Framework\Pricing\Helper\Data $priceHelper */
 ?>
 <div id="dibs-easy-checkout_grand_total" class="dibs-easy-checkout-block grand-total">
     <h4 role="heading">
-        <span class="total-currency"><?= $currency ?></span>
-        <span class="total-amount"><?= $quote->getData('grand_total') ?></span>
+        <span class="total-amount"><?= $priceHelper->currency($quote->getData('grand_total')) ?></span>
         <span class="total-title"><?= __('Total,') ?></span>
     </h4>
 </div>
