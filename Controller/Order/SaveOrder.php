@@ -55,8 +55,8 @@ class SaveOrder extends Checkout
             try {
                 $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
             } catch (\Exception $e) {
-                $this->respondWithError(
-                    "An error occurred when attempting to save the order. You can try to place your order again. If the problem persists, contact a site admin.",
+                return $this->respondWithError(
+                    "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support.",
                 );
             }
         }

@@ -74,6 +74,14 @@ class Checkout extends AbstractMethod
             ->setAdditionalInformation('dibs_payment_method', $data->getDibsPaymentMethod())
             ->setAdditionalInformation('country_id', $data->getCountryId());
 
+        // This flag is set to differentiate orders placed before and after 1.3.2
+        // Orders placed before needs to handle discount VAT differently when captured and credited
+        // This flag is checked in capture and credit operations in Dibs\EasyCheckout\Model\Dibs\Items
+        $this->getInfoInstance()->setAdditionalInformation(
+            'negative_discount_vat',
+            1
+        );
+
         return $this;
     }
 
@@ -303,7 +311,9 @@ class Checkout extends AbstractMethod
         }
 
         try {
-            $this->dibsHandler->cancelDibsPayment($payment);
+            if ($this->getOrder()->getState() === Order::STATE_PROCESSING) {
+                $this->dibsHandler->cancelDibsPayment($payment);
+            }
         } catch (ClientException $e) {
             throw new LocalizedException(__("Could not cancel order. %1", $e->getMessage()), $e);
         }

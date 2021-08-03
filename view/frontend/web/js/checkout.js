@@ -14,7 +14,7 @@ define([
     "mage/translate",
     "mage/mage",
     "mage/validation"
-], function (jQuery, alert, quoteModel, uiRegistry, mageurl) {
+], function (jQuery, mageAlert, quoteModel, uiRegistry, mageurl) {
     "use strict";
     jQuery.widget('mage.nwtdibsCheckout', {
         options: {
@@ -335,7 +335,6 @@ define([
                         if (response.reload || response.redirect) {
                             this.loadWaiting = false; //prevent that resetLoadWaiting hiding loader
                             if (response.messages) {
-                                //alert({content: response.messages});
                                 jQuery(this.options.waitLoadingContainer).html('<span class="error">' + response.messages + ' Reloading...</span>');
                             } else {
                                 jQuery(this.options.waitLoadingContainer).html('<span class="error">Reloading...</span>');
@@ -381,13 +380,13 @@ define([
                         }
 
                         if (response.messages) {
-                            alert({
+                            mageAlert({
                                 content: response.messages
                             });
                         }
 
                     } else {
-                        alert({
+                        mageAlert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again (reload this page)')
                         });
                         // window.location.reload();
@@ -399,7 +398,7 @@ define([
                 },
                 error: function () {
                     this.options.ctrkeyCheck = true;
-                    alert({
+                    mageAlert({
                         content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                     });
                     //window.location.reload();
@@ -414,6 +413,32 @@ define([
             }
 
             var self = this;
+            window._dibsCheckout.on('address-changed', function (response) {
+                jQuery.ajax({
+                    url: mageurl.build("easycheckout/order/validateAddress/"),
+                    type: "POST",
+                    context: this,
+                    data: response,
+                    dataType: 'json',
+                    beforeSend: function () {
+                        self._hideDibsCheckout();
+                    },
+                    success: function (response) {
+                        // Only thaw checkout if address is valid
+                        if(response.valid) {
+                            self._showDibsCheckout();
+                            return;
+                        }
+
+                        mageAlert({
+                            content: jQuery.mage.__(response.message)
+                        });
+                    },
+                    error: function () {
+                        self._showDibsCheckout();
+                    }
+                })
+            });
             window._dibsCheckout.on('payment-completed', function (response) {
                 jQuery.ajax({
                     url: mageurl.build("easycheckout/order/confirmOrder/"),
@@ -431,14 +456,18 @@ define([
                     },
                     success: function (response) {
                         if (response.messages) {
-                            alert(jQuery.mage.__(response.messages));
+                            mageAlert({
+                                content: jQuery.mage.__(response.messages)
+                            });
                         }
                         if (response.redirectTo) {
                             window.location.href = response.redirectTo;
                         }
                     },
                     error: function(_jqXhr) {
-                        alert(jQuery.mage.__('Sorry, there has been an error processing your order. Please contact customer support.'));
+                        mageAlert({
+                            content: jQuery.mage.__('Sorry, there has been an error processing your order. Please contact customer support.')
+                        });
                     },
                 });
             });
@@ -463,7 +492,7 @@ define([
 
                             if (response.messages) {
                                 jQuery('#dibs_easy_checkoutSidebar').show();
-                                alert(jQuery.mage.__(response.messages));
+                                mageAlert({content: response.messages});
                             }
 
                             if (response.redirect) {
@@ -473,7 +502,7 @@ define([
                             // tell dibs not to finish order!
                             window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
                             jQuery('#review-please-wait').hide();
-                            alert({
+                            mageAlert({
                                 content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                             });
                         }
@@ -483,7 +512,7 @@ define([
                         // tell dibs not to finish order!
                         window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
 
-                        alert({
+                        mageAlert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                         });
 
