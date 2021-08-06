@@ -45,6 +45,8 @@ class Items
 
     protected $addCustomOptionsToItemName = null;
 
+    protected $_checkoutSession;
+
     /**
      * @var \Magento\SalesRule\Api\RuleRepositoryInterface
      */
@@ -61,7 +63,8 @@ class Items
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Magento\Catalog\Helper\Product\Configuration $productConfig,
         \Magento\Tax\Model\Calculation $calculationTool,
-        \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository
+        \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository,
+         \Magento\Checkout\Model\Session $checkoutSession
     ) {
         $this->_helper = $helper;
         $this->_productConfig = $productConfig;
@@ -70,6 +73,7 @@ class Items
         // resets all values
         $this->init();
         $this->ruleRepository = $ruleRepository;
+        $this->_checkoutSession = $checkoutSession;
     }
 
     /**
@@ -103,6 +107,7 @@ class Items
 
         $addComments = $this->addCustomOptionsToItemName;
 
+        $discountOnTaxAdded = false;
         $isQuote = null;
         foreach ($items as $magentoItem) {
             if (is_null($isQuote)) {
@@ -167,6 +172,9 @@ class Items
                 //simple product
                 $allItems[] = $magentoItem;
             }
+
+            
+            $cartData = $this->_checkoutSession->getQuote();
 
             // Now we can loop through the items!
             foreach ($allItems as $item) {
@@ -265,9 +273,47 @@ class Items
                     $itemName = substr($itemName, 0, 128);
                 }
 
+
                 $unitPriceExclTax = $addPrices ? $item->getPrice() : 0;
-                $taxAmount = $this->addZeroes($item->getTaxAmount() + $item->getDiscountTaxCompensationAmount());
+                $taxAmount = $this->addZeroes($item->getTaxAmount());
+                // $taxAmount = $this->addZeroes($item->getTaxAmount() + $item->getDiscountTaxCompensationAmount());
                 $unitPriceInclTax = $addPrices ? $item->getPriceInclTax() : 0;
+
+                $appliedRuleId = $cartData->getAppliedRuleIds();
+                if(!empty($appliedRuleId)){
+                    foreach (explode(',', $appliedRuleId) as $ruleId) {
+                        try {
+                            $rule = $this->ruleRepository->getById($ruleId);
+
+                            if ($rule->getSimpleAction() == 'cart_fixed') {
+
+                                $fixedDiscount = $cartData->getSubtotal() - $cartData->getSubtotalWithDiscount();
+                                $taxAmountForDiscount = $vat * $fixedDiscount;
+                                $unitPriceInclTax = $this->addZeroes($unitPriceInclTax * $qty);
+                                if( !$discountOnTaxAdded ) {
+                                    if( $unitPriceInclTax > $taxAmountForDiscount ) {
+                                        $unitPriceInclTax = $unitPriceInclTax - $taxAmountForDiscount;
+                                        $discountOnTaxAdded = true;
+                                        $taxAmount = $unitPriceInclTax - $this->addZeroes($unitPriceExclTax * $qty);
+                                    }
+                                }
+                            } elseif ($rule->getSimpleAction() == 'by_percent') {
+
+                                $vat = $item->getTaxPercent();
+                                $unitPriceExclTax = $item->getPrice();
+                                $unitPriceInclTax =  $this->addZeroes( $item->getRowTotal() + $item->getTaxAmount() );
+                                $taxAmount = $unitPriceInclTax - $this->addZeroes($unitPriceExclTax * $qty);
+                            }
+ 
+                        } catch (\Exception $e) {
+                            continue;
+                        }
+                    }
+                } else {
+                    $unitPriceInclTax = $this->addZeroes($unitPriceInclTax * $qty);
+                }
+                
+                
 
                 $orderItem = new OrderItem();
                 $orderItem
@@ -277,9 +323,11 @@ class Items
                     ->setQuantity(round($qty, 0))
                     ->setTaxRate($this->addZeroes($vat))
                     ->setTaxAmount((int)$taxAmount)
-                    ->setUnitPrice((int)$this->addZeroes($unitPriceExclTax))
+                    ->setUnitPrice((int)$this->addZeroes($unitPriceExclTax ) )
                     ->setNetTotalAmount((int)$this->addZeroes($unitPriceExclTax * $qty))
-                    ->setGrossTotalAmount((int)$this->addZeroes($unitPriceInclTax * $qty));
+                    // ->setGrossTotalAmount((int)$this->addZeroes($unitPriceInclTax * $qty));
+                    ->setGrossTotalAmount((int)$unitPriceInclTax);
+
 
                 // Add to array
                 $this->_cart[$sku] = $orderItem;
@@ -349,11 +397,16 @@ class Items
             $this->_maxvat = $vat;
         }
 
+        $shippingDescription = $address->getShippingDescription();
+        if (strlen($shippingDescription) > 128) {
+            $shippingDescription = substr($shippingDescription, 0, 128);
+        }
+
         //
         $orderItem = new OrderItem();
         $orderItem
             ->setReference('shipping_fee')
-            ->setName((string)__('Shipping Fee (%1)', $address->getShippingDescription()))
+            ->setName((string)__('Shipping Fee (%1)', $shippingDescription))
             ->setUnit("st") // TODO! We need to map these somehow!
             ->setQuantity(1)
             ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
@@ -503,11 +556,16 @@ class Items
                 ->setName((string)__('Discount'))
                 ->setUnit("st")
                 ->setQuantity(1)
-                ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-                ->setTaxAmount(-$taxAmount) // total tax amount
+                // ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                // ->setTaxAmount(-$taxAmount) // total tax amount
+
+                ->setTaxRate(0) // the tax rate i.e 25% (2500)
+                ->setTaxAmount(0) // total tax amount
+
                 ->setUnitPrice(-$amountExclTax) // excl. tax price per item
                 ->setNetTotalAmount(-$amountExclTax) // excl. tax
-                ->setGrossTotalAmount(-$amountInclTax); // incl. tax
+                // ->setGrossTotalAmount(-$amountInclTax); // incl. tax
+                ->setGrossTotalAmount(-$amountExclTax); // incl. tax
 
             $this->_cart[$reference] = $orderItem;
         }
@@ -646,6 +704,8 @@ class Items
         //quote/order/invoice/creditmemo total taxes
         $grandTotal = $this->addZeroes($grandTotal);
         $difference = $grandTotal - $calculatedTotal;
+
+        $difference = 0;
 
 
         //no correction required

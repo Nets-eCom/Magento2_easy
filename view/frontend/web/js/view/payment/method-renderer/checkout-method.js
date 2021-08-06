@@ -10,8 +10,7 @@ define(
         'uiRegistry',
         'vanillaCheckoutHandler',
         'Magento_SalesRule/js/action/set-coupon-code',
-        'Magento_SalesRule/js/action/cancel-coupon',
-        'Magento_Ui/js/modal/mageAlert'
+        'Magento_SalesRule/js/action/cancel-coupon'
     ],
     function (
         $,
@@ -22,8 +21,7 @@ define(
         uiRegistry,
         vanillaCheckoutHandler,
         setCouponCodeAction,
-        cancelCouponCodeAction,
-        mageAlert
+        cancelCouponCodeAction
     ) {
         'use strict';
         var component = Component.extend({
@@ -46,7 +44,7 @@ define(
                             },
                             success: function(response) {
                                 if(response.error) {
-                                    mageAlert({content: $.mage.__(response.messages)});
+                                    alert($.mage.__(response.messages));
                                     return false;
                                 }
                                 if(response.redirectTo) {
@@ -55,7 +53,7 @@ define(
                                 $.mage.redirect(paymentConfiguration.checkoutUrl);
                             },
                             error: function() {
-                                mageAlert({content: $.mage.__('Sorry, something went wrong. Please try again later.')});
+                                alert($.mage.__('Sorry, something went wrong. Please try again later.'));
                             },
                             complete: function() {
                                 fullScreenLoader.stopLoader()
@@ -127,7 +125,7 @@ define(
                     {'vanilla':vanilla},
                     callback
                 ).fail( function() {
-                     mageAlert({content: 'Payment init fail'})
+                     alert('Payment init fail')
                 });
             }
         });

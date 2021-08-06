@@ -14,7 +14,7 @@ define([
     "mage/translate",
     "mage/mage",
     "mage/validation"
-], function (jQuery, mageAlert, quoteModel, uiRegistry, mageurl) {
+], function (jQuery, alert, quoteModel, uiRegistry, mageurl) {
     "use strict";
     jQuery.widget('mage.nwtdibsCheckout', {
         options: {
@@ -335,6 +335,7 @@ define([
                         if (response.reload || response.redirect) {
                             this.loadWaiting = false; //prevent that resetLoadWaiting hiding loader
                             if (response.messages) {
+                                //alert({content: response.messages});
                                 jQuery(this.options.waitLoadingContainer).html('<span class="error">' + response.messages + ' Reloading...</span>');
                             } else {
                                 jQuery(this.options.waitLoadingContainer).html('<span class="error">Reloading...</span>');
@@ -380,13 +381,13 @@ define([
                         }
 
                         if (response.messages) {
-                            mageAlert({
+                            alert({
                                 content: response.messages
                             });
                         }
 
                     } else {
-                        mageAlert({
+                        alert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again (reload this page)')
                         });
                         // window.location.reload();
@@ -398,7 +399,7 @@ define([
                 },
                 error: function () {
                     this.options.ctrkeyCheck = true;
-                    mageAlert({
+                    alert({
                         content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                     });
                     //window.location.reload();
@@ -430,9 +431,7 @@ define([
                             return;
                         }
 
-                        mageAlert({
-                            content: jQuery.mage.__(response.message)
-                        });
+                        alert(jQuery.mage.__(response.messages));
                     },
                     error: function () {
                         self._showDibsCheckout();
@@ -456,18 +455,14 @@ define([
                     },
                     success: function (response) {
                         if (response.messages) {
-                            mageAlert({
-                                content: jQuery.mage.__(response.messages)
-                            });
+                            alert(jQuery.mage.__(response.messages));
                         }
                         if (response.redirectTo) {
                             window.location.href = response.redirectTo;
                         }
                     },
                     error: function(_jqXhr) {
-                        mageAlert({
-                            content: jQuery.mage.__('Sorry, there has been an error processing your order. Please contact customer support.')
-                        });
+                        alert(jQuery.mage.__('Sorry, there has been an error processing your order. Please contact customer support.'));
                     },
                 });
             });
@@ -492,7 +487,7 @@ define([
 
                             if (response.messages) {
                                 jQuery('#dibs_easy_checkoutSidebar').show();
-                                mageAlert({content: response.messages});
+                                alert(jQuery.mage.__(response.messages));
                             }
 
                             if (response.redirect) {
@@ -502,7 +497,7 @@ define([
                             // tell dibs not to finish order!
                             window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
                             jQuery('#review-please-wait').hide();
-                            mageAlert({
+                            alert({
                                 content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                             });
                         }
@@ -512,7 +507,7 @@ define([
                         // tell dibs not to finish order!
                         window._dibsCheckout.sendPaymentOrderFinalizedEvent(false);
 
-                        mageAlert({
+                        alert({
                             content: jQuery.mage.__('Sorry, something went wrong. Please try again later.')
                         });
 
