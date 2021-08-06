@@ -6,6 +6,7 @@ use Dibs\EasyCheckout\Model\CheckoutException;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment as OrderPayment;
 
 /**
  * Dibs (Checkout) Order Items Model
@@ -275,6 +276,7 @@ class Items
 
                 $unitPriceExclTax = $addPrices ? $item->getPrice() : 0;
                 $taxAmount = $this->addZeroes($item->getTaxAmount());
+                // $taxAmount = $this->addZeroes($item->getTaxAmount() + $item->getDiscountTaxCompensationAmount());
                 $unitPriceInclTax = $addPrices ? $item->getPriceInclTax() : 0;
 
                 $appliedRuleId = $cartData->getAppliedRuleIds();
@@ -340,7 +342,7 @@ class Items
                         $discountAmount -= $item->getDiscountInvoiced(); //remaining discount
                     }
 
-                    if ($discountAmount != 0) {
+                    if ($discountAmount != 0 && $mainItem->getDiscountPercent() > 0) {
 
                         //check if Taxes are applied BEFORE or AFTER the discount
                         //if taxes are applied BEFORE the discount we have row_total_incl_tax = row_total+tax_amount
@@ -520,11 +522,11 @@ class Items
 
     /**
      *
-     * @param $couponCode
+     * @param bool $negativeDiscountVAT
      *
      * @return $this
      */
-    public function addDiscounts($couponCode)
+    public function addDiscounts($negativeDiscountVAT = true)
     {
         foreach ($this->_discounts as $vat => $amountInclTax) {
             if ($amountInclTax == 0) {
@@ -540,16 +542,26 @@ class Items
             $amountInclTax = $this->addZeroes($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
+            // Special case for older orders where discounts were sent with positive tax amount -
+            // VAT amount is disregarded
+            if (!$negativeDiscountVAT) {
+                $vat = 0;
+                $taxAmount = 0;
+                $amountExclTax = $amountInclTax;
+            }
+
             $orderItem = new OrderItem();
             $orderItem
                 ->setReference($reference)
-                ->setName($couponCode ? (string)__('Discount (%1)', $couponCode) : (string)__('Discount'))
+                ->setName((string)__('Discount'))
                 ->setUnit("st")
                 ->setQuantity(1)
                 // ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                // ->setTaxAmount(-$taxAmount) // total tax amount
+
                 ->setTaxRate(0) // the tax rate i.e 25% (2500)
-                // ->setTaxAmount($taxAmount) // total tax amount
                 ->setTaxAmount(0) // total tax amount
+
                 ->setUnitPrice(-$amountExclTax) // excl. tax price per item
                 ->setNetTotalAmount(-$amountExclTax) // excl. tax
                 // ->setGrossTotalAmount(-$amountInclTax); // incl. tax
@@ -564,12 +576,28 @@ class Items
     /**
      * Check if discount was applied for whole cart
      *
-     * @param Quote $quote
+     * @param string|null $ruleIds
+     * @param float|null $discountAmount
+     * @param string|null $couponCode
+     * @param boolean $ignoreType
+     * @return void
      */
-    private function addDiscountByCartRule(Quote $quote): void
-    {
-        $ruleIds = $quote->getAppliedRuleIds();
+    private function addDiscountByCartRule(
+        ?string $ruleIds,
+        ?float $discountAmount,
+        ?string $couponCode,
+        $ignoreType = false
+    ): void {
         if (!$ruleIds) {
+            return;
+        }
+
+        // First we must disregard any already applied percent discounts
+        foreach ($this->_discounts as $amountInclTax) {
+            $discountAmount += $amountInclTax;
+        }
+
+        if (!$discountAmount) {
             return;
         }
 
@@ -580,26 +608,26 @@ class Items
                 continue;
             }
 
-            if ($rule->getSimpleAction() != 'cart_fixed') {
+            if (!$ignoreType && $rule->getSimpleAction() != 'cart_fixed') {
                 continue;
             }
 
-            $discount = $quote->getSubtotal() - $quote->getSubtotalWithDiscount();
-            $discount = $this->addZeroes($discount);
+            $discount = $this->addZeroes($discountAmount);
             $orderItem = new OrderItem();
             $reference = $rule->getName();
             $orderItem
                 ->setReference($reference)
-                ->setName($quote->getCouponCode() ? (string)__('Discount (%1)', $quote->getCouponCode()) : (string)__('Discount'))
+                ->setName($couponCode ? (string)__('Discount (%1)', $couponCode) : (string)__('Discount'))
                 ->setUnit("st")
                 ->setQuantity(1)
-                ->setTaxRate($this->addZeroes(0)) // the tax rate i.e 25% (2500)
+                ->setTaxRate($this->addZeroes(0))
                 ->setTaxAmount(0) // total tax amount
-                ->setUnitPrice(-$discount) // excl. tax price per item
-                ->setNetTotalAmount(-$discount) // excl. tax
-                ->setGrossTotalAmount(-$discount); // incl. tax
+                ->setUnitPrice($discount) // excl. tax price per item
+                ->setNetTotalAmount($discount) // excl. tax
+                ->setGrossTotalAmount($discount); // incl. tax
 
             $this->_cart[$reference] = $orderItem;
+            break;
         }
     }
 
@@ -764,9 +792,12 @@ class Items
         // If there is no discount per items, but code does exist
         // it means, that discount was applied on whole cart
         // @TODO: Refactor this to external model
-        count($this->_discounts)
-            ? $this->addDiscounts($quote->getCouponCode())
-            : $this->addDiscountByCartRule($quote);
+        $this->addDiscounts();
+        $this->addDiscountByCartRule(
+            $quote->getAppliedRuleIds(),
+            ($quote->getSubtotal() - $quote->getSubtotalWithDiscount()) * -1,
+            $quote->getCouponCode()
+        );
 
         $this->addCustomTotals($quote->getTotals());
 
@@ -794,7 +825,7 @@ class Items
         $grandTotal = $order->getGrandTotal();
         $this->addItems($order->getAllItems())
             ->addShipping($order)
-            ->addDiscounts($order->getCouponCode())
+            ->addDiscounts()
             ->validateTotals($grandTotal);
 
         return $this->_cart;
@@ -807,6 +838,7 @@ class Items
      */
     public function addDibsItemsByInvoice(Order\Invoice $invoice)
     {
+        //coupon code is not copied to invoice so we take it from the order!
         $order = $invoice->getOrder();
 
         $this
@@ -831,8 +863,7 @@ class Items
             $this->addShipping($invoice);
         }
 
-        //coupon code is not copied to invoice so we take it from the order!
-        $this->addDiscounts($order->getCouponCode());
+        $this->prepareOrderDiscounts($order);
     }
 
     /**
@@ -846,6 +877,7 @@ class Items
      */
     public function addDibsItemsByCreditMemo(Order\Creditmemo $creditMemo)
     {
+        //coupon code is not copied to credit memo
         $order = $creditMemo->getOrder();
 
         // no support at dibs for adjustments
@@ -859,7 +891,33 @@ class Items
             $this->addShipping($creditMemo);
         }
 
-        $this->addDiscounts($order->getCouponCode()); //coupon code is not copied to invoice
+        $this->prepareOrderDiscounts($order);
+    }
+
+    /**
+     * Prepare discounts from order for capture and refund/credit memo operations
+     *
+     * @param Order $order
+     * @return void
+     */
+    private function prepareOrderDiscounts($order)
+    {
+        /**
+         * @var OrderPayment $payment
+         */
+        $payment = $order->getPayment();
+        $negativeDiscountVAT = $payment->getAdditionalInformation('negative_discount_vat');
+
+        // Prior to 1.3.2 discounts were sent to Nets with positive VAT, which is incorrect.
+        // This has now changed, but orders placed before 1.3.2 need special handling to correct the value
+        // We check the "negative_discount_vat" flag which only order payments in 1.3.2 and onwards will have
+        $negativeDiscountVAT = (bool)$payment->getAdditionalInformation('negative_discount_vat');
+        $this->addDiscounts($negativeDiscountVAT);
+        $this->addDiscountByCartRule(
+            $order->getAppliedRuleIds(),
+            $order->getDiscountAmount(),
+            $order->getCouponCode()
+        );
     }
 
     /**

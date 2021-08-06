@@ -414,6 +414,30 @@ define([
             }
 
             var self = this;
+            window._dibsCheckout.on('address-changed', function (response) {
+                jQuery.ajax({
+                    url: mageurl.build("easycheckout/order/validateAddress/"),
+                    type: "POST",
+                    context: this,
+                    data: response,
+                    dataType: 'json',
+                    beforeSend: function () {
+                        self._hideDibsCheckout();
+                    },
+                    success: function (response) {
+                        // Only thaw checkout if address is valid
+                        if(response.valid) {
+                            self._showDibsCheckout();
+                            return;
+                        }
+
+                        alert(jQuery.mage.__(response.messages));
+                    },
+                    error: function () {
+                        self._showDibsCheckout();
+                    }
+                })
+            });
             window._dibsCheckout.on('payment-completed', function (response) {
                 jQuery.ajax({
                     url: mageurl.build("easycheckout/order/confirmOrder/"),

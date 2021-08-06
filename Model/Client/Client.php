@@ -147,15 +147,9 @@ abstract class Client
 
         $exception = null;
 
-        /*$writer = new \Zend\Log\Writer\Stream(BP . '/var/log/templog.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
-        $logger->info("options " . json_encode($options, true) );*/
-
         try {
             $result = $this->httpClient->post($endpoint, $options);
             $content =  $result->getBody()->getContents();
-
 
             if ($this->testMode) {
                 $this->getLogger()->info("Sending request to dibs integration: POST $endpoint");

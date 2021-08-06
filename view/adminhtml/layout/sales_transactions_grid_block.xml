@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="sales.transactions.grid.columnSet">
+            <action method="setFilterType">
+                <argument name="type" xsi:type="string">options</argument>
+                <argument name="className" xsi:type="string">Dibs\EasyCheckout\Block\Adminhtml\Widget\Grid\Column\Filter\Select</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>
