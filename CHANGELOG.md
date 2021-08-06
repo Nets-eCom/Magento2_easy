@@ -12,7 +12,7 @@
 
 ## CHANGELOG
 
-### Version 1.1.3 - Released 2021-08-06
+### Version 1.3.6 - Released 2021-08-06
 * Update - Fixes regarding Vanilla Embedded Checkout & character limit for reference and name. Fixed discount issues.
 
 
