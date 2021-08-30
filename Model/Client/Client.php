@@ -143,7 +143,7 @@ abstract class Client
         }
 
         $options = array_merge($options, $this->getDefaultOptions());
-        $options[RequestOptions::JSON] = $this->utf8ize($request->toArray());;
+        $options[RequestOptions::JSON] = $this->utf8ize($request->toArray());
 
         $exception = null;
 

@@ -88,6 +88,9 @@ class GetPaymentResponse implements PaymentResponseInterface
             }
 
             if (!empty((array)$p->consumer)) {
+                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                $cart = $objectManager->create('Magento\Checkout\Model\Cart');
+                
                 if (!empty((array)$p->consumer->shippingAddress)) {
                     $s = $p->consumer->shippingAddress;
                     $shippingAddress = new GetConsumerShippingAddress();
@@ -101,6 +104,23 @@ class GetPaymentResponse implements PaymentResponseInterface
                         $shippingAddress->setAddressLine2($s->addressLine2);
                     }
 
+                    $consumer->setShippingAddress($shippingAddress);
+                } else {
+                    $shippingAddressData = $cart->getQuote()->getShippingAddress();
+                    $street             = $shippingAddressData->getData('street');
+                    $city               = $shippingAddressData->getData('city');
+                    $countryCode        = $shippingAddressData->getData('country_id');
+                    $region             = $shippingAddressData->getData('region');
+                    $postalCode         = $shippingAddressData->getData('postcode');
+                    $telephone          = $shippingAddressData->getData('telephone');
+
+                    $shippingAddress = new GetConsumerShippingAddress();
+                    $shippingAddress->setPostalCode($postalCode);
+                    $shippingAddress->setCountry($countryCode);
+                    $shippingAddress->setCity($city);
+                    $shippingAddress->setReceiverLine($telephone);
+                    $shippingAddress->setAddressLine1($street);
+                    
                     $consumer->setShippingAddress($shippingAddress);
                 }
 
@@ -117,6 +137,23 @@ class GetPaymentResponse implements PaymentResponseInterface
                         $billingAddress->setAddressLine2($s->addressLine2);
                     }
 
+                    $consumer->setBillingAddress($billingAddress);
+                } else {
+                    $billingAddressData = $cart->getQuote()->getBillingAddress();
+                    $street             = $billingAddressData->getData('street');
+                    $city               = $billingAddressData->getData('city');
+                    $countryCode        = $billingAddressData->getData('country_id');
+                    $region             = $billingAddressData->getData('region');
+                    $postalCode         = $billingAddressData->getData('postcode');
+                    $telephone          = $billingAddressData->getData('telephone');
+
+                    $billingAddress = new GetConsumerShippingAddress();
+                    $billingAddress->setPostalCode($postalCode);
+                    $billingAddress->setCountry($countryCode);
+                    $billingAddress->setCity($city);
+                    $billingAddress->setReceiverLine($telephone);
+                    $billingAddress->setAddressLine1($street);
+                    
                     $consumer->setBillingAddress($billingAddress);
                 }
 
