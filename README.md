@@ -7,7 +7,7 @@
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
 |Version | `1.3.8`
-|Guide | https://tech.nets.eu/magento
+|Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-magento/nets-easy-for-magento-magento-2/
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## INSTALLATION
