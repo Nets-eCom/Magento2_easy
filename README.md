@@ -27,7 +27,8 @@ NOTE : It is strongly recommended to have cleanup of Pending Payment orders acti
 
 ### Enable the module
 Enable the Nets Easy module in Magento by running the following commands:
-	$ php bin/magento module:enable --clear-static-content Dibs_EasyCheckout 
+
+	$ php bin/magento module:enable --clear-static-content Dibs_EasyCheckout
 	$ php bin/magento setup:upgrade
 
 ### Configuration
