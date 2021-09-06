@@ -132,8 +132,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $billingAddress->save();
         $shippingAddress->save();
 
-        $this->totalsCollector->collectAddressTotals($quote, $shippingAddress);
-        $this->totalsCollector->collectQuoteTotals($quote);
+        // $this->totalsCollector->collectAddressTotals($quote, $shippingAddress);
+        // $this->totalsCollector->collectQuoteTotals($quote);
 
         $quote->collectTotals();
         $this->quoteRepository->save($quote);

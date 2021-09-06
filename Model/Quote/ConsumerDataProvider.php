@@ -36,6 +36,16 @@ class ConsumerDataProvider
         'FI' => '+358',
         'NO' => '+47',
         'AT' => '+43',
+        'US' => '+1',
+        'UK' => '+44',
+        'DE' => '+49',
+        'ES' => '+34',
+        'FR' => '+33',
+        'BR' => '+55',
+        'UA' => '+380',
+        'NL' => '+31',
+        'PL' => '+48',
+        'IT' => '+39',
     ];
 
     /**
@@ -71,7 +81,7 @@ class ConsumerDataProvider
         $string = str_replace([' ', '-', '(', ')'], '', $phone);
 
         $matches = [];
-        preg_match_all('/^(\+)?(45|46|358|47)?(\d{8,10})$/', $string, $matches);
+        preg_match_all('/^(\+)?(45|46|358|47|43|1|44|49|34|33|55|380|31|48|39)?(\d{8,10})$/', $string, $matches);
         $prefix = $this->prefixes[$address->getCountryId()] ?? null;
         if (empty($matches[3][0]) || !$prefix) {
             throw new \Exception('Missing phone data');

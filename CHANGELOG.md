@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.3.8`
+|Version | `1.3.9`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.3.9 - Released 2021-09-06
+* Fixed : Discount coupon & amount display issue in cart and order summary
+* Fixed : Guest customer address re-enter on checkout window
 
 ### Version 1.3.8 - Released 2021-08-30
 * Fixed : Calculation and tax rules rework
