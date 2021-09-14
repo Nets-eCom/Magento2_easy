@@ -282,19 +282,22 @@ class Items
 
 
 				//mai - hotfix
+				$taxFormat = '1'.str_pad(number_format((float)$vat, 2, '.', ''), 5, '0', STR_PAD_LEFT);
+				$unitName = "pcs";
+				
 				if ((int) $this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) === 1) {
 					// Product price in catalog is including tax.
-					$unitName = "incUnit";
+					$unitPrice = round(round(($unitPriceInclTax / $taxFormat), 2) * 100);
+					$netPrice = $qty*$this->addZeroes($unitPriceExclTax);
+					$grossPrice = round($this->addZeroes($unitPriceInclTax)*$qty);
+					$vatPrice = $grossPrice-$netPrice;
 				} else {
 					// Product price in catalog is excluding tax.
-					$unitName = "exUnit";
+					$unitPrice = round(round(($unitPriceExclTax), 2) * 100);
+					$netPrice = round($qty*$unitPrice);
+					$grossPrice = round(($qty*$unitPriceExclTax)*$taxFormat);
+					$vatPrice = $grossPrice-$netPrice;
 				}
-
-				$taxFormat = '1'.str_pad(number_format((float)$vat, 2, '.', ''), 5, '0', STR_PAD_LEFT);
-				$unitPrice = round(round(($unitPriceExclTax), 2) * 100);
-				$netPrice = round($qty*$unitPrice);
-				$grossPrice = round(($qty*$unitPriceExclTax)*$taxFormat);
-				$vatPrice = $grossPrice-$netPrice;
 
 				$orderItem = new OrderItem();
 				$orderItem
@@ -302,7 +305,7 @@ class Items
 					->setName($itemName)
 					->setUnit($unitName)
 					->setQuantity(round($qty, 0))
-					->setUnitPrice((int)$this->addZeroes( $unitPriceExclTax ))
+					->setUnitPrice((int)$this->addZeroes($unitPriceExclTax))
 					->setTaxRate($this->addZeroes($vat))
 					->setTaxAmount((int)$vatPrice)
 					->setNetTotalAmount((int)$netPrice)

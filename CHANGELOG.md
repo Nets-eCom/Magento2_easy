@@ -6,11 +6,14 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.3.9`
+|Version | `1.4.0`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.4.0 - Released 2021-09-14
+* Fixed : Minor bug fix on calculation method
 
 ### Version 1.3.9 - Released 2021-09-06
 * Fixed : Discount coupon & amount display issue in cart and order summary

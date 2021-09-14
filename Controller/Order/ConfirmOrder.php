@@ -49,7 +49,7 @@ class ConfirmOrder extends Checkout
             );
             return $this->respondWithError(
                 "We are sorry, but your order seems to have gone missing. "
-                . "Please contact customer support with Nets Payment ID: " . $this->paymentId,
+                . "Please contact customer support with Nets Payment ID: " . $this->paymentId
             );
         }
 
