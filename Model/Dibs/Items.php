@@ -915,4 +915,49 @@ class Items
 			$this->_cart[$total->getCode()] = $orderItem;
 		}
 	}
+
+	public function addDiscounts($negativeDiscountVAT = true)
+    {
+
+        foreach ($this->_discounts as $vat => $amountInclTax) {
+            if ($amountInclTax == 0) {
+                continue;
+            }
+
+            $reference = 'discount' . (int)$vat;
+            if ($this->_toInvoice) {
+                $reference = 'discount-toinvoice';
+            }
+
+            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountExclTax = $amountInclTax - $taxAmount;
+
+            // Special case for older orders where discounts were sent with positive tax amount -
+            // VAT amount is disregarded
+            if (!$negativeDiscountVAT) {
+                $vat = 0;
+                $taxAmount = 0;
+                $amountExclTax = $amountInclTax;
+            }
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setReference($reference)
+                ->setName((string)__('Discount'))
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount(-$taxAmount) // total tax amount
+
+                ->setUnitPrice(-$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount(-$amountExclTax) // excl. tax
+                // ->setGrossTotalAmount(-$amountInclTax); // incl. tax
+                ->setGrossTotalAmount(-$amountExclTax); // incl. tax
+
+            $this->_cart[$reference] = $orderItem;
+        }
+
+        return $this;
+    }
 }
