@@ -40,6 +40,9 @@ Enable the Nets Easy module in Magento by running the following commands:
 3. Checkout Flow. Redirect / Embedded. Select between 2 checkout types. Redirect - Nets Hosted loads a new payment page. Embedded checkout inserts the payment window directly on the checkout page.
 4. Enable auto-capture. This function allows you to instantly charge a payment straight after the order is placed.
    NOTE. Capturing a payment before shipment of the order might be liable to restrictions based upon legislations set in your country. Misuse can result in your Easy account being forfeit.
+   
+For more details, please find below URL :-
+https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-magento/nets-easy-for-magento-magento-2/#build-configuration
 
 ### Operations
 * Cancel / Capture / Refund
