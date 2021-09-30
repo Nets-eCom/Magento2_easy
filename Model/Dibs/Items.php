@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Dibs\EasyCheckout\Model\Dibs;
 
@@ -7,99 +7,99 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Tax\Model\Calculation\Rate;
-
 
 /**
  * Dibs (Checkout) Order Items Model
  */
 class Items
 {
-	/**
-	 * @var \Dibs\EasyCheckout\Helper\Data
-	 */
-	protected $_helper;
+    /**
+     * @var \Dibs\EasyCheckout\Helper\Data
+     */
+    protected $_helper;
 
+    /** @var \Magento\Tax\Model\Calculation */
+    protected $calculationTool;
 
-	/** @var \Magento\Tax\Model\Calculation */
-	protected $calculationTool;
+    /**
+     * Catalog product configuration
+     *
+     * @var \Magento\Catalog\Helper\Product\Configuration
+     */
+    protected $_productConfig;
+    protected $_cart = [];
+    protected $_discounts = [];
+    protected $_maxvat = 0;
+    protected $_inclTAX = false;
+    protected $_toInvoice = false;
+    protected $_store = null;
+    protected $_itemsArray = [];
+    protected $addCustomOptionsToItemName = null;
+    protected $_checkoutSession;
 
+    /**
+     * @var \Magento\SalesRule\Api\RuleRepositoryInterface
+     */
+    private $ruleRepository;   
 
-	/**
-	 * Catalog product configuration
-	 *
-	 * @var \Magento\Catalog\Helper\Product\Configuration
-	 */
-	protected $_productConfig;
-	protected $_cart = [];
-	protected $_discounts = [];
-	protected $_maxvat = 0;
-	protected $_inclTAX = false;
-	protected $_toInvoice = false;
-	protected $_store = null;
-	protected $_itemsArray = [];
-	protected $addCustomOptionsToItemName = null;
-	protected $_checkoutSession;
-	protected $scopeConfig;
-	protected $taxRate;
+    protected $scopeConfig;
 
+    protected $_productloader;
 
-	/**
-	 * @var \Magento\SalesRule\Api\RuleRepositoryInterface
-	 */
-	private $ruleRepository;
+    protected $taxRate;
 
+    /**
+     * Items constructor.
+     *
+     * @param \Dibs\EasyCheckout\Helper\Data $helper
+     * @param \Magento\Catalog\Helper\Product\Configuration $productConfig
+     * @param \Magento\Tax\Model\Calculation $calculationTool
+     */
+    public function __construct(
+        \Dibs\EasyCheckout\Helper\Data $helper,
+        \Magento\Catalog\Helper\Product\Configuration $productConfig,
+        \Magento\Tax\Model\Calculation $calculationTool,
+        \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        ScopeConfigInterface $scopeConfig,
+        \Magento\Catalog\Model\ProductFactory $_productloader,
+        Rate $taxRate
 
-	/**
-	 * Items constructor.
-	 *
-	 * @param \Dibs\EasyCheckout\Helper\Data $helper
-	 * @param \Magento\Catalog\Helper\Product\Configuration $productConfig
-	 * @param \Magento\Tax\Model\Calculation $calculationTool
-	 * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-	 */
-	public function __construct
-	(
-		\Dibs\EasyCheckout\Helper\Data $helper,
-		\Magento\Catalog\Helper\Product\Configuration $productConfig,
-		\Magento\Tax\Model\Calculation $calculationTool,
-		\Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository,
-		\Magento\Checkout\Model\Session $checkoutSession,
-		\Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-		Rate $taxRate
-	) {
-		$this->_helper = $helper;
-		$this->_productConfig = $productConfig;
-		$this->calculationTool = $calculationTool;
-		$this->scopeConfig = $scopeConfig;
-		$this->_taxRate = $taxRate;
+    ) {
+        $this->_helper = $helper;
+        $this->_productConfig = $productConfig;
+        $this->calculationTool = $calculationTool;
 
-		// resets all values
-		$this->init();
-		$this->ruleRepository = $ruleRepository;
-		$this->_checkoutSession = $checkoutSession;
-	}
+        // resets all values
+        $this->init();
+        $this->ruleRepository = $ruleRepository;
+        $this->_checkoutSession = $checkoutSession;
+        $this->scopeConfig = $scopeConfig;
+        $this->_productloader = $_productloader;
+        $this->_taxRate = $taxRate;
+    }
 
+    /**
+     * @param null $store
+     *
+     * @return $this
+     */
+    public function init($store = null)
+    {
+        $this->_store = $store;
+        $this->_cart = [];
+        $this->_discounts = [];
+        $this->_maxvat = 0;
+        $this->_inclTAX = false;
+        $this->_toInvoice = false;
 
-	/**
-	 * @param null $store
-	 *
-	 * @return $this
-	 */
-	public function init($store = null)
-	{
-		$this->_store = $store;
-		$this->_cart = [];
-		$this->_discounts = [];
-		$this->_maxvat = 0;
-		$this->_inclTAX = false;
-		$this->_toInvoice = false;
+        return $this;
+    }
 
-		return $this;
-	}
-
-
-	/**
+    /**
 	 * @param $items mixed
 	 *
 	 * @return $this
@@ -343,13 +343,127 @@ class Items
 		return $this;
 	}
 
+    /* Item block */
+    public function addCustomItemTotal(Quote $quote) 
+    {
+        $algorithm = $this->scopeConfig->getValue('tax/calculation/algorithm',ScopeInterface::SCOPE_STORE, null);
+        $priceIncludesTax = $this->scopeConfig->getValue('tax/calculation/price_includes_tax',ScopeInterface::SCOPE_STORE, null);
+        $applyAfterDiscount = $this->scopeConfig->getValue('tax/calculation/apply_after_discount',ScopeInterface::SCOPE_STORE, null);
 
-	/**
-	 * @param $address
-	 *
-	 * @return $this
-	 */
-	public function addShipping($address)
+        $items = $quote->getAllVisibleItems();
+
+        $quantity = $taxRate = $productPrice = $netTotalAmount = $taxAmount = $grossTotalAmount = 0;
+        foreach ($items as $item) {
+
+            if( $algorithm == 'UNIT_BASE_CALCULATION' || $algorithm == 'ROW_BASE_CALCULATION') {
+                if ( $priceIncludesTax == 0 && $applyAfterDiscount == 1) {
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+
+                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
+                    
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+
+                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
+                    
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+
+                } else {
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+                }
+
+            } else {
+                if ( $priceIncludesTax == 0 && $applyAfterDiscount == 1) {
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+
+                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
+                    
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+
+                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
+                    
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+                } else {
+                    $quantity           = (int)$item->getQty();
+                    $taxRate            = $this->addZeroes($item->getTaxPercent());
+                    $productPrice       = $this->addZeroes($item->getPrice());
+                    $netTotalAmount     = round($quantity * $productPrice);
+                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+                }
+            }
+            
+            
+            $itemName = preg_replace('/[^\w\d\s]*/', '', $item->getName());
+            // Set length!
+            if (strlen($itemName) > 128) {
+                $itemName = substr($itemName, 0, 128);
+            }
+
+            $itemSku = $item->getSku();
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setReference($itemSku)
+                ->setName($itemName)
+                ->setUnit("pcs")
+                ->setQuantity(round($quantity, 0))
+                ->setTaxRate($taxRate)
+                ->setTaxAmount((int)$taxAmount)
+                ->setUnitPrice((int)$productPrice)
+                ->setNetTotalAmount((int)$netTotalAmount)
+                ->setGrossTotalAmount((int)$grossTotalAmount);
+
+            if (isset($this->_cart[$itemSku])) {
+                $itemSku = $itemSku . '-' . $item->getId();
+            }
+
+            $this->_cart[$itemSku] = $orderItem;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $address
+     *
+     * @return $this
+     */
+    public function addShipping($address)
 	{
 		if ($this->_toInvoice && $address->getBaseShippingAmount() <= $address->getBaseShippingInvoiced()) {
 			return $this;
@@ -382,6 +496,8 @@ class Items
 			$taxRate = $tax["rate"];
 		}
 
+		$taxRate = $vat;
+
 		$taxFormat = '1'.str_pad(number_format((float)$taxRate, 2, '.', ''), 5, '0', STR_PAD_LEFT);
 		if ((int) $this->scopeConfig->getValue('tax/classes/shipping_tax_class', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) !== 0) {
 			// Shipping Tax class
@@ -407,6 +523,15 @@ class Items
 			}
 		}
 
+
+		$shippingGross = $address->getShippingAmount() + $address->getShippingTaxAmount() - $address->getShippingDiscountAmount();
+
+		$shippingGross = round($this->addZeroes($shippingGross));
+		$shippingUnitPrice = $address->getShippingAmount() - $address->getShippingDiscountAmount();
+		$shippingUnitPrice = round($this->addZeroes($shippingUnitPrice));
+		$shippingTaxAmount = $address->getShippingTaxAmount();
+		$shippingTaxAmount = round($this->addZeroes($shippingTaxAmount));
+
 		$orderItem = new OrderItem();
 		$orderItem
 			->setReference('shipping_fee')
@@ -415,7 +540,7 @@ class Items
 			->setQuantity(1)
 			->setTaxRate($shippingTaxRate) // the tax rate i.e 25% (2500)
 			->setTaxAmount($shippingTaxAmount) // total tax amount
-			->setUnitPrice($shippingPrice) // excl. tax price per item
+			->setUnitPrice($shippingUnitPrice) // excl. tax price per item
 			->setNetTotalAmount($shippingNet) // excl. tax
 			->setGrossTotalAmount($shippingGross); // incl. tax
 
@@ -451,36 +576,33 @@ class Items
 		return $this;
 	}
 
+    /**
+     * @param $invoiceLabel
+     * @param $invoiceFee
+     * @param $vatIncluded
+     */
+    public function addInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded)
+    {
+        $item = $this->generateInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded);
+        $this->addToCart($item);
+    }
 
-	/**
-	 * @param $invoiceLabel
-	 * @param $invoiceFee
-	 * @param $vatIncluded
-	 */
-	public function addInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded)
-	{
-		$item = $this->generateInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded);
-		$this->addToCart($item);
-	}
+    /**
+     * @param $item OrderItem
+     */
+    public function addToCart($item)
+    {
+        $this->_cart[$item->getReference()] = $item;
+    }
 
-
-	/**
-	 * @param $item OrderItem
-	 */
-	public function addToCart($item)
-	{
-		$this->_cart[$item->getReference()] = $item;
-	}
-
-
-	/**
-	 * @param $invoiceLabel
-	 * @param $invoiceFee
-	 * @param $vatIncluded
-	 *
-	 * @return OrderItem
-	 */
-	public function generateInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded)
+    /**
+     * @param $invoiceLabel
+     * @param $invoiceFee
+     * @param $vatIncluded
+     *
+     * @return OrderItem
+     */
+    public function generateInvoiceFeeItem($invoiceLabel, $invoiceFee, $vatIncluded)
 	{
 		$feeItem = new OrderItem();
 		$taxRate = $this->getMaxVat();
@@ -518,17 +640,71 @@ class Items
 		return $feeItem;
 	}
 
+    /**
+     *
+     * @param $quote
+     *
+     * @return $this
+     */
+    public function addCustomDiscountTotal($quote)
+    {
+        $quoteItems = $quote->getAllVisibleItems();
 
-	/**
-	 * Discount 
-	 *
-	 * @param string|null $ruleIds
-	 * @param float|null $discountAmount
-	 * @param string|null $couponCode
-	 * @param boolean $ignoreType
-	 * @return void
-	 */
-	private function addDiscountByCartRule(
+        $quoteDiscountAmount = $discountAmount = 0;
+        $referenceArray = array();
+        $reference = '';
+        try {
+            foreach ($quoteItems as $quoteItem) {                
+                $quoteDiscountAmount += $quoteItem->getDiscountAmount();
+                $appliedRuleId = $quoteItem->getAppliedRuleIds();
+                if(!empty($appliedRuleId)){
+                    foreach (explode(',', $appliedRuleId) as $ruleId) {
+                        $rule = $this->ruleRepository->getById($ruleId);
+                        $referenceArray[] = $rule->getName();
+                    }
+                }
+            }
+
+            if( $quoteDiscountAmount > 0 ) {
+                $discountAmount = $this->addZeroes($quoteDiscountAmount);
+
+                $referenceArray = array_unique($referenceArray);
+                $reference = implode(",", $referenceArray);
+                
+                if (strlen($reference) > 128) {
+                    $reference = substr($reference, 0, 128);
+                }
+
+                $orderItem = new OrderItem();
+                $orderItem
+                        ->setReference((string)__('Discount'))
+                        ->setName($reference)
+                        ->setUnit("st")
+                        ->setQuantity(1)
+                        ->setTaxRate(0)
+                        ->setTaxAmount(0)
+                        ->setUnitPrice(-$discountAmount)
+                        ->setNetTotalAmount(-$discountAmount)
+                        ->setGrossTotalAmount(-$discountAmount);
+
+                $this->_cart[$reference] = $orderItem;
+                return $this;
+            }
+        } catch (\Exception $e) {
+
+        }   
+    }
+
+    /**
+     * Check if discount was applied for whole cart
+     *
+     * @param string|null $ruleIds
+     * @param float|null $discountAmount
+     * @param string|null $couponCode
+     * @param boolean $ignoreType
+     * @return void
+     */
+    private function addDiscountByCartRule(
 		?string $ruleIds,
 		?float $discountAmount,
 		?string $couponCode,
@@ -592,14 +768,52 @@ class Items
 		}
 	}
 
+    /**
+     * @param $couponCode
+     */
+    private function getDiscountByItems($couponCode): void
+    {
+        foreach ($this->_discounts as $vat => $amountInclTax) {
+            if ($amountInclTax == 0) {
+                continue;
+            }
 
-	/**
-	 * @param $grandTotal
-	 *
-	 * @return $this
-	 * @throws CheckoutException
-	 */
-	public function validateTotals($grandTotal)
+            $reference = 'discount' . (int)$vat;
+            if ($this->_toInvoice) {
+                $reference = 'discount-toinvoice';
+            }
+
+            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountExclTax = $amountInclTax - $taxAmount;
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setReference($reference)
+                ->setName(
+                    $couponCode
+                        ? (string)__('Discount (%1)', $couponCode)
+                        : (string)__('Discount')
+                )
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount($taxAmount) // total tax amount
+                ->setUnitPrice(-$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount(-$amountExclTax) // excl. tax
+                ->setGrossTotalAmount(-$amountInclTax); // incl. tax
+
+            $this->_cart[$reference] = $orderItem;
+        }
+    }
+
+    /**
+     * @param $grandTotal
+     *
+     * @return $this
+     * @throws CheckoutException
+     */
+    public function validateTotals($grandTotal)
 	{
 		$calculatedTotal = 0;
 		$calculatedTax = 0;
@@ -627,15 +841,14 @@ class Items
 		throw new CheckoutException(__("The grand total price does not match the API price. Please contact Nets support."), 'checkout/cart');
 	}
 
-
-	/**
-	 * Getting all available children for Invoice, Shipment or CreditMemo item
-	 *
-	 * @param \Magento\Framework\DataObject $item
-	 *
-	 * @return array
-	 */
-	public function getChildrenItems($item)
+    /**
+     * Getting all available children for Invoice, Shipment or CreditMemo item
+     *
+     * @param \Magento\Framework\DataObject $item
+     *
+     * @return array
+     */
+    public function getChildrenItems($item)
 	{
 		$items = null;
 		if ($item instanceof \Magento\Sales\Model\Order\Invoice\Item) {
@@ -679,14 +892,13 @@ class Items
 		}
 	}
 
-
-	/**
-	 * @param Quote $quote
-	 *
-	 * @return array
-	 * @throws \Exception
-	 */
-	public function generateOrderItemsFromQuote(Quote $quote)
+    /**
+     * @param Quote $quote
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function generateOrderItemsFromQuote(Quote $quote)
 	{
 		$this->init($quote->getStore());
 		$billingAddress = $quote->getBillingAddress();
@@ -695,17 +907,21 @@ class Items
 		/*Get all cart items*/
 		$cartItems = $quote->getAllVisibleItems(); //getItemParentId is null and !isDeleted
 
-		$this->addItems($cartItems);
+		// $this->addItems($cartItems);
+		$this->addCustomItemTotal($quote);
+
 		if (!$quote->isVirtual()) {
 			$this->addShipping($shippingAddress);
 		}
 
+		$this->addCustomDiscountTotal($quote);
+
 		// Add discount if applied
-		$this->addDiscountByCartRule(
+		/*$this->addDiscountByCartRule(
 			$quote->getAppliedRuleIds(),
 			($quote->getSubtotal() - $quote->getSubtotalWithDiscount()) * -1,
 			$quote->getCouponCode()
-		);
+		);*/
 
 		$this->addCustomTotals($quote->getTotals());
 
@@ -718,34 +934,32 @@ class Items
 		return array_values($this->_cart);
 	}
 
+    /**
+     * @param Order $order
+     *
+     * @return array
+     * @throws CheckoutException
+     */
+    public function fromOrder(Order $order)
+    {
+        $this->init($order->getStore());
 
-	/**
-	 * @param Order $order
-	 *
-	 * @return array
-	 * @throws CheckoutException
-	 */
-	public function fromOrder(Order $order)
-	{
-		$this->init($order->getStore());
+        // we will validate the grand total that we send to dibs, since we dont send invocie fee with it, we remove it now
+        $grandTotal = $order->getGrandTotal();
+        $this->addItems($order->getAllItems())
+            ->addShipping($order)
+            ->addDiscounts()
+            ->validateTotals($grandTotal);
 
-		// we will validate the grand total that we send to dibs, since we dont send invocie fee with it, we remove it now
-		$grandTotal = $order->getGrandTotal();
-		$this->addItems($order->getAllItems())
-			->addShipping($order)
-			->addDiscounts()
-			->validateTotals($grandTotal);
+        return $this->_cart;
+    }
 
-		return $this->_cart;
-	}
-
-
-	/**
-	 * @param Order\Invoice $invoice
-	 *
-	 * @return void
-	 */
-	public function addDibsItemsByInvoice(Order\Invoice $invoice)
+    /**
+     * @param Order\Invoice $invoice
+     *
+     * @return void
+     */
+    public function addDibsItemsByInvoice(Order\Invoice $invoice)
 	{
 		//coupon code is not copied to invoice so we take it from the order!
 		$order = $invoice->getOrder();
@@ -775,158 +989,150 @@ class Items
 		$this->prepareOrderDiscounts($order);
 	}
 
-
-	/**
-	 * This will help us generate Dibs Order Items for which will be sent as a refund or partial refund.
-	 * We don't add discounts or shipping here even though the invoice has discounts, we only add items to be refunded.
-	 * Shipping amount is added IF it should be refunded as well.
-	 *
-	 * @param Order\Creditmemo $creditMemo
-	 *
-	 * @return void
-	 */
-	public function addDibsItemsByCreditMemo(Order\Creditmemo $creditMemo)
-	{
-		//coupon code is not copied to credit memo
-		$order = $creditMemo->getOrder();
-
-		// no support at dibs for adjustments
-		// $creditMemo->getAdjustmentPositive();
-		// $creditMemo->getAdjustmentNegative();
-
-		$this->init($order->getStore());
-		$this->addItems($creditMemo->getAllItems());
-
-		if ($creditMemo->getShippingAmount() != 0) {
-			$this->addShipping($creditMemo);
-		}
-
-		$this->prepareOrderDiscounts($order);
-	}
-
-
-	/**
-	 * Prepare discounts from order for capture and refund/credit memo operations
-	 *
-	 * @param Order $order
-	 * @return void
-	 */
-	private function prepareOrderDiscounts($order)
-	{
-		/**
-		 * @var OrderPayment $payment
-		 */
-		$payment = $order->getPayment();
-		$negativeDiscountVAT = $payment->getAdditionalInformation('negative_discount_vat');
-
-		// Prior to 1.3.2 discounts were sent to Nets with positive VAT, which is incorrect.
-		// This has now changed, but orders placed before 1.3.2 need special handling to correct the value
-		// We check the "negative_discount_vat" flag which only order payments in 1.3.2 and onwards will have
-		$negativeDiscountVAT = (bool)$payment->getAdditionalInformation('negative_discount_vat');
-		$this->addDiscounts($negativeDiscountVAT);
-		$this->addDiscountByCartRule(
-			$order->getAppliedRuleIds(),
-			$order->getDiscountAmount(),
-			$order->getCouponCode()
-		);
-	}
-
-
-	/**
-	 * @return int
-	 */
-	public function getMaxVat()
-	{
-		return $this->_maxvat;
-	}
-
-
-	/**
-	 * @return array
-	 */
-	public function getCart()
-	{
-		return $this->_cart;
-	}
-
-
-	/**
-	 * @param $price
-	 * @param $vat
-	 * @param bool $addZeroes
-	 *
-	 * @return float|int
-	 */
-	public function getTotalTaxAmount($price, $vat, $addZeroes = true)
-	{
-		if ($addZeroes) {
-			return $this->addZeroes($this->calculationTool->calcTaxAmount($price, $vat, true));
-		} else {
-			return $this->calculationTool->calcTaxAmount($price, $vat, true);
-		}
-	}
-
-
-	/**
-	 * @param $amount
-	 *
-	 * @return int
-	 */
-	public function addZeroes($amount)
-	{
-		return (int)round($amount * 100, 0);
-	}
-
-
-	/**
-	 * @param array $totals
-	 */
-	private function addCustomTotals(array $totals)
-	{
-		$customTotals = array_diff(array_keys($totals), [
-			'subtotal',
-			'grand_total',
-			'tax',
-			'shipping'
-		]);
-
-		foreach ($customTotals as $customTotal) {
-			/** @var \Magento\Quote\Model\Quote\Address\Total $total */
-			$total = $totals[$customTotal];
-			$amountInclTax = $total->getValue();
-			$vat = 25;
-
-			$taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
-			$amountInclTax = $this->addZeroes($amountInclTax);
-			$amountExclTax = $amountInclTax - $taxAmount;
-
-			$orderItem = new OrderItem();
-			$orderItem
-				->setReference($total->getCode())
-				->setName($total->getTitle() ?: $total->getCode())
-				->setUnit("st")
-				->setQuantity(1)
-				->setTaxRate((int)$this->addZeroes($vat)) // the tax rate i.e 25% (2500)
-				->setTaxAmount((int)$taxAmount) // total tax amount
-				->setUnitPrice((int)$amountExclTax) // excl. tax price per item
-				->setNetTotalAmount((int)$amountExclTax) // excl. tax
-				->setGrossTotalAmount((int)$amountInclTax); // incl. tax
-
-			$this->_cart[$total->getCode()] = $orderItem;
-		}
-	}
-
-	public function addDiscounts($negativeDiscountVAT = true)
+    /**
+     * This will help us generate Dibs Order Items for which will be sent as a refund or partial refund.
+     * We don't add discounts or shipping here even though the invoice has discounts, we only add items to be refunded.
+     * Shipping amount is added IF it should be refunded as well.
+     *
+     * @param Order\Creditmemo $creditMemo
+     *
+     * @return void
+     */
+    public function addDibsItemsByCreditMemo(Order\Creditmemo $creditMemo)
     {
+        //coupon code is not copied to credit memo
+        $order = $creditMemo->getOrder();
 
-        foreach ($this->_discounts as $vat => $amountInclTax) {
-            if ($amountInclTax == 0) {
+        // no support at dibs for adjustments
+        // $creditMemo->getAdjustmentPositive();
+        // $creditMemo->getAdjustmentNegative();
+
+        $this->init($order->getStore());
+        $this->addItems($creditMemo->getAllItems());
+
+        if ($creditMemo->getShippingAmount() != 0) {
+            $this->addShipping($creditMemo);
+        }
+
+        $this->prepareOrderDiscounts($order);
+    }
+
+    /**
+     * Prepare discounts from order for capture and refund/credit memo operations
+     *
+     * @param Order $order
+     * @return void
+     */
+    private function prepareOrderDiscounts($order)
+    {
+        /**
+         * @var OrderPayment $payment
+         */
+        $payment = $order->getPayment();
+        $negativeDiscountVAT = $payment->getAdditionalInformation('negative_discount_vat');
+
+        // Prior to 1.3.2 discounts were sent to Nets with positive VAT, which is incorrect.
+        // This has now changed, but orders placed before 1.3.2 need special handling to correct the value
+        // We check the "negative_discount_vat" flag which only order payments in 1.3.2 and onwards will have
+        $negativeDiscountVAT = (bool)$payment->getAdditionalInformation('negative_discount_vat');
+        $this->addDiscounts($negativeDiscountVAT);
+        $this->addDiscountByCartRule(
+            $order->getAppliedRuleIds(),
+            $order->getDiscountAmount(),
+            $order->getCouponCode()
+        );
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxVat()
+    {
+        return $this->_maxvat;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCart()
+    {
+        return $this->_cart;
+    }
+
+    /**
+     * @param $price
+     * @param $vat
+     * @param bool $addZeroes
+     *
+     * @return float|int
+     */
+    public function getTotalTaxAmount($price, $vat, $addZeroes = true)
+    {
+        if ($addZeroes) {
+            return $this->addZeroes($this->calculationTool->calcTaxAmount($price, $vat, true));
+        } else {
+            return $this->calculationTool->calcTaxAmount($price, $vat, true);
+        }
+    }
+
+    /**
+     * @param $amount
+     *
+     * @return int
+     */
+    public function addZeroes($amount)
+    {
+        return (int)round($amount * 100, 0);
+    }
+
+    /**
+     * @param array $totals
+     */
+    private function addCustomTotals(array $totals)
+    {
+        $customTotals = array_diff(array_keys($totals), [
+            'subtotal',
+            'grand_total',
+            'tax',
+            'shipping'
+        ]);
+
+        foreach ($customTotals as $customTotal) {
+            /** @var \Magento\Quote\Model\Quote\Address\Total $total */
+            $total = $totals[$customTotal];
+            $amountInclTax = $total->getValue();
+            $vat = 25;
+
+            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountExclTax = $amountInclTax - $taxAmount;
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setReference($total->getCode())
+                ->setName($total->getTitle() ?: $total->getCode())
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate((int)$this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount((int)$taxAmount) // total tax amount
+                ->setUnitPrice((int)$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount((int)$amountExclTax) // excl. tax
+                ->setGrossTotalAmount((int)$amountInclTax); // incl. tax
+
+            $this->_cart[$total->getCode()] = $orderItem;
+        }
+    }
+
+    public function addDiscounts($negativeDiscountVAT = true)
+    {
+    	foreach ($this->_discounts as $vat => $amountInclTax) {
+    		if ($amountInclTax == 0) {
                 continue;
             }
 
             $reference = 'discount' . (int)$vat;
             if ($this->_toInvoice) {
-                $reference = 'discount-toinvoice';
+            	$reference = 'discount-toinvoice';
             }
 
             $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);

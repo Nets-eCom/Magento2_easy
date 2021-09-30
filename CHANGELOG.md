@@ -6,11 +6,14 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.4.1`
+|Version | `1.4.2`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.4.2 - Released 2021-09-30
+* Fixed : Fixed calculation errors for multiple discounts & shipping taxes
 
 ### Version 1.4.1 - Released 2021-09-17
 * Fixed : Added functionality for Invoice discounts
