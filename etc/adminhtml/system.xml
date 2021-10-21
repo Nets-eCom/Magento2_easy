@@ -167,11 +167,11 @@
                     <comment><![CDATA[If yes, <strong>Nets.css</strong> will be added to the frontend <strong>(Only needed if styles-l.css and styles-m.css are removed or if magento default less file compiler is not been used)!</strong>]]></comment>
                 </field>
 
-                <field id="nets_successpage" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="155">
+                <!-- <field id="nets_successpage" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="155">
                     <label>Show Nets Success Page</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[If yes, then customized success page will be shown. If no, then default (native) success page will be shown]]></comment>
-                </field>
+                </field> -->
             </group>
 
             <group id="invoice" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">

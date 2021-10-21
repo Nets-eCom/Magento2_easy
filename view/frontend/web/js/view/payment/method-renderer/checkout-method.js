@@ -34,31 +34,7 @@ define(
             continueToDibsRedirect: function () {
                 dibs("dibseasycheckout", function () {
                     let callback = function(paymentConfiguration) {
-                        $.ajax({
-                            url: url.build('easycheckout/order/saveOrder'),
-                            data: {pid: paymentConfiguration.paymentId},
-                            type: 'POST',
-                            dataType: 'json',
-                            beforeSend: function() {
-                                fullScreenLoader.startLoader();
-                            },
-                            success: function(response) {
-                                if(response.error) {
-                                    alert($.mage.__(response.messages));
-                                    return false;
-                                }
-                                if(response.redirectTo) {
-                                    $.mage.redirect(response.redirectTo);
-                                }
-                                $.mage.redirect(paymentConfiguration.checkoutUrl);
-                            },
-                            error: function() {
-                                alert($.mage.__('Sorry, something went wrong. Please try again later.'));
-                            },
-                            complete: function() {
-                                fullScreenLoader.stopLoader()
-                            }
-                        });
+                        $.mage.redirect(paymentConfiguration.checkoutUrl);
                     };
 
                     this.initPaymentConfiguration(0, callback);
@@ -106,7 +82,7 @@ define(
                     self.dibsPayment = new Dibs.Checkout(checkoutOptions);
                     if (self.eventsInstantiated == false) {
                         self.dibsPayment.on('payment-completed', vanillaCheckoutHandler.onCheckoutCompleteAction);
-                        self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.validatePayment);
+                        //self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.validatePayment);
                         setCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
                         cancelCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
                         self.eventsInstantiated = true;
@@ -130,8 +106,7 @@ define(
             }
         });
 
-        return component
-
+        return component;
 
     }
 );
