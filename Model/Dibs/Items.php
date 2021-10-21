@@ -285,19 +285,25 @@ class Items
 				$taxFormat = '1'.str_pad(number_format((float)$vat, 2, '.', ''), 5, '0', STR_PAD_LEFT);
 				$unitName = "pcs";
 				
-				if ((int) $this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) === 1) {
+				/*if ((int) $this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) === 1) {
 					// Product price in catalog is including tax.
 					$unitPrice = round(round(($unitPriceInclTax / $taxFormat), 2) * 100);
 					$netPrice = $qty*$this->addZeroes($unitPriceExclTax);
-					$grossPrice = round($this->addZeroes($unitPriceInclTax)*$qty);
+					//$grossPrice = round($this->addZeroes($unitPriceInclTax)*$qty);
+					$grossPrice = $unitPrice * $qty;
+					$grossPrice = round($this->addZeroes($grossPrice + $item->getTaxAmount()));
+					$//grossPrice = round(($unitPrice + $this->addZeroes($item->getTaxAmount()))*$qty);
 					$vatPrice = $grossPrice-$netPrice;
-				} else {
+				} else {*/
 					// Product price in catalog is excluding tax.
 					$unitPrice = round(round(($unitPriceExclTax), 2) * 100);
 					$netPrice = round($qty*$unitPrice);
-					$grossPrice = round(($qty*$unitPriceExclTax)*$taxFormat);
+					//$grossPrice = round(($qty*$unitPriceExclTax)*$taxFormat);
+					//$grossPrice = round(($unitPrice + $this->addZeroes($item->getTaxAmount()))*$qty);
+					$grossPrice = $unitPrice * $qty;
+					$grossPrice = round($grossPrice + $this->addZeroes($item->getTaxAmount()) + $this->addZeroes($item->getDiscountTaxCompensationAmount()));
 					$vatPrice = $grossPrice-$netPrice;
-				}
+				//}
 
 				$orderItem = new OrderItem();
 				$orderItem
@@ -307,7 +313,7 @@ class Items
 					->setQuantity(round($qty, 0))
 					->setUnitPrice((int)$this->addZeroes($unitPriceExclTax))
 					->setTaxRate($this->addZeroes($vat))
-					->setTaxAmount((int)$vatPrice)
+					->setTaxAmount($this->addZeroes($item->getTaxAmount()))
 					->setNetTotalAmount((int)$netPrice)
 					->setGrossTotalAmount((int)$grossPrice);
 
@@ -757,11 +763,11 @@ class Items
 				->setName($discountName)
 				->setUnit("unit")
 				->setQuantity(1)
-				->setTaxRate($discountTaxRate)
-				->setTaxAmount($discountTaxAmount)
+				->setTaxRate(0)
+				->setTaxAmount(0)
 				->setUnitPrice($discountPrice)
-				->setNetTotalAmount($discountNet)
-				->setGrossTotalAmount($discountGross);
+				->setNetTotalAmount($discountPrice)
+				->setGrossTotalAmount($discountPrice);
 
 			$this->_cart[$discountReference] = $orderItem;
 			break;
@@ -1000,6 +1006,7 @@ class Items
      */
     public function addDibsItemsByCreditMemo(Order\Creditmemo $creditMemo)
     {
+    	$refundedDiscount = 0;
         //coupon code is not copied to credit memo
         $order = $creditMemo->getOrder();
 
@@ -1014,7 +1021,11 @@ class Items
             $this->addShipping($creditMemo);
         }
 
-        $this->prepareOrderDiscounts($order);
+        if ($creditMemo->getDiscountAmount() != 0) {
+            $refundedDiscount = $creditMemo->getDiscountAmount();
+        }
+
+        $this->prepareOrderDiscounts($order, 'creditMemo', $refundedDiscount);
     }
 
     /**
@@ -1023,7 +1034,7 @@ class Items
      * @param Order $order
      * @return void
      */
-    private function prepareOrderDiscounts($order)
+    private function prepareOrderDiscounts($order, $type = '', $refundedDiscount = 0)
     {
         /**
          * @var OrderPayment $payment
@@ -1035,12 +1046,30 @@ class Items
         // This has now changed, but orders placed before 1.3.2 need special handling to correct the value
         // We check the "negative_discount_vat" flag which only order payments in 1.3.2 and onwards will have
         $negativeDiscountVAT = (bool)$payment->getAdditionalInformation('negative_discount_vat');
-        $this->addDiscounts($negativeDiscountVAT);
-        $this->addDiscountByCartRule(
-            $order->getAppliedRuleIds(),
-            $order->getDiscountAmount(),
-            $order->getCouponCode()
-        );
+        //$this->addDiscounts($negativeDiscountVAT);
+        
+        if($type == 'creditMemo'){
+
+	        $discountAmountToRefund = $order->getDiscountRefunded() - $refundedDiscount;
+
+	        if($discountAmountToRefund > 0){
+	        	$discountAmountToRefund = -$discountAmountToRefund;
+	        }
+
+        	$this->addDiscountByCartRule(
+	            $order->getAppliedRuleIds(),
+	            $refundedDiscount,
+	            $order->getCouponCode()
+	        );
+
+        } else {
+        	$this->addDiscountByCartRule(
+	            $order->getAppliedRuleIds(),
+	            $order->getDiscountAmount(),
+	            $order->getCouponCode()
+	        );
+
+        }
     }
 
     /**
@@ -1155,7 +1184,6 @@ class Items
                 ->setQuantity(1)
                 ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
                 ->setTaxAmount(-$taxAmount) // total tax amount
-
                 ->setUnitPrice(-$amountExclTax) // excl. tax price per item
                 ->setNetTotalAmount(-$amountExclTax) // excl. tax
                 // ->setGrossTotalAmount(-$amountInclTax); // incl. tax

@@ -207,9 +207,11 @@ class Order
             // when we use hosted flow we set the url where customer should be redirected,
             // and we handle the consumer data
             if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
-                $paymentCheckout->setReturnUrl(
+                $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+                /*$paymentCheckout->setReturnUrl(
                     $this->helper->getCheckoutUrl('confirmOrder')
-                );
+                );*/
+                $paymentCheckout->setReturnUrl($baseUrl.'easycheckout/order/confirmOrder');
             }
 
             // If it's the vanilla checkout flow, we instead set checkout URL
