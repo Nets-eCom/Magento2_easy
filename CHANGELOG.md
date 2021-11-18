@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.4.3`
+|Version | `1.4.4`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.4.4 - Released 2021-11-18
+* Fixed : Invoice calculation issue 
+* Fixed : Quote id reference updation issue
 
 ### Version 1.4.3 - Released 2021-10-21
 * Fixed : Invoice creation issue with Capture online

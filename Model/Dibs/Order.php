@@ -285,14 +285,14 @@ class Order
         $webhookReservationCreated->setUrl($webHookUrl);
         $webhooks = [$webhookReservationCreated];
 
-        // We want to use the payment.checkout.completed webhook only with Hosted integration
-        if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
+        // We want to use the payment.checkout.completed webhook only with Hosted integration // changed after discussion
+        //if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
             $webhookCheckoutCompleted = new CreatePaymentWebhook();
             $webhookCheckoutCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHECKOUT_COMPLETED);
             $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
             $webhookCheckoutCompleted->setUrl($webHookUrl);
             $webhooks[] = $webhookCheckoutCompleted;
-        }
+        //}
 
         foreach ($webhooks as $webhook) {
             $webhook->setAuthorization($this->helper->getWebhookSecret());

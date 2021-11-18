@@ -10,37 +10,6 @@ define([
         return {
             onCheckoutCompleteAction: function (response) {
                 $.ajax({
-                    url: mageurl.build("easycheckout/order/SaveOrder"),
-                    type: "POST",
-                    async: false,
-                    context: this,
-                    data: {pid: response.paymentId},
-                    dataType: 'json',
-                    beforeSend: function () {
-                        checkoutLoader.startLoader();
-                    },
-                    complete: function () {
-                        checkoutLoader.stopLoader();
-                    },
-                    success: function (response) {
-                        if ($.type(response) === 'object' && !$.isEmptyObject(response)) {
-                            this.sendPaymentOrderFinalizedEvent(!response.error);
-                            if (response.messages) {
-                                alert(jQuery.mage.__(response.messages));
-                            }
-                        } else {
-                            checkoutLoader.stopLoader();
-                            this.sendPaymentOrderFinalizedEvent(false);
-                            alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
-                        }
-                    },
-                    error: function(data) {
-                        // tell dibs not to finish order!
-                        this.sendPaymentOrderFinalizedEvent(false);
-                        alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
-                    }
-                });
-                $.ajax({
                     type: "POST",
                     url: mageurl.build("easycheckout/order/confirmOrder/"),
                     data: {pid: response.paymentId},

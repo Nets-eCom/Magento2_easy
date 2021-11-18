@@ -8,4 +8,8 @@
         <observer name="dibs_mark_cart_as_dirty" instance="Dibs\EasyCheckout\Observer\MarkCartDirtyObserver"/>
     </event>
 
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="dibs_onepage_success" instance="Dibs\EasyCheckout\Observer\OnepageSuccessObserver"/>
+    </event>
+
 </config>

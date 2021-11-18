@@ -198,10 +198,11 @@ abstract class Client
         $exception = null;
 
         try {
+            $this->getLogger()->info("put request initiated");
             $result = $this->httpClient->put($endpoint, $options);
             $content =  $result->getBody()->getContents();
-
-            if ($this->testMode) {
+            $this->getLogger()->info("put request called");
+           // if ($this->testMode) {
                 $this->getLogger()->info("Sending request to dibs integration: PUT $endpoint");
                 $this->getLogger()->info($request->toJSON());
 
@@ -209,13 +210,15 @@ abstract class Client
                 $this->getLogger()->info(json_encode($result->getHeaders()));
                 $this->getLogger()->info("Response Body from dibbs:");
                 $this->getLogger()->info($content);
-            }
+           // }
 
             return $content;
         }  catch (BadResponseException $e) {
             $exception = $this->handleException($e);
+            $this->getLogger()->info("api exception 1 :" . $exception->getMessage());
         } catch (\Exception $e) {
             $exception = $this->handleException($e);
+            $this->getLogger()->info("api exception 2 :" . $exception->getMessage());
         }
 
         if ($exception) {
