@@ -6,11 +6,14 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.4.4`
+|Version | `1.4.5`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.4.5 - Released 2021-11-25
+* Fixed : Cart clear issue
 
 ### Version 1.4.4 - Released 2021-11-18
 * Fixed : Invoice calculation issue 

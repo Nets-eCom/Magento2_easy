@@ -51,6 +51,9 @@ define([
                     }
                 });
             },
+            validateTest: function(paymentId) { 
+                alert('pay created');
+            },
             validatePayment: function(paymentId) {
                 $.ajax({
                     url: mageurl.build("easycheckout/order/SaveOrder"),

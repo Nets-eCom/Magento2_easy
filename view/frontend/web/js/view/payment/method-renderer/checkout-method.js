@@ -34,7 +34,8 @@ define(
             continueToDibsRedirect: function () {
                 dibs("dibseasycheckout", function () {
                     let callback = function(paymentConfiguration) {
-                        $.ajax({
+                        $.mage.redirect(paymentConfiguration.checkoutUrl);
+                        /*$.ajax({
                             url: url.build('easycheckout/order/saveOrder'),
                             data: {pid: paymentConfiguration.paymentId},
                             type: 'POST',
@@ -58,7 +59,7 @@ define(
                             complete: function() {
                                 fullScreenLoader.stopLoader()
                             }
-                        });
+                        });*/
                     };
 
                     this.initPaymentConfiguration(0, callback);
@@ -107,6 +108,7 @@ define(
                     if (self.eventsInstantiated == false) {
                         self.dibsPayment.on('payment-completed', vanillaCheckoutHandler.onCheckoutCompleteAction);
                         self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.validatePayment);
+                        self.dibsPayment.on('payment-created', vanillaCheckoutHandler.validateTest);
                         setCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
                         cancelCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
                         self.eventsInstantiated = true;

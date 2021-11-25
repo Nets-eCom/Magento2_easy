@@ -21,7 +21,7 @@ class CreatePaymentWebhook extends AbstractRequest
      * Valid events with corresponding Webhook Controller name (if it exists)
      */
     const VALID_EVENTS = [
-        self::EVENT_PAYMENT_CREATED => '',
+        self::EVENT_PAYMENT_CREATED => 'SaveOrder',
         self::EVENT_PAYMENT_RESERVATION_CREATED => 'ReservationCreated',
         self::EVENT_PAYMENT_CHECKOUT_COMPLETED => 'CheckoutCompleted',
         self::EVENT_PAYMENT_CHARGE_CREATED => '',
@@ -112,10 +112,21 @@ class CreatePaymentWebhook extends AbstractRequest
             throw new \Exception("The event '" . $this->getEventName() . "' is not a valid event name");
         }
 
-        return [
-            'url' => $this->getUrl(),
-            'eventName' => $this->getEventName(),
-            'authorization' => $this->getAuthorization(),
-        ];
+        if("payment.created" == $this->getEventName()){
+
+            $url = str_replace("webhook","Order",$this->getUrl());
+            return [
+                'url' => $url,
+                'eventName' => $this->getEventName(),
+                'authorization' => $this->getAuthorization(),
+            ];
+        } else{
+
+            return [
+                'url' => $this->getUrl(),
+                'eventName' => $this->getEventName(),
+                'authorization' => $this->getAuthorization(),
+            ];
+        }
     }
 }

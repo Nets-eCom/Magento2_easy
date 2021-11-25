@@ -13,6 +13,13 @@
             </argument>
         </arguments>
     </type>
+    <type name="Dibs\EasyCheckout\Controller\Order\SaveOrder">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.created</argument>
+            <argument name="successComment" xsi:type="string">Payment created for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
     <type name="Dibs\EasyCheckout\Controller\Webhook\ReservationCreated">
         <arguments>
             <argument name="expectedEvent" xsi:type="string">payment.reservation.created</argument>

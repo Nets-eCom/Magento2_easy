@@ -46,9 +46,6 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
 
     public function execute(EventObserver $observer)
     {
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/templog.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
 
         $order = $observer->getEvent()->getOrder();
         $orderId = $order->getIncrementId();
@@ -66,7 +63,6 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
                 $reference->setCheckoutUrl($checkoutUrl);
             }
             
-            $logger->info('from the orserber()' );
             $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
         }
     }

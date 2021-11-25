@@ -438,6 +438,9 @@ define([
                     }
                 })
             });
+            window._dibsCheckout.on('payment-created', function (paymentId) {
+                alert('new event');
+            });
             window._dibsCheckout.on('payment-completed', function (response) {
                 jQuery.ajax({
                     url: mageurl.build("easycheckout/order/confirmOrder/"),
