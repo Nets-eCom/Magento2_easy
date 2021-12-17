@@ -116,11 +116,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
         }
 
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_CONNECTION . 'secret_key',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
+        if ($this->isTestMode($store)) {
+            return $this->scopeConfig->getValue(self::XML_PATH_CONNECTION . 'test_secret_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
+        } else {
+            return $this->scopeConfig->getValue(self::XML_PATH_CONNECTION . 'live_secret_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
+        }
     }
 
     /**
@@ -129,11 +129,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getApiCheckoutKey($store = null)
     {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_CONNECTION . 'checkout_key',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
+        if ($this->isTestMode($store)) {
+            return $this->scopeConfig->getValue(self::XML_PATH_CONNECTION . 'test_checkout_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
+        } else {
+            return $this->scopeConfig->getValue(self::XML_PATH_CONNECTION . 'live_checkout_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
+        }
     }
 
     /**

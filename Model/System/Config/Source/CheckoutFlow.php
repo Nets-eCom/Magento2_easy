@@ -18,22 +18,25 @@ class CheckoutFlow implements \Magento\Framework\Option\ArrayInterface
             $options[] = ['value'=>'', 'label'=> ''];
         }
 
-        $options[] = [
+        /*$options[] = [
             'value' => 'EmbeddedCheckout',
             'label' => __('Embedded')
+        ];*/
+
+        $options[] = [
+            'value' => Api::FLOW_VANILLA,
+            'label' => __('Embeded')
         ];
+
         $options[] = [
             'value' => 'HostedPaymentPage',
             'label' => __('Redirect')
         ];
-        $options[] = [
+        
+        /*$options[] = [
             'value' => 'OverlayPayment',
             'label' => __('Overlay')
-        ];
-        $options[] = [
-            'value' => Api::FLOW_VANILLA,
-            'label' => __('Vanilla Embeded')
-        ];
+        ];*/
 
         return $options;
     }

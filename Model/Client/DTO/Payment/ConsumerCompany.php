@@ -38,16 +38,22 @@ class ConsumerCompany extends AbstractRequest
      */
     public function getContact()
     {
-        return $this->contact;
+        //return $this->contact;
+        return [
+            "firstname" => $this->firstname,
+            "lastname" => $this->lastname
+        ];
     }
 
     /**
      * @param ConsumerContact $contact
      * @return ConsumerCompany
      */
-    public function setContact($contact)
+    public function setContact($firstname, $lastname)
     {
-        $this->contact = $contact;
+
+        $this->firstname = $firstname;
+        $this->lastname = $lastname;
         return $this;
     }
 

@@ -135,6 +135,24 @@ class CreatePaymentCheckout extends AbstractRequest
     }
 
     /**
+     * @return string
+     */
+    public function getPrivacyUrl()
+    {
+        return $this->privacyUrl;
+    }
+
+    /**
+     * @param string $privacyUrl
+     * @return CreatePaymentCheckout
+     */
+    public function setPrivacyUrl($privacyUrl)
+    {
+        $this->privacyUrl = $privacyUrl;
+        return $this;
+    }
+
+    /**
      * @return ConsumerType
      */
     public function getConsumerType()
@@ -307,8 +325,14 @@ class CreatePaymentCheckout extends AbstractRequest
     {
         $data = [
             'termsUrl' => $this->getTermsUrl(),
+            'merchantTermsUrl' => $this->getPrivacyUrl(),
             'consumer' => null,
         ];
+
+        /*$data = [
+            'merchantTermsUrl' => $this->getTermsUrl(),
+            'consumer' => null,
+        ];*/
 
         if (!empty($this->getShippingCountries()) && is_array($this->getShippingCountries())) {
 

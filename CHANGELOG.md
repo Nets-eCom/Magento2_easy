@@ -6,11 +6,18 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.4.5`
+|Version | `1.4.6`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.4.6 - Released 2021-12-18
+* Fixed : MerchantTermsUrl parameter in the checkout to display merchants terms and conditions
+* Fixed : Internal switch between B2B and B2C when handle customer data is set to yes and company name provided in checkout page
+* Fixed : Simplified "integration type" options in the settings. It is possible to select either "Embedded" or "redirect"
+* Fixed : Added input fields to enter live and test authentication keys
+* Fixed : Original price 0 issue in order admin section
 
 ### Version 1.4.5 - Released 2021-11-25
 * Fixed : Cart clear issue

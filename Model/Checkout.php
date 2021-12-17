@@ -649,7 +649,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $quote->setDibsPaymentId($dibsPayment->getPaymentId()); //this is used by pushAction
 
         //- do not recollect totals
-        $quote->setTotalsCollectedFlag(true);
+        //$quote->setTotalsCollectedFlag(true);
+        $quote->collectTotals();
 
         //!
         // Now we create the order from the quote

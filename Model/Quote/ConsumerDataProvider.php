@@ -5,9 +5,11 @@ namespace Dibs\EasyCheckout\Model\Quote;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\Consumer;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPhoneNumber;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPrivatePerson;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerCompany;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerShippingAddress;
 use Magento\Quote\Model\Quote;
 use Dibs\EasyCheckout\Model\Dibs\LocaleFactory;
+use Dibs\EasyCheckout\Helper\Data;
 
 class ConsumerDataProvider
 {
@@ -16,10 +18,18 @@ class ConsumerDataProvider
      */
     private $localeFactory;
 
+    /**
+     * @var \Dibs\EasyCheckout\Helper\Data $helper
+     */
+    protected $helper;
+
     public function __construct(
-        LocaleFactory $localeFactory
+        LocaleFactory $localeFactory,
+        Data $helper
+
     ) {
         $this->localeFactory = $localeFactory;
+        $this->helper = $helper;
     }
 
     /**
@@ -64,7 +74,12 @@ class ConsumerDataProvider
         $consumer->setShippingAddress($this->getAddressData());
         $consumer->setPhoneNumber($this->getPhoneNumber());
         $consumer->setEmail($quote->getBillingAddress()->getEmail());
-        $consumer->setPrivatePerson($this->getPrivatePersonData());
+        $weHandleConsumer = $this->helper->doesHandleCustomerData();
+        if ($weHandleConsumer && !empty($quote->getShippingAddress()->getCompany())) {
+            $consumer->setCompany($this->getCompanyData());
+        } else {
+            $consumer->setPrivatePerson($this->getPrivatePersonData());
+        }
 
         return $consumer;
     }
@@ -103,6 +118,19 @@ class ConsumerDataProvider
         $person->setLastName($this->quote->getShippingAddress()->getLastname());
 
         return $person;
+    }
+
+    /**
+     * @return ConsumerCompany
+     */
+    private function getCompanyData() : ConsumerCompany
+    {
+        $company = new ConsumerCompany();
+        $company->setName($this->quote->getShippingAddress()->getCompany());
+        $company->setContact($this->quote->getShippingAddress()->getFirstname(), $this->quote->getShippingAddress()->getLastname());
+        //$company->setContact($this->quote->getShippingAddress()->getLastname());
+
+        return $company;
     }
 
     /**

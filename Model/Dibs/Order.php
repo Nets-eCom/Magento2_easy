@@ -199,6 +199,13 @@ class Order
             $termsUrl = substr($termsUrl, 0, 128);
         }
         $paymentCheckout->setTermsUrl($termsUrl);
+
+        $privacyUrl = $this->helper->getPrivacyUrl();
+        if (strlen($privacyUrl) > 128) {
+            $privacyUrl = substr($privacyUrl, 0, 128);
+        }
+        $paymentCheckout->setPrivacyUrl($privacyUrl);
+
         if ($cancelUrl = $this->helper->getCancelUrl()) {
             $paymentCheckout->setCancelUrl($cancelUrl);
         }

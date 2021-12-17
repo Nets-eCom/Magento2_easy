@@ -23,14 +23,30 @@
                     <label>Testmode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                <field id="live_secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Live Secret Key</label>
+                    <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
+                </field>
+                <field id="live_checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Live Checkout Key</label>
+                    <comment>Merchant Identifier, found in Easy-Portal</comment>
+                </field>
+                <field id="test_secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Test Secret Key</label>
+                    <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
+                </field>
+                <field id="test_checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Test Checkout Key</label>
+                    <comment>Merchant Identifier, found in Easy-Portal</comment>
+                </field>
+                <!-- <field id="checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Checkout Key</label>
                     <comment>Merchant Identifier, found in Easy-Portal</comment>
                 </field>
                 <field id="secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Secret Key</label>
                     <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
-                </field>
+                </field> -->
 
                 <field id="webhook_auth" type="password" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
                     <label>Webhook Authentication Password</label>
@@ -142,7 +158,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="terms_url" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="130" >
+                <field id="terms_url" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="130" >
                     <label>Url for Terms page</label>
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                 </field>
@@ -152,7 +168,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="privacy_url" translate="label" type="select" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="135" >
+                <field id="privacy_url" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="135" >
                     <label>Url for Privacy Policy page</label>
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                 </field>
