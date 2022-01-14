@@ -262,7 +262,16 @@ class Items
 				$sku = $item->getSku();
 				//make sku unique (sku could not be unique when we have product with options)
 				if (isset($this->_cart[$sku])) {
-					$sku = $sku . '-' . $item->getId();
+					$itemRefId = $item->getId();
+					/**
+					 * use related order_item_id or quote_item_id when item id is not set
+					 * error is observed when creating an invoice and there is more than two items with the same sku but with different configurations
+					 * items after the second similar sku will replace the second item instead of appending as a separate item
+					 */
+                    $itemRefId = $itemRefId ? $itemRefId : $item->getData('order_item_id');
+                    $itemRefId = $itemRefId ? $itemRefId : $item->getData('quote_item_id');
+                    $sku = $sku.'-'.$itemRefId;
+
 				}
 
 				$itemName = $item->getName();
