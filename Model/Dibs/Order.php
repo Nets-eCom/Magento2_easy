@@ -176,7 +176,7 @@ class Order
             throw new LocalizedException(__("Webhook secret configuration missing!"));
         }
 
-        $dibsAmount = $this->fixPrice($quote->getGrandTotal());
+        $dibsAmount = $this->fixPrice($quote->getBaseGrandTotal());
 
         // let it throw exception, should be handled somewhere else
         $items = $this->items->generateOrderItemsFromQuote($quote);
@@ -259,7 +259,8 @@ class Order
         // we generate the order here, amount and items
         $paymentOrder = new CreatePaymentOrder();
 
-        $paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
+        //$paymentOrder->setCurrency($quote->getCurrency()->getQuoteCurrencyCode());
+        $paymentOrder->setCurrency($this->storeManager->getStore()->getBaseCurrencyCode());
         $paymentOrder->setReference($this->generateReferenceByQuoteId($quote->getId()));
         $paymentOrder->setAmount((int) $dibsAmount);
         $paymentOrder->setItems($items);

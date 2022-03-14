@@ -275,7 +275,7 @@ class Items
 					$itemName = substr($itemName, 0, 128);
 				}
 
-				$unitPriceExclTax = $addPrices ? $item->getPrice() : 0;
+				$unitPriceExclTax = $addPrices ? $item->getBasePrice() : 0;
 				$taxAmount = $this->addZeroes($item->getTaxAmount());
 				$unitPriceInclTax = $addPrices ? $item->getPriceInclTax() : 0;
 				$appliedRuleId = $cartData->getAppliedRuleIds();
@@ -301,7 +301,7 @@ class Items
 					//$grossPrice = round(($qty*$unitPriceExclTax)*$taxFormat);
 					//$grossPrice = round(($unitPrice + $this->addZeroes($item->getTaxAmount()))*$qty);
 					$grossPrice = $unitPrice * $qty;
-					$grossPrice = round($grossPrice + $this->addZeroes($item->getTaxAmount()) + $this->addZeroes($item->getDiscountTaxCompensationAmount()));
+					$grossPrice = round($grossPrice + $this->addZeroes($item->getBaseTaxAmount()) + $this->addZeroes($item->getBaseDiscountTaxCompensationAmount()));
 					$vatPrice = $grossPrice-$netPrice;
 				//}
 
@@ -313,7 +313,7 @@ class Items
 					->setQuantity(round($qty, 0))
 					->setUnitPrice((int)$this->addZeroes($unitPriceExclTax))
 					->setTaxRate($this->addZeroes($vat))
-					->setTaxAmount($this->addZeroes($item->getTaxAmount()))
+					->setTaxAmount($this->addZeroes($item->getBaseTaxAmount()))
 					->setNetTotalAmount((int)$netPrice)
 					->setGrossTotalAmount((int)$grossPrice);
 
@@ -367,8 +367,8 @@ class Items
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
                     
@@ -376,8 +376,8 @@ class Items
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
                     
@@ -385,16 +385,16 @@ class Items
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
 
                 } else {
                     $quantity           = (int)$item->getQty();
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
                 }
 
             } else {
@@ -403,8 +403,8 @@ class Items
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
                     
@@ -412,8 +412,8 @@ class Items
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
                     
@@ -421,15 +421,15 @@ class Items
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount() + $item->getDiscountTaxCompensationAmount() );
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
                 } else {
                     $quantity           = (int)$item->getQty();
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
                     $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getRowTotal() + $item->getTaxAmount());
+                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
+                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
                 }
             }
             
@@ -530,7 +530,7 @@ class Items
 		}
 
 
-		$shippingGross = $address->getShippingAmount() + $address->getShippingTaxAmount() - $address->getShippingDiscountAmount();
+		$shippingGross = $address->getBaseShippingAmount() + $address->getBaseShippingTaxAmount() - $address->getBaseShippingDiscountAmount();
 
 		$shippingGross = round($this->addZeroes($shippingGross));
 		$shippingUnitPrice = $address->getShippingAmount() - $address->getShippingDiscountAmount();
@@ -661,7 +661,7 @@ class Items
         $reference = '';
         try {
             foreach ($quoteItems as $quoteItem) {                
-                $quoteDiscountAmount += $quoteItem->getDiscountAmount();
+                $quoteDiscountAmount += $quoteItem->getBaseDiscountAmount();
                 $appliedRuleId = $quoteItem->getAppliedRuleIds();
                 if(!empty($appliedRuleId)){
                     foreach (explode(',', $appliedRuleId) as $ruleId) {
@@ -934,8 +934,8 @@ class Items
 		try {
 			$this->validateTotals($quote->getGrandTotal());
 		} catch (\Exception $e) {
-			//!! todo handle somehow!
-			throw $e;
+			throw new CheckoutException(__("The grand total price does not match the API price."), 'checkout/cart');
+			//throw $e;
 		}
 		return array_values($this->_cart);
 	}
@@ -1022,7 +1022,7 @@ class Items
         }
 
         if ($creditMemo->getDiscountAmount() != 0) {
-            $refundedDiscount = $creditMemo->getDiscountAmount();
+            $refundedDiscount = $creditMemo->getBaseDiscountAmount();
         }
 
         $this->prepareOrderDiscounts($order, 'creditMemo', $refundedDiscount);
@@ -1050,7 +1050,7 @@ class Items
         
         if($type == 'creditMemo'){
 
-	        $discountAmountToRefund = $order->getDiscountRefunded() - $refundedDiscount;
+	        $discountAmountToRefund = $order->getBaseDiscountRefunded() - $refundedDiscount;
 
 	        if($discountAmountToRefund > 0){
 	        	$discountAmountToRefund = -$discountAmountToRefund;
@@ -1065,7 +1065,7 @@ class Items
         } else {
         	$this->addDiscountByCartRule(
 	            $order->getAppliedRuleIds(),
-	            $order->getDiscountAmount(),
+	            $order->getBaseDiscountAmount(),
 	            $order->getCouponCode()
 	        );
 

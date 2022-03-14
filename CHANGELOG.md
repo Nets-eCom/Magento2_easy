@@ -6,11 +6,14 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.4.6`
+|Version | `1.5.0`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.0 - Released 2022-03-14
+* Fixed : Currency issues, all transactions will be in base currency
 
 ### Version 1.4.6 - Released 2021-12-18
 * Fixed : MerchantTermsUrl parameter in the checkout to display merchants terms and conditions
