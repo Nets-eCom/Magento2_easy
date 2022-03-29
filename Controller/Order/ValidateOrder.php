@@ -79,7 +79,7 @@ class ValidateOrder extends Update
 
     protected function respondWithError($message, $chooseShippingMethod = false, $extraData = [])
     {
-        $data = ['messages' => $message, "chooseShippingMethod" => $chooseShippingMethod, 'error' => true];
+        $data = ['messages' => __($message), "chooseShippingMethod" => $chooseShippingMethod, 'error' => true];
         $data = array_merge($data, $extraData);
         $this->getResponse()->setBody(json_encode($data));
         return false;
