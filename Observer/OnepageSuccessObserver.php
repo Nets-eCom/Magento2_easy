@@ -37,7 +37,7 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
     ) {
         $this->helper = $helper;
         $this->paymentApi = $paymentApi;
-       // $this->clientApi  = $clientApi;
+        // $this->clientApi  = $clientApi;
         $this->dibsOrderHandler = $dibsOrderHandler;
         $this->cookieMetadataFactory = $cookieMetadataFactory;
         $this->cookieManager = $cookieManager;
@@ -46,13 +46,16 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
 
     public function execute(EventObserver $observer)
     {
-
         $order = $observer->getEvent()->getOrder();
+        if ($order === null) {
+            return;
+        }
+
         $orderId = $order->getIncrementId();
         $payment = $order->getPayment();
         $method = $payment->getMethodInstance();
         $methodTitle = $method->getTitle();
-        if($payment->getMethod() == "dibseasycheckout"){
+        if ($payment->getMethod() == "dibseasycheckout") {
             $paymentId = $order->getDibsPaymentId();
             $reference = new UpdatePaymentReference();
             $reference->setReference($order->getIncrementId());
@@ -62,7 +65,7 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
                 $checkoutUrl = $payment->getCheckoutUrl();
                 $reference->setCheckoutUrl($checkoutUrl);
             }
-            
+
             $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
         }
     }
