@@ -6,7 +6,7 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.5.0`
+|Version | `1.5.1`
 |Documentation Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-magento/nets-easy-for-magento-magento-2/
 |Github | https://github.com/Nets-eCom/Magento2_easy
 |License | `MIT License`

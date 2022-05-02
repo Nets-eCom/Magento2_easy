@@ -131,8 +131,9 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         }
 
         $data = json_decode($this->request->getContent(), true);
-
-        if (!isset($data['event']) || $data['event'] !== $this->expectedEvent || !isset($data['data']['paymentId'])) {
+	$this->logInfo("Response Received : " . $this->request->getContent());
+        $this->logInfo("Event : " . $data['event'] . " == " . $this->expectedEvent);
+        if (!isset($data['event']) || !isset($data['data']['paymentId'])) {
             $result->setHttpResponseCode(401);
             return $result;
         }

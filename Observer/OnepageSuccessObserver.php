@@ -5,6 +5,7 @@ use Magento\Framework\Event\Observer as EventObserver;
 use Magento\Framework\Event\ObserverInterface;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use \Dibs\EasyCheckout\Model\Client\Client;
+use Magento\Sales\Model\Order;
 
 class OnepageSuccessObserver extends Client implements ObserverInterface
 {
@@ -13,6 +14,11 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
      * @var \Dibs\EasyCheckout\Helper\Data
      */
     protected $helper;
+
+    /**
+     * @var Order
+     */
+    protected $order;
 
     /** @var \Dibs\EasyCheckout\Model\Checkout */
     protected $dibsOrderHandler;
@@ -54,7 +60,12 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
         $methodTitle = $method->getTitle();
         if($payment->getMethod() == "dibseasycheckout"){
             $paymentId = $order->getDibsPaymentId();
-            $reference = new UpdatePaymentReference();
+
+	    //Update Card Type in sales_order_payment table in addition_information column.
+	    $paymentDetails = $this->paymentApi->getPayment($paymentId);
+            $order->getPayment()->setAdditionalInformation('dibs_payment_method', $paymentDetails->getPaymentDetails()->getPaymentMethod());
+            $order->save();
+	    $reference = new UpdatePaymentReference();
             $reference->setReference($order->getIncrementId());
             $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
             if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {

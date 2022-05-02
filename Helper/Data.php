@@ -667,4 +667,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return preg_split("#\s*[ ,;]\s*#", $values, null, PREG_SPLIT_NO_EMPTY);
     }
+
+    /**
+     * @param null $store
+     * @return bool
+     */
+    public function isElectronicData($store = null)
+    {
+       
+        return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'electronic_data_store', $store);
+  
+    }
 }

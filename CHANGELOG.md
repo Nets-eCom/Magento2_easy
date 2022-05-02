@@ -6,11 +6,17 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.5.0`
+|Version | `1.5.1`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.1 - Released 2022-05-2
+* Fixed : Payment method will be displayed for all types in admin order section.
+* Fixed : Payment status will be displayed in admin order section.
+* Fixed : Added webhook for charge and refund.
+* Fixed : Added setting in nets configuration page to send consumer data if no selected.
 
 ### Version 1.5.0 - Released 2022-03-14
 * Fixed : Currency issues, all transactions will be in base currency

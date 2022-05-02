@@ -34,7 +34,43 @@
             <argument name="sendEmail" xsi:type="boolean">false</argument>
         </arguments>
     </type>
-
+    
+    <type name="Dibs\EasyCheckout\Controller\Webhook\PaymentCharged">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.charge.created</argument>
+            <argument name="successComment" xsi:type="string">Charge created for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
+    <type name="Dibs\EasyCheckout\Controller\Webhook\PaymentCharged">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.charge.created.v2</argument>
+            <argument name="successComment" xsi:type="string">Charge created for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
+    <type name="Dibs\EasyCheckout\Controller\Webhook\PaymentRefund">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.refund.initiated</argument>
+            <argument name="successComment" xsi:type="string">Refund initiated for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
+    <type name="Dibs\EasyCheckout\Controller\Webhook\PaymentRefund">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.refund.initiated.v2</argument>
+            <argument name="successComment" xsi:type="string">Refund initiated for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
+    <type name="Dibs\EasyCheckout\Controller\Webhook\PaymentRefund">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.refund.completed</argument>
+            <argument name="successComment" xsi:type="string">Refund completed for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
+    
     <type name="Magento\Framework\App\Request\CsrfValidator">
         <plugin name="nets_csrf_validator_skip" type="Dibs\EasyCheckout\Plugin\CsrfValidatorSkip" />
     </type>

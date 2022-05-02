@@ -346,7 +346,11 @@ class CreatePaymentCheckout extends AbstractRequest
         }
 
         if ($this->getConsumer() instanceof Consumer) {
-            $data['consumer'] = $this->getConsumer()->toArray();
+            if($this->getElectronicData()){
+                $data['consumer'] = null;
+            }else{
+                $data['consumer'] = $this->getConsumer()->toArray(); 
+            }
         }
 
         if ($this->merchantHandlesConsumerData !== null) {
@@ -405,6 +409,21 @@ class CreatePaymentCheckout extends AbstractRequest
     public function setCancelUrl($cancelUrl): void
     {
         $this->cancelUrl = $cancelUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function setElectronicData($electronicData)
+    {
+      $this->electronicData  = (bool) $electronicData;
+     // return $this;
+    }
+
+    public function getElectronicData()
+    {
+       return (bool) $this->electronicData;
+    
     }
 
 }

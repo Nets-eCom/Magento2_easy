@@ -200,6 +200,9 @@ class Order
         }
         $paymentCheckout->setTermsUrl($termsUrl);
 
+        $electronicData = $this->helper->isElectronicData();
+        $paymentCheckout->setElectronicData($electronicData);
+
         $privacyUrl = $this->helper->getPrivacyUrl();
         if (strlen($privacyUrl) > 128) {
             $privacyUrl = substr($privacyUrl, 0, 128);
@@ -307,6 +310,42 @@ class Order
             $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
             $webhookCheckoutCompleted->setUrl($webHookUrl);
             $webhooks[] = $webhookCheckoutCompleted;
+
+	    //EVENT_PAYMENT_CHARGE_CREATED
+            $webhookChargeCreated= new CreatePaymentWebhook();
+            $webhookChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHARGE_CREATED);
+            $webHookChargeUrl = $this->helper->getWebHookCallbackUrl($webhookChargeCreated->getControllerName());
+            $webhookChargeCreated->setUrl($webHookChargeUrl);
+            $webhooks[] = $webhookChargeCreated;
+            
+            //EVENT_PAYMENT_NEW_CHARGE_CREATED
+            $webhookNewChargeCreated = new CreatePaymentWebhook();
+            $webhookNewChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_CHARGE_CREATED);
+            $webHookNewChargeUrl = $this->helper->getWebHookCallbackUrl($webhookNewChargeCreated->getControllerName());
+            $webhookNewChargeCreated->setUrl($webHookNewChargeUrl);
+            $webhooks[] = $webhookNewChargeCreated;
+            
+            //EVENT_PAYMENT_REFUND_INITIATED
+            $webhookRefundInit = new CreatePaymentWebhook();
+            $webhookRefundInit->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_REFUND_INITIATED);
+            $webHookRefundInitUrl = $this->helper->getWebHookCallbackUrl($webhookRefundInit->getControllerName());
+            $webhookRefundInit->setUrl($webHookRefundInitUrl);
+            $webhooks[] = $webhookRefundInit;
+            
+            //EVENT_PAYMENT_NEW_REFUND_INITIATED
+            $webhookNewRefundInit = new CreatePaymentWebhook();
+            $webhookNewRefundInit->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_REFUND_INITIATED);
+            $webHookNewRefundInitUrl = $this->helper->getWebHookCallbackUrl($webhookNewRefundInit->getControllerName());
+            $webhookNewRefundInit->setUrl($webHookNewRefundInitUrl);
+            $webhooks[] = $webhookNewRefundInit;
+            
+            //EVENT_PAYMENT_REFUND_COMPLETED
+            $webhookRefundCompleted = new CreatePaymentWebhook();
+            $webhookRefundCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_REFUND_COMPLETED);
+            $webHookRefundUrl = $this->helper->getWebHookCallbackUrl($webhookRefundCompleted->getControllerName());
+            $webhookRefundCompleted->setUrl($webHookRefundUrl);
+            $webhooks[] = $webhookRefundCompleted;
+
         //}
 
         foreach ($webhooks as $webhook) {

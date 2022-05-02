@@ -72,7 +72,8 @@ class Checkout extends AbstractMethod
         $this->getInfoInstance()
             ->setAdditionalInformation('dibs_payment_id', $data->getDibsPaymentId())
             ->setAdditionalInformation('dibs_payment_method', $data->getDibsPaymentMethod())
-            ->setAdditionalInformation('country_id', $data->getCountryId());
+            ->setAdditionalInformation('country_id', $data->getCountryId())
+	    ->setAdditionalInformation('dibs_order_status_id', 1);
 
         // This flag is set to differentiate orders placed before and after 1.3.2
         // Orders placed before needs to handle discount VAT differently when captured and credited
