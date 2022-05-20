@@ -49,21 +49,21 @@ class GetPaymentConfiguration extends Checkout
         }
 
         $checkoutInfo = ['integrationType' => $integrationType, 'checkoutFlow' => $checkoutFlow];
-
         try {
             $checkout->initCheckout(false, !$vanillaCheckout);
             $dibsPayment = $checkout->initDibsCheckout($checkoutInfo, true);
         } catch (\Exception $e) {
             $checkout->getLogger()->critical($e);
-            $this->getResponse()->setStatusCode(503);
-            return;
+	    $error_messages = $e->getMessage();
+	    return $this->getResponse()->setBody(json_encode(array('error_message' => substr($error_messages, strpos($error_messages, ":") + 1))));
         }
 
         $paymentResponse = [
             'checkoutKey' => $this->getDibsCheckoutKey(),
             'paymentId'   => $dibsPayment->getPaymentId(),
             'language'    => $this->getDibsCheckout()->getLocale(),
-            'checkoutUrl' => $dibsPayment->getCheckoutUrl() . '&language=' .  $this->getDibsCheckout()->getLocale()
+	    'checkoutUrl' => $dibsPayment->getCheckoutUrl() . '&language=' .  $this->getDibsCheckout()->getLocale(),
+	    'error_message' => '',
         ];
 
         $quote = $this->getDibsCheckout()->getQuote();

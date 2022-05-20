@@ -1,0 +1,26 @@
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="quote" resource="default" engine="innodb">
+        <column xsi:type="varchar" name="dibs_payment_id" length="255" nullable="true" comment="dibs_payment_id"/>
+        <column xsi:type="decimal" name="dibs_invoice_fee" default="0.00" nullable="true" comment="Dibs Invoice Fee"/>
+        <column xsi:type="varchar" name="hash_signature" length="255" nullable="true" comment="Quote verification signature hash"/>
+    </table>
+
+    <table name="sales_order" resource="default" engine="innodb">
+        <column xsi:type="varchar" name="dibs_payment_id" length="255" nullable="true" comment="dibs_payment_id"/>
+        <column xsi:type="decimal" name="dibs_invoice_fee" default="0.00" nullable="true" comment="Dibs Invoice Fee"/>
+    </table>
+
+    <table name="quote_address" resource="default" engine="innodb">
+        <column xsi:type="decimal" name="dibs_invoice_fee" default="0.00" nullable="true" comment="Dibs Invoice Fee"/>
+    </table>
+
+    <table name="sales_invoice" resource="default" engine="innodb">
+        <column xsi:type="decimal" name="dibs_invoice_fee" default="0.00" nullable="true" comment="Dibs Invoice Fee"/>
+    </table>
+
+    <table name="sales_creditmemo" resource="default" engine="innodb">
+        <column xsi:type="decimal" name="dibs_invoice_fee" default="0.00" nullable="true" comment="Dibs Invoice Fee"/>
+    </table>
+
+</schema>

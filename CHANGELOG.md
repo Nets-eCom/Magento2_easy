@@ -6,11 +6,17 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.5.1`
+|Version | `1.5.2`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.2 - Released 2022-05-20
+* Fixed : Payment method display issue fixed for Swish payment in order detail page.
+* Fixed : Alert message "Payment init fail" has been replaced with valid error message.
+* Fixed : Added CHF currency for Checkout.
+* Fixed : Added db_schema.xml file.
 
 ### Version 1.5.1 - Released 2022-05-2
 * Fixed : Payment method will be displayed for all types in admin order section.

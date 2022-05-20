@@ -82,6 +82,11 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
     protected $requestData;
 
     /**
+     * @var string
+     */
+    protected $paymentMethod;
+
+    /**
      * @var bool
      */
     protected $authorized;
@@ -142,6 +147,10 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         $this->requestData = $data;
         $this->logInfo("Starting order update process");
 
+        $paymentDetails = $this->paymentApi->getPayment($this->paymentId);
+        $this->logInfo("Fetch Payment Method : " . $paymentDetails->getPaymentDetails()->getPaymentMethod());
+	$this->paymentMethod = $paymentDetails->getPaymentDetails()->getPaymentMethod();
+
         // Load order
         $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
         $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
@@ -162,6 +171,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
             $this->addSuccessCommentToOrder();
             $this->dibsCheckoutContext->getOrderRepository()->save($this->order);
             $this->paymentRepo->save($this->order->getPayment());
+	    
             $this->logInfo("Order is updated successfully");
             $orderId = $this->order->getIncrementId();
             $payment = $this->order->getPayment();

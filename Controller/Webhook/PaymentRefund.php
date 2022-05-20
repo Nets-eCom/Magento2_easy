@@ -6,6 +6,7 @@ class PaymentRefund extends Webhook {
 
     protected function beforeSave() {
         $data = json_decode($this->request->getContent(), true);
+	$paymentMethod = $this->paymentMethod;
         $additionalInformation = $this->order->getPayment()->getAdditionalInformation();
         if(isset($data['event'])) {
             $dibs_order_status_id = '';
@@ -29,6 +30,7 @@ class PaymentRefund extends Webhook {
                     $this->order->setStatus('closed');
                 }
             }
+	    $additionalInformation['dibs_payment_method'] = $paymentMethod;
             $this->order->getPayment()->setAdditionalInformation($additionalInformation);
         }
     }
