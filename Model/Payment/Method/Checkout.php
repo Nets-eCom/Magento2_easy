@@ -169,7 +169,7 @@ class Checkout extends AbstractMethod
       */
     public function canUseForCurrency($currencyCode)
     {
-        return in_array(strtoupper($currencyCode), ['SEK','NOK','DKK','EUR','USD','CHF']);
+        return in_array(strtoupper($currencyCode), ['SEK','NOK','DKK','EUR','USD','GBP','CHF']);
     }
 
     /**

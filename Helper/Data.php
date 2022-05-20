@@ -116,6 +116,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
         }
 
+        if(is_null($store)) {
+            $store = $this->storeManager->getStore();
+        }
+
         if ($this->isTestMode($store)) {
             return $this->scopeConfig->getValue(self::XML_PATH_CONNECTION . 'test_secret_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $store);
         } else {
