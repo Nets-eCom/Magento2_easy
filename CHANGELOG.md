@@ -6,11 +6,18 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.5.2`
+|Version | `1.5.3`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.3 - Released 2022-06-22
+* Fixed : Order confirmation email for Swish payment.
+* Fixed : Swish payment label in order detail page.
+* Fixed : Order status updated from canceled to pending payment.
+* Fixed : Address issue for UK country in payment iframe.
+* Fixed : Payment iframe locale as per configuration.
 
 ### Version 1.5.2 - Released 2022-05-20
 * Fixed : Payment method display issue fixed for Swish payment in order detail page.

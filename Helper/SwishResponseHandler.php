@@ -62,18 +62,21 @@ class SwishResponseHandler
      * @param Order $order
      */
     public function saveOrder(
-        GetPaymentResponse $paymentResponse,
-        Order $order
+            GetPaymentResponse $paymentResponse,
+            Order $order
     ) {
         if (!$this->isSwishOrderValid($paymentResponse)) {
             return;
         }
         $this->invoiceOrder($order);
-        $order
-            ->setState(\Magento\Sales\Model\Order::STATE_PROCESSING)
-            ->addCommentToStatusHistory('Swish Payment completed', true, true)
-        ;
-        $this->orderRepository->save($order);
+        $paymentMethod = $paymentResponse->getPaymentDetails()->getPaymentMethod();
+        if (strtoupper($paymentMethod) == 'SWISH') {
+            $order
+                ->setState(\Magento\Sales\Model\Order::STATE_PROCESSING)
+                ->addCommentToStatusHistory('Swish Payment Completed', true, true)
+            ;
+            $this->orderRepository->save($order);
+        }
     }
 
     /**

@@ -1,9 +1,11 @@
 <?php
 
 namespace Dibs\EasyCheckout\Model\Dibs;
+use Magento\Framework\Locale\Resolver;
 
 class Locale
 {
+    
 
     /**
      *  Allowed Locale Variables, see:
@@ -242,6 +244,25 @@ class Locale
         "FI" => "fi-FI",
         "AT" => "de-AT"
     ];
+    
+    /**
+     * @var Resolver
+     */
+    private $localeResolver;
+
+    public function __construct(
+        Resolver $localeResolver
+    ) {
+        $this->localeResolver = $localeResolver;
+    }
+
+    public function getCurrentLocale()
+    {
+        $currentLocaleCode = $this->localeResolver->getLocale(); // fr_CA
+        $languageCode = str_replace('_', '-', $currentLocaleCode);
+        return $languageCode;
+    }
+    
 
     public function getCountryIdByIso3Code($iso3)
     {
@@ -278,7 +299,9 @@ class Locale
      */
     public function getLocaleByCountryCode($countryCode)
     {
-        return $this->localeMap[$countryCode] ?? 'en-GB';
+        //return $this->localeMap[$countryCode] ?? 'en-GB';
+        $ctrCode = $this->getCurrentLocale();
+	return $ctrCode ?? 'en-GB';
     }
 
     /**

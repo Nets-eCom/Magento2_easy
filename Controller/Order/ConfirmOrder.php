@@ -7,8 +7,8 @@ use Magento\Framework\App\ResponseInterface;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Magento\Sales\Model\Order;
 
-class ConfirmOrder extends Checkout
-{
+class ConfirmOrder extends Checkout {
+
     /**
      * @var string
      */
@@ -24,8 +24,7 @@ class ConfirmOrder extends Checkout
      */
     private $order;
 
-    public function execute()
-    {
+    public function execute() {
         $this->paymentId = $this->getRequest()->getPostValue('pid', false);
 
         // Hosted will send payment ID as a get param
@@ -37,19 +36,31 @@ class ConfirmOrder extends Checkout
         $this->getDibsCheckout()->setCheckoutContext($this->dibsCheckoutContext);
         $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
         $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
-            $this->order,
-            $this->paymentId,
-            'dibs_payment_id'
+                $this->order,
+                $this->paymentId,
+                'dibs_payment_id'
         );
 
         // No order found? This should never happen, but let's log the error just in case.
         if (!$this->order->getId()) {
-            $this->dibsCheckout->getLogger()->critical(
-                "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
-            );
-            return $this->respondWithError(
-                "We are sorry, but your order seems to have gone missing. "
-                . "Please contact customer support with Nets Payment ID: " . $this->paymentId
+            sleep(10);
+            if (!$this->order->getId()) {
+                sleep(30);
+                if (!$this->order->getId()) {
+                    $this->dibsCheckout->getLogger()->critical(
+                            "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
+                    );
+                    return $this->respondWithError(
+                                    "We are sorry, but your order seems to have gone missing. "
+                                    . "Please contact customer support with Nets Payment ID: " . $this->paymentId
+                    );
+                }
+            }
+            $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
+            $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
+                    $this->order,
+                    $this->paymentId,
+                    'dibs_payment_id'
             );
         }
 
@@ -62,8 +73,8 @@ class ConfirmOrder extends Checkout
             // Just log this, we get another chance with the webhook callback
             $this->dibsCheckout->getLogger()->critical("[ConfirmOrder][{$this->paymentId}]Error when saving order!");
             $this->dibsCheckout->getLogger()->critical(
-                "[ConfirmOrder][{$this->paymentId}]Exception: " . $e->getMessage(),
-                $e->getTrace()
+                    "[ConfirmOrder][{$this->paymentId}]Exception: " . $e->getMessage(),
+                    $e->getTrace()
             );
         }
 
@@ -76,28 +87,38 @@ class ConfirmOrder extends Checkout
      *
      * @return ResponseInterface
      */
-    private function handleHostedRequest()
-    {
+    private function handleHostedRequest() {
         $this->getDibsCheckout()->setCheckoutContext($this->dibsCheckoutContext);
         $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
         $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
-            $this->order,
-            $this->hostedPaymentId,
-            'dibs_payment_id'
+                $this->order,
+                $this->hostedPaymentId,
+                'dibs_payment_id'
         );
 
         $helper = $this->dibsCheckoutContext->getHelper();
 
         // No order found? This should never happen, but let's log the error just in case.
         if (!$this->order->getId()) {
-            $this->dibsCheckout->getLogger()->critical(
-                "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
+            sleep(10);
+            if (!$this->order->getId()) {
+                sleep(30);
+                if (!$this->order->getId()) {
+                    $this->dibsCheckout->getLogger()->critical(
+                            "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
+                    );
+                    $message = "We are sorry, but your order seems to have gone missing. "
+                            . "Please contact customer support with Nets Payment ID: " . $this->hostedPaymentId;
+                    $this->messageManager->addErrorMessage(__($message));
+                    return $this->_redirect('checkout/cart');
+                }
+            }
+            $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
+            $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
+                    $this->order,
+                    $this->hostedPaymentId,
+                    'dibs_payment_id'
             );
-            $message =
-                "We are sorry, but your order seems to have gone missing. "
-                . "Please contact customer support with Nets Payment ID: " . $this->hostedPaymentId;
-            $this->messageManager->addErrorMessage(__($message));
-            return $this->_redirect('checkout/cart');
         }
         $this->clearQuote();
         return $this->_redirect($helper->getCheckoutUrl('success'));
@@ -110,8 +131,7 @@ class ConfirmOrder extends Checkout
      *
      * @return ResponseInterface
      */
-    private function respondWithError($message, $redirectTo = false, $extraData = [])
-    {
+    private function respondWithError($message, $redirectTo = false, $extraData = []) {
         $data = ['messages' => __($message), "redirectTo" => $redirectTo, 'error' => true];
         $data = array_merge($data, $extraData);
         return $this->getResponse()->setBody(json_encode($data));
@@ -120,8 +140,7 @@ class ConfirmOrder extends Checkout
     /**
      * @return ResponseInterface
      */
-    private function respondWithSuccessRedirect()
-    {
+    private function respondWithSuccessRedirect() {
         $redirectTo = $this->dibsCheckoutContext->getHelper()->getCheckoutUrl('success');
         $data = ['messages' => '', "redirectTo" => $redirectTo, 'error' => false];
         return $this->getResponse()->setBody(json_encode($data));
@@ -130,21 +149,20 @@ class ConfirmOrder extends Checkout
     /**
      * @return void
      */
-    private function clearQuote()
-    {
+    private function clearQuote() {
         $checkoutSession = $this->checkoutSession;
         $checkoutSession->clearHelperData();
         $checkoutSession->unsDibsPaymentId();
 
         $order = $this->order;
         $checkoutSession
-            ->clearQuote()
-            ->clearStorage()
-            ->setLastQuoteId($order->getQuoteId())
-            ->setLastSuccessQuoteId($order->getQuoteId())
-            ->setLastOrderId($order->getId())
-            ->setLastRealOrderId($order->getIncrementId())
-            ->setLastOrderStatus($order->getStatus());
+                ->clearQuote()
+                ->clearStorage()
+                ->setLastQuoteId($order->getQuoteId())
+                ->setLastSuccessQuoteId($order->getQuoteId())
+                ->setLastOrderId($order->getId())
+                ->setLastRealOrderId($order->getIncrementId())
+                ->setLastOrderStatus($order->getStatus());
     }
 
     /**
@@ -152,8 +170,7 @@ class ConfirmOrder extends Checkout
      *
      * @return void
      */
-    private function addSuccessCommentToOrder()
-    {
+    private function addSuccessCommentToOrder() {
         $comment = "Nets Easy Checkout completed for payment ID: " . $this->paymentId;
         if ($this->order->getState() === Order::STATE_PENDING_PAYMENT) {
             $this->order->setState(Order::STATE_PROCESSING);
@@ -164,4 +181,5 @@ class ConfirmOrder extends Checkout
 
         $this->order->addCommentToStatusHistory($comment, false);
     }
+
 }

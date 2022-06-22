@@ -14,9 +14,9 @@ use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 
-abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface
-{
+abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterface {
     // Object properties
+
     /**
      * @var RequestInterface
      */
@@ -42,8 +42,8 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      */
     protected $paymentRepo;
     //
-
     // di.xml scalar properties
+
     /**
      * @var string
      */
@@ -64,8 +64,8 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      */
     protected $sendEmail;
     //
-
     // Processing properties
+
     /**
      * @var string
      */
@@ -90,20 +90,21 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @var bool
      */
     protected $authorized;
+
     //
 
     public function __construct(
-        \Dibs\EasyCheckout\Helper\Data $helper,
-        \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
-        SaveOrder $saveOrder,
-        RequestInterface $request,
-        DibsCheckout $dibsCheckout,
-        DibsCheckoutContext $dibsCheckoutContext,
-        JsonFactory $resultFactory,
-        OrderPaymentRepositoryInterface $paymentRepo,
-        string $expectedEvent,
-        string $successComment,
-        bool $sendEmail
+            \Dibs\EasyCheckout\Helper\Data $helper,
+            \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
+            SaveOrder $saveOrder,
+            RequestInterface $request,
+            DibsCheckout $dibsCheckout,
+            DibsCheckoutContext $dibsCheckoutContext,
+            JsonFactory $resultFactory,
+            OrderPaymentRepositoryInterface $paymentRepo,
+            string $expectedEvent,
+            string $successComment,
+            bool $sendEmail
     ) {
         $this->helper = $helper;
         $this->paymentApi = $paymentApi;
@@ -118,8 +119,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         $this->sendEmail = $sendEmail;
     }
 
-    public function execute()
-    {
+    public function execute() {
         $result = $this->resultFactory->create();
         $result->setData([]);
 
@@ -136,7 +136,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         }
 
         $data = json_decode($this->request->getContent(), true);
-	$this->logInfo("Response Received : " . $this->request->getContent());
+        $this->logInfo("Response Received : " . $this->request->getContent());
         $this->logInfo("Event : " . $data['event'] . " == " . $this->expectedEvent);
         if (!isset($data['event']) || !isset($data['data']['paymentId'])) {
             $result->setHttpResponseCode(401);
@@ -149,14 +149,14 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
 
         $paymentDetails = $this->paymentApi->getPayment($this->paymentId);
         $this->logInfo("Fetch Payment Method : " . $paymentDetails->getPaymentDetails()->getPaymentMethod());
-	$this->paymentMethod = $paymentDetails->getPaymentDetails()->getPaymentMethod();
+        $this->paymentMethod = $paymentDetails->getPaymentDetails()->getPaymentMethod();
 
         // Load order
         $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
         $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
-            $this->order,
-            $this->paymentId,
-            'dibs_payment_id'
+                $this->order,
+                $this->paymentId,
+                'dibs_payment_id'
         );
 
         if (!$this->order->getId()) {
@@ -171,11 +171,11 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
             $this->addSuccessCommentToOrder();
             $this->dibsCheckoutContext->getOrderRepository()->save($this->order);
             $this->paymentRepo->save($this->order->getPayment());
-	    
+
             $this->logInfo("Order is updated successfully");
             $orderId = $this->order->getIncrementId();
             $payment = $this->order->getPayment();
-            if($payment->getMethod() == "dibseasycheckout"){
+            if ($payment->getMethod() == "dibseasycheckout") {
                 $paymentId = $this->order->getDibsPaymentId();
                 $reference = new UpdatePaymentReference();
                 $reference->setReference($this->order->getIncrementId());
@@ -185,17 +185,32 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
                     $checkoutUrl = $payment->getCheckoutUrl();
                     $reference->setCheckoutUrl($checkoutUrl);
                 }
-                
-                $this->logInfo('from the webhook ' . $this->order->getIncrementId() );
+
+                $this->logInfo('from the webhook ' . $this->order->getIncrementId());
                 $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
+                // To sent email for Swish payment method
+                if (strtoupper($this->paymentMethod) == 'SWISH' && $data['event'] == 'payment.checkout.completed') {
+                    try {
+                        $this->dibsCheckoutContext->getOrderSender()->send($this->order);
+                        $this->logInfo("Sent order confirmation");
+                    } catch (\Exception $e) {
+                        $this->logError("Error sending order confirmation email");
+                        $this->logError("Error message: {$e->getMessage()}");
+                        $this->logError("Stack trace: {$e->getPrevious()->getTraceAsString()}");
+                        $this->order->addCommentToStatusHistory(
+                                "Callback for {$this->expectedEvent} encountered an error when trying to send order confirmation email",
+                                false
+                        );
+                    }
+                }
             }
         } catch (\Exception $e) {
             $this->logError("Could not update order");
             $this->logError("Error message: {$e->getMessage()}");
             $this->logError("Stack trace: {$e->getPrevious()->getTraceAsString()}");
             $this->order->addCommentToStatusHistory(
-                "Callback for {$this->expectedEvent} failed to update order. Check easycheckout log file for details",
-                false
+                    "Callback for {$this->expectedEvent} failed to update order. Check easycheckout log file for details",
+                    false
             );
             $result->setHttpResponseCode(500);
             return $result;
@@ -211,8 +226,8 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
                 $this->logError("Error message: {$e->getMessage()}");
                 $this->logError("Stack trace: {$e->getPrevious()->getTraceAsString()}");
                 $this->order->addCommentToStatusHistory(
-                    "Callback for {$this->expectedEvent} encountered an error when trying to send order confirmation email",
-                    false
+                        "Callback for {$this->expectedEvent} encountered an error when trying to send order confirmation email",
+                        false
                 );
             }
         }
@@ -225,8 +240,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
     /**
      * @inheritDoc
      */
-    public function validateForCsrf(RequestInterface $request): ?bool
-    {
+    public function validateForCsrf(RequestInterface $request): ?bool {
         // Validate authorization
         $ourSecret = $this->dibsCheckoutContext->getHelper()->getWebhookSecret();
         $this->authorized = ($ourSecret && $ourSecret === $request->getHeader("Authorization"));
@@ -241,8 +255,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
     /**
      * @inheritDoc
      */
-    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
-    {
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException {
         return null;
     }
 
@@ -251,8 +264,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      *
      * @return void
      */
-    protected function beforeSave()
-    {
+    protected function beforeSave() {
         return;
     }
 
@@ -261,8 +273,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      *
      * @return void
      */
-    protected function afterSave()
-    {
+    protected function afterSave() {
         return;
     }
 
@@ -272,8 +283,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @param string $message
      * @return void
      */
-    protected function logInfo($message)
-    {
+    protected function logInfo($message) {
         $this->dibsCheckoutContext->getLogger()->addInfo($this->getLogPrefix() . $message);
     }
 
@@ -284,8 +294,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @param array $context
      * @return void
      */
-    protected function logError($message, $context = [])
-    {
+    protected function logError($message, $context = []) {
         $this->dibsCheckoutContext->getLogger()->addError($this->getLogPrefix() . $message, $context);
     }
 
@@ -294,8 +303,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      *
      * @return string
      */
-    protected function getLogPrefix()
-    {
+    protected function getLogPrefix() {
         return "[Webhook:{$this->expectedEvent}][{$this->paymentId}]";
     }
 
@@ -304,8 +312,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      *
      * @return void
      */
-    protected function addSuccessCommentToOrder()
-    {
+    protected function addSuccessCommentToOrder() {
         $comment = sprintf($this->successComment, $this->paymentId);
         if ($this->order->getState() === Order::STATE_PENDING_PAYMENT) {
             $this->order->setState(Order::STATE_PROCESSING);
@@ -317,8 +324,9 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         $this->order->addCommentToStatusHistory($comment, false);
     }
 
-    protected function startOrderCreation($paymentId, $quoteId){
-        
+    protected function startOrderCreation($paymentId, $quoteId) {
+
         $this->saveOrder->createOrder($paymentId, $quoteId);
     }
+
 }

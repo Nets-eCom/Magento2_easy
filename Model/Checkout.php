@@ -659,7 +659,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->_eventManager->dispatch('checkout_submit_before', ['quote' => $quote]);
             $paymentMutex->lock($dibsPayment->getPaymentId());
             $order = $this->quoteManagement->submit($quote);
-            $order->setStatus('canceled');
+            //$order->setStatus('canceled');
+            $order->setStatus(Order::STATE_PENDING_PAYMENT);
         } catch (\Exception $e) {
             $paymentMutex->release($dibsPayment->getPaymentId());
             $this->_logger->error($e);
