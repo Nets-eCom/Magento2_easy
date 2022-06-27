@@ -57,6 +57,7 @@ class ConsumerDataProvider
         'PL' => '+48',
         'IT' => '+39',
         'GB' => '+44',
+		'CH' => '+41',
     ];
 
     /**

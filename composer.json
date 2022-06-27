@@ -2,7 +2,7 @@
   "name": "nets/easycheckout",
   "description": "Nets Easy Checkout",
   "type": "magento2-module",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "require": {
     "php": "~7.1 |~7.2 | ~7.3 | ~7.4"
   },

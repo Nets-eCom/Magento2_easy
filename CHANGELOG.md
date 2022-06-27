@@ -6,11 +6,14 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.3+`
-|Version | `1.5.3`
+|Version | `1.5.4`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.3 - Released 2022-06-22
+* Fixed : Address issue for Switzerland country in payment iframe.
 
 ### Version 1.5.3 - Released 2022-06-22
 * Fixed : Order confirmation email for Swish payment.
