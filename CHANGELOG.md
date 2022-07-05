@@ -5,14 +5,17 @@
 |------|----------
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
-|Shop Version | `2.3+`
-|Version | `1.5.4`
+|Shop Version | `2.4+`
+|Version | `1.5.5`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
 
-### Version 1.5.3 - Released 2022-06-22
+### Version 1.5.5 - Released 2022-07-05
+* Fixed : Canceling order in portal will be canceled in Magento as well.
+
+### Version 1.5.4 - Released 2022-06-27
 * Fixed : Address issue for Switzerland country in payment iframe.
 
 ### Version 1.5.3 - Released 2022-06-22

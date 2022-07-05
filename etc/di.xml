@@ -70,6 +70,13 @@
             <argument name="sendEmail" xsi:type="boolean">false</argument>
         </arguments>
     </type>
+    <type name="Dibs\EasyCheckout\Controller\Webhook\CancelCreated">
+        <arguments>
+            <argument name="expectedEvent" xsi:type="string">payment.cancel.created</argument>
+            <argument name="successComment" xsi:type="string">Cancel created for payment ID: %s</argument>
+            <argument name="sendEmail" xsi:type="boolean">false</argument>
+        </arguments>
+    </type>
     
     <type name="Magento\Framework\App\Request\CsrfValidator">
         <plugin name="nets_csrf_validator_skip" type="Dibs\EasyCheckout\Plugin\CsrfValidatorSkip" />

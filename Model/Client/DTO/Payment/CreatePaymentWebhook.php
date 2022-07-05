@@ -33,7 +33,7 @@ class CreatePaymentWebhook extends AbstractRequest
         self::EVENT_PAYMENT_NEW_REFUND_INITIATED => 'PaymentRefund',
         self::EVENT_PAYMENT_REFUND_FAILED => '',
         self::EVENT_PAYMENT_REFUND_COMPLETED => 'PaymentRefund',
-        self::EVENT_PAYMENT_CANCEL_CREATED => '',
+        self::EVENT_PAYMENT_CANCEL_CREATED => 'CancelCreated',
         self::EVENT_PAYMENT_CANCEL_FAILED => '',
     ];
 

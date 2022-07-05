@@ -346,6 +346,13 @@ class Order
             $webhookRefundCompleted->setUrl($webHookRefundUrl);
             $webhooks[] = $webhookRefundCompleted;
 
+            //EVENT_PAYMENT_CANCEL_CREATED
+            $webhookCancelCreated = new CreatePaymentWebhook();
+            $webhookCancelCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CANCEL_CREATED);
+            $webHookCancelUrl = $this->helper->getWebHookCallbackUrl($webhookCancelCreated->getControllerName());
+            $webhookCancelCreated->setUrl($webHookCancelUrl);
+            $webhooks[] = $webhookCancelCreated;
+
         //}
 
         foreach ($webhooks as $webhook) {
