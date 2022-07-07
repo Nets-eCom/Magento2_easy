@@ -43,7 +43,7 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
     ) {
         $this->helper = $helper;
         $this->paymentApi = $paymentApi;
-       // $this->clientApi  = $clientApi;
+        // $this->clientApi  = $clientApi;
         $this->dibsOrderHandler = $dibsOrderHandler;
         $this->cookieMetadataFactory = $cookieMetadataFactory;
         $this->cookieManager = $cookieManager;
@@ -52,13 +52,16 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
 
     public function execute(EventObserver $observer)
     {
-
         $order = $observer->getEvent()->getOrder();
+        if ($order === null) {
+            return;
+        }
+
         $orderId = $order->getIncrementId();
         $payment = $order->getPayment();
         $method = $payment->getMethodInstance();
         $methodTitle = $method->getTitle();
-        if($payment->getMethod() == "dibseasycheckout"){
+        if ($payment->getMethod() == "dibseasycheckout") {
             $paymentId = $order->getDibsPaymentId();
 
 	    //Update Card Type in sales_order_payment table in addition_information column.
@@ -73,7 +76,7 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
                 $checkoutUrl = $payment->getCheckoutUrl();
                 $reference->setCheckoutUrl($checkoutUrl);
             }
-            
+
             $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
         }
     }
