@@ -556,6 +556,13 @@ class Order
     public function refundDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
         $chargeId = $payment->getAdditionalInformation('dibs_charge_id');
+        $creditMemo = $payment->getCreditMemo();
+        if($creditMemo){
+            $invoice = $creditMemo->getInvoice();
+            if($invoice){
+                $chargeId = $invoice->getTransactionId();
+            }
+        }
         if ($chargeId) {
             $creditMemo = $payment->getCreditMemo();
             $this->items->addDibsItemsByCreditMemo($creditMemo);
