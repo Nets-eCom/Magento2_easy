@@ -8,6 +8,11 @@
     </div>
 
     <div class="payment-method-content">
+            <div class="payment-method-billing-address">
+                <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!--/ko-->
+            </div>
             <!-- ko if: window.isVanillaEmbeded -->
             <div class="payment-method-note">
                 <div id="nets-placeholder" style="width: 102%;">

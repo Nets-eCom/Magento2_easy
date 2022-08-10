@@ -87,6 +87,11 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
     protected $paymentMethod;
 
     /**
+     * @var string
+     */
+    protected $storeId;
+
+    /**
      * @var bool
      */
     protected $authorized;
@@ -147,10 +152,6 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         $this->requestData = $data;
         $this->logInfo("Starting order update process");
 
-        $paymentDetails = $this->paymentApi->getPayment($this->paymentId);
-        $this->logInfo("Fetch Payment Method : " . $paymentDetails->getPaymentDetails()->getPaymentMethod());
-        $this->paymentMethod = $paymentDetails->getPaymentDetails()->getPaymentMethod();
-
         // Load order
         $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
         $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
@@ -160,10 +161,26 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         );
 
         if (!$this->order->getId()) {
-            $this->logInfo("Order does not exist yet. Webhook will retry.");
-            $result->setHttpResponseCode(404);
-            return $result;
+            sleep(10);
+            if (!$this->order->getId()) {
+                sleep(20);
+                if (!$this->order->getId()) {
+                    $this->logInfo("Order does not exist yet. Webhook will retry.");
+                    $result->setHttpResponseCode(404);
+                    return $result;
+                }
+            }
+            $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
+            $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
+                    $this->order,
+                    $this->hostedPaymentId,
+                    'dibs_payment_id'
+            );
         }
+        $this->storeId = $this->order->getStoreId();
+        $paymentDetails = $this->paymentApi->getPayment($this->paymentId, $this->storeId);
+        $this->logInfo("Fetch Payment Method : " . $paymentDetails->getPaymentDetails()->getPaymentMethod());
+        $this->paymentMethod = $paymentDetails->getPaymentDetails()->getPaymentMethod();
 
         $this->beforeSave();
 
@@ -176,18 +193,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
             $orderId = $this->order->getIncrementId();
             $payment = $this->order->getPayment();
             if ($payment->getMethod() == "dibseasycheckout") {
-                $paymentId = $this->order->getDibsPaymentId();
-                $reference = new UpdatePaymentReference();
-                $reference->setReference($this->order->getIncrementId());
-                $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
-                if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
-                    $payment = $this->paymentApi->getPayment($paymentId);
-                    $checkoutUrl = $payment->getCheckoutUrl();
-                    $reference->setCheckoutUrl($checkoutUrl);
-                }
-
                 $this->logInfo('from the webhook ' . $this->order->getIncrementId());
-                $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
                 // To sent email for Swish payment method
                 if (strtoupper($this->paymentMethod) == 'SWISH' && $data['event'] == 'payment.checkout.completed') {
                     try {

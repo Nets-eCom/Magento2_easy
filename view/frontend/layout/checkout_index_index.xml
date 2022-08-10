@@ -29,7 +29,7 @@
                                                                     <item name="component" xsi:type="string">Dibs_EasyCheckout/js/view/payment/dibseasycheckout-payment</item>
                                                                     <item name="methods" xsi:type="array">
                                                                         <item name="dibseasycheckout" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">false</item>
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                     </item>
                                                                 </item>

@@ -9,6 +9,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetConsumerShippingAddress;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentCardDetails;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentConsumer;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentDetails;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetChargeDetails;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentInvoiceDetails;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentSummary;
@@ -34,6 +35,9 @@ class GetPaymentResponse implements PaymentResponseInterface
 
     /** @var $checkoutUrl string */
     protected $checkoutUrl;
+
+    /** @var GetChargeDetails $chargeDetails */
+    protected $chargeDetails;
 
     /**
      * If response is not empty, we fill the values from the API.
@@ -211,6 +215,13 @@ class GetPaymentResponse implements PaymentResponseInterface
                 $url = $this->_get($p->checkout, 'url');
             }
 
+            if (isset($p->charges)) {
+                $c = $data->payment->charges[0];
+                $chargeDetails = new GetChargeDetails();
+                $chargeDetails->setChargeId($this->_get($p->charges[0], 'chargeId'));
+                $chargeDetails->setAmount($this->_get($p->charges[0], 'amount'));
+            }
+
             // we set all data!
             $this->setPaymentId($p->paymentId);
             $this->setOrderDetails($orderDetails);
@@ -218,7 +229,10 @@ class GetPaymentResponse implements PaymentResponseInterface
             $this->setPaymentDetails($paymentDetails);
             $this->setConsumer($consumer);
             $this->setCheckoutUrl($url);
+            if (isset($p->charges)) {
+                $this->setChargeDetails($chargeDetails);
         }
+    }
     }
 
     /**
@@ -327,6 +341,23 @@ class GetPaymentResponse implements PaymentResponseInterface
         return $this;
     }
 
+    /**
+     * @return GetChargeDetails
+     */
+    public function getChargeDetails()
+    {
+        return $this->chargeDetails;
+    }
+
+    /**
+     * @param GetChargeDetails $chargeDetails
+     * @return GetPaymentResponse
+     */
+    public function setChargeDetails($chargeDetails)
+    {
+        $this->chargeDetails = $chargeDetails;
+        return $this;
+    }
 
 
     public function getIsCompany()

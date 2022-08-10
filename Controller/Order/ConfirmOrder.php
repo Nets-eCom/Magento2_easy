@@ -43,10 +43,6 @@ class ConfirmOrder extends Checkout {
 
         // No order found? This should never happen, but let's log the error just in case.
         if (!$this->order->getId()) {
-            sleep(10);
-            if (!$this->order->getId()) {
-                sleep(30);
-                if (!$this->order->getId()) {
                     $this->dibsCheckout->getLogger()->critical(
                             "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
                     );
@@ -55,14 +51,6 @@ class ConfirmOrder extends Checkout {
                                     . "Please contact customer support with Nets Payment ID: " . $this->paymentId
                     );
                 }
-            }
-            $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
-            $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
-                    $this->order,
-                    $this->paymentId,
-                    'dibs_payment_id'
-            );
-        }
 
         $this->paymentId = $this->order->getDibsPaymentId();
         $this->addSuccessCommentToOrder();
@@ -100,10 +88,6 @@ class ConfirmOrder extends Checkout {
 
         // No order found? This should never happen, but let's log the error just in case.
         if (!$this->order->getId()) {
-            sleep(10);
-            if (!$this->order->getId()) {
-                sleep(30);
-                if (!$this->order->getId()) {
                     $this->dibsCheckout->getLogger()->critical(
                             "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
                     );
@@ -112,14 +96,6 @@ class ConfirmOrder extends Checkout {
                     $this->messageManager->addErrorMessage(__($message));
                     return $this->_redirect('checkout/cart');
                 }
-            }
-            $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
-            $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
-                    $this->order,
-                    $this->hostedPaymentId,
-                    'dibs_payment_id'
-            );
-        }
         $this->clearQuote();
         return $this->_redirect($helper->getCheckoutUrl('success'));
     }

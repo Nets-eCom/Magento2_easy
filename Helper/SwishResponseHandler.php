@@ -90,6 +90,7 @@ class SwishResponseHandler
 
         try {
             $invoice = $this->invoiceService->prepareInvoice($order);
+	    $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
             $invoice->register();
             $invoice->save();
             $transactionSave = $this->transaction->addObject(
@@ -101,12 +102,12 @@ class SwishResponseHandler
             $this->invoiceSender->send($invoice);
 
             $invoice->capture();
-
             $order->setIsInProcess(true);
             //send notification code
             $order->addCommentToStatusHistory(
                 __('Notified customer about invoice #%1.', $invoice->getId())
-            )->setIsCustomerNotified(true);
+	    )->setIsCustomerNotified(true)
+	    ->save();
         } catch (\Exception $e) {
             // We cannot brake transaction
         }

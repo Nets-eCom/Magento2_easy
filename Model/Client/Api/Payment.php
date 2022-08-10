@@ -57,13 +57,14 @@ class Payment extends Client
     /**
      * @param UpdatePaymentReference $reference
      * @param $paymentId
+     * @param $storeId
      * @return void
      * @throws ClientException
      */
-    public function UpdatePaymentReference(UpdatePaymentReference $reference, $paymentId)
+    public function UpdatePaymentReference(UpdatePaymentReference $reference, $paymentId, $storeId)
     {
         try {
-            $this->put("/v1/payments/".$paymentId."/referenceinformation", $reference);
+            $this->put("/v1/payments/".$paymentId."/referenceinformation", $reference, $storeId);
         } catch (ClientException $e) {
             // handle?
             throw $e;
@@ -73,13 +74,14 @@ class Payment extends Client
 
     /**
      * @param string $paymentId
+     * @param $storeId
      * @return GetPaymentResponse
      * @throws ClientException
      */
-    public function getPayment($paymentId)
+    public function getPayment($paymentId, $storeId)
     {
         try {
-            $response = $this->get("/v1/payments/" . $paymentId);
+            $response = $this->get("/v1/payments/" . $paymentId, $storeId);
         } catch (ClientException $e) {
             // handle?
             throw $e;

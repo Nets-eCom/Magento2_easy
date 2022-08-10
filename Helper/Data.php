@@ -667,8 +667,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-    protected function splitStringToArray($values)
-    {
+    protected function splitStringToArray($values){
+        $version =phpversion();
+        if($version >= 8 ){
+            return preg_split("#\s*[ ,;]\s*#", $values, -1, PREG_SPLIT_NO_EMPTY);
+        }
         return preg_split("#\s*[ ,;]\s*#", $values, null, PREG_SPLIT_NO_EMPTY);
     }
 
@@ -676,10 +679,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param null $store
      * @return bool
      */
-    public function isElectronicData($store = null)
-    {
-       
+    public function isElectronicData($store = null){
         return $this->getStoreConfigFlag(self::XML_PATH_SETTINGS . 'electronic_data_store', $store);
-  
     }
 }

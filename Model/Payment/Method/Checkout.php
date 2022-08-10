@@ -279,7 +279,6 @@ class Checkout extends AbstractMethod
         if (!$this->canCapture()) {
             throw new LocalizedException(__('Capture action is not available.'));
         }
-
         try {
             $this->dibsHandler->captureDibsPayment($payment, $amount);
         } catch (ClientException $e) {

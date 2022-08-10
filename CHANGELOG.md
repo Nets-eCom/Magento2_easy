@@ -6,11 +6,18 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.5.5`
+|Version | `1.5.6`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.6 - Released 2022-08-10
+* Fixed : Order gone missing issue.
+* Fixed : Option for different billing and shipping address.
+* Fixed : Automatic invoice generation in case of auto capture.
+* Fixed : PHP version compatibility issue.
+
 
 ### Version 1.5.5 - Released 2022-07-05
 * Fixed : Canceling order in portal will be canceled in Magento as well.

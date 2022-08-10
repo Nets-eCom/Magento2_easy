@@ -17,8 +17,8 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Quote\Model\QuoteFactory;
 
-class SaveOrder extends Checkout
-{
+class SaveOrder extends Checkout {
+
     /**
      * @var array
      */
@@ -42,72 +42,70 @@ class SaveOrder extends Checkout
     /**
      * @inheridoc
      */
-
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Customer\Model\Session $session,
-        \Dibs\EasyCheckout\Helper\Data $helper,
-        CustomerRepositoryInterface $customerRepository,
-        AccountManagementInterface $accountManagement,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-        DibsCheckout $dibsCheckout,
-        DibsCheckoutContext $dibsCheckoutContext,
-        RequestInterface $request,
-        JsonFactory $resultFactory,
-        QuoteFactory $quoteFactory
+            \Magento\Framework\App\Action\Context $context,
+            \Magento\Customer\Model\Session $session,
+            \Dibs\EasyCheckout\Helper\Data $helper,
+            CustomerRepositoryInterface $customerRepository,
+            AccountManagementInterface $accountManagement,
+            \Magento\Checkout\Model\Session $checkoutSession,
+            \Magento\Store\Model\StoreManagerInterface $storeManager,
+            \Magento\Framework\View\Result\PageFactory $resultPageFactory,
+            DibsCheckout $dibsCheckout,
+            DibsCheckoutContext $dibsCheckoutContext,
+            RequestInterface $request,
+            JsonFactory $resultFactory,
+            QuoteFactory $quoteFactory
     ) {
         $this->helper = $helper;
         $this->resultPageFactory = $resultPageFactory;
         $this->checkoutSession = $checkoutSession;
-        $this->storeManager= $storeManager;
+        $this->storeManager = $storeManager;
         $this->request = $request;
         $this->resultFactory = $resultFactory;
         $this->quoteFactory = $quoteFactory;
 
         parent::__construct(
-            $context,
-            $session,
-            $customerRepository,
-            $accountManagement,
-            $checkoutSession,
-            $storeManager,
-            $resultPageFactory,
-            $dibsCheckout,
-            $dibsCheckoutContext
+                $context,
+                $session,
+                $customerRepository,
+                $accountManagement,
+                $checkoutSession,
+                $storeManager,
+                $resultPageFactory,
+                $dibsCheckout,
+                $dibsCheckoutContext
         );
     }
 
-    public function execute()
-    {
+    public function execute() {
 
         $checkout = $this->getDibsCheckout();
         $paymentCheckout = new CreatePaymentCheckout();
 
-        if( $this->helper->getCheckoutFlow() == "HostedPaymentPage" ) {
+        if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
 
             $data = json_decode($this->request->getContent(), true);
             $this->paymentId = $data['data']['paymentId'];
             $reference = $data['data']['order']['reference'];
             $arrReference = (explode("_", $reference));
             $this->quoteId = $arrReference[2];
-        } elseif( "Vanilla" == $this->helper->getCheckoutFlow() ) {
+        } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->paymentId = $this->getRequest()->getPostValue('pid', false);
         }
-        
-        
-        if (! $this->paymentId) {
+
+
+        if (!$this->paymentId) {
             return $this->respondWithError('Invalid payment id');
         }
 
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
-        if( $this->helper->getCheckoutFlow() == "HostedPaymentPage" ) {
+        if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
 
-            $this->validateOrder( $this->quoteId );
-        } elseif( "Vanilla" == $this->helper->getCheckoutFlow() ) {
+            $this->validateOrder($this->quoteId);
+        } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->validateOrder();
         }
@@ -122,7 +120,7 @@ class SaveOrder extends Checkout
                 $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
             } catch (\Exception $e) {
                 return $this->respondWithError(
-                    "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
+                                "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
                 );
             }
         }
@@ -131,11 +129,11 @@ class SaveOrder extends Checkout
 
         //$this->respondWithPaymentId($this->paymentId);
 
-       return $this->respondWithPaymentId($this->paymentId);
-         $result = $this->resultFactory->create();
+        return $this->respondWithPaymentId($this->paymentId);
+        $result = $this->resultFactory->create();
         $result->setData([]);
         $result->setHttpResponseCode(200);
-       //return $result;
+        //return $result;
     }
 
     /**
@@ -143,8 +141,7 @@ class SaveOrder extends Checkout
      *
      * @return \Magento\Framework\App\ResponseInterface
      */
-    private function respondWithPaymentId($paymentId)
-    {
+    private function respondWithPaymentId($paymentId) {
         $response = $this->getResponse();
         $response->setBody(\json_encode([
             'paymentId' => $paymentId
@@ -160,8 +157,7 @@ class SaveOrder extends Checkout
      *
      * @return ResponseInterface
      */
-    protected function respondWithError($message, $redirectTo = false, $extraData = [])
-    {
+    protected function respondWithError($message, $redirectTo = false, $extraData = []) {
         $data = ['messages' => __($message), "redirectTo" => $redirectTo, 'error' => true];
         $data = array_merge($data, $extraData);
         $this->getResponse()->setBody(json_encode($data));
@@ -171,8 +167,7 @@ class SaveOrder extends Checkout
     /**
      * @return void
      */
-    private function validateOrder( $quoteId = '')
-    {
+    private function validateOrder($quoteId = '') {
         $this->validationResult = [
             'error' => false,
             'message' => '',
@@ -182,12 +177,12 @@ class SaveOrder extends Checkout
         $checkout = $this->getDibsCheckout();
         $checkoutPaymentId = $this->paymentId;
 
-        if( "HostedPaymentPage" == $this->helper->getCheckoutFlow() ) {
+        if ("HostedPaymentPage" == $this->helper->getCheckoutFlow()) {
 
             $quote = $this->quoteFactory->create()->load($quoteId);
             $quoteId = $quote->getId();
             $this->quote = $quote;
-        } elseif("Vanilla" == $this->helper->getCheckoutFlow() ) {
+        } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->quote = $this->getDibsCheckout()->getQuote();
         }
@@ -211,7 +206,8 @@ class SaveOrder extends Checkout
         }
 
         try {
-            $this->dibsPayment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($checkoutPaymentId);
+            $storeId = $this->quote->getStoreId();
+            $this->dibsPayment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($checkoutPaymentId, $storeId);
         } catch (ClientException $e) {
             $this->validationResult['error'] = true;
             if ($e->getHttpStatusCode() == 404) {
@@ -227,8 +223,8 @@ class SaveOrder extends Checkout
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
-                $e,
-                __('Something went wrong.')
+                    $e,
+                    __('Something went wrong.')
             );
 
             $checkout->getLogger()->error("Validate Order: Something went wrong. Might have been the request parser. Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
@@ -259,8 +255,8 @@ class SaveOrder extends Checkout
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
-                $e,
-                __('Something went wrong.')
+                    $e,
+                    __('Something went wrong.')
             );
 
             $checkout->getLogger()->error("Validate Order: Something went wrong... Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
@@ -272,10 +268,10 @@ class SaveOrder extends Checkout
         }
     }
 
-    public function createOrder($id, $quoteId){
+    public function createOrder($id, $quoteId) {
         $checkout = $this->getDibsCheckout();
         $this->paymentId = $id; //$this->getRequest()->getPostValue('pid', false);
-        if (! $this->paymentId) {
+        if (!$this->paymentId) {
             return $this->respondWithError('Invalid payment id');
         }
 
@@ -294,7 +290,7 @@ class SaveOrder extends Checkout
                 $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
             } catch (\Exception $e) {
                 return $this->respondWithError(
-                    "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
+                                "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
                 );
             }
         }
@@ -304,4 +300,5 @@ class SaveOrder extends Checkout
         return $this->respondWithPaymentId($this->paymentId);
         return true;
     }
+
 }

@@ -184,6 +184,7 @@ class Order
         $consumerType = $this->generateConsumerType($quote);
 
         $integrationType = (isset($checkoutInfo['integrationType'])) ? $checkoutInfo['integrationType'] : '';
+	
         $checkoutFlow = (isset($checkoutInfo['checkoutFlow'])) ? $checkoutInfo['checkoutFlow'] : '';
         $flowIsVanilla = $checkoutFlow === CheckoutFlow::FLOW_VANILLA;
         
@@ -375,12 +376,13 @@ class Order
         $reference = new UpdatePaymentReference();
         $reference->setReference($order->getIncrementId());
         $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
+	$storeId = $order->getStoreId();
         if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
-            $payment = $this->paymentApi->getPayment($paymentId);
+            $payment = $this->paymentApi->getPayment($paymentId, $storeId);
             $checkoutUrl = $payment->getCheckoutUrl();
             $reference->setCheckoutUrl($checkoutUrl);
         }
-        $this->paymentApi->UpdatePaymentReference($reference, $paymentId);
+        $this->paymentApi->UpdatePaymentReference($reference, $paymentId, $storeId);
     }
 
     /**
@@ -470,6 +472,39 @@ class Order
             'street' => $shipping->getStreet(),
             'city' => $shipping->getCity(),
             'postcode' => $shipping->getPostcode(),
+            
+        ];
+
+        return $data;
+    }
+
+    public function convertAddressToArrayBilling(Quote $quote)
+    {
+ //       $shipping = $quote->getShippingAddress();
+        $billing = $quote->getBillingAddress();
+        $email = "";
+        if ($quote->getCustomerEmail()) {
+            $email = $quote->getCustomerEmail();
+        } elseif ($quote->getBillingAddress() && $quote->getBillingAddress()->getEmail()) {
+            $email = $quote->getBillingAddress()->getEmail();
+        } elseif ($billing->getEmail()) {
+            $email = $billing->getEmail();
+        }
+
+        if (!$email) {
+            throw new LocalizedException(__("E-mail address not found."));
+        }
+
+        $data = [
+            'firstname' => $billing->getFirstname(),
+            'lastname' => $billing->getLastname(),
+            'company' => $billing->getCompany(),
+            'telephone' => $billing->getTelephone(),
+            'email' => $email,
+            'street' => $billing->getStreet(),
+            'city' => $billing->getCity(),
+            'postcode' => $billing->getPostcode(),
+            'country_id'=>$billing->getCountry(),
         ];
 
         return $data;
@@ -508,10 +543,12 @@ class Order
     public function captureDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
+
         if ($paymentId) {
 
             /** @var Invoice $invoice */
             $invoice = $payment->getCapturedInvoice(); // we get this from Observer\PaymentCapture
+
             if (!$invoice) {
                 throw new LocalizedException(__('Cannot capture online, no invoice set'));
             }
@@ -530,16 +567,22 @@ class Order
             // now we have our items...
             $captureItems = $this->items->getCart();
 
-            $paymentObj = new ChargePayment();
-            $paymentObj->setAmount($this->fixPrice($amount));
-            $paymentObj->setItems($captureItems);
+            $paymentDetails = $this->paymentApi->getPayment($paymentId, $invoice->getStoreId());
+	    if(!empty($paymentDetails->getChargeDetails())) {
+		    $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
+            } else {
+            	$paymentObj = new ChargePayment();
+            	$paymentObj->setAmount($this->fixPrice($amount));
+            	$paymentObj->setItems($captureItems);
 
             // capture/charge it now!
-            $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
+            	$response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
+		$chargeId = $response->getChargeId();
+            }
+	    // save charge id, we need it later! if a refund will be made
+            $payment->setAdditionalInformation('dibs_charge_id', $chargeId);
+            $payment->setTransactionId($chargeId);
 
-            // save charge id, we need it later! if a refund will be made
-            $payment->setAdditionalInformation('dibs_charge_id', $response->getChargeId());
-            $payment->setTransactionId($response->getChargeId());
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('You need an dibs payment ID to capture.')
@@ -609,12 +652,13 @@ class Order
 
     /**
      * @param $paymentId
+     * @param $storeId
      * @return GetPaymentResponse
      * @throws ClientException
      */
-    public function loadDibsPaymentById($paymentId)
+    public function loadDibsPaymentById($paymentId, $storeId)
     {
-        return $this->paymentApi->getPayment($paymentId);
+        return $this->paymentApi->getPayment($paymentId, $storeId);
     }
 
     /**

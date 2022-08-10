@@ -14,40 +14,34 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 
-class Checkout extends \Magento\Checkout\Model\Type\Onepage
-{
+class Checkout extends \Magento\Checkout\Model\Type\Onepage {
+
     protected $_paymentMethod = 'dibseasycheckout';
 
     /** @var CheckoutContext $context */
     protected $context;
-
     protected $dibsPaymentOrderHandler;
-
     protected $_allowedCountries;
-
-    protected $_doNotMarkCartDirty  = false;
+    protected $_doNotMarkCartDirty = false;
 
     /**
      * @param CheckoutContext $context
      */
-    public function setCheckoutContext(CheckoutContext $context)
-    {
+    public function setCheckoutContext(CheckoutContext $context) {
         $this->context = $context;
     }
 
     /**
      * @return \Dibs\EasyCheckout\Helper\Data
      */
-    public function getHelper()
-    {
+    public function getHelper() {
         return $this->context->getHelper();
     }
 
     /**
      * @return \Psr\Log\LoggerInterface
      */
-    public function getLogger()
-    {
+    public function getLogger() {
         return $this->_logger;
     }
 
@@ -57,13 +51,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @throws CheckoutException
      * @throws LocalizedException
      */
-    public function initCheckout($reloadIfCurrencyChanged = true, $useDefaultAddresses = true)
-    {
+    public function initCheckout($reloadIfCurrencyChanged = true, $useDefaultAddresses = true) {
         if (!($this->context instanceof CheckoutContext)) {
             throw new \Exception("Dibs Context must be set first!");
         }
 
-        $quote  = $this->getQuote();
+        $quote = $this->getQuote();
         $this->checkCart();
 
         //init checkout
@@ -78,7 +71,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked in $this->checkCart())
 
-        $billingAddress  = $quote->getBillingAddress();
+        $billingAddress = $quote->getBillingAddress();
         if ($quote->isVirtual()) {
             $shippingAddress = $billingAddress;
         } else {
@@ -99,15 +92,15 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->changeCountry($countryCode, $save = false);
         }
 
-        if (!$billingAddress->getCountryId() || $billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
+      /*  if (!$billingAddress->getCountryId() || $billingAddress->getCountryId() != $shippingAddress->getCountryId()) {
             $this->changeCountry($shippingAddress->getCountryId(), $save = false);
-        }
+        }*/
 
         $currencyChanged = $this->checkAndChangeCurrency();
         $payment = $quote->getPayment();
 
         //force payment method  to our payment method
-        $paymentMethod     = $payment->getMethod();
+        $paymentMethod = $payment->getMethod();
 
         $shipPaymentMethod = $shippingAddress->getPaymentMethod();
 
@@ -144,10 +137,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         /*
-        if($method === false) {
-            throw new LocalizedException(__('No shipping method'));
-        }
-        */
+          if($method === false) {
+          throw new LocalizedException(__('No shipping method'));
+          }
+         */
 
         return $this;
     }
@@ -157,25 +150,23 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      *
      * @return mixed
      */
-    private function getDefaultCountryFromConfiguration($storeId)
-    {
+    private function getDefaultCountryFromConfiguration($storeId) {
         /** @var \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig */
         $scopeConfig = ObjectManager::getInstance()->create(
-            \Magento\Framework\App\Config\ScopeConfigInterface::class
+                \Magento\Framework\App\Config\ScopeConfigInterface::class
         );
 
         return $scopeConfig->getValue(
-            'general/country/default',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $storeId
+                        'general/country/default',
+                        \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                        $storeId
         );
     }
 
     /**
      * @return string
      */
-    public function getQuoteSignature()
-    {
+    public function getQuoteSignature() {
         return $this->getHelper()->generateHashSignatureByQuote($this->getQuote());
     }
 
@@ -183,8 +174,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return bool
      * @throws CheckoutException
      */
-    public function checkCart()
-    {
+    public function checkCart() {
         $quote = $this->getQuote();
 
         //@see OnePage::initCheckout
@@ -205,7 +195,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         if (!$quote->validateMinimumAmount()) {
-            $error =$this->getHelper()->getStoreConfig('sales/minimum_order/error_message');
+            $error = $this->getHelper()->getStoreConfig('sales/minimum_order/error_message');
             if (!$error) {
                 $error = __('Subtotal must exceed minimum order amount.');
             }
@@ -224,10 +214,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return bool
      * @throws LocalizedException
      */
-    public function checkAndChangeCurrency()
-    {
-        $quote  = $this->getQuote();
-        $country    = $quote->getBillingAddress()->getCountryId();
+    public function checkAndChangeCurrency() {
+        $quote = $this->getQuote();
+        $country = $quote->getBillingAddress()->getCountryId();
 
         if (!$country) {
             throw new LocalizedException(__('Country is not set.')); // this shouldn't happen anyways
@@ -244,8 +233,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @return bool|mixed|string|void
      */
-    public function checkAndChangeShippingMethod()
-    {
+    public function checkAndChangeShippingMethod() {
         // If we have already set shipping method, then we're fine
         if ($this->getQuote()->getShippingAddress()->getShippingMethod()) {
             return;
@@ -268,7 +256,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
 
         $rates = [];
         foreach ($allRates as $rate) {
-            /** @var $rate Quote\Address\Rate  **/
+            /** @var $rate Quote\Address\Rate  * */
             $rates[$rate->getCode()] = $rate->getCode();
         }
 
@@ -297,10 +285,9 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @param bool $saveQuote
      * @throws LocalizedException
      */
-    public function changeCountry($country, $saveQuote = false)
-    {
+    public function changeCountry($country, $saveQuote = false) {
         $blankAddress = $this->getBlankAddress($country);
-        $quote        = $this->getQuote();
+        $quote = $this->getQuote();
 
         $quote->getBillingAddress()->addData($blankAddress);
         if (!$quote->isVirtual()) {
@@ -316,17 +303,16 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @param $country
      * @return array
      */
-    public function getBlankAddress($country)
-    {
+    public function getBlankAddress($country) {
         $blankAddress = [
-            'customer_address_id'=>0,
-            'save_in_address_book'=>0,
-            'same_as_billing'=>0,
-            'street'=>'',
-            'city'=>'',
-            'postcode'=>'',
-            'region_id'=>'',
-            'country_id'=>$country
+            'customer_address_id' => 0,
+            'save_in_address_book' => 0,
+            'same_as_billing' => 0,
+            'street' => '',
+            'city' => '',
+            'postcode' => '',
+            'region_id' => '',
+            'country_id' => $country
         ];
         return $blankAddress;
     }
@@ -334,8 +320,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @return array
      */
-    public function getAllowedCountries()
-    {
+    public function getAllowedCountries() {
         if (is_null($this->_allowedCountries)) {
             $this->_allowedCountries = $this->getHelper()->getCountries();
         }
@@ -350,11 +335,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return PaymentResponseInterface
      * @throws LocalizedException
      */
-    public function initDibsCheckout($checkoutInfo, $forceNew = false)
-    {
+    public function initDibsCheckout($checkoutInfo, $forceNew = false) {
         $helper = $this->getHelper();
         $checkoutSession = $this->getCheckoutSession();
-        $quote       = $this->getQuote();
+        $quote = $this->getQuote();
         $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
         $integrationType = $checkoutInfo['integrationType'];
 
@@ -370,7 +354,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         // Always instantiate new payment in redirect & overlay modes
         if ($integrationType == CreatePaymentCheckout::INTEGRATION_TYPE_EMBEDDED && $paymentId && !$forceNew) {
             try {
-                $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
+                $storeId = $quote->getStoreId();
+                $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId, $storeId);
                 if ($dibsHandler->checkIfPaymentShouldBeUpdated($newSignature, $checkoutSession->getDibsQuoteSignature())) {
                     $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
                     $checkoutSession->setDibsQuoteSignature($newSignature);
@@ -408,8 +393,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
     /**
      * @return string
      */
-    public function getLocale()
-    {
+    public function getLocale() {
         $countryCode = $this->getQuote()->getShippingAddress()->getCountryId();
         return $this->context->getDibsLocale()->getLocaleByCountryCode($countryCode);
     }
@@ -418,9 +402,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * This vill be used in ajax calls
      * @throws LocalizedException
      */
-    public function updateDibsPayment($paymentId)
-    {
-        $quote       = $this->getQuote();
+    public function updateDibsPayment($paymentId) {
+        $quote = $this->getQuote();
         // This will also validate the quote!
         $dibsHandler = $this->getDibsPaymentHandler()->assignQuote($quote);
         $dibsHandler->updateCheckoutPaymentByQuoteAndPaymentId($quote, $paymentId);
@@ -438,8 +421,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @param string $methodCode
      * @return void
      */
-    public function updateShippingMethod($methodCode)
-    {
+    public function updateShippingMethod($methodCode) {
         $quote = $this->getQuote();
         if ($quote->isVirtual()) {
             return;
@@ -457,8 +439,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      *
      * @return void
      */
-    private function ignoreAddressValidation()
-    {
+    private function ignoreAddressValidation() {
         $quote = $this->getQuote();
         $quote->getBillingAddress()->setShouldIgnoreValidation(true);
         if (!$quote->getIsVirtual()) {
@@ -471,10 +452,10 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @param Order $order
      * @return void
      */
-    public function saveDibsPayment($paymentId, $order)
-    {
+    public function saveDibsPayment($paymentId, $order) {
         try {
-            $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId);
+            $storeId = $order->getStoreId();
+            $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($paymentId, $storeId);
         } catch (ClientException $e) {
             if ($e->getHttpStatusCode() == 404) {
                 $this->getLogger()->error("Save Order: The dibs payment with ID: " . $paymentId . " was not found in dibs.");
@@ -488,8 +469,8 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
-                $e,
-                __('Something went wrong.')
+                    $e,
+                    __('Something went wrong.')
             );
 
             $this->getLogger()->error("Save Order: Something went wrong. Might have been the request parser. Payment ID: " . $paymentId . "... Error message:" . $e->getMessage());
@@ -505,7 +486,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $this->updateMagentoPaymentReference($order, $paymentId);
         } catch (\Exception $e) {
             $this->getLogger()->error(
-                "Order created with ID: " . $order->getIncrementId() . ".
+                    "Order created with ID: " . $order->getIncrementId() . ".
                 But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: " . $this->getQuote()->getId() . "...  Dibs Payment ID: " . $payment->getPaymentId()
             );
 
@@ -529,8 +510,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return Order
      * @throws \Exception
      */
-    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote)
-    {
+    public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote) {
         $paymentMutex = $this->context->getPaymentMutex();
         if ($paymentMutex->test($dibsPayment->getPaymentId())) {
             throw new \Exception('Payment id already has been processing.');
@@ -569,29 +549,30 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
             $billing = $this->getDibsPaymentHandler()->convertDibsAddress($dibsPayment, $fallbackCountryId, false);
             $billingAddress->addData($billing);
             $billingAddress
-                ->setCustomerAddressId(0)
-                ->setSaveInAddressBook(0)
-                ->setShouldIgnoreValidation(true);
+                    ->setCustomerAddressId(0)
+                    ->setSaveInAddressBook(0)
+                    ->setShouldIgnoreValidation(true);
 
             $shipping = $this->getDibsPaymentHandler()->convertDibsAddress($dibsPayment, $fallbackCountryId);
             $shippingAddress->addData($shipping)
-                ->setSameAsBilling(1)
-                ->setCustomerAddressId(0)
-                ->setSaveInAddressBook(0)
-                ->setShouldIgnoreValidation(true);
+                    ->setSameAsBilling(1)
+                    ->setCustomerAddressId(0)
+                    ->setSaveInAddressBook(0)
+                    ->setShouldIgnoreValidation(true);
         } else {
             $shipping = $this->getDibsPaymentHandler()->convertAddressToArray($quote);
-            $billingAddress->addData($shipping);
+            $billing = $this->getDibsPaymentHandler()->convertAddressToArrayBilling($quote);
+            $billingAddress->addData($billing);
             $billingAddress
-                ->setCustomerAddressId(0)
-                ->setSaveInAddressBook(0)
-                ->setShouldIgnoreValidation(true);
+                    ->setCustomerAddressId(0)
+                    ->setSaveInAddressBook(0)
+                    ->setShouldIgnoreValidation(true);
 
             $shippingAddress->addData($shipping)
-                ->setSameAsBilling(1)
-                ->setCustomerAddressId(0)
-                ->setSaveInAddressBook(0)
-                ->setShouldIgnoreValidation(true);
+                    ->setSameAsBilling(1)
+                    ->setCustomerAddressId(0)
+                    ->setSaveInAddressBook(0)
+                    ->setShouldIgnoreValidation(true);
         }
 
         // WE only get shipping address from dibs!
@@ -604,25 +585,25 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         $quote->setCustomerNote("Temporary Nets reference is: quote_id_" . $quote->getId());
         $quote->setCustomerNoteNotify(false);
 
-        $customer      = $quote->getCustomer(); //this (customer_id) is set into self::init
+        $customer = $quote->getCustomer(); //this (customer_id) is set into self::init
         $createCustomer = false;
 
         if ($customer && $customer->getId()) {
             $quote->setCheckoutMethod(self::METHOD_CUSTOMER)
-                ->setCustomerId($customer->getId())
-                ->setCustomerEmail($customer->getEmail())
-                ->setCustomerFirstname($customer->getFirstname())
-                ->setCustomerLastname($customer->getLastname())
-                ->setCustomerIsGuest(false);
+                    ->setCustomerId($customer->getId())
+                    ->setCustomerEmail($customer->getEmail())
+                    ->setCustomerFirstname($customer->getFirstname())
+                    ->setCustomerLastname($customer->getLastname())
+                    ->setCustomerIsGuest(false);
         } else {
             //checkout method
             $quote->setCheckoutMethod(self::METHOD_GUEST)
-                ->setCustomerId(null)
-                ->setCustomerEmail($billingAddress->getEmail())
-                ->setCustomerFirstname($billingAddress->getFirstname())
-                ->setCustomerLastname($billingAddress->getLastname())
-                ->setCustomerIsGuest(true)
-                ->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
+                    ->setCustomerId(null)
+                    ->setCustomerEmail($billingAddress->getEmail())
+                    ->setCustomerFirstname($billingAddress->getFirstname())
+                    ->setCustomerLastname($billingAddress->getLastname())
+                    ->setCustomerIsGuest(true)
+                    ->setCustomerGroupId(GroupInterface::NOT_LOGGED_IN_ID);
 
             // register the customer, if its required, the customer will then be registered after order is placed
             if ($billingAddress->getEmail() && $this->getHelper()->registerCustomerOnCheckout()) {
@@ -641,13 +622,12 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         $paymentData = (new DataObject())
-            ->setDibsPaymentId($dibsPayment->getPaymentId())
-            ->setCountryId($shippingAddress->getCountryId())
-            ->setDibsPaymentMethod($dibsPayment->getPaymentDetails()->getPaymentMethod());
+                ->setDibsPaymentId($dibsPayment->getPaymentId())
+                ->setCountryId($shippingAddress->getCountryId())
+                ->setDibsPaymentMethod($dibsPayment->getPaymentDetails()->getPaymentMethod());
 
         $quote->getPayment()->getMethodInstance()->assignData($paymentData);
         $quote->setDibsPaymentId($dibsPayment->getPaymentId()); //this is used by pushAction
-
         //- do not recollect totals
         //$quote->setTotalsCollectedFlag(true);
         $quote->collectTotals();
@@ -668,16 +648,16 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
         }
 
         $this->_eventManager->dispatch(
-            'checkout_type_onepage_save_order_after',
-            ['order' => $order, 'quote' => $this->getQuote()]
+                'checkout_type_onepage_save_order_after',
+                ['order' => $order, 'quote' => $this->getQuote()]
         );
 
         $this->_eventManager->dispatch(
-            'checkout_submit_all_after',
-            [
-                'order' => $order,
-                'quote' => $this->getQuote()
-            ]
+                'checkout_submit_all_after',
+                [
+                    'order' => $order,
+                    'quote' => $this->getQuote()
+                ]
         );
 
         if ($createCustomer) {
@@ -712,8 +692,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return void
      * @throws ClientException
      */
-    public function updateMagentoPaymentReference(Order $order, $paymentId)
-    {
+    public function updateMagentoPaymentReference(Order $order, $paymentId) {
         $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId);
     }
 
@@ -722,8 +701,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return bool
      * @throws \Exception
      */
-    protected function orderSubscribeToNewsLetter(Order $order)
-    {
+    protected function orderSubscribeToNewsLetter(Order $order) {
         $email = $order->getCustomerEmail();
         if (!$email) {
             return false;
@@ -743,8 +721,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @param $message
      * @throws CheckoutException
      */
-    protected function throwRedirectToCartException($message)
-    {
+    protected function throwRedirectToCartException($message) {
         throw new CheckoutException($message, 'checkout/cart');
     }
 
@@ -752,8 +729,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @param $message
      * @throws CheckoutException
      */
-    protected function throwReloadException($message)
-    {
+    protected function throwReloadException($message) {
         throw new CheckoutException($message, '*/*');
     }
 
@@ -763,30 +739,27 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage
      * @return \Magento\Checkout\Model\Session
      * @codeCoverageIgnore
      */
-    public function getCheckoutSession()
-    {
+    public function getCheckoutSession() {
         return $this->_checkoutSession; //@see Onepage::__construct
     }
 
     /** @return \Dibs\EasyCheckout\Model\Dibs\Order */
-    public function getDibsPaymentHandler()
-    {
+    public function getDibsPaymentHandler() {
         return $this->context->getDibsOrderHandler();
     }
 
     /**
      * @param $markDirty
      */
-    public function setDoNotMarkCartDirty($markDirty)
-    {
+    public function setDoNotMarkCartDirty($markDirty) {
         $this->_doNotMarkCartDirty = (bool) $markDirty;
     }
 
     /**
      * @return bool
      */
-    public function getDoNotMarkCartDirty()
-    {
+    public function getDoNotMarkCartDirty() {
         return $this->_doNotMarkCartDirty;
     }
+
 }

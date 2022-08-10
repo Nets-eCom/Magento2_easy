@@ -4,15 +4,14 @@ namespace Dibs\EasyCheckout\Controller\Order;
 
 use Dibs\EasyCheckout\Model\Client\ClientException;
 
-class ValidateOrder extends Update
-{
+class ValidateOrder extends Update {
+
     /**
      * Validate order before sending to Nets
      *
      * @inheridoc
      */
-    public function execute()
-    {
+    public function execute() {
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
@@ -30,7 +29,8 @@ class ValidateOrder extends Update
         }
 
         try {
-            $payment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($checkoutPaymentId);
+            $storeId = $this->quote->getStoreId();
+            $payment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($checkoutPaymentId, $storeId);
         } catch (ClientException $e) {
             if ($e->getHttpStatusCode() == 404) {
                 $checkout->getLogger()->error("Validate Order: The dibs payment with ID: " . $checkoutPaymentId . " was not found in dibs.");
@@ -44,8 +44,8 @@ class ValidateOrder extends Update
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
-                $e,
-                __('Something went wrong.')
+                    $e,
+                    __('Something went wrong.')
             );
 
             $checkout->getLogger()->error("Validate Order: Something went wrong. Might have been the request parser. Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
@@ -64,8 +64,8 @@ class ValidateOrder extends Update
             }
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage(
-                $e,
-                __('Something went wrong.')
+                    $e,
+                    __('Something went wrong.')
             );
 
             $checkout->getLogger()->error("Validate Order: Something went wrong... Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
@@ -77,11 +77,11 @@ class ValidateOrder extends Update
         return false;
     }
 
-    protected function respondWithError($message, $chooseShippingMethod = false, $extraData = [])
-    {
+    protected function respondWithError($message, $chooseShippingMethod = false, $extraData = []) {
         $data = ['messages' => $message, "chooseShippingMethod" => $chooseShippingMethod, 'error' => true];
         $data = array_merge($data, $extraData);
         $this->getResponse()->setBody(json_encode($data));
         return false;
     }
+
 }
