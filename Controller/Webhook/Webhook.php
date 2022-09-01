@@ -290,7 +290,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @return void
      */
     protected function logInfo($message) {
-        $this->dibsCheckoutContext->getLogger()->addInfo($this->getLogPrefix() . $message);
+        $this->dibsCheckoutContext->getLogger()->info($this->getLogPrefix() . $message);
     }
 
     /**
@@ -301,7 +301,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @return void
      */
     protected function logError($message, $context = []) {
-        $this->dibsCheckoutContext->getLogger()->addError($this->getLogPrefix() . $message, $context);
+        $this->dibsCheckoutContext->getLogger()->error($this->getLogPrefix() . $message, $context);
     }
 
     /**
