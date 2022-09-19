@@ -74,7 +74,11 @@ class ConsumerDataProvider
         $consumer->setReference($quote->getCustomerId());
 
         $consumer->setShippingAddress($this->getAddressData());
+	//If phone number is not empty
+        if($quote->getShippingAddress()->getTelephone()) {
         $consumer->setPhoneNumber($this->getPhoneNumber());
+        }
+	//$consumer->setPhoneNumber($this->getPhoneNumber());
         $consumer->setEmail($quote->getBillingAddress()->getEmail());
         $weHandleConsumer = $this->helper->doesHandleCustomerData();
         if ($weHandleConsumer && !empty($quote->getShippingAddress()->getCompany())) {
@@ -98,7 +102,7 @@ class ConsumerDataProvider
         $string = str_replace([' ', '-', '(', ')'], '', $phone);
 
         $matches = [];
-        preg_match_all('/^(\+)?(45|46|358|47|43|1|44|49|34|33|55|380|31|48|39)?(\d{8,10})$/', $string, $matches);
+        preg_match_all('/^(\+)?(45|46|358|47|43|1|44|49|34|33|55|380|31|48|39)?(\d{8,12})$/', $string, $matches);
         $prefix = $this->prefixes[$address->getCountryId()] ?? null;
         if (empty($matches[3][0]) || !$prefix) {
             throw new \Exception('Missing phone data');

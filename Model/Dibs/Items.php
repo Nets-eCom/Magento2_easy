@@ -1055,6 +1055,10 @@ class Items
 	        if($discountAmountToRefund > 0){
 	        	$discountAmountToRefund = -$discountAmountToRefund;
 	        }
+                
+                if($refundedDiscount < 0){
+                    $refundedDiscount = $refundedDiscount + $order->getBaseShippingDiscountAmount();
+                }
 
         	$this->addDiscountByCartRule(
 	            $order->getAppliedRuleIds(),

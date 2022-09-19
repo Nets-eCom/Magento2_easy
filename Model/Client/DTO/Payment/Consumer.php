@@ -1,10 +1,10 @@
 <?php
+
 namespace Dibs\EasyCheckout\Model\Client\DTO\Payment;
 
 use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
 
-class Consumer extends AbstractRequest
-{
+class Consumer extends AbstractRequest {
     /**
      * Consumer = Customer
      */
@@ -44,8 +44,7 @@ class Consumer extends AbstractRequest
     /**
      * @return string
      */
-    public function getReference()
-    {
+    public function getReference() {
         return $this->reference;
     }
 
@@ -53,8 +52,7 @@ class Consumer extends AbstractRequest
      * @param string $reference
      * @return Consumer
      */
-    public function setReference($reference)
-    {
+    public function setReference($reference) {
         $this->reference = $reference;
         return $this;
     }
@@ -62,8 +60,7 @@ class Consumer extends AbstractRequest
     /**
      * @return string
      */
-    public function getEmail()
-    {
+    public function getEmail() {
         return $this->email;
     }
 
@@ -71,8 +68,7 @@ class Consumer extends AbstractRequest
      * @param string $email
      * @return Consumer
      */
-    public function setEmail($email)
-    {
+    public function setEmail($email) {
         $this->email = $email;
         return $this;
     }
@@ -80,8 +76,7 @@ class Consumer extends AbstractRequest
     /**
      * @return ConsumerShippingAddress
      */
-    public function getShippingAddress()
-    {
+    public function getShippingAddress() {
         return $this->shippingAddress;
     }
 
@@ -89,8 +84,7 @@ class Consumer extends AbstractRequest
      * @param ConsumerShippingAddress $shippingAddress
      * @return Consumer
      */
-    public function setShippingAddress($shippingAddress)
-    {
+    public function setShippingAddress($shippingAddress) {
         $this->shippingAddress = $shippingAddress;
         return $this;
     }
@@ -98,8 +92,7 @@ class Consumer extends AbstractRequest
     /**
      * @return ConsumerPhoneNumber
      */
-    public function getPhoneNumber()
-    {
+    public function getPhoneNumber() {
         return $this->phoneNumber;
     }
 
@@ -107,8 +100,7 @@ class Consumer extends AbstractRequest
      * @param ConsumerPhoneNumber $phoneNumber
      * @return Consumer
      */
-    public function setPhoneNumber($phoneNumber)
-    {
+    public function setPhoneNumber($phoneNumber) {
         $this->phoneNumber = $phoneNumber;
         return $this;
     }
@@ -116,8 +108,7 @@ class Consumer extends AbstractRequest
     /**
      * @return ConsumerPrivatePerson
      */
-    public function getPrivatePerson()
-    {
+    public function getPrivatePerson() {
         return $this->privatePerson;
     }
 
@@ -125,8 +116,7 @@ class Consumer extends AbstractRequest
      * @param ConsumerPrivatePerson $privatePerson
      * @return Consumer
      */
-    public function setPrivatePerson($privatePerson)
-    {
+    public function setPrivatePerson($privatePerson) {
         $this->privatePerson = $privatePerson;
         return $this;
     }
@@ -134,8 +124,7 @@ class Consumer extends AbstractRequest
     /**
      * @return ConsumerCompany
      */
-    public function getCompany()
-    {
+    public function getCompany() {
         return $this->company;
     }
 
@@ -143,22 +132,21 @@ class Consumer extends AbstractRequest
      * @param ConsumerCompany $company
      * @return Consumer
      */
-    public function setCompany($company)
-    {
+    public function setCompany($company) {
         $this->company = $company;
         return $this;
     }
 
-
-    public function toArray()
-    {
+    public function toArray() {
         $data = [
             "reference" => $this->getReference(),
             "email" => $this->getEmail(),
             "shippingAddress" => $this->getShippingAddress()->toArray(),
-            "phoneNumber" => $this->getPhoneNumber()->toArray(),
         ];
-
+        //If phone number is not empty
+        if ($this->getPhoneNumber()) {
+            $data["phoneNumber"] = $this->getPhoneNumber()->toArray();
+        }
         // fill out if the consumer is a company, if not, it must be omitted from the payload
         if ($company = $this->getCompany()) {
             $data['company'] = $company->toArray();
@@ -176,6 +164,5 @@ class Consumer extends AbstractRequest
 
         return $data;
     }
-
 
 }

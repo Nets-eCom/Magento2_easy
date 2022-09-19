@@ -6,11 +6,17 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.5.6`
+|Version | `1.5.7`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.7 - Released 2022-09-19
+* Fixed : Canceling order in Magento.
+* Fixed : Phone number issue for UK store.
+* Fixed : Refund discount fixed for shipping.
+* Fixed : Improved A2A Payment Methods compatibility.
 
 ### Version 1.5.6 - Released 2022-08-10
 * Fixed : Order gone missing issue.

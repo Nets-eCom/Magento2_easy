@@ -312,7 +312,8 @@ class Checkout extends AbstractMethod
 
         try {
             if ($this->getOrder()->getState() === Order::STATE_PROCESSING) {
-                $this->dibsHandler->cancelDibsPayment($payment);
+		$storeId = $this->getOrder()->getStoreId();
+		$this->dibsHandler->cancelDibsPayment($payment, $storeId);
             }
         } catch (ClientException $e) {
             throw new LocalizedException(__("Could not cancel order. %1", $e->getMessage()), $e);

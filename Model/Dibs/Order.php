@@ -227,7 +227,9 @@ class Order
 
             // If it's the vanilla checkout flow, we instead set checkout URL
             if ($flowIsVanilla) {
-                $paymentCheckout->setUrl($this->helper->getVanillaCheckoutUrl());
+		    //$paymentCheckout->setUrl($this->helper->getVanillaCheckoutUrl());
+		    $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+		    $paymentCheckout->setUrl($baseUrl.'easycheckout/order/confirmOrder');
             }
 
             if ($quote->isVirtual()) {
@@ -512,15 +514,16 @@ class Order
 
     /**
      * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param $storeId
      * @throws ClientException
      * @throws LocalizedException
      */
-    public function cancelDibsPayment(\Magento\Payment\Model\InfoInterface $payment)
+    public function cancelDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $storeId)
     {
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
         if ($paymentId) {
             // we load the payment from dibs api instead, then we will get full amount!
-            $payment = $this->loadDibsPaymentById($paymentId);
+            $payment = $this->loadDibsPaymentById($paymentId, $storeId);
 
             $paymentObj = new CancelPayment();
             $paymentObj->setAmount($payment->getSummary()->getReservedAmount());

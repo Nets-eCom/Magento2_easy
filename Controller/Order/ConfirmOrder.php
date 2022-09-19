@@ -20,6 +20,11 @@ class ConfirmOrder extends Checkout {
     private $hostedPaymentId;
 
     /**
+     * @var string
+     */
+    private $embeddedPaymentId;
+
+    /**
      * @var Order
      */
     private $order;
@@ -27,8 +32,15 @@ class ConfirmOrder extends Checkout {
     public function execute() {
         $this->paymentId = $this->getRequest()->getPostValue('pid', false);
 
+        //Trustly and Sofort will send payment Id as a get param
+        $this->embeddedPaymentId = $this->getRequest()->getParam('paymentId', false);
+        if ($this->embeddedPaymentId) {
+            $this->paymentId = $this->embeddedPaymentId;
+        }
+
         // Hosted will send payment ID as a get param
         $this->hostedPaymentId = $this->getRequest()->getParam('paymentid', false);
+
         if ($this->hostedPaymentId) {
             return $this->handleHostedRequest();
         }
@@ -43,14 +55,14 @@ class ConfirmOrder extends Checkout {
 
         // No order found? This should never happen, but let's log the error just in case.
         if (!$this->order->getId()) {
-                    $this->dibsCheckout->getLogger()->critical(
-                            "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
-                    );
-                    return $this->respondWithError(
-                                    "We are sorry, but your order seems to have gone missing. "
-                                    . "Please contact customer support with Nets Payment ID: " . $this->paymentId
-                    );
-                }
+            $this->dibsCheckout->getLogger()->critical(
+                    "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
+            );
+            return $this->respondWithError(
+                            "We are sorry, but your order seems to have gone missing. "
+                            . "Please contact customer support with Nets Payment ID: " . $this->paymentId
+            );
+        }
 
         $this->paymentId = $this->order->getDibsPaymentId();
         $this->addSuccessCommentToOrder();
@@ -67,7 +79,14 @@ class ConfirmOrder extends Checkout {
         }
 
         $this->clearQuote();
-        return $this->respondWithSuccessRedirect();
+
+        //Trustly and Sofort will redirect to success and other will ajax response send
+        if ($this->embeddedPaymentId) {
+            $helper = $this->dibsCheckoutContext->getHelper();
+            return $this->_redirect($helper->getCheckoutUrl('success'));
+        } else {
+            return $this->respondWithSuccessRedirect();
+        }
     }
 
     /**
@@ -88,14 +107,14 @@ class ConfirmOrder extends Checkout {
 
         // No order found? This should never happen, but let's log the error just in case.
         if (!$this->order->getId()) {
-                    $this->dibsCheckout->getLogger()->critical(
-                            "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
-                    );
-                    $message = "We are sorry, but your order seems to have gone missing. "
-                            . "Please contact customer support with Nets Payment ID: " . $this->hostedPaymentId;
-                    $this->messageManager->addErrorMessage(__($message));
-                    return $this->_redirect('checkout/cart');
-                }
+            $this->dibsCheckout->getLogger()->critical(
+                    "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
+            );
+            $message = "We are sorry, but your order seems to have gone missing. "
+                    . "Please contact customer support with Nets Payment ID: " . $this->hostedPaymentId;
+            $this->messageManager->addErrorMessage(__($message));
+            return $this->_redirect('checkout/cart');
+        }
         $this->clearQuote();
         return $this->_redirect($helper->getCheckoutUrl('success'));
     }
