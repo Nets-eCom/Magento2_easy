@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.5.7`
+|Version | `1.5.8`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.8 - Released 2022-10-12
+* Fixed : Order flow change.
+* Fixed : Discount code calculation updated.
 
 ### Version 1.5.7 - Released 2022-09-19
 * Fixed : Canceling order in Magento.

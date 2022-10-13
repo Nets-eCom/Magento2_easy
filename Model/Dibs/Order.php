@@ -307,12 +307,12 @@ class Order
             $webhookCheckoutCompleted->setUrl($webHookUrl);
             $webhooks[] = $webhookCheckoutCompleted;
 
-            //EVENT_PAYMENT_CREATED
-            $webhookCheckoutCompleted = new CreatePaymentWebhook();
-            $webhookCheckoutCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CREATED);
-            $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
-            $webhookCheckoutCompleted->setUrl($webHookUrl);
-            $webhooks[] = $webhookCheckoutCompleted;
+        //EVENT_PAYMENT_CREATED
+        //$webhookCheckoutCompleted = new CreatePaymentWebhook();
+        //$webhookCheckoutCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CREATED);
+        //$webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
+        //$webhookCheckoutCompleted->setUrl($webHookUrl);
+        //$webhooks[] = $webhookCheckoutCompleted;
 
 	    //EVENT_PAYMENT_CHARGE_CREATED
             $webhookChargeCreated= new CreatePaymentWebhook();

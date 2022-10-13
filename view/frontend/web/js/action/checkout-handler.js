@@ -55,6 +55,7 @@ define([
                 alert('pay created');
             },
             validatePayment: function(paymentId) {
+		return this.sendPaymentOrderFinalizedEvent(true);
                 $.ajax({
                     url: mageurl.build("easycheckout/order/SaveOrder"),
                     type: "POST",

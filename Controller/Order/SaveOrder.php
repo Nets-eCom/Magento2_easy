@@ -114,7 +114,7 @@ class SaveOrder extends Checkout {
             return $this->respondWithError($this->validationResult['message']);
         }
 
-        $order = $this->validationResult['order'];
+        /*$order = $this->validationResult['order'];
         if ($order === false) {
             try {
                 $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
@@ -123,16 +123,16 @@ class SaveOrder extends Checkout {
                                 "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
                 );
             }
-        }
+        }*/
 
-        $this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
+        //$this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
 
         //$this->respondWithPaymentId($this->paymentId);
 
-        return $this->respondWithPaymentId($this->paymentId);
-        $result = $this->resultFactory->create();
-        $result->setData([]);
-        $result->setHttpResponseCode(200);
+        //return $this->respondWithPaymentId($this->paymentId);
+        //$result = $this->resultFactory->create();
+        //$result->setData([]);
+        //$result->setHttpResponseCode(200);
         //return $result;
     }
 

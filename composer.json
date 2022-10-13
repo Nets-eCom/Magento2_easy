@@ -2,7 +2,7 @@
   "name": "nets/easycheckout",
   "description": "Nets Easy Checkout",
   "type": "magento2-module",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "require": {
     "php": "~7.1 |~7.2 | ~7.3 | ~7.4 | ~8.0 | ~8.1"
   },
@@ -17,7 +17,7 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "https://repo.magento.com/"
+      "url": "https://github.com/Nets-eCom/Magento2_easy.git"
     }
   ]
 }
