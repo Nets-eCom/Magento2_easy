@@ -12,9 +12,10 @@
 
 ## CHANGELOG
 
-### Version 1.5.8 - Released 2022-10-12
+### Version 1.5.8 - Released 2022-11-01
 * Fixed : Order flow change.
 * Fixed : Discount code calculation updated.
+* Fixed : Partial charge and partial refund issue.
 
 ### Version 1.5.7 - Released 2022-09-19
 * Fixed : Canceling order in Magento.

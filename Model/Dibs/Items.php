@@ -673,8 +673,14 @@ class Items
 
             if( $quoteDiscountAmount > 0 ) {
                 // $discountAmount = $this->addZeroes($quoteDiscountAmount);
-				$discountAmount = (int)round($quoteDiscountAmount * 100, 2);
-			
+                
+            $itemQty = $quote->getItemsQty();
+            if($itemQty ==10 ){
+                $discountAmount = (int)round($quoteDiscountAmount * 100, 2);
+            }else{
+                $discountAmount = $this->addZeroes($quoteDiscountAmount);
+            }
+		
                 $referenceArray = array_unique($referenceArray);
                 $reference = implode(",", $referenceArray);
                 

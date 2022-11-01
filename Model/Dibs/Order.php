@@ -24,8 +24,7 @@ use Magento\Sales\Model\Order\Invoice;
 use Magento\Store\Model\StoreManagerInterface;
 use Dibs\EasyCheckout\Api\CheckoutFlow;
 
-class Order
-{
+class Order {
 
     /**
      * @var Items $items
@@ -71,19 +70,19 @@ class Order
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
-        \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
-        \Dibs\EasyCheckout\Helper\Data $helper,
-        ConsumerTypeFactory $consumerTypeFactory,
-        \Magento\Directory\Model\CountryFactory $countryFactory,
-        \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory,
-        Items $itemsHandler,
-        StoreManagerInterface $storeManager
+            \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
+            \Dibs\EasyCheckout\Helper\Data $helper,
+            ConsumerTypeFactory $consumerTypeFactory,
+            \Magento\Directory\Model\CountryFactory $countryFactory,
+            \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory,
+            Items $itemsHandler,
+            StoreManagerInterface $storeManager
     ) {
         $this->helper = $helper;
         $this->consumerTypeFactory = $consumerTypeFactory;
         $this->items = $itemsHandler;
         $this->paymentApi = $paymentApi;
-        $this->_countryFactory  = $countryFactory;
+        $this->_countryFactory = $countryFactory;
         $this->storeManager = $storeManager;
         $this->consumerDataProviderFactory = $consumerDataProviderFactory;
     }
@@ -95,8 +94,7 @@ class Order
      * @throws LocalizedException
      * @return $this
      */
-    public function assignQuote(Quote $quote, $validate = true)
-    {
+    public function assignQuote(Quote $quote, $validate = true) {
         if ($validate) {
             if (!$quote->hasItems()) {
                 throw new LocalizedException(__('Empty Cart'));
@@ -116,8 +114,7 @@ class Order
      * @return CreatePaymentResponse
      * @throws \Exception
      */
-    public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote, $checkoutInfo)
-    {
+    public function initNewDibsCheckoutPaymentByQuote(\Magento\Quote\Model\Quote $quote, $checkoutInfo) {
         return $this->createNewDibsPayment($quote, $checkoutInfo);
     }
 
@@ -126,8 +123,7 @@ class Order
      * @param $currentSignature
      * @return bool
      */
-    public function checkIfPaymentShouldBeUpdated($newSignature, $currentSignature)
-    {
+    public function checkIfPaymentShouldBeUpdated($newSignature, $currentSignature) {
 
         // if the current signature is not set, then we must update payment
         if ($currentSignature == "" || $currentSignature == null) {
@@ -148,8 +144,7 @@ class Order
      * @param $paymentId
      * @throws \Exception
      */
-    public function updateCheckoutPaymentByQuoteAndPaymentId(Quote $quote, $paymentId)
-    {
+    public function updateCheckoutPaymentByQuoteAndPaymentId(Quote $quote, $paymentId) {
         $items = $this->items->generateOrderItemsFromQuote($quote);
 
         $payment = new UpdatePaymentCart();
@@ -170,8 +165,7 @@ class Order
      * @throws LocalizedException
      * @return CreatePaymentResponse
      */
-    protected function createNewDibsPayment(Quote $quote, $checkoutInfo)
-    {
+    protected function createNewDibsPayment(Quote $quote, $checkoutInfo) {
         if (!$this->helper->getWebhookSecret()) {
             throw new LocalizedException(__("Webhook secret configuration missing!"));
         }
@@ -184,10 +178,10 @@ class Order
         $consumerType = $this->generateConsumerType($quote);
 
         $integrationType = (isset($checkoutInfo['integrationType'])) ? $checkoutInfo['integrationType'] : '';
-	
+
         $checkoutFlow = (isset($checkoutInfo['checkoutFlow'])) ? $checkoutInfo['checkoutFlow'] : '';
         $flowIsVanilla = $checkoutFlow === CheckoutFlow::FLOW_VANILLA;
-        
+
         $paymentCheckout = new CreatePaymentCheckout();
         if ($this->helper->getSplitAddresses()) {
             $paymentCheckout->enableBillingAddress();
@@ -219,17 +213,17 @@ class Order
             // and we handle the consumer data
             if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
                 $baseUrl = $this->storeManager->getStore()->getBaseUrl();
-                /*$paymentCheckout->setReturnUrl(
-                    $this->helper->getCheckoutUrl('confirmOrder')
-                );*/
-                $paymentCheckout->setReturnUrl($baseUrl.'easycheckout/order/confirmOrder');
+                /* $paymentCheckout->setReturnUrl(
+                  $this->helper->getCheckoutUrl('confirmOrder')
+                  ); */
+                $paymentCheckout->setReturnUrl($baseUrl . 'easycheckout/order/confirmOrder');
             }
 
             // If it's the vanilla checkout flow, we instead set checkout URL
             if ($flowIsVanilla) {
-		    //$paymentCheckout->setUrl($this->helper->getVanillaCheckoutUrl());
-		    $baseUrl = $this->storeManager->getStore()->getBaseUrl();
-		    $paymentCheckout->setUrl($baseUrl.'easycheckout/order/confirmOrder');
+                //$paymentCheckout->setUrl($this->helper->getVanillaCheckoutUrl());
+                $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+                $paymentCheckout->setUrl($baseUrl . 'easycheckout/order/confirmOrder');
             }
 
             if ($quote->isVirtual()) {
@@ -301,11 +295,11 @@ class Order
 
         // We want to use the payment.checkout.completed webhook only with Hosted integration // changed after discussion
         //if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
-            $webhookCheckoutCompleted = new CreatePaymentWebhook();
-            $webhookCheckoutCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHECKOUT_COMPLETED);
-            $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
-            $webhookCheckoutCompleted->setUrl($webHookUrl);
-            $webhooks[] = $webhookCheckoutCompleted;
+        $webhookCheckoutCompleted = new CreatePaymentWebhook();
+        $webhookCheckoutCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHECKOUT_COMPLETED);
+        $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
+        $webhookCheckoutCompleted->setUrl($webHookUrl);
+        $webhooks[] = $webhookCheckoutCompleted;
 
         //EVENT_PAYMENT_CREATED
         //$webhookCheckoutCompleted = new CreatePaymentWebhook();
@@ -313,48 +307,47 @@ class Order
         //$webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
         //$webhookCheckoutCompleted->setUrl($webHookUrl);
         //$webhooks[] = $webhookCheckoutCompleted;
+        //EVENT_PAYMENT_CHARGE_CREATED
+        $webhookChargeCreated = new CreatePaymentWebhook();
+        $webhookChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHARGE_CREATED);
+        $webHookChargeUrl = $this->helper->getWebHookCallbackUrl($webhookChargeCreated->getControllerName());
+        $webhookChargeCreated->setUrl($webHookChargeUrl);
+        $webhooks[] = $webhookChargeCreated;
 
-	    //EVENT_PAYMENT_CHARGE_CREATED
-            $webhookChargeCreated= new CreatePaymentWebhook();
-            $webhookChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHARGE_CREATED);
-            $webHookChargeUrl = $this->helper->getWebHookCallbackUrl($webhookChargeCreated->getControllerName());
-            $webhookChargeCreated->setUrl($webHookChargeUrl);
-            $webhooks[] = $webhookChargeCreated;
-            
-            //EVENT_PAYMENT_NEW_CHARGE_CREATED
-            $webhookNewChargeCreated = new CreatePaymentWebhook();
-            $webhookNewChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_CHARGE_CREATED);
-            $webHookNewChargeUrl = $this->helper->getWebHookCallbackUrl($webhookNewChargeCreated->getControllerName());
-            $webhookNewChargeCreated->setUrl($webHookNewChargeUrl);
-            $webhooks[] = $webhookNewChargeCreated;
-            
-            //EVENT_PAYMENT_REFUND_INITIATED
-            $webhookRefundInit = new CreatePaymentWebhook();
-            $webhookRefundInit->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_REFUND_INITIATED);
-            $webHookRefundInitUrl = $this->helper->getWebHookCallbackUrl($webhookRefundInit->getControllerName());
-            $webhookRefundInit->setUrl($webHookRefundInitUrl);
-            $webhooks[] = $webhookRefundInit;
-            
-            //EVENT_PAYMENT_NEW_REFUND_INITIATED
-            $webhookNewRefundInit = new CreatePaymentWebhook();
-            $webhookNewRefundInit->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_REFUND_INITIATED);
-            $webHookNewRefundInitUrl = $this->helper->getWebHookCallbackUrl($webhookNewRefundInit->getControllerName());
-            $webhookNewRefundInit->setUrl($webHookNewRefundInitUrl);
-            $webhooks[] = $webhookNewRefundInit;
-            
-            //EVENT_PAYMENT_REFUND_COMPLETED
-            $webhookRefundCompleted = new CreatePaymentWebhook();
-            $webhookRefundCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_REFUND_COMPLETED);
-            $webHookRefundUrl = $this->helper->getWebHookCallbackUrl($webhookRefundCompleted->getControllerName());
-            $webhookRefundCompleted->setUrl($webHookRefundUrl);
-            $webhooks[] = $webhookRefundCompleted;
+        //EVENT_PAYMENT_NEW_CHARGE_CREATED
+        $webhookNewChargeCreated = new CreatePaymentWebhook();
+        $webhookNewChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_CHARGE_CREATED);
+        $webHookNewChargeUrl = $this->helper->getWebHookCallbackUrl($webhookNewChargeCreated->getControllerName());
+        $webhookNewChargeCreated->setUrl($webHookNewChargeUrl);
+        $webhooks[] = $webhookNewChargeCreated;
 
-            //EVENT_PAYMENT_CANCEL_CREATED
-            $webhookCancelCreated = new CreatePaymentWebhook();
-            $webhookCancelCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CANCEL_CREATED);
-            $webHookCancelUrl = $this->helper->getWebHookCallbackUrl($webhookCancelCreated->getControllerName());
-            $webhookCancelCreated->setUrl($webHookCancelUrl);
-            $webhooks[] = $webhookCancelCreated;
+        //EVENT_PAYMENT_REFUND_INITIATED
+        $webhookRefundInit = new CreatePaymentWebhook();
+        $webhookRefundInit->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_REFUND_INITIATED);
+        $webHookRefundInitUrl = $this->helper->getWebHookCallbackUrl($webhookRefundInit->getControllerName());
+        $webhookRefundInit->setUrl($webHookRefundInitUrl);
+        $webhooks[] = $webhookRefundInit;
+
+        //EVENT_PAYMENT_NEW_REFUND_INITIATED
+        $webhookNewRefundInit = new CreatePaymentWebhook();
+        $webhookNewRefundInit->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_REFUND_INITIATED);
+        $webHookNewRefundInitUrl = $this->helper->getWebHookCallbackUrl($webhookNewRefundInit->getControllerName());
+        $webhookNewRefundInit->setUrl($webHookNewRefundInitUrl);
+        $webhooks[] = $webhookNewRefundInit;
+
+        //EVENT_PAYMENT_REFUND_COMPLETED
+        $webhookRefundCompleted = new CreatePaymentWebhook();
+        $webhookRefundCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_REFUND_COMPLETED);
+        $webHookRefundUrl = $this->helper->getWebHookCallbackUrl($webhookRefundCompleted->getControllerName());
+        $webhookRefundCompleted->setUrl($webHookRefundUrl);
+        $webhooks[] = $webhookRefundCompleted;
+
+        //EVENT_PAYMENT_CANCEL_CREATED
+        $webhookCancelCreated = new CreatePaymentWebhook();
+        $webhookCancelCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CANCEL_CREATED);
+        $webHookCancelUrl = $this->helper->getWebHookCallbackUrl($webhookCancelCreated->getControllerName());
+        $webhookCancelCreated->setUrl($webHookCancelUrl);
+        $webhooks[] = $webhookCancelCreated;
 
         //}
 
@@ -373,12 +366,11 @@ class Order
      * @return void
      * @throws ClientException
      */
-    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId)
-    {
+    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId) {
         $reference = new UpdatePaymentReference();
         $reference->setReference($order->getIncrementId());
         $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
-	$storeId = $order->getStoreId();
+        $storeId = $order->getStoreId();
         if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
             $payment = $this->paymentApi->getPayment($paymentId, $storeId);
             $checkoutUrl = $payment->getCheckoutUrl();
@@ -392,8 +384,7 @@ class Order
      * @param null $countryIdFallback
      * @return array
      */
-    public function convertDibsAddress(GetPaymentResponse $payment, $countryIdFallback = null, $isShipping = true)
-    {
+    public function convertDibsAddress(GetPaymentResponse $payment, $countryIdFallback = null, $isShipping = true) {
         if ($payment->getConsumer() === null) {
             return [];
         }
@@ -403,22 +394,20 @@ class Order
         if ($payment->getIsCompany()) {
             $companyObj = $payment->getConsumer()->getCompany();
             $contact = $companyObj->getContactDetails();
-            $firstname =$contact->getFirstName();
+            $firstname = $contact->getFirstName();
             $lastName = $contact->getLastName();
             $company = $companyObj->getName();
             $phone = $contact->getPhoneNumber()->getPhoneNumber();
             $email = $contact->getEmail();
         } else {
             $private = $payment->getConsumer()->getPrivatePerson();
-            $firstname =$private->getFirstName();
+            $firstname = $private->getFirstName();
             $lastName = $private->getLastName();
             $phone = $private->getPhoneNumber()->getPhoneNumber();
             $email = $private->getEmail();
         }
 
-        $address = $isShipping
-            ? $payment->getConsumer()->getShippingAddress()
-            : $payment->getConsumer()->getBillingAddress();
+        $address = $isShipping ? $payment->getConsumer()->getShippingAddress() : $payment->getConsumer()->getBillingAddress();
 
         $streets[] = $address->getAddressLine1();
         if ($address->getAddressLine2()) {
@@ -449,8 +438,7 @@ class Order
         return $data;
     }
 
-    public function convertAddressToArray(Quote $quote)
-    {
+    public function convertAddressToArray(Quote $quote) {
         $shipping = $quote->getShippingAddress();
         $email = "";
         if ($quote->getCustomerEmail()) {
@@ -474,15 +462,13 @@ class Order
             'street' => $shipping->getStreet(),
             'city' => $shipping->getCity(),
             'postcode' => $shipping->getPostcode(),
-            
         ];
 
         return $data;
     }
 
-    public function convertAddressToArrayBilling(Quote $quote)
-    {
- //       $shipping = $quote->getShippingAddress();
+    public function convertAddressToArrayBilling(Quote $quote) {
+        //       $shipping = $quote->getShippingAddress();
         $billing = $quote->getBillingAddress();
         $email = "";
         if ($quote->getCustomerEmail()) {
@@ -506,7 +492,7 @@ class Order
             'street' => $billing->getStreet(),
             'city' => $billing->getCity(),
             'postcode' => $billing->getPostcode(),
-            'country_id'=>$billing->getCountry(),
+            'country_id' => $billing->getCountry(),
         ];
 
         return $data;
@@ -518,8 +504,7 @@ class Order
      * @throws ClientException
      * @throws LocalizedException
      */
-    public function cancelDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $storeId)
-    {
+    public function cancelDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $storeId) {
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
         if ($paymentId) {
             // we load the payment from dibs api instead, then we will get full amount!
@@ -532,7 +517,7 @@ class Order
             $this->paymentApi->cancelPayment($paymentObj, $paymentId);
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
-                __('You need an dibs payment ID to void.')
+                            __('You need an dibs payment ID to void.')
             );
         }
     }
@@ -543,8 +528,7 @@ class Order
      * @throws ClientException
      * @throws LocalizedException
      */
-    public function captureDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount)
-    {
+    public function captureDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount) {
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
 
         if ($paymentId) {
@@ -571,24 +555,38 @@ class Order
             $captureItems = $this->items->getCart();
 
             $paymentDetails = $this->paymentApi->getPayment($paymentId, $invoice->getStoreId());
-	    if(!empty($paymentDetails->getChargeDetails())) {
-		    $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
-            } else {
-            	$paymentObj = new ChargePayment();
-            	$paymentObj->setAmount($this->fixPrice($amount));
-            	$paymentObj->setItems($captureItems);
+            if ($this->helper->getCharge() && !empty($paymentDetails->getChargeDetails())) {
+                $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
+            } else if ($paymentDetails->getPaymentDetails()->getPaymentType() == "A2A") {
+                $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
+            } else if ($this->helper->canCapturePartial()) {
+                if ($paymentDetails->getSummary()->getReservedAmount() == $paymentDetails->getSummary()->getChargedAmount()) {
+                    $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
+                } else {
+                    $paymentObj = new ChargePayment();
+                    $paymentObj->setAmount($this->fixPrice($amount));
+                    $paymentObj->setItems($captureItems);
 
-            // capture/charge it now!
-            	$response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
-		$chargeId = $response->getChargeId();
+                    // capture/charge it now!
+                    $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
+                    $chargeId = $response->getChargeId();
+                }
+            } else {
+                $paymentObj = new ChargePayment();
+                $paymentObj->setAmount($this->fixPrice($amount));
+                $paymentObj->setItems($captureItems);
+
+                // capture/charge it now!
+                $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
+                $chargeId = $response->getChargeId();
             }
-	    // save charge id, we need it later! if a refund will be made
+
+            // save charge id, we need it later! if a refund will be made
             $payment->setAdditionalInformation('dibs_charge_id', $chargeId);
             $payment->setTransactionId($chargeId);
-
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
-                __('You need an dibs payment ID to capture.')
+                            __('You need an dibs payment ID to capture.')
             );
         }
     }
@@ -599,9 +597,10 @@ class Order
      * @throws ClientException
      * @throws LocalizedException
      */
-    public function refundDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount)
-    {
-        $chargeId = $payment->getAdditionalInformation('dibs_charge_id');
+    public function refundDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount) {
+        //$chargeId = $payment->getAdditionalInformation('dibs_charge_id');
+        $chargeId = $payment->getRefundTransactionId();
+        \Magento\Framework\App\ObjectManager::getInstance()->get('Psr\Log\LoggerInterface')->info('Charge Id for Refund : ' . $payment->getRefundTransactionId());
         if ($chargeId) {
             $creditMemo = $payment->getCreditMemo();
             $this->items->addDibsItemsByCreditMemo($creditMemo);
@@ -648,7 +647,7 @@ class Order
             }
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
-                __('You need an dibs charge ID to refund.')
+                            __('You need an dibs charge ID to refund.')
             );
         }
     }
@@ -659,8 +658,7 @@ class Order
      * @return GetPaymentResponse
      * @throws ClientException
      */
-    public function loadDibsPaymentById($paymentId, $storeId)
-    {
+    public function loadDibsPaymentById($paymentId, $storeId) {
         return $this->paymentApi->getPayment($paymentId, $storeId);
     }
 
@@ -668,16 +666,14 @@ class Order
      * @param $price
      * @return float|int
      */
-    protected function fixPrice($price)
-    {
+    protected function fixPrice($price) {
         return (int) round($price * 100, 0);
     }
 
     /**
      * @return Payment
      */
-    public function getPaymentApi()
-    {
+    public function getPaymentApi() {
         return $this->paymentApi;
     }
 
@@ -685,8 +681,7 @@ class Order
      * @param $quoteId
      * @return string
      */
-    public function generateReferenceByQuoteId($quoteId)
-    {
+    public function generateReferenceByQuoteId($quoteId) {
         return "quote_id_" . $quoteId;
     }
 
@@ -696,8 +691,7 @@ class Order
      * @param Quote $quote
      * @return ConsumerType
      */
-    private function generateConsumerType($quote)
-    {
+    private function generateConsumerType($quote) {
         $consumerType = $this->consumerTypeFactory->create();
 
         // If we handle consumer data, consumer type is set based on customer address
@@ -727,4 +721,5 @@ class Order
         $consumerType->setSupportedTypes($consumerTypes);
         return $consumerType;
     }
+
 }
