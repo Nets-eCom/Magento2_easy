@@ -179,6 +179,41 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
+    /**
+     * @param null $store
+     * @return bool
+     */
+    public function getMerchantId($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_CONNECTION . 'merchant_id',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    /**
+     * @param null $store
+     * @return bool
+     */
+    public function getPaymentName($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_CONNECTION . 'payment_name',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+    
+    public function getLogo($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_CONNECTION . 'logo',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+    
     public function useInvoiceFee($store = null)
     {
         return $this->scopeConfig->isSetFlag(
@@ -354,7 +389,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getCheckoutUrl($path = null, $params = [])
     {
         if (empty($path)) {
-            return $this->_getUrl('easycheckout', $params);
+            return $this->_getUrl('easycheckout/order/confirmOrder', $params);
         }
         return $this->_getUrl($this->getCheckoutPath($path), $params);
     }

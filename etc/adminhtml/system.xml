@@ -23,6 +23,21 @@
                     <label>Testmode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="merchant_id" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Merchant Id</label>
+                    <comment>Merchant Id</comment>
+                </field>
+                <field id="payment_name" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
+                    <label>Name of Payment Gateway</label>
+                    <comment>Max length (30 characters)</comment>
+                </field>
+                <field id="logo" translate="label" type="image" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Logo</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">payments/logo</upload_dir>
+                    <base_url type="media" scope_info="1">payments/logo</base_url>
+                    <comment>Logo supported format(jpg, jpeg, png)</comment>
+                </field>
                 <field id="live_secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Live Secret Key</label>
                     <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>

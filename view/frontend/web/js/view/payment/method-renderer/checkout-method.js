@@ -53,6 +53,12 @@ define(
                 getNetsUrl: function () {
                     return url.build('easycheckout') + '?checkRedirect=1';
                 },
+                getLogoUrl : function() {
+                    return window.checkoutConfig.payment.logoUrl;
+                },
+                getTitle : function() {
+                    return window.checkoutConfig.payment.paymentName;
+                },
                 initObservable: function () {
                     this._super();
                     this.observe('iframeUrl');

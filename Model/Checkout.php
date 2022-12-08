@@ -513,6 +513,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
     public function placeOrder(GetPaymentResponse $dibsPayment, Quote $quote) {
         $paymentMutex = $this->context->getPaymentMutex();
         if ($paymentMutex->test($dibsPayment->getPaymentId())) {
+            $this->_logger->info("Payment id already has been processing.");
             throw new \Exception('Payment id already has been processing.');
         }
 
@@ -589,17 +590,45 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
         $createCustomer = false;
 
         if ($customer && $customer->getId()) {
+
+            if("" == $customer->getEmail()){
+                $storeId = $quote->getStoreId();
+                $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($dibsPayment->getPaymentId(), $storeId);
+                if(!empty($payment->getConsumer()->getCompany())){
+                    $customerEmail = $payment->getConsumer()->getCompany()->getContactDetails()->getEmail();
+                } else{
+                    $customerEmail = $payment->getConsumer()->getPrivatePerson()->getEmail();
+                }
+                $quote->setCustomerEmail($customerEmail);
+            } else{
+                $customerEmail = $customer->getEmail();
+            }
+
             $quote->setCheckoutMethod(self::METHOD_CUSTOMER)
                     ->setCustomerId($customer->getId())
-                    ->setCustomerEmail($customer->getEmail())
+                    ->setCustomerEmail($customerEmail)
                     ->setCustomerFirstname($customer->getFirstname())
                     ->setCustomerLastname($customer->getLastname())
                     ->setCustomerIsGuest(false);
         } else {
             //checkout method
+            if("" == $billingAddress->getEmail()){
+                $storeId = $quote->getStoreId();
+                $payment = $this->getDibsPaymentHandler()->loadDibsPaymentById($dibsPayment->getPaymentId(), $storeId);
+                if(!empty($payment->getConsumer()->getCompany())){
+                    $customerEmail = $payment->getConsumer()->getCompany()->getContactDetails()->getEmail();
+                } else{
+                    $customerEmail = $payment->getConsumer()->getPrivatePerson()->getEmail();
+                }
+                $quote->setCustomerEmail($customerEmail);
+                $billingAddress->setEmail($customerEmail);
+            } else{
+                $customerEmail = $billingAddress->getEmail();
+            }
+            
             $quote->setCheckoutMethod(self::METHOD_GUEST)
                     ->setCustomerId(null)
-                    ->setCustomerEmail($billingAddress->getEmail())
+                    ->setCustomerEmail($customerEmail)
                     ->setCustomerFirstname($billingAddress->getFirstname())
                     ->setCustomerLastname($billingAddress->getLastname())
                     ->setCustomerIsGuest(true)
@@ -638,10 +667,13 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
             // Lock payment id to prevent double order creation
             $this->_eventManager->dispatch('checkout_submit_before', ['quote' => $quote]);
             $paymentMutex->lock($dibsPayment->getPaymentId());
+            $this->_logger->info("creating order.");
             $order = $this->quoteManagement->submit($quote);
+            $this->_logger->info("order created." . $order->getId());
             //$order->setStatus('canceled');
             $order->setStatus(Order::STATE_PENDING_PAYMENT);
         } catch (\Exception $e) {
+            $this->_logger->info("error in creating order." . $e->getMessage());
             $paymentMutex->release($dibsPayment->getPaymentId());
             $this->_logger->error($e);
             throw $e;

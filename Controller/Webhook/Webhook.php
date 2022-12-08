@@ -161,22 +161,11 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         );
 
         if (!$this->order->getId()) {
-            sleep(10);
-            if (!$this->order->getId()) {
-                sleep(20);
-                if (!$this->order->getId()) {
-                    $this->logInfo("Order does not exist yet. Webhook will retry.");
-                    $result->setHttpResponseCode(404);
-                    return $result;
-                }
-            }
-            $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
-            $this->dibsCheckoutContext->getOrderResourceFactory()->create()->load(
-                    $this->order,
-                    $this->hostedPaymentId,
-                    'dibs_payment_id'
-            );
+            $this->logInfo("Order does not exist yet. Webhook will retry.");
+            $result->setHttpResponseCode(404);
+            return $result;
         }
+
         $this->storeId = $this->order->getStoreId();
         $paymentDetails = $this->paymentApi->getPayment($this->paymentId, $this->storeId);
         $this->logInfo("Fetch Payment Method : " . $paymentDetails->getPaymentDetails()->getPaymentMethod());
@@ -290,7 +279,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @return void
      */
     protected function logInfo($message) {
-        $this->dibsCheckoutContext->getLogger()->addInfo($this->getLogPrefix() . $message);
+        $this->dibsCheckoutContext->getLogger()->info($this->getLogPrefix() . $message);
     }
 
     /**
@@ -301,7 +290,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @return void
      */
     protected function logError($message, $context = []) {
-        $this->dibsCheckoutContext->getLogger()->addError($this->getLogPrefix() . $message, $context);
+        $this->dibsCheckoutContext->getLogger()->error($this->getLogPrefix() . $message, $context);
     }
 
     /**

@@ -600,7 +600,6 @@ class Order {
     public function refundDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount) {
         //$chargeId = $payment->getAdditionalInformation('dibs_charge_id');
         $chargeId = $payment->getRefundTransactionId();
-        \Magento\Framework\App\ObjectManager::getInstance()->get('Psr\Log\LoggerInterface')->info('Charge Id for Refund : ' . $payment->getRefundTransactionId());
         if ($chargeId) {
             $creditMemo = $payment->getCreditMemo();
             $this->items->addDibsItemsByCreditMemo($creditMemo);

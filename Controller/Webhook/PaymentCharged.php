@@ -9,7 +9,7 @@ class PaymentCharged extends Webhook {
      */
     protected function beforeSave() {
         $data = json_decode($this->request->getContent(), true);
-	$paymentMethod = $this->paymentMethod;
+	      $paymentMethod = $this->paymentMethod;
         $additionalInformation = $this->order->getPayment()->getAdditionalInformation();
         if(isset($data['event'])) {
             if ($data['event'] == 'payment.charge.created') {
@@ -20,7 +20,7 @@ class PaymentCharged extends Webhook {
             
             if($dibs_order_status_id > $additionalInformation['dibs_order_status_id']) {
                 $additionalInformation['dibs_payment_status'] = "Charged";
-		$additionalInformation['dibs_payment_method'] = $paymentMethod;
+		            $additionalInformation['dibs_payment_method'] = $paymentMethod;
                 $additionalInformation['dibs_order_status_id'] = $dibs_order_status_id;
             }
             $this->order->getPayment()->setAdditionalInformation($additionalInformation);

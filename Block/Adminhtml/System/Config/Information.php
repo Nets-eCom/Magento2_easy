@@ -17,8 +17,7 @@ class Information extends \Magento\Backend\Block\Template implements
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
      * @return string
      */
-    public
-    function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {
         $elementOriginalData = $element->getOriginalData();
         return $this->toHtml();

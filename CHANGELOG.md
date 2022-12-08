@@ -6,11 +6,18 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.5.8`
+|Version | `1.5.9`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.5.9 - Released 2022-12-08
+* Fixed : Quote Id and order not creating issue.
+* Fixed : Improved A2A Payment Methods compatibility.
+* Update : Added more logs for critical points.
+* Update : Configure Payment Name and Logo and display on checkout page.
+* Update : Nets plugin latest version notification on configure page.
 
 ### Version 1.5.8 - Released 2022-11-01
 * Fixed : Order flow change.

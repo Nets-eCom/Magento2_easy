@@ -14,7 +14,6 @@ use Magento\Quote\Model\QuoteFactory;
 
 class ConfirmOrder extends Checkout {
 
-
     /**
      * @inheridoc
      */
@@ -34,7 +33,6 @@ class ConfirmOrder extends Checkout {
         $this->helper = $helper;
         $this->resultPageFactory = $resultPageFactory;
         $this->checkoutSession = $checkoutSession;
-        $this->resultPageFactory = $resultPageFactory;
         $this->checkoutSession = $checkoutSession;
         $this->storeManager = $storeManager;
         $this->quoteFactory = $quoteFactory;
@@ -68,6 +66,7 @@ class ConfirmOrder extends Checkout {
     private $order;
 
     public function execute() {
+        $this->logInfo("in confirm order");
         $checkout = $this->getDibsCheckout();
         $paymentCheckout = new CreatePaymentCheckout();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
@@ -76,12 +75,21 @@ class ConfirmOrder extends Checkout {
         $quote = $cart->getQuote();
         // This will return the current quote
         $quoteId = $quote->getId();
+        $this->logInfo("Quote id is " . $quoteId);
         if ($this->helper->getCheckoutFlow() == "Vanilla") {
             $trustFlag = false;
+            $paymentFailed = false;
             $this->paymentId = $this->getRequest()->getPostValue('pid', false);
-            if(empty($this->paymentId)) {
+            if (empty($this->paymentId)) {
                 $trustFlag = true;
+                $paymentFailed = $this->getRequest()->getParam('paymentFailed', false);
                 $this->paymentId = $this->getRequest()->getParam('paymentId', false);
+                if ($paymentFailed) {
+                    $message = "We are sorry, order has been cancelled by user on checkout.";
+                    $this->messageManager->addErrorMessage(__($message));
+                    $checkout->getLogger()->error($message . " for paymentId " . $this->paymentId);
+                    return $this->_redirect('checkout/cart');
+                }
             }
         }
 
@@ -89,20 +97,28 @@ class ConfirmOrder extends Checkout {
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
             $this->paymentId = $this->hostedPaymentId = $this->getRequest()->getParam('paymentid', false);
         }
-        $checkout->setCheckoutContext($this->dibsCheckoutContext);
-        $this->validateOrder($quoteId);
         
+        $this->logInfo("Payment id is " . $this->paymentId);
+        
+        $checkout->setCheckoutContext($this->dibsCheckoutContext);
+        
+        $this->logInfo("order validation starting ");
+        $this->validateOrder($quoteId);
+
         if ($this->validationResult['error']) {
+            $this->logInfo("validationResult error " . $this->validationResult['message']);
             return $this->respondWithError($this->validationResult['message']);
         }
 
         $order = $this->validationResult['order'];
         if ($order === false) {
             try {
+                $this->logInfo("creating order");
                 $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
             } catch (\Exception $e) {
+                $this->logInfo("could not create order, error: " . $e->getMessage());
                 return $this->respondWithError(
-                                "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
+                                $e->getMessage() ." An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
                 );
             }
         }
@@ -110,16 +126,15 @@ class ConfirmOrder extends Checkout {
         $this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
 
         //$this->respondWithPaymentId($this->paymentId);
-
         //return $this->respondWithPaymentId($this->paymentId);
         //$result = $this->resultFactory->create();
         //$result->setData([]);
         //$result->setHttpResponseCode(200);
         //return $result;
-       // echo "confirm order " . $this->hostedPaymentId;
+        // echo "confirm order " . $this->hostedPaymentId;
         //die;
         //if ($this->hostedPaymentId) {
-          //  return $this->handleHostedRequest();
+        //  return $this->handleHostedRequest();
         //}
 
         $this->getDibsCheckout()->setCheckoutContext($this->dibsCheckoutContext);
@@ -142,7 +157,7 @@ class ConfirmOrder extends Checkout {
         }
 
         $this->paymentId = $this->order->getDibsPaymentId();
-        $this->addSuccessCommentToOrder();
+        //$this->addSuccessCommentToOrder();
 
         try {
             $this->dibsCheckoutContext->getOrderRepository()->save($this->order);
@@ -158,18 +173,15 @@ class ConfirmOrder extends Checkout {
         $this->clearQuote();
         //$helper = $this->dibsCheckoutContext->getHelper();
         if ($this->helper->getCheckoutFlow() == "Vanilla") {
-            if($trustFlag) {
+            if ($trustFlag) {
                 return $this->_redirect($this->helper->getCheckoutUrl('success'));
             } else {
                 return $this->respondWithSuccessRedirect();
-                
             }
         }
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
             return $this->_redirect($this->helper->getCheckoutUrl('success'));
         }
-        
-
     }
 
     /**
@@ -249,7 +261,7 @@ class ConfirmOrder extends Checkout {
      * @return void
      */
     private function addSuccessCommentToOrder() {
-        $comment = "Nets Easy Checkout completed for payment ID: " . $this->paymentId;
+        $comment = "Nets Easy Checkout inititate for payment ID: " . $this->paymentId;
         if ($this->order->getState() === Order::STATE_PENDING_PAYMENT) {
             $this->order->setState(Order::STATE_PROCESSING);
             $status = $this->dibsCheckoutContext->getHelper()->getProcessingOrderStatus($this->order->getStore());
@@ -259,7 +271,7 @@ class ConfirmOrder extends Checkout {
 
         $this->order->addCommentToStatusHistory($comment, false);
     }
-    
+
     /**
      * @return void
      */
@@ -271,7 +283,7 @@ class ConfirmOrder extends Checkout {
         ];
 
         $checkout = $this->getDibsCheckout();
-        $checkoutPaymentId = $this->paymentId;// = "01e4000063369824fc349e1b906250e9";
+        $checkoutPaymentId = $this->paymentId; // = "01e4000063369824fc349e1b906250e9";
 
         if ("HostedPaymentPage" == $this->helper->getCheckoutFlow()) {
 
@@ -363,7 +375,7 @@ class ConfirmOrder extends Checkout {
             return;
         }
     }
-    
+
     /**
      * @param $paymentId
      *
@@ -376,6 +388,10 @@ class ConfirmOrder extends Checkout {
         ]));
 
         return $response;
+    }
+    
+    protected function logInfo($message) {
+        $this->dibsCheckoutContext->getLogger()->info($message);
     }
 
 }
