@@ -10,7 +10,8 @@ define(
             'uiRegistry',
             'vanillaCheckoutHandler',
             'Magento_SalesRule/js/action/set-coupon-code',
-            'Magento_SalesRule/js/action/cancel-coupon'
+            'Magento_SalesRule/js/action/cancel-coupon',
+            'Magento_Checkout/js/model/quote'
         ],
         function (
                 $,
@@ -21,9 +22,11 @@ define(
                 uiRegistry,
                 vanillaCheckoutHandler,
                 setCouponCodeAction,
-                cancelCouponCodeAction
+                cancelCouponCodeAction,
+                quoteModel
                 ) {
             'use strict';
+
             var component = Component.extend({
 
                 defaults: {
@@ -110,10 +113,13 @@ define(
                 getPayment: function () {
                     return this.dibsPayment;
                 },
+                getEmail: function () {
+                    return this.dibsPayment;
+                },
                 initPaymentConfiguration: function (vanilla, callback) {
                     $.getJSON(
                             url.build('easycheckout/checkout/getPaymentConfiguration'),
-                            {'vanilla': vanilla},
+                            {'vanilla': vanilla, 'email': quoteModel.guestEmail},
                             callback
                             );
                 }

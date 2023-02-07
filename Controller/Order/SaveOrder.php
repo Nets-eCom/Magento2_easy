@@ -80,16 +80,19 @@ class SaveOrder extends Checkout {
 
     public function execute() {
 
+        $this->logInfo("in saveorder to create order");
+
         $checkout = $this->getDibsCheckout();
         $paymentCheckout = new CreatePaymentCheckout();
 
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
+            $this->paymentId = $this->hostedPaymentId = $this->getRequest()->getParam('paymentid', false);
 
             $data = json_decode($this->request->getContent(), true);
-            $this->paymentId = $data['data']['paymentId'];
+            /*$this->paymentId = $data['data']['paymentId'];
             $reference = $data['data']['order']['reference'];
             $arrReference = (explode("_", $reference));
-            $this->quoteId = $arrReference[2];
+            $this->quoteId = $arrReference[2];*/
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->paymentId = $this->getRequest()->getPostValue('pid', false);
@@ -97,43 +100,53 @@ class SaveOrder extends Checkout {
 
 
         if (!$this->paymentId) {
-            return $this->respondWithError('Invalid payment id');
+            return $this->respondWithError('Invalid payment id1');
         }
 
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
 
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
 
-            $this->validateOrder($this->quoteId);
+            //$this->validateOrder($this->quoteId);
+            $this->validateOrder();
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
+
+            $this->logInfo("validating quote before creating order");
 
             $this->validateOrder();
         }
 
         if ($this->validationResult['error']) {
+
+            $this->logInfo("error in validating quote, error is: " . $this->validationResult['message']);
+
             return $this->respondWithError($this->validationResult['message']);
         }
 
-        /*$order = $this->validationResult['order'];
+        $order = $this->validationResult['order'];
         if ($order === false) {
             try {
+                $this->logInfo("validation successful, creating order");
                 $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
-            } catch (\Exception $e) {
-                return $this->respondWithError(
-                                "An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
-                );
-            }
-        }*/
+                $this->logInfo("order created");
 
-        //$this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
+            } catch (\Exception $e) {
+                $this->logInfo("could not create order, error is: " . $e->getMessage());
+                return $this->respondWithError("Could not create order, error is: " . $e->getMessage());
+            }
+        }
+
+        $this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
 
         //$this->respondWithPaymentId($this->paymentId);
 
-        //return $this->respondWithPaymentId($this->paymentId);
-        //$result = $this->resultFactory->create();
-        //$result->setData([]);
-        //$result->setHttpResponseCode(200);
-        //return $result;
+        $result = $this->resultFactory->create('json');
+        $result->setData([
+                'status' => 'Success.',
+                'paymentId' => $this->paymentId
+            ]);
+        $result->setHttpResponseCode(200);
+        return $result;
     }
 
     /**
@@ -176,12 +189,14 @@ class SaveOrder extends Checkout {
 
         $checkout = $this->getDibsCheckout();
         $checkoutPaymentId = $this->paymentId;
+        $this->quote = $this->getDibsCheckout()->getQuote();
 
         if ("HostedPaymentPage" == $this->helper->getCheckoutFlow()) {
 
-            $quote = $this->quoteFactory->create()->load($quoteId);
-            $quoteId = $quote->getId();
-            $this->quote = $quote;
+            //$quote = $this->quoteFactory->create()->load($quoteId);
+            //$quoteId = $quote->getId();
+            //$this->quote = $quote;
+            $this->quote = $this->getDibsCheckout()->getQuote();
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->quote = $this->getDibsCheckout()->getQuote();
@@ -299,6 +314,10 @@ class SaveOrder extends Checkout {
 
         return $this->respondWithPaymentId($this->paymentId);
         return true;
+    }
+
+    protected function logInfo($message) {
+        $this->dibsCheckoutContext->getLogger()->info($message);
     }
 
 }

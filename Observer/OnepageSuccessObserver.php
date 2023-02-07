@@ -60,12 +60,12 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
         $methodTitle = $method->getTitle();
         if($payment->getMethod() == "dibseasycheckout"){
             $paymentId = $order->getDibsPaymentId();
-	    $storeId = $order->getStoreId();
-	    //Update Card Type in sales_order_payment table in addition_information column.
-	    $paymentDetails = $this->paymentApi->getPayment($paymentId, $storeId);
+	          $storeId = $order->getStoreId();
+	          //Update Card Type in sales_order_payment table in addition_information column.
+	          $paymentDetails = $this->paymentApi->getPayment($paymentId, $storeId);
             $order->getPayment()->setAdditionalInformation('dibs_payment_method', $paymentDetails->getPaymentDetails()->getPaymentMethod());
             $order->save();
-	    $reference = new UpdatePaymentReference();
+	          $reference = new UpdatePaymentReference();
             $reference->setReference($order->getIncrementId());
             $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
             if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
@@ -73,8 +73,7 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
                 $checkoutUrl = $payment->getCheckoutUrl();
                 $reference->setCheckoutUrl($checkoutUrl);
             }
-            
-	    $this->paymentApi->UpdatePaymentReference($reference, $paymentId, $storeId);
+	          $this->paymentApi->UpdatePaymentReference($reference, $paymentId, $storeId);
         }
     }
 }

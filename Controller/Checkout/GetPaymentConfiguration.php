@@ -35,10 +35,14 @@ class GetPaymentConfiguration extends Checkout
      * @inheridoc
      */
     public function execute()
-    {
+    {   
+        $guestEmail = $this->getRequest()->getParam('email', 0);  
+        $quote = $this->getDibsCheckout()->getQuote();
+        $quote->setCustomerEmail($guestEmail);
         $checkout = $this->getDibsCheckout();
         $checkout->setCheckoutContext($this->dibsCheckoutContext);
         $vanillaParam = $this->getRequest()->getParam('vanilla', 0);
+        
         $vanillaCheckout = (int)$vanillaParam === 1;
         $checkoutFlow = ($vanillaCheckout) ? CheckoutFlow::FLOW_VANILLA : 'custom';
         $integrationType = $this->dibsCheckoutContext->getHelper()->getCheckoutFlow();
@@ -54,19 +58,20 @@ class GetPaymentConfiguration extends Checkout
             $dibsPayment = $checkout->initDibsCheckout($checkoutInfo, true);
         } catch (\Exception $e) {
             $checkout->getLogger()->critical($e);
-	    $error_messages = $e->getMessage();
-	    return $this->getResponse()->setBody(json_encode(array('error_message' => substr($error_messages, strpos($error_messages, ":") + 1))));
+      	    $error_messages = $e->getMessage();
+      	    return $this->getResponse()->setBody(json_encode(array('error_message' => substr($error_messages, strpos($error_messages, ":") + 1))));
         }
 
         $paymentResponse = [
             'checkoutKey' => $this->getDibsCheckoutKey(),
             'paymentId'   => $dibsPayment->getPaymentId(),
             'language'    => $this->getDibsCheckout()->getLocale(),
-	    'checkoutUrl' => $dibsPayment->getCheckoutUrl() . '&language=' .  $this->getDibsCheckout()->getLocale(),
-	    'error_message' => '',
+      	    'checkoutUrl' => $dibsPayment->getCheckoutUrl() . '&language=' .  $this->getDibsCheckout()->getLocale(),
+      	    'error_message' => '',
         ];
-
+        
         $quote = $this->getDibsCheckout()->getQuote();
+        
         $this->getDibsCheckout()->getHelper()->lockQuoteSignature($quote);
         $this->getResponse()->setBody(json_encode($paymentResponse));
     }

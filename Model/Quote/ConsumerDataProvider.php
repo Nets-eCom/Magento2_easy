@@ -74,11 +74,11 @@ class ConsumerDataProvider
         $consumer->setReference($quote->getCustomerId());
 
         $consumer->setShippingAddress($this->getAddressData());
-	//If phone number is not empty
+	      //If phone number is not empty
         if($quote->getShippingAddress()->getTelephone()) {
-        $consumer->setPhoneNumber($this->getPhoneNumber());
+            $consumer->setPhoneNumber($this->getPhoneNumber());
         }
-	//$consumer->setPhoneNumber($this->getPhoneNumber());
+	      //$consumer->setPhoneNumber($this->getPhoneNumber());
         $consumer->setEmail($quote->getBillingAddress()->getEmail());
         $weHandleConsumer = $this->helper->doesHandleCustomerData();
         if ($weHandleConsumer && !empty($quote->getShippingAddress()->getCompany())) {

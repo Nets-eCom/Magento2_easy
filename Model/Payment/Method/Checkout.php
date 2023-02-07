@@ -96,11 +96,11 @@ class Checkout extends AbstractMethod
         $order   = $this->getOrder();
 
         $paymentDefails = $payment->getAdditionalInformation();
-        if ($paymentMethod = $paymentDefails['dibs_payment_method'] ?? false) {
+        /*if ($paymentMethod = $paymentDefails['dibs_payment_method'] ?? false) {
             if (in_array($paymentMethod, $this->getExcludedPaymentOptions())) {
                 return false;
             }
-        }
+        }*/
 
         return $this->_helper->canCapture($order ? $order->getStore() : null);
     }

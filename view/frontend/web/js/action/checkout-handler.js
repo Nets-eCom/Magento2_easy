@@ -3,8 +3,11 @@ define([
     'Magento_Checkout/js/model/full-screen-loader',
     'uiRegistry',
     'mage/url',
-    'Magento_Customer/js/customer-data'
-    ], function ($, checkoutLoader, uiRegistry, mageurl, customerData) {
+    'Magento_Customer/js/customer-data',
+    'Magento_Ui/js/view/messages',
+    'Magento_Ui/js/model/messageList',
+    'Magento_Ui/js/modal/alert'
+    ], function ($, checkoutLoader, uiRegistry, mageurl, customerData, messages, messageList, netsAlert) {
         'use strict';
 
         return {
@@ -52,10 +55,10 @@ define([
                 });
             },
             validateTest: function(paymentId) { 
-                alert('pay created');
+                //alert('pay created');
             },
             validatePayment: function(paymentId) {
-		return this.sendPaymentOrderFinalizedEvent(true);
+                //return this.sendPaymentOrderFinalizedEvent(true);
                 $.ajax({
                     url: mageurl.build("easycheckout/order/SaveOrder"),
                     type: "POST",
@@ -69,21 +72,73 @@ define([
                         checkoutLoader.stopLoader();
                     },
                     success: function (response) {
-                        if ($.type(response) === 'object' && !$.isEmptyObject(response)) {
-                            this.sendPaymentOrderFinalizedEvent(!response.error);
+                        if ($.type(response) === 'object' && !$.isEmptyObject(response) && !response.error) {
+                            this.sendPaymentOrderFinalizedEvent(true);
                             if (response.messages) {
                                 alert(jQuery.mage.__(response.messages));
                             }
                         } else {
+                            netsAlert({
+                                title: 'Error',
+                                content: response.messages,
+                                clickableOverlay: false,
+                                responsive: true,
+                                innerScroll: true,
+                                closed: function () {
+                                    $.mage.redirect(mageurl.build("checkout/cart"));
+                                },
+                                buttons: [{
+                                    text: $.mage.__('Close'),
+                                    class: 'modal-close',
+                                    click: function (){
+                                        this.closeModal();
+                                    }
+                                }]
+                                /*actions: {
+                                    always: function () {
+
+                                        alert("reload here");
+
+                                    }
+                                }*/
+                            });
                             checkoutLoader.stopLoader();
                             this.sendPaymentOrderFinalizedEvent(false);
-                            alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
+                            messageList.addErrorMessage({
+                               message: response.messages
+                            });
+
+                            //alert(jQuery.mage.__(response.messages));
                         }
                     },
                     error: function(data) {
                         // tell dibs not to finish order!
+                        netsAlert({
+                                title: 'Error',
+                                content: "Error happened, please try again",
+                                clickableOverlay: false,
+                                responsive: true,
+                                innerScroll: true,
+                                closed: function () {
+                                    $.mage.redirect(mageurl.build("checkout/cart"));
+                                },
+                                buttons: [{
+                                    text: $.mage.__('Close'),
+                                    class: 'modal-close',
+                                    click: function (){
+                                        this.closeModal();
+                                    }
+                                }]
+                                /*actions: {
+                                    always: function () {
+
+                                        alert("reload here");
+
+                                    }
+                                }*/
+                            });
                         this.sendPaymentOrderFinalizedEvent(false);
-                        alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
+                        //alert(jQuery.mage.__('Sorry, something went wrong. Please try again later.'));
                     }
                 });
             }

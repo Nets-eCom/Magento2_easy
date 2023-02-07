@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.5.9`
+|Version | `1.6.0`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.6.0 - Released 2023-02-07
+* Fixed : Quote Id and order not creating issue for Embedded Payment Flow.
+* Fixed : Guest Customer Email Id missing.
 
 ### Version 1.5.9 - Released 2022-12-08
 * Fixed : Quote Id and order not creating issue.

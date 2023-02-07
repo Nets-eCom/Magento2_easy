@@ -662,6 +662,12 @@ class Items
         try {
             foreach ($quoteItems as $quoteItem) {                
                 $quoteDiscountAmount += $quoteItem->getBaseDiscountAmount();
+                
+                //Bundle product Discount Calculation
+                if($quoteItem->getProductType() =='bundle'){
+                    $quoteDiscountAmount += $quoteItem->getTotalDiscountAmount();
+                }
+	  
                 $appliedRuleId = $quoteItem->getAppliedRuleIds();
                 if(!empty($appliedRuleId)){
                     foreach (explode(',', $appliedRuleId) as $ruleId) {

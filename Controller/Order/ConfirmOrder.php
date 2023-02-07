@@ -67,15 +67,6 @@ class ConfirmOrder extends Checkout {
 
     public function execute() {
         $this->logInfo("in confirm order");
-        $checkout = $this->getDibsCheckout();
-        $paymentCheckout = new CreatePaymentCheckout();
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-
-        $quote = $cart->getQuote();
-        // This will return the current quote
-        $quoteId = $quote->getId();
-        $this->logInfo("Quote id is " . $quoteId);
         if ($this->helper->getCheckoutFlow() == "Vanilla") {
             $trustFlag = false;
             $paymentFailed = false;
@@ -95,47 +86,43 @@ class ConfirmOrder extends Checkout {
 
         // Hosted will send payment ID as a get param
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
+
+            $checkout = $this->getDibsCheckout();
+            $paymentCheckout = new CreatePaymentCheckout();
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+
+            $quote = $cart->getQuote();
+            // This will return the current quote
+            $quoteId = $quote->getId();
+            $this->logInfo("Quote id is " . $quoteId);
             $this->paymentId = $this->hostedPaymentId = $this->getRequest()->getParam('paymentid', false);
-        }
-        
-        $this->logInfo("Payment id is " . $this->paymentId);
-        
-        $checkout->setCheckoutContext($this->dibsCheckoutContext);
-        
-        $this->logInfo("order validation starting ");
-        $this->validateOrder($quoteId);
 
-        if ($this->validationResult['error']) {
-            $this->logInfo("validationResult error " . $this->validationResult['message']);
-            return $this->respondWithError($this->validationResult['message']);
-        }
+            $checkout->setCheckoutContext($this->dibsCheckoutContext);
+        
+            $this->logInfo("order validation starting ");
+            $this->validateOrder($quoteId);
 
-        $order = $this->validationResult['order'];
-        if ($order === false) {
-            try {
-                $this->logInfo("creating order");
-                $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
-            } catch (\Exception $e) {
-                $this->logInfo("could not create order, error: " . $e->getMessage());
-                return $this->respondWithError(
-                                $e->getMessage() ." An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
-                );
+            if ($this->validationResult['error']) {
+                $this->logInfo("validationResult error " . $this->validationResult['message']);
+                return $this->respondWithError($this->validationResult['message']);
             }
+
+            $order = $this->validationResult['order'];
+            if ($order === false) {
+                try {
+                    $this->logInfo("creating order");
+                    $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
+                } catch (\Exception $e) {
+                    $this->logInfo("could not create order, error: " . $e->getMessage());
+                    return $this->respondWithError(
+                                    $e->getMessage() ." An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
+                    );
+                }
+            }
+
+            $this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
         }
-
-        $this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
-
-        //$this->respondWithPaymentId($this->paymentId);
-        //return $this->respondWithPaymentId($this->paymentId);
-        //$result = $this->resultFactory->create();
-        //$result->setData([]);
-        //$result->setHttpResponseCode(200);
-        //return $result;
-        // echo "confirm order " . $this->hostedPaymentId;
-        //die;
-        //if ($this->hostedPaymentId) {
-        //  return $this->handleHostedRequest();
-        //}
 
         $this->getDibsCheckout()->setCheckoutContext($this->dibsCheckoutContext);
         $this->order = $this->dibsCheckoutContext->getOrderFactory()->create();
@@ -173,9 +160,12 @@ class ConfirmOrder extends Checkout {
         $this->clearQuote();
         //$helper = $this->dibsCheckoutContext->getHelper();
         if ($this->helper->getCheckoutFlow() == "Vanilla") {
+            $this->logInfo("in Vanilla");
             if ($trustFlag) {
+                $this->logInfo("in Trust : ".$this->helper->getCheckoutUrl('success'));
                 return $this->_redirect($this->helper->getCheckoutUrl('success'));
             } else {
+                $this->logInfo("Else Trust");
                 return $this->respondWithSuccessRedirect();
             }
         }
@@ -270,6 +260,10 @@ class ConfirmOrder extends Checkout {
         }
 
         $this->order->addCommentToStatusHistory($comment, false);
+    }
+    
+    protected function logInfo($message) {
+        $this->dibsCheckoutContext->getLogger()->info($message);
     }
 
     /**
@@ -376,22 +370,5 @@ class ConfirmOrder extends Checkout {
         }
     }
 
-    /**
-     * @param $paymentId
-     *
-     * @return \Magento\Framework\App\ResponseInterface
-     */
-    private function respondWithPaymentId($paymentId) {
-        $response = $this->getResponse();
-        $response->setBody(\json_encode([
-            'paymentId' => $paymentId
-        ]));
-
-        return $response;
-    }
-    
-    protected function logInfo($message) {
-        $this->dibsCheckoutContext->getLogger()->info($message);
-    }
 
 }
