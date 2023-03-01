@@ -190,8 +190,10 @@ class Order {
         $paymentCheckout->setIntegrationType($integrationType);
 
         $termsUrl = $this->helper->getTermsUrl();
-        if (strlen($termsUrl) > 128) {
-            $termsUrl = substr($termsUrl, 0, 128);
+        if (!empty($termsUrl)) {
+            if (strlen($termsUrl) > 128) {
+                $termsUrl = substr($termsUrl, 0, 128);
+            }
         }
         $paymentCheckout->setTermsUrl($termsUrl);
 
@@ -199,8 +201,10 @@ class Order {
         $paymentCheckout->setElectronicData($electronicData);
 
         $privacyUrl = $this->helper->getPrivacyUrl();
-        if (strlen($privacyUrl) > 128) {
-            $privacyUrl = substr($privacyUrl, 0, 128);
+        if (!empty($privacyUrl)) {
+            if (strlen($privacyUrl) > 128) {
+                $privacyUrl = substr($privacyUrl, 0, 128);
+            }
         }
         $paymentCheckout->setPrivacyUrl($privacyUrl);
 
@@ -301,13 +305,15 @@ class Order {
         $webhookCheckoutCompleted->setUrl($webHookUrl);
         $webhooks[] = $webhookCheckoutCompleted;
 
-        //EVENT_PAYMENT_CREATED
-        //$webhookCheckoutCompleted = new CreatePaymentWebhook();
-        //$webhookCheckoutCompleted->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CREATED);
-        //$webHookUrl = $this->helper->getWebHookCallbackUrl($webhookCheckoutCompleted->getControllerName());
-        //$webhookCheckoutCompleted->setUrl($webHookUrl);
-        //$webhooks[] = $webhookCheckoutCompleted;
-        //EVENT_PAYMENT_CHARGE_CREATED
+        if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
+//EVENT_PAYMENT_CREATED
+            $webhookPaymentCreated = new CreatePaymentWebhook();
+            $webhookPaymentCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CREATED);
+            $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookPaymentCreated->getControllerName());
+            $webhookPaymentCreated->setUrl($webHookUrl);
+            $webhooks[] = $webhookPaymentCreated;
+        }
+//EVENT_PAYMENT_CHARGE_CREATED
         $webhookChargeCreated = new CreatePaymentWebhook();
         $webhookChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHARGE_CREATED);
         $webHookChargeUrl = $this->helper->getWebHookCallbackUrl($webhookChargeCreated->getControllerName());

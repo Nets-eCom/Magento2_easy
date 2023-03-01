@@ -14,6 +14,11 @@
                 <!-- ko template: getTemplate() --><!-- /ko -->
                 <!--/ko-->
             </div>
+            <div class="checkout-agreements-block">
+              <!-- ko foreach: $parent.getRegion('before-place-order') -->
+                  <!-- ko template: getTemplate() --><!-- /ko -->
+              <!--/ko-->
+            </div>
             <!-- ko if: window.isVanillaEmbeded -->
             <div class="payment-method-note">
                 <div id="nets-placeholder" style="width: 102%;">

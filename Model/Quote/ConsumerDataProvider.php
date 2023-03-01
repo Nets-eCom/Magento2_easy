@@ -154,13 +154,17 @@ class ConsumerDataProvider
             throw new \Exception('Address data is missing');
         }
 
-        if (strlen($address1) > 128) {
-            $address1 = substr($address1, 0, 128);
+        if (!empty($address1)) {
+            if (strlen($address1) > 128) {
+                $address1 = substr($address1, 0, 128);
+            }
         }
 
         $shippingAddressLine2 = '';
-        if (strlen($shippingAddress->getStreetLine(2)) > 128) {
-            $shippingAddressLine2 = substr($shippingAddress->getStreetLine(2), 0, 128);
+        if (!empty($shippingAddress->getStreetLine(2))) {
+            if (strlen($shippingAddress->getStreetLine(2)) > 128) {
+                $shippingAddressLine2 = substr($shippingAddress->getStreetLine(2), 0, 128);
+            }
         }
 
         $paymentShippingAddress = new ConsumerShippingAddress();

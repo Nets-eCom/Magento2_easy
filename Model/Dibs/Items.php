@@ -271,10 +271,12 @@ class Items
 				}
 
 				// Set length!
-				if (strlen($itemName) > 128) {
-					$itemName = substr($itemName, 0, 128);
-				}
-
+        if (!empty($itemName)) {
+    				if (strlen($itemName) > 128) {
+    					$itemName = substr($itemName, 0, 128);
+    				}
+        }
+        
 				$unitPriceExclTax = $addPrices ? $item->getBasePrice() : 0;
 				$taxAmount = $this->addZeroes($item->getTaxAmount());
 				$unitPriceInclTax = $addPrices ? $item->getPriceInclTax() : 0;
@@ -436,10 +438,12 @@ class Items
             
             $itemName = preg_replace('/[^\w\d\s]*/', '', $item->getName());
             // Set length!
-            if (strlen($itemName) > 128) {
-                $itemName = substr($itemName, 0, 128);
+            if (!empty($itemName)) {
+                if (strlen($itemName) > 128) {
+                    $itemName = substr($itemName, 0, 128);
+                }
             }
-
+            
             $itemSku = $item->getSku();
 
             $orderItem = new OrderItem();
@@ -492,9 +496,11 @@ class Items
 		}
 
 		$shippingDescription = $address->getShippingDescription();
-		if (strlen($shippingDescription) > 128) {
-			$shippingDescription = substr($shippingDescription, 0, 128);
-		}
+    if (!empty($shippingDescription)) {
+    		if (strlen($shippingDescription) > 128) {
+    			$shippingDescription = substr($shippingDescription, 0, 128);
+    		}
+    }
 
 		//mai - hotfix - Shipping
 		$getAllTaxRates = $this->_taxRate->getCollection()->getData();
@@ -690,8 +696,10 @@ class Items
                 $referenceArray = array_unique($referenceArray);
                 $reference = implode(",", $referenceArray);
                 
-                if (strlen($reference) > 128) {
-                    $reference = substr($reference, 0, 128);
+                if (!empty($reference)) {
+                    if (strlen($reference) > 128) {
+                        $reference = substr($reference, 0, 128);
+                    }
                 }
 
                 $orderItem = new OrderItem();

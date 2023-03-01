@@ -11,6 +11,9 @@ use Magento\Customer\Api\AccountManagementInterface;
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
 use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
 use Magento\Quote\Model\QuoteFactory;
+use Magento\Checkout\Model\Cart;
+use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
+use Dibs\EasyCheckout\Model\Client\Api\Payment;
 
 class ConfirmOrder extends Checkout {
 
@@ -28,7 +31,9 @@ class ConfirmOrder extends Checkout {
             \Magento\Framework\View\Result\PageFactory $resultPageFactory,
             DibsCheckout $dibsCheckout,
             DibsCheckoutContext $dibsCheckoutContext,
-            QuoteFactory $quoteFactory
+            QuoteFactory $quoteFactory,
+            Cart $cart,
+            Payment $payment
     ) {
         $this->helper = $helper;
         $this->resultPageFactory = $resultPageFactory;
@@ -36,6 +41,8 @@ class ConfirmOrder extends Checkout {
         $this->checkoutSession = $checkoutSession;
         $this->storeManager = $storeManager;
         $this->quoteFactory = $quoteFactory;
+	$this->cart             = $cart;
+        $this->payment = $payment;
 
         parent::__construct(
                 $context,
@@ -86,42 +93,8 @@ class ConfirmOrder extends Checkout {
 
         // Hosted will send payment ID as a get param
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
-
-            $checkout = $this->getDibsCheckout();
-            $paymentCheckout = new CreatePaymentCheckout();
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-
-            $quote = $cart->getQuote();
-            // This will return the current quote
-            $quoteId = $quote->getId();
-            $this->logInfo("Quote id is " . $quoteId);
             $this->paymentId = $this->hostedPaymentId = $this->getRequest()->getParam('paymentid', false);
-
-            $checkout->setCheckoutContext($this->dibsCheckoutContext);
-        
-            $this->logInfo("order validation starting ");
-            $this->validateOrder($quoteId);
-
-            if ($this->validationResult['error']) {
-                $this->logInfo("validationResult error " . $this->validationResult['message']);
-                return $this->respondWithError($this->validationResult['message']);
-            }
-
-            $order = $this->validationResult['order'];
-            if ($order === false) {
-                try {
-                    $this->logInfo("creating order");
-                    $order = $this->dibsCheckout->placeOrder($this->dibsPayment, $this->quote);
-                } catch (\Exception $e) {
-                    $this->logInfo("could not create order, error: " . $e->getMessage());
-                    return $this->respondWithError(
-                                    $e->getMessage() ." An error occurred when we tried to save your order. Please make sure all required fields are filled and try again. If the problem persists, contact customer support."
-                    );
-                }
-            }
-
-            $this->dibsCheckout->saveDibsPayment($this->paymentId, $order);
+            return $this->handleHostedRequest();
         }
 
         $this->getDibsCheckout()->setCheckoutContext($this->dibsCheckoutContext);
@@ -191,17 +164,34 @@ class ConfirmOrder extends Checkout {
         $helper = $this->dibsCheckoutContext->getHelper();
 
         // No order found? This should never happen, but let's log the error just in case.
-        if (!$this->order->getId()) {
-            $this->dibsCheckout->getLogger()->critical(
-                    "[ConfirmOrder][{$this->paymentId}]No order found after checkout!"
-            );
-            $message = "We are sorry, but your order seems to have gone missing. "
-                    . "Please contact customer support with Nets Payment ID: " . $this->hostedPaymentId;
-            $this->messageManager->addErrorMessage(__($message));
-            return $this->_redirect('checkout/cart');
+        if ($this->order->getId()) {
+            $this->clearQuote();
+            return $this->_redirect($helper->getCheckoutUrl('success'));
+        } else{
+
+            $this->dibsCheckout->getLogger()->critical("[ConfirmOrder][{$this->paymentId}]No order found after checkout!");
+            $quote = $this->cart->getQuote();
+            $jsonErrorData = $quote->getErrorMessage();
+            $arrayErrorData = json_decode($jsonErrorData, true);
+            if(isset($arrayErrorData['error']) && !empty($arrayErrorData['error'])){
+                $paymentObj = new CancelPayment();
+                $cancelAmount = (int) round($quote->getBaseGrandTotal() * 100, 0);
+                $paymentObj->setAmount($cancelAmount);
+            
+                $this->logInfo("canceled the tranasaction");
+            
+                $this->payment->cancelPayment($paymentObj, $this->hostedPaymentId);
+
+                $errorMessage = $arrayErrorData['message'];
+                $message = "Could not create order, we have canceled your transaction. Error is: " . $errorMessage . ". Please contact customer support with Nets Payment ID: " . $this->hostedPaymentId ;
+
+                $this->messageManager->addErrorMessage(__($message));
+                return $this->_redirect('checkout/cart');
+            }
+            
+            header("Refresh:0");
         }
-        $this->clearQuote();
-        return $this->_redirect($helper->getCheckoutUrl('success'));
+        
     }
 
     /**
@@ -265,110 +255,5 @@ class ConfirmOrder extends Checkout {
     protected function logInfo($message) {
         $this->dibsCheckoutContext->getLogger()->info($message);
     }
-
-    /**
-     * @return void
-     */
-    private function validateOrder($quoteId = '') {
-        $this->validationResult = [
-            'error' => false,
-            'message' => '',
-            'order' => false
-        ];
-
-        $checkout = $this->getDibsCheckout();
-        $checkoutPaymentId = $this->paymentId; // = "01e4000063369824fc349e1b906250e9";
-
-        if ("HostedPaymentPage" == $this->helper->getCheckoutFlow()) {
-
-            $quote = $this->quoteFactory->create()->load($quoteId);
-            $quoteId = $quote->getId();
-            $this->quote = $quote;
-        } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
-
-            $this->quote = $this->getDibsCheckout()->getQuote();
-        }
-
-        $order = $this->dibsCheckoutContext->loadPendingOrder($checkoutPaymentId);
-
-        // Prevent multiple order creation - use existing pending_payment order as base for payment completion
-        if ($order->getId()) {
-            $this->validationResult['order'] = $order;
-            return;
-        }
-
-
-        if (!$this->quote->getId()) {
-            $checkout->getLogger()->error("Validate Order: Payment ID {$checkoutPaymentId}: No quote found for this customer.");
-            $this->validationResult = [
-                'error' => true,
-                'message' => 'Your session has expired, found no quote id.'
-            ];
-            return;
-        }
-
-        try {
-            $storeId = $this->quote->getStoreId();
-            $this->dibsPayment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($checkoutPaymentId, $storeId);
-        } catch (ClientException $e) {
-            $this->validationResult['error'] = true;
-            if ($e->getHttpStatusCode() == 404) {
-                $checkout->getLogger()->error("Validate Order: The dibs payment with ID: " . $checkoutPaymentId . " was not found in dibs.");
-                $this->validationResult['message'] = 'Found no Dibs Order for this session. Please refresh the site or clear your cookies.';
-                return;
-            } else {
-                $checkout->getLogger()->error("Validate Order: Something went wrong when we tried to fetch the payment ID from Dibs. Http Status code: " . $e->getHttpStatusCode());
-                $checkout->getLogger()->error("Validate Order: Error message:" . $e->getMessage());
-                $checkout->getLogger()->debug($e->getResponseBody());
-                $this->validationResult['message'] = 'Something went wrong when we tried to retrieve the order from Dibs. Please try again or contact an admin.';
-                return;
-            }
-        } catch (\Exception $e) {
-            $this->messageManager->addExceptionMessage(
-                    $e,
-                    __('Something went wrong.')
-            );
-
-            $checkout->getLogger()->error("Validate Order: Something went wrong. Might have been the request parser. Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
-            $this->validationResult = [
-                'error' => true,
-                'message' => 'Something went wrong... Contact site admin1.' . $checkoutPaymentId . $e->getMessage()
-            ];
-            return;
-        }
-
-        if (!$this->quote->isVirtual() && $this->dibsPayment->getConsumer()->getShippingAddress() === null) {
-            $checkout->getLogger()->error("Validate Order: Payment ID {$checkoutPaymentId}: Consumer has no shipping address.");
-            $this->validationResult = [
-                'error' => true,
-                'message' => 'Please add shipping information.'
-            ];
-            return;
-        }
-
-        try {
-            if (!$this->quote->isVirtual() && !$this->quote->getShippingAddress()->getShippingMethod()) {
-                $checkout->getLogger()->error("Validate Order: Payment ID {$checkoutPaymentId}: Consumer has not choosen a shipping method.");
-                $this->validationResult = [
-                    'error' => true,
-                    'message' => 'Please choose a shipping method.'
-                ];
-                return;
-            }
-        } catch (\Exception $e) {
-            $this->messageManager->addExceptionMessage(
-                    $e,
-                    __('Something went wrong.')
-            );
-
-            $checkout->getLogger()->error("Validate Order: Something went wrong... Payment ID: " . $checkoutPaymentId . "... Error message:" . $e->getMessage());
-            $this->validationResult = [
-                'error' => true,
-                'message' => 'Something went wrong... Contact site admin.'
-            ];
-            return;
-        }
-    }
-
 
 }

@@ -4,6 +4,7 @@
         <column xsi:type="varchar" name="dibs_payment_id" length="255" nullable="true" comment="dibs_payment_id"/>
         <column xsi:type="decimal" name="dibs_invoice_fee" default="0.00" nullable="true" comment="Dibs Invoice Fee"/>
         <column xsi:type="varchar" name="hash_signature" length="255" nullable="true" comment="Quote verification signature hash"/>
+        <column xsi:type="varchar" name="error_message" length="255" nullable="true" comment="Error message"/>
     </table>
 
     <table name="sales_order" resource="default" engine="innodb">

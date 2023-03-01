@@ -7,11 +7,13 @@ define(
             'mage/url',
             'Dibs_EasyCheckout/js/action/before-order',
             'Magento_Checkout/js/model/full-screen-loader',
+            'Magento_Checkout/js/model/payment/additional-validators',
             'uiRegistry',
             'vanillaCheckoutHandler',
             'Magento_SalesRule/js/action/set-coupon-code',
             'Magento_SalesRule/js/action/cancel-coupon',
-            'Magento_Checkout/js/model/quote'
+            'Magento_Checkout/js/model/quote',
+            'Magento_CheckoutAgreements/js/view/checkout-agreements'
         ],
         function (
                 $,
@@ -19,14 +21,18 @@ define(
                 url,
                 dibs,
                 fullScreenLoader,
+                additionalValidators,
                 uiRegistry,
                 vanillaCheckoutHandler,
                 setCouponCodeAction,
                 cancelCouponCodeAction,
-                quoteModel
+                quoteModel,
+                checkoutAgreements
                 ) {
             'use strict';
-
+            var agreementsConfig = window.checkoutConfig.checkoutAgreements;
+            var agreementsCheck = agreementsConfig.isEnabled;
+            
             var component = Component.extend({
 
                 defaults: {
@@ -36,21 +42,23 @@ define(
                 },
                 eventsInstantiated: false,
                 continueToDibsRedirect: function () {
-                    dibs("dibseasycheckout", function () {
-                        let callback = function (paymentConfiguration) {
-                            if (paymentConfiguration.error_message != "") {
-                                alert(paymentConfiguration.error_message);
-                            } else {
-                                $.mage.redirect(paymentConfiguration.checkoutUrl);
-                            }
-                        };
-
-                        this.initPaymentConfiguration(0, callback);
-                    }.bind(this));
-                    return false;
+                    if (additionalValidators.validate()) {
+                        dibs("dibseasycheckout", agreementsCheck, function () {
+                            let callback = function (paymentConfiguration) {
+                                if (paymentConfiguration.error_message != "") {
+                                    alert(paymentConfiguration.error_message);
+                                } else {
+                                    $.mage.redirect(paymentConfiguration.checkoutUrl);
+                                }
+                            };
+    
+                            this.initPaymentConfiguration(0, callback);
+                        }.bind(this));
+                        return false;
+                    }
                 },
                 continueToDibs: function () {
-                    dibs("dibseasycheckout", function () {});
+                    dibs("dibseasycheckout", agreementsCheck, function () {});
                     return false;
                 },
                 getNetsUrl: function () {

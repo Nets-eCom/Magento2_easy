@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.6.0`
+|Version | `1.6.1`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.6.1 - Released 2023-03-01
+* Fixed : Quote Id and order not creating issue for Hosted Payment Flow.
+* Fixed : Magento Terms and Conditions missing in payment.
 
 ### Version 1.6.0 - Released 2023-02-07
 * Fixed : Quote Id and order not creating issue for Embedded Payment Flow.

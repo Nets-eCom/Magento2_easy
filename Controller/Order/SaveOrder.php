@@ -86,13 +86,18 @@ class SaveOrder extends Checkout {
         $paymentCheckout = new CreatePaymentCheckout();
 
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
-            $this->paymentId = $this->hostedPaymentId = $this->getRequest()->getParam('paymentid', false);
+            $this->paymentId = $this->hostedPaymentId = $this->getRequest()->getParam('paymentId', false);
+            $this->logInfo("pid for hosted from webhook ".$this->paymentId);
+            $this->logInfo("data is  ".$this->request->getContent());
 
             $data = json_decode($this->request->getContent(), true);
-            /*$this->paymentId = $data['data']['paymentId'];
+            $this->paymentId = $data['data']['paymentId'];
+            $this->logInfo("pid for hosted from webhook1 ".$this->paymentId);
+            $this->paymentId = $data['data']['paymentId'];
             $reference = $data['data']['order']['reference'];
             $arrReference = (explode("_", $reference));
-            $this->quoteId = $arrReference[2];*/
+            $this->quoteId = $arrReference[2];
+            $this->logInfo("qid for hosted from webhook1 ".$this->quoteId);
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->paymentId = $this->getRequest()->getPostValue('pid', false);
@@ -107,8 +112,9 @@ class SaveOrder extends Checkout {
 
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
 
-            //$this->validateOrder($this->quoteId);
-            $this->validateOrder();
+            $this->validateOrder($this->quoteId);
+            $this->logInfo("webhook validate order");
+            //$this->validateOrder();
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->logInfo("validating quote before creating order");
@@ -131,6 +137,13 @@ class SaveOrder extends Checkout {
                 $this->logInfo("order created");
 
             } catch (\Exception $e) {
+                if ("HostedPaymentPage" == $this->helper->getCheckoutFlow()) {
+                    $errorData = array("error"=>true,"message"=>$e->getMessage());
+                    $this->quote->setErrorMessage(json_encode($errorData));
+                    $this->quote->setDibsPaymentId(NULL);
+                    $this->quote->save();
+                }
+                
                 $this->logInfo("could not create order, error is: " . $e->getMessage());
                 return $this->respondWithError("Could not create order, error is: " . $e->getMessage());
             }
@@ -193,10 +206,10 @@ class SaveOrder extends Checkout {
 
         if ("HostedPaymentPage" == $this->helper->getCheckoutFlow()) {
 
-            //$quote = $this->quoteFactory->create()->load($quoteId);
-            //$quoteId = $quote->getId();
-            //$this->quote = $quote;
-            $this->quote = $this->getDibsCheckout()->getQuote();
+            $quote = $this->quoteFactory->create()->load($quoteId);
+            $quoteId = $quote->getId();
+            $this->quote = $quote;
+            //$this->quote = $this->getDibsCheckout()->getQuote();
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->quote = $this->getDibsCheckout()->getQuote();
