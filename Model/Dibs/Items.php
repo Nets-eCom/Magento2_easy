@@ -670,7 +670,7 @@ class Items
                 $quoteDiscountAmount += $quoteItem->getBaseDiscountAmount();
                 
                 //Bundle product Discount Calculation
-                if($quoteItem->getProductType() =='bundle'){
+                if($quoteItem->getProductType() =='bundle' && $quoteItem->getBaseDiscountAmount() == 0 && $quoteItem->getTotalDiscountAmount() > 0 ){
                     $quoteDiscountAmount += $quoteItem->getTotalDiscountAmount();
                 }
 	  

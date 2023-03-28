@@ -69,22 +69,43 @@ class ConsumerDataProvider
     public function getFromQuote(Quote $quote) : Consumer
     {
         $this->quote = $quote;
+        
+        if(!$quote->isVirtual()){
 
-        $consumer = new Consumer();
-        $consumer->setReference($quote->getCustomerId());
-
-        $consumer->setShippingAddress($this->getAddressData());
-	      //If phone number is not empty
-        if($quote->getShippingAddress()->getTelephone()) {
-            $consumer->setPhoneNumber($this->getPhoneNumber());
-        }
-	      //$consumer->setPhoneNumber($this->getPhoneNumber());
-        $consumer->setEmail($quote->getBillingAddress()->getEmail());
-        $weHandleConsumer = $this->helper->doesHandleCustomerData();
-        if ($weHandleConsumer && !empty($quote->getShippingAddress()->getCompany())) {
-            $consumer->setCompany($this->getCompanyData());
-        } else {
-            $consumer->setPrivatePerson($this->getPrivatePersonData());
+          $consumer = new Consumer();
+          $consumer->setReference($quote->getCustomerId());
+  
+          $consumer->setShippingAddress($this->getAddressData());
+  	      //If phone number is not empty
+          if($quote->getShippingAddress()->getTelephone()) {
+              $consumer->setPhoneNumber($this->getPhoneNumber());
+          }
+  	      //$consumer->setPhoneNumber($this->getPhoneNumber());
+          $consumer->setEmail($quote->getBillingAddress()->getEmail());
+          $weHandleConsumer = $this->helper->doesHandleCustomerData();
+          if ($weHandleConsumer && !empty($quote->getShippingAddress()->getCompany())) {
+              $consumer->setCompany($this->getCompanyData());
+          } else {
+              $consumer->setPrivatePerson($this->getPrivatePersonData());
+          }
+          
+        } else{
+          $consumer = new Consumer();
+          $consumer->setReference($quote->getCustomerId());
+  
+          $consumer->setShippingAddress($this->getBillingAddressData());
+  	      //If phone number is not empty
+          if($quote->getBillingAddress()->getTelephone()) {
+              $consumer->setPhoneNumber($this->getPhoneNumber());
+          }
+  	      //$consumer->setPhoneNumber($this->getPhoneNumber());
+          $consumer->setEmail($quote->getBillingAddress()->getEmail());
+          $weHandleConsumer = $this->helper->doesHandleCustomerData();
+          if ($weHandleConsumer && !empty($quote->getBillingAddress()->getCompany())) {
+              $consumer->setCompany($this->getCompanyData());
+          } else {
+              $consumer->setPrivatePerson($this->getPrivatePersonData());
+          }
         }
 
         return $consumer;
@@ -97,8 +118,13 @@ class ConsumerDataProvider
     private function getPhoneNumber() : ConsumerPhoneNumber
     {
         $number = new ConsumerPhoneNumber();
-        $address = $this->quote->getShippingAddress();
-        $phone = $this->quote->getShippingAddress()->getTelephone();
+        if(!$this->quote->isVirtual()){
+          $address = $this->quote->getShippingAddress();
+          $phone = $this->quote->getShippingAddress()->getTelephone();
+        } else{
+          $address = $this->quote->getBillingAddress();
+          $phone = $this->quote->getBillingAddress()->getTelephone();
+        }
         $string = str_replace([' ', '-', '(', ')'], '', $phone);
 
         $matches = [];
@@ -120,8 +146,13 @@ class ConsumerDataProvider
     private function getPrivatePersonData() : ConsumerPrivatePerson
     {
         $person = new ConsumerPrivatePerson();
-        $person->setFirstName($this->quote->getShippingAddress()->getFirstname());
-        $person->setLastName($this->quote->getShippingAddress()->getLastname());
+        if(!$this->quote->isVirtual()){
+          $person->setFirstName($this->quote->getShippingAddress()->getFirstname());
+          $person->setLastName($this->quote->getShippingAddress()->getLastname());
+        } else{
+          $person->setFirstName($this->quote->getBillingAddress()->getFirstname());
+          $person->setLastName($this->quote->getBillingAddress()->getLastname());
+        }
 
         return $person;
     }
@@ -132,8 +163,13 @@ class ConsumerDataProvider
     private function getCompanyData() : ConsumerCompany
     {
         $company = new ConsumerCompany();
-        $company->setName($this->quote->getShippingAddress()->getCompany());
-        $company->setContact($this->quote->getShippingAddress()->getFirstname(), $this->quote->getShippingAddress()->getLastname());
+        if(!$this->quote->isVirtual()){
+          $company->setName($this->quote->getShippingAddress()->getCompany());
+          $company->setContact($this->quote->getShippingAddress()->getFirstname(), $this->quote->getShippingAddress()->getLastname());
+        } else{
+          $company->setName($this->quote->getBillingAddress()->getCompany());
+          $company->setContact($this->quote->getBillingAddress()->getFirstname(), $this->quote->getBillingAddress()->getLastname());
+        }
         //$company->setContact($this->quote->getShippingAddress()->getLastname());
 
         return $company;
@@ -145,6 +181,45 @@ class ConsumerDataProvider
     private function getAddressData()
     {
         $shippingAddress = $this->quote->getShippingAddress();
+
+        $city = $shippingAddress->getCity();
+        $address1 = $shippingAddress->getStreetLine(1);
+        $postCode = $shippingAddress->getPostcode();
+
+        if (! $city || !$address1 || !$postCode) {
+            throw new \Exception('Address data is missing');
+        }
+
+        if (!empty($address1)) {
+            if (strlen($address1) > 128) {
+                $address1 = substr($address1, 0, 128);
+            }
+        }
+
+        $shippingAddressLine2 = '';
+        if (!empty($shippingAddress->getStreetLine(2))) {
+            if (strlen($shippingAddress->getStreetLine(2)) > 128) {
+                $shippingAddressLine2 = substr($shippingAddress->getStreetLine(2), 0, 128);
+            }
+        }
+
+        $paymentShippingAddress = new ConsumerShippingAddress();
+        $paymentShippingAddress->setCity($city);
+        $paymentShippingAddress->setAddressLine1($address1);
+        $paymentShippingAddress->setAddressLine2($shippingAddressLine2);
+        $paymentShippingAddress->setPostalCode($postCode);
+
+        // Country must be in iso3 format
+        $localeModel = $this->localeFactory->create();
+        $iso3Country = $localeModel->getIso3CountryCode($shippingAddress->getCountryId());
+        $paymentShippingAddress->setCountry($iso3Country);
+
+        return $paymentShippingAddress;
+    }
+    
+    private function getBillingAddressData()
+    {
+        $shippingAddress = $this->quote->getBillingAddress();
 
         $city = $shippingAddress->getCity();
         $address1 = $shippingAddress->getStreetLine(1);

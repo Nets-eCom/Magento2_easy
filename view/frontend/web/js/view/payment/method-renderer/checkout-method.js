@@ -42,6 +42,8 @@ define(
                 },
                 eventsInstantiated: false,
                 continueToDibsRedirect: function () {
+                    let billingAddressComponent = require('uiRegistry').get('checkout.steps.billing-step.payment.payments-list.'+this.getCode()+'-form');
+                    billingAddressComponent.updateAddress();
                     if (additionalValidators.validate()) {
                         dibs("dibseasycheckout", agreementsCheck, function () {
                             let callback = function (paymentConfiguration) {

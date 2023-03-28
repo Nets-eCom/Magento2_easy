@@ -6,11 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.6.1`
+|Version | `1.6.2`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.6.2 - Released 2023-03-28
+* Fixed : Amount mismatch issue for bundle product.
+* Fixed : Amount mismatch issue for Afterpay charge and refund.
+* Fixed : Twice address fill issue for virtual product in redirect payment flow.
 
 ### Version 1.6.1 - Released 2023-03-01
 * Fixed : Quote Id and order not creating issue for Hosted Payment Flow.

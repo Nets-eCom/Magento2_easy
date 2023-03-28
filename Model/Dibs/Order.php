@@ -230,8 +230,8 @@ class Order {
                 $paymentCheckout->setUrl($baseUrl . 'easycheckout/order/confirmOrder');
             }
 
-            if ($quote->isVirtual()) {
-                // at the moment we allow nets to handle the merchant data when quote is virual for redirect flow...
+            if ($quote->isVirtual() && $this->helper->getCheckoutFlow() === "Vanilla") {
+                // Nets to handle the merchant data when quote is virual for embeded flow...
                 $paymentCheckout->setMerchantHandlesConsumerData(false);
             } else {
                 try {
@@ -561,6 +561,16 @@ class Order {
             $captureItems = $this->items->getCart();
 
             $paymentDetails = $this->paymentApi->getPayment($paymentId, $invoice->getStoreId());
+            if($paymentDetails->GetPaymentDetails()->getPaymentMethod() == "EasyInvoice"){
+              foreach($captureItems as $captureItem){
+                $untiPrice = $captureItem->getGrossTotalAmount()/$captureItem->getQuantity();
+                $captureItem->setTaxRate(0);
+                $captureItem->setTaxAmount(0);
+                $captureItem->setUnitPrice($untiPrice);
+                //$captureItem->setUnitPrice();
+                $captureItem->setNetTotalAmount($captureItem->getGrossTotalAmount());
+              }
+            }
             if ($this->helper->getCharge() && !empty($paymentDetails->getChargeDetails())) {
                 $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
             } else if ($paymentDetails->getPaymentDetails()->getPaymentType() == "A2A") {
