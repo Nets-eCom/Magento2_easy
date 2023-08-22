@@ -318,10 +318,4 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
 
         $this->order->addCommentToStatusHistory($comment, false);
     }
-
-    protected function startOrderCreation($paymentId, $quoteId) {
-
-        $this->saveOrder->createOrder($paymentId, $quoteId);
-    }
-
 }
