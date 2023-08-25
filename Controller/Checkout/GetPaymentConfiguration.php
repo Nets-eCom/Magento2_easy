@@ -79,7 +79,6 @@ class GetPaymentConfiguration extends Checkout
                 'checkout_payment_created',
                 [
                     'paymentId' => $dibsPayment->getPaymentId(),
-                    'quoteId' => $quote->getId(),
                     'integrationType' => $integrationType
                 ]
             );
