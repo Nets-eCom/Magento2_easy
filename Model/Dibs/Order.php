@@ -305,14 +305,6 @@ class Order {
         $webhookCheckoutCompleted->setUrl($webHookUrl);
         $webhooks[] = $webhookCheckoutCompleted;
 
-        if ($integrationType === $paymentCheckout::INTEGRATION_TYPE_HOSTED) {
-//EVENT_PAYMENT_CREATED
-            $webhookPaymentCreated = new CreatePaymentWebhook();
-            $webhookPaymentCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CREATED);
-            $webHookUrl = $this->helper->getWebHookCallbackUrl($webhookPaymentCreated->getControllerName());
-            $webhookPaymentCreated->setUrl($webHookUrl);
-            $webhooks[] = $webhookPaymentCreated;
-        }
 //EVENT_PAYMENT_CHARGE_CREATED
         $webhookChargeCreated = new CreatePaymentWebhook();
         $webhookChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHARGE_CREATED);

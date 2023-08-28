@@ -23,7 +23,6 @@ class CreatePaymentWebhook extends AbstractRequest
      * Valid events with corresponding Webhook Controller name (if it exists)
      */
     const VALID_EVENTS = [
-        self::EVENT_PAYMENT_CREATED => 'SaveOrder',
         self::EVENT_PAYMENT_RESERVATION_CREATED => 'ReservationCreated',
         self::EVENT_PAYMENT_CHECKOUT_COMPLETED => 'CheckoutCompleted',
         self::EVENT_PAYMENT_CHARGE_CREATED => 'PaymentCharged',

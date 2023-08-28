@@ -12,4 +12,8 @@
         <observer name="dibs_onepage_success" instance="Dibs\EasyCheckout\Observer\OnepageSuccessObserver"/>
     </event>
 
+    <event name="checkout_payment_created">
+        <observer name="dibs_create_order_on_payment_created_observer" instance="Dibs\EasyCheckout\Observer\CreateOrderOnPaymentCreatedObserver"/>
+    </event>
+
 </config>
