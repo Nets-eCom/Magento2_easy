@@ -12,7 +12,7 @@
 
 ## CHANGELOG
 
-### Version 1.6.3 - Released - // @todo
+### Version 1.6.3 - Released - 2023-09-11
 * Update : Create order after payment is created (redirect flow)  
 
 ### Version 1.6.2 - Released 2023-03-28
