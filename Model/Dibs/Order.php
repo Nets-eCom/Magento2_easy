@@ -172,8 +172,14 @@ class Order {
 
         $dibsAmount = $this->fixPrice($quote->getBaseGrandTotal());
 
-        // let it throw exception, should be handled somewhere else
-        $items = $this->items->generateOrderItemsFromQuote($quote);
+        $surchargeFlag = 0;
+
+        if ($surchargeFlag === 0) {
+            $items = $this->items->generateFakeOrderItem($quote);
+        } else {
+            // let it throw exception, should be handled somewhere else
+            $items = $this->items->generateOrderItemsFromQuote($quote);
+        }
 
         $consumerType = $this->generateConsumerType($quote);
 

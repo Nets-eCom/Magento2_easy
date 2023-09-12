@@ -43,7 +43,7 @@ class Items
     /**
      * @var \Magento\SalesRule\Api\RuleRepositoryInterface
      */
-    private $ruleRepository;   
+    private $ruleRepository;
 
     protected $scopeConfig;
 
@@ -276,7 +276,7 @@ class Items
     					$itemName = substr($itemName, 0, 128);
     				}
         }
-        
+
 				$unitPriceExclTax = $addPrices ? $item->getBasePrice() : 0;
 				$taxAmount = $this->addZeroes($item->getTaxAmount());
 				$unitPriceInclTax = $addPrices ? $item->getPriceInclTax() : 0;
@@ -286,7 +286,7 @@ class Items
 				//mai - hotfix
 				$taxFormat = '1'.str_pad(number_format((float)$vat, 2, '.', ''), 5, '0', STR_PAD_LEFT);
 				$unitName = "pcs";
-				
+
 				/*if ((int) $this->scopeConfig->getValue('tax/calculation/price_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) === 1) {
 					// Product price in catalog is including tax.
 					$unitPrice = round(round(($unitPriceInclTax / $taxFormat), 2) * 100);
@@ -352,7 +352,7 @@ class Items
 	}
 
     /* Item block */
-    public function addCustomItemTotal(Quote $quote) 
+    public function addCustomItemTotal(Quote $quote)
     {
         $algorithm = $this->scopeConfig->getValue('tax/calculation/algorithm',ScopeInterface::SCOPE_STORE, null);
         $priceIncludesTax = $this->scopeConfig->getValue('tax/calculation/price_includes_tax',ScopeInterface::SCOPE_STORE, null);
@@ -373,7 +373,7 @@ class Items
                     $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
-                    
+
                     $quantity           = (int)$item->getQty();
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
@@ -382,7 +382,7 @@ class Items
                     $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
-                    
+
                     $quantity           = (int)$item->getQty();
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
@@ -409,7 +409,7 @@ class Items
                     $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
-                    
+
                     $quantity           = (int)$item->getQty();
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
@@ -418,7 +418,7 @@ class Items
                     $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
 
                 } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
-                    
+
                     $quantity           = (int)$item->getQty();
                     $taxRate            = $this->addZeroes($item->getTaxPercent());
                     $productPrice       = $this->addZeroes($item->getPrice());
@@ -434,8 +434,8 @@ class Items
                     $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
                 }
             }
-            
-            
+
+
             $itemName = preg_replace('/[^\w\d\s]*/', '', $item->getName());
             // Set length!
             if (!empty($itemName)) {
@@ -443,7 +443,7 @@ class Items
                     $itemName = substr($itemName, 0, 128);
                 }
             }
-            
+
             $itemSku = $item->getSku();
 
             $orderItem = new OrderItem();
@@ -666,14 +666,14 @@ class Items
         $referenceArray = array();
         $reference = '';
         try {
-            foreach ($quoteItems as $quoteItem) {                
+            foreach ($quoteItems as $quoteItem) {
                 $quoteDiscountAmount += $quoteItem->getBaseDiscountAmount();
-                
+
                 //Bundle product Discount Calculation
                 if($quoteItem->getProductType() =='bundle' && $quoteItem->getBaseDiscountAmount() == 0 && $quoteItem->getTotalDiscountAmount() > 0 ){
                     $quoteDiscountAmount += $quoteItem->getTotalDiscountAmount();
                 }
-	  
+
                 $appliedRuleId = $quoteItem->getAppliedRuleIds();
                 if(!empty($appliedRuleId)){
                     foreach (explode(',', $appliedRuleId) as $ruleId) {
@@ -685,17 +685,17 @@ class Items
 
             if( $quoteDiscountAmount > 0 ) {
                 // $discountAmount = $this->addZeroes($quoteDiscountAmount);
-                
+
             $itemQty = $quote->getItemsQty();
             if($itemQty ==10 ){
                 $discountAmount = (int)round($quoteDiscountAmount * 100, 2);
             }else{
                 $discountAmount = $this->addZeroes($quoteDiscountAmount);
             }
-		
+
                 $referenceArray = array_unique($referenceArray);
                 $reference = implode(",", $referenceArray);
-                
+
                 if (!empty($reference)) {
                     if (strlen($reference) > 128) {
                         $reference = substr($reference, 0, 128);
@@ -719,7 +719,7 @@ class Items
             }
         } catch (\Exception $e) {
 
-        }   
+        }
     }
 
     /**
@@ -1068,7 +1068,7 @@ class Items
         // We check the "negative_discount_vat" flag which only order payments in 1.3.2 and onwards will have
         $negativeDiscountVAT = (bool)$payment->getAdditionalInformation('negative_discount_vat');
         //$this->addDiscounts($negativeDiscountVAT);
-        
+
         if($type == 'creditMemo'){
 
 	        $discountAmountToRefund = $order->getBaseDiscountRefunded() - $refundedDiscount;
@@ -1076,7 +1076,7 @@ class Items
 	        if($discountAmountToRefund > 0){
 	        	$discountAmountToRefund = -$discountAmountToRefund;
 	        }
-                
+
                 if($refundedDiscount < 0){
                     $refundedDiscount = $refundedDiscount + $order->getBaseShippingDiscountAmount();
                 }
@@ -1218,5 +1218,18 @@ class Items
         }
 
         return $this;
+    }
+
+    public function generateFakeOrderItem(Quote $quote) {
+//        $items = $quote->getAllVisibleItems();
+
+        $orderItem = new OrderItem();
+        $orderItem
+            ->setReference('test_item')
+            ->setName('Test item')
+            ->setUnit("pcs")
+            ->setQuantity(1);
+
+        return $orderItem;
     }
 }
