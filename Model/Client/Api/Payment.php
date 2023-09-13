@@ -14,26 +14,8 @@ use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
-use Dibs\EasyCheckout\Model\Client\DTO\ReportingRequest;
-use Dibs\EasyCheckout\Model\Client\DTO\ReportingResponse;
 
 class Payment extends Client {
-
-    /**
-     * @param ReportingRequest $createPayment
-     * @return ReportingResponse
-     * @throws ClientException
-     */
-	public function reportingApi(ReportingRequest $createPayment) {
-		    try {
-            $response = $this->post("https://reporting.sokoni.it/enquiry", $createPayment);
-        } catch (ClientException $e) {
-            // handle?
-            throw $e;
-        }
-
-        return new ReportingResponse($response);
-    }
 
     /**
      * @param CreatePayment $createPayment
