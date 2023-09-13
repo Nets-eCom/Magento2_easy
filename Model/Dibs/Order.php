@@ -54,10 +54,7 @@ class Order {
     /** @var StoreManagerInterface */
     protected $storeManager;
 
-    /**
-     * @var \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory
-     */
-    private $consumerDataProviderFactory;
+    private \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory;
 
     /**
      * Order constructor.

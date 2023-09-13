@@ -4,10 +4,7 @@ namespace Dibs\EasyCheckout\Block\Checkout;
 
 class Head extends \Magento\Framework\View\Element\Template
 {
-    /**
-     * @var \Dibs\EasyCheckout\Helper\Data
-     */
-    private $helper;
+    private \Dibs\EasyCheckout\Helper\Data $helper;
 
     /**
      * Constructor

@@ -40,16 +40,13 @@ class Items
     protected $addCustomOptionsToItemName = null;
     protected $_checkoutSession;
 
-    /**
-     * @var \Magento\SalesRule\Api\RuleRepositoryInterface
-     */
-    private $ruleRepository;   
+    private \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository;   
 
     protected $scopeConfig;
 
     protected $_productloader;
 
-    protected $taxRate;
+    protected $_taxRate;
 
     /**
      * Items constructor.

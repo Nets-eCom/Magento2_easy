@@ -33,10 +33,7 @@ class SaveOrder extends Checkout {
      */
     private $paymentId;
 
-    /**
-     * @var Quote
-     */
-    private $quote;
+    private ?\Magento\Quote\Model\Quote $quote = null;
 
     /**
      * @inheridoc

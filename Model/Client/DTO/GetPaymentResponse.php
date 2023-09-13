@@ -16,7 +16,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\GetPaymentSummary;
 
 class GetPaymentResponse implements PaymentResponseInterface
 {
-    private $isCompany = false;
+    private bool $isCompany = false;
 
     /** @var GetPaymentOrder $orderDetails */
     protected $orderDetails;

@@ -60,15 +60,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $orderRepository;
 
-    /**
-     * @var \Magento\Framework\Serialize\SerializerInterface
-     */
-    private $serializer;
+    private \Magento\Framework\Serialize\SerializerInterface $serializer;
 
-    /**
-     * @var \Magento\Cms\Api\GetPageByIdentifierInterface
-     */
-    private $_cmsPage;
+    private \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage;
 
     /**
      * Data constructor.
@@ -707,7 +701,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if($version >= 8 ){
             return preg_split("#\s*[ ,;]\s*#", $values, -1, PREG_SPLIT_NO_EMPTY);
         }
-        return preg_split("#\s*[ ,;]\s*#", $values, null, PREG_SPLIT_NO_EMPTY);
+        return preg_split("#\s*[ ,;]\s*#", $values, -1, PREG_SPLIT_NO_EMPTY);
     }
 
     /**

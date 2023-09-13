@@ -13,10 +13,7 @@ use Dibs\EasyCheckout\Helper\Data;
 
 class ConsumerDataProvider
 {
-    /**
-     * @var LocaleFactory
-     */
-    private $localeFactory;
+    private \Dibs\EasyCheckout\Model\Dibs\LocaleFactory $localeFactory;
 
     /**
      * @var \Dibs\EasyCheckout\Helper\Data $helper
@@ -32,10 +29,7 @@ class ConsumerDataProvider
         $this->helper = $helper;
     }
 
-    /**
-     * @var Quote
-     */
-    private $quote;
+    private ?\Magento\Quote\Model\Quote $quote = null;
 
     /**
      * @var string[]
