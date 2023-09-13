@@ -166,6 +166,12 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
+                <field id="send_order_items_to_easy" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
+                    <label>Send order items to the Easy portal</label>
+                    <comment>If set to Yes, the cart items will be sent to Easy portal and will appear in payment details. Setting this option to No might help resolve issues with surcharge plugins.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
                 <field id="checkout_add_options_to_name" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
                     <label>Add Product Options to Name in Nets</label>
                     <comment>If yes, the cart items will be sent to Nets appending the custom product options and values to the name. If you have lots of custom product options, then it would be a good idea to set this option to No.</comment>
