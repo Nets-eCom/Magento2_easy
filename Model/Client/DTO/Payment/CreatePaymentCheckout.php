@@ -32,6 +32,11 @@ class CreatePaymentCheckout extends AbstractRequest
     protected $termsUrl;
 
     /**
+     * @var string $privacyUrl
+     */
+    protected $privacyUrl;
+
+    /**
      * @var mixed
      */
     protected $cancelUrl;
@@ -93,10 +98,9 @@ class CreatePaymentCheckout extends AbstractRequest
     /** @var Consumer $consumer */
     protected $consumer;
 
-    /**
-     * @var bool
-     */
-    private $enableBillingAddress;
+    protected bool $electronicData;
+
+    private ?bool $enableBillingAddress = null;
 
     /**
      * @return string

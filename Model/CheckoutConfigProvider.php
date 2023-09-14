@@ -2,6 +2,7 @@
 
 namespace Dibs\EasyCheckout\Model;
 
+use Dibs\EasyCheckout\Helper\Data;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Store\Model\StoreManagerInterface;
@@ -16,6 +17,9 @@ class CheckoutConfigProvider implements \Magento\Checkout\Model\ConfigProviderIn
     /** @var Repository */
     protected $assetRepository;
 
+    /** @var Data */
+    protected $_dibsHelper;
+
     /**
      * Store manager
      *
@@ -28,7 +32,7 @@ class CheckoutConfigProvider implements \Magento\Checkout\Model\ConfigProviderIn
     public function __construct(
         UrlInterface $_urlBuilder,
         Repository $assetRepository,
-        \Dibs\EasyCheckout\Helper\Data $dibsHelper,
+        Data $dibsHelper,
         StoreManagerInterface $storeManager
      )
     {

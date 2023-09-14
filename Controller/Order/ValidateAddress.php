@@ -11,30 +11,21 @@ use Magento\Framework\Controller\Result\Json;
 
 class ValidateAddress implements HttpPostActionInterface
 {
-    /**
-     * @var RequestInterface
-     */
-    private $request;
+    private \Magento\Framework\App\RequestInterface $request;
 
-    /**
-     * @var JsonFactory
-     */
-    private $resultJsonFactory;
+    private \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory;
 
-    /**
-     * @var LocaleFactory
-     */
-    private $localeFactory;
+    private \Dibs\EasyCheckout\Model\Dibs\LocaleFactory $localeFactory;
 
     /**
      * @var DirectoryHelper
      */
-    private $directoryHelper;
+    private DirectoryHelper $directoryHelper;
 
     /**
      * @var string[]
      */
-    private $allowedCountryNames;
+    private ?array $allowedCountryNames = null;
 
     public function __construct(
         RequestInterface $request,

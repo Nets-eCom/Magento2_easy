@@ -4,18 +4,32 @@ namespace Dibs\EasyCheckout\Controller\Order;
 
 use Dibs\EasyCheckout\Controller\Checkout;
 use Magento\Framework\App\ResponseInterface;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Magento\Sales\Model\Order;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\AccountManagementInterface;
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
 use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
-use Magento\Quote\Model\QuoteFactory;
 use Magento\Checkout\Model\Cart;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 
 class ConfirmOrder extends Checkout {
+
+    private \Dibs\EasyCheckout\Helper\Data $helper;
+    private \Magento\Checkout\Model\Cart $cart;
+    private \Dibs\EasyCheckout\Model\Client\Api\Payment $payment;
+
+    /**
+     * @var string
+     */
+    private $paymentId;
+
+    /**
+     * @var string
+     */
+    private $hostedPaymentId;
+
+    private ?Order $order = null;
 
     /**
      * @inheridoc
@@ -31,7 +45,6 @@ class ConfirmOrder extends Checkout {
             \Magento\Framework\View\Result\PageFactory $resultPageFactory,
             DibsCheckout $dibsCheckout,
             DibsCheckoutContext $dibsCheckoutContext,
-            QuoteFactory $quoteFactory,
             Cart $cart,
             Payment $payment
     ) {
@@ -40,8 +53,7 @@ class ConfirmOrder extends Checkout {
         $this->checkoutSession = $checkoutSession;
         $this->checkoutSession = $checkoutSession;
         $this->storeManager = $storeManager;
-        $this->quoteFactory = $quoteFactory;
-	$this->cart             = $cart;
+	    $this->cart = $cart;
         $this->payment = $payment;
 
         parent::__construct(
@@ -57,21 +69,6 @@ class ConfirmOrder extends Checkout {
         );
     }
 
-    /**
-     * @var string
-     */
-    private $paymentId;
-
-    /**
-     * @var string
-     */
-    private $hostedPaymentId;
-
-    /**
-     * @var Order
-     */
-    private $order;
-
     public function execute() {
         $this->logInfo("in confirm order");
         if ($this->helper->getCheckoutFlow() == "Vanilla") {
@@ -85,7 +82,7 @@ class ConfirmOrder extends Checkout {
                 if ($paymentFailed) {
                     $message = "We are sorry, order has been cancelled by user on checkout.";
                     $this->messageManager->addErrorMessage(__($message));
-                    $checkout->getLogger()->error($message . " for paymentId " . $this->paymentId);
+                    $this->dibsCheckout->getLogger()->error($message . " for paymentId " . $this->paymentId);
                     return $this->_redirect('checkout/cart');
                 }
             }

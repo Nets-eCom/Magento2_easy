@@ -7,25 +7,13 @@ use Magento\Sales\Model\Order;
 
 class SwishResponseHandler
 {
-    /**
-     * @var \Magento\Sales\Api\OrderRepositoryInterface
-     */
-    private $orderRepository;
+    private \Magento\Sales\Api\OrderRepositoryInterface $orderRepository;
 
-    /**
-     * @var \Magento\Sales\Model\Service\InvoiceService
-     */
-    private $invoiceService;
+    private \Magento\Sales\Model\Service\InvoiceService $invoiceService;
 
-    /**
-     * @var \Magento\Framework\DB\Transaction
-     */
-    private $transaction;
+    private \Magento\Framework\DB\Transaction $transaction;
 
-    /**
-     * @var Order\Email\Sender\InvoiceSender
-     */
-    private $invoiceSender;
+    private \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender;
 
     /**
      * SwishResponseHandler constructor.
