@@ -171,20 +171,9 @@ class Order {
         }
 
         $dibsAmount = $this->fixPrice($quote->getBaseGrandTotal());
-
-        $surchargeFlag = 0;
-
-        if ($surchargeFlag === 0) {
-            $items = $this->items->generateFakeOrderItem($quote);
-        } else {
-            // let it throw exception, should be handled somewhere else
-            $items = $this->items->generateOrderItemsFromQuote($quote);
-        }
-
+        $items = $this->items->generateOrderItemsFromQuote($quote);
         $consumerType = $this->generateConsumerType($quote);
-
         $integrationType = (isset($checkoutInfo['integrationType'])) ? $checkoutInfo['integrationType'] : '';
-
         $checkoutFlow = (isset($checkoutInfo['checkoutFlow'])) ? $checkoutInfo['checkoutFlow'] : '';
         $flowIsVanilla = $checkoutFlow === CheckoutFlow::FLOW_VANILLA;
 
