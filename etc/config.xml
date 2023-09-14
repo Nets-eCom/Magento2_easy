@@ -9,6 +9,7 @@
             </connection>
             <settings>
                 <add_css>0</add_css>
+                <send_order_items_to_easy>1</send_order_items_to_easy>
                 <checkout_add_options_to_name>1</checkout_add_options_to_name>
                 <checkout_flow>EmbeddedCheckout</checkout_flow>
                 <processing_order_status>processing</processing_order_status>
