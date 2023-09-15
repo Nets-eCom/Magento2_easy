@@ -41,10 +41,7 @@ class Items
     protected $addCustomOptionsToItemName = null;
     protected $_checkoutSession;
 
-    /**
-     * @var \Magento\SalesRule\Api\RuleRepositoryInterface
-     */
-    private $ruleRepository;
+    private \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository;
 
     protected $scopeConfig;
 
@@ -479,7 +476,7 @@ class Items
 
         if (!$this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
             $this->logger->error("Fake item flow");
-            $this->generateFakeOrderItem($quote, $taxRate, $taxAmount, $productPrice, $netTotalAmount, $grossTotalAmount);
+            $this->generateFakeOrderItem($quote);
         } else {
             $this->logger->error("Normal flow");
         }
@@ -1254,18 +1251,18 @@ class Items
         return $this;
     }
 
-    public function generateFakeOrderItem(Quote $quote, $taxRate, $taxAmount, $productPrice, $netTotalAmount, $grossTotalAmount) {
+    public function generateFakeOrderItem(Quote $quote) {
         $orderItem = SingleOrderItemFactory::createItem();
         $orderItem
             ->setReference('test_item') // change to order id
             ->setName('Test item') // change to order id
             ->setUnit("pcs")
             ->setQuantity(1)
-            ->setTaxRate($this->addZeroes($taxRate)) // optional
-            ->setTaxAmount($taxAmount) // optional
-            ->setUnitPrice($quote->getBaseGrandTotal() * 100)
-            ->setNetTotalAmount($quote->getBaseGrandTotal() * 100)
-            ->setGrossTotalAmount($quote->getBaseGrandTotal() * 100);
+//            ->setTaxRate($this->addZeroes($taxRate)) // optional
+//            ->setTaxAmount($taxAmount) // optional
+            ->setUnitPrice($quote->getGrandTotal() * 100)
+            ->setNetTotalAmount($quote->getGrandTotal() * 100)
+            ->setGrossTotalAmount($quote->getGrandTotal() * 100);
 
         return $this->_cart[] = $orderItem;
     }
