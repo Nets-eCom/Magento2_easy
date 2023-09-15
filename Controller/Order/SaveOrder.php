@@ -3,6 +3,7 @@
 namespace Dibs\EasyCheckout\Controller\Order;
 
 use Dibs\EasyCheckout\Controller\Checkout;
+use Dibs\EasyCheckout\Helper\Data;
 use Dibs\EasyCheckout\Model\CheckoutException;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
@@ -19,25 +20,20 @@ use Magento\Quote\Model\QuoteFactory;
 
 class SaveOrder extends Checkout {
 
-    /**
-     * @var array
-     */
-    private $validationResult = [];
+    private Data $helper;
+    private RequestInterface $request;
+    private QuoteFactory $quoteFactory;
 
-    /**
-     * @var GetPaymentResponse
-     */
-    private $dibsPayment;
+    private array $validationResult = [];
+
+    private ?GetPaymentResponse $dibsPayment = null;
 
     /**
      * @var string
      */
     private $paymentId;
 
-    /**
-     * @var Quote
-     */
-    private $quote;
+    private ?\Magento\Quote\Model\Quote $quote = null;
 
     /**
      * @inheridoc
@@ -45,7 +41,7 @@ class SaveOrder extends Checkout {
     public function __construct(
             \Magento\Framework\App\Action\Context $context,
             \Magento\Customer\Model\Session $session,
-            \Dibs\EasyCheckout\Helper\Data $helper,
+            Data $helper,
             CustomerRepositoryInterface $customerRepository,
             AccountManagementInterface $accountManagement,
             \Magento\Checkout\Model\Session $checkoutSession,
@@ -86,7 +82,7 @@ class SaveOrder extends Checkout {
         $paymentCheckout = new CreatePaymentCheckout();
 
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
-            $this->paymentId = $this->hostedPaymentId = $this->getRequest()->getParam('paymentId', false);
+            $this->paymentId = $this->getRequest()->getParam('paymentId', false);
             $this->logInfo("pid for hosted from webhook ".$this->paymentId);
             $this->logInfo("data is  ".$this->request->getContent());
 
@@ -96,8 +92,8 @@ class SaveOrder extends Checkout {
             $this->paymentId = $data['data']['paymentId'];
             $reference = $data['data']['order']['reference'];
             $arrReference = (explode("_", $reference));
-            $this->quoteId = $arrReference[2];
-            $this->logInfo("qid for hosted from webhook1 ".$this->quoteId);
+            $quoteId = $arrReference[2];
+            $this->logInfo("qid for hosted from webhook1 ".$quoteId);
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {
 
             $this->paymentId = $this->getRequest()->getPostValue('pid', false);
@@ -112,7 +108,7 @@ class SaveOrder extends Checkout {
 
         if ($this->helper->getCheckoutFlow() == "HostedPaymentPage") {
 
-            $this->validateOrder($this->quoteId);
+            $this->validateOrder($quoteId);
             $this->logInfo("webhook validate order");
             //$this->validateOrder();
         } elseif ("Vanilla" == $this->helper->getCheckoutFlow()) {

@@ -50,7 +50,7 @@ class Items
 
     protected $_productloader;
 
-    protected $taxRate;
+    protected $_taxRate;
 
     protected $logger;
 

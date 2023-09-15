@@ -11,8 +11,7 @@ class ShippingCountry implements \Magento\Framework\Option\ArrayInterface
     /** @var \Dibs\EasyCheckout\Model\Dibs\Locale $_locale */
     protected $_locale;
 
-    /** @var array $_countryMap */
-    private $_countryMap = [];
+    private array $_countryMap = [];
 
     public function __construct(
         \Magento\Directory\Model\Config\Source\Country $country,
