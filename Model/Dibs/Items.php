@@ -283,7 +283,7 @@ class Items
         }
 
 				$unitPriceExclTax = $addPrices ? $item->getBasePrice() : 0;
-				$taxAmount = $this->addZeroes($item->getTaxAmount());
+				$taxAmount = $this->addZeros($item->getTaxAmount());
 				$unitPriceInclTax = $addPrices ? $item->getPriceInclTax() : 0;
 				$appliedRuleId = $cartData->getAppliedRuleIds();
 
@@ -308,7 +308,7 @@ class Items
 					//$grossPrice = round(($qty*$unitPriceExclTax)*$taxFormat);
 					//$grossPrice = round(($unitPrice + $this->addZeroes($item->getTaxAmount()))*$qty);
 					$grossPrice = $unitPrice * $qty;
-					$grossPrice = round($grossPrice + $this->addZeroes($item->getBaseTaxAmount()) + $this->addZeroes($item->getBaseDiscountTaxCompensationAmount()));
+					$grossPrice = round($grossPrice + $this->addZeros($item->getBaseTaxAmount()) + $this->addZeros($item->getBaseDiscountTaxCompensationAmount()));
 					$vatPrice = $grossPrice-$netPrice;
 				//}
 
@@ -319,9 +319,9 @@ class Items
                         ->setName($itemName)
                         ->setUnit($unitName)
                         ->setQuantity(round($qty, 0))
-                        ->setUnitPrice((int)$this->addZeroes($unitPriceExclTax))
-                        ->setTaxRate($this->addZeroes($vat))
-                        ->setTaxAmount($this->addZeroes($item->getBaseTaxAmount()))
+                        ->setUnitPrice((int)$this->addZeros($unitPriceExclTax))
+                        ->setTaxRate($this->addZeros($vat))
+                        ->setTaxAmount($this->addZeros($item->getBaseTaxAmount()))
                         ->setNetTotalAmount((int)$netPrice)
                         ->setGrossTotalAmount((int)$grossPrice);
 
@@ -361,89 +361,24 @@ class Items
     /* Item block */
     public function addCustomItemTotal(Quote $quote)
     {
-        $algorithm = $this->scopeConfig->getValue('tax/calculation/algorithm',ScopeInterface::SCOPE_STORE, null);
         $priceIncludesTax = $this->scopeConfig->getValue('tax/calculation/price_includes_tax',ScopeInterface::SCOPE_STORE, null);
-        $applyAfterDiscount = $this->scopeConfig->getValue('tax/calculation/apply_after_discount',ScopeInterface::SCOPE_STORE, null);
 
         $items = $quote->getAllVisibleItems();
 
-        $quantity = $taxRate = $productPrice = $netTotalAmount = $taxAmount = $grossTotalAmount = 0;
-
         foreach ($items as $item) {
+            $quantity           = (int)$item->getQty();
+            $taxRate            = $this->addZeros($item->getTaxPercent());
+            $productPrice       = $this->addZeros($item->getPrice());
+            $netTotalAmount     = round($quantity * $productPrice);
+            $taxAmount          = $this->addZeros($item->getBaseTaxAmount());
 
-            if( $algorithm == 'UNIT_BASE_CALCULATION' || $algorithm == 'ROW_BASE_CALCULATION') {
-                if ( $priceIncludesTax == 0 && $applyAfterDiscount == 1) {
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
+            $grossTotalAmount = $this->addZeros($item->getBaseRowTotal() + $item->getBaseTaxAmount());
 
-                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
-
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
-
-                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
-
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
-
-                } else {
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
-                }
-
-            } else {
-                if ( $priceIncludesTax == 0 && $applyAfterDiscount == 1) {
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
-
-                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 1) {
-
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
-
-                } elseif ( $priceIncludesTax == 1 && $applyAfterDiscount == 0) {
-
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount() );
-                } else {
-                    $quantity           = (int)$item->getQty();
-                    $taxRate            = $this->addZeroes($item->getTaxPercent());
-                    $productPrice       = $this->addZeroes($item->getPrice());
-                    $netTotalAmount     = round($quantity * $productPrice);
-                    $taxAmount          = $this->addZeroes($item->getBaseTaxAmount());
-                    $grossTotalAmount   = $this->addZeroes($item->getBaseRowTotal() + $item->getBaseTaxAmount());
-                }
+            if ( $priceIncludesTax == 1) {
+                $grossTotalAmount = $this->addZeros($item->getBaseRowTotal() + $item->getBaseTaxAmount() + $item->getBaseDiscountTaxCompensationAmount());
             }
 
-            $itemName = preg_replace('/[^\w\d\s]*/', '', $item->getName());
+            $itemName = preg_replace('/[^\w\s]*/', '', $item->getName());
             // Set length!
             if (!empty($itemName)) {
                 if (strlen($itemName) > 128) {
@@ -475,10 +410,7 @@ class Items
         }
 
         if (!$this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-            $this->logger->error("Fake item flow");
             $this->generateFakeOrderItem($quote);
-        } else {
-            $this->logger->error("Normal flow");
         }
 
         return $this;
@@ -529,10 +461,10 @@ class Items
 		$taxFormat = '1'.str_pad(number_format((float)$taxRate, 2, '.', ''), 5, '0', STR_PAD_LEFT);
 		if ((int) $this->scopeConfig->getValue('tax/classes/shipping_tax_class', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) !== 0) {
 			// Shipping Tax class
-			$shippingTaxRate = $this->addZeroes($taxRate);
+			$shippingTaxRate = $this->addZeros($taxRate);
 			$shippingPrice = round(round(($inclTax*100) / $taxFormat, 2) * 100);
 			$shippingNet = round($shippingPrice);
-			$shippingGross = round($this->addZeroes($inclTax));
+			$shippingGross = round($this->addZeros($inclTax));
 			$shippingTaxAmount = $shippingGross-$shippingNet;
 		} else {
 			$shippingTaxRate = 0;
@@ -540,13 +472,13 @@ class Items
 
 			// Shipping price in catalog tax setting.
 			if ((int) $this->scopeConfig->getValue('tax/calculation/shipping_includes_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) === 1) {
-				$shippingPrice = round($this->addZeroes($inclTax));
-				$shippingNet = round($this->addZeroes($inclTax));
-				$shippingGross = round($this->addZeroes($inclTax));
+				$shippingPrice = round($this->addZeros($inclTax));
+				$shippingNet = round($this->addZeros($inclTax));
+				$shippingGross = round($this->addZeros($inclTax));
 			} else {
-				$shippingPrice = round($this->addZeroes($inclTax));
-				$shippingNet = round($this->addZeroes($inclTax));
-				$shippingGross = round($this->addZeroes($inclTax));
+				$shippingPrice = round($this->addZeros($inclTax));
+				$shippingNet = round($this->addZeros($inclTax));
+				$shippingGross = round($this->addZeros($inclTax));
 				$shippingTaxAmount = $shippingGross-$shippingNet;
 			}
 		}
@@ -554,11 +486,11 @@ class Items
 
 		$shippingGross = $address->getBaseShippingAmount() + $address->getBaseShippingTaxAmount() - $address->getBaseShippingDiscountAmount();
 
-		$shippingGross = round($this->addZeroes($shippingGross));
+		$shippingGross = round($this->addZeros($shippingGross));
 		$shippingUnitPrice = $address->getShippingAmount() - $address->getShippingDiscountAmount();
-		$shippingUnitPrice = round($this->addZeroes($shippingUnitPrice));
+		$shippingUnitPrice = round($this->addZeros($shippingUnitPrice));
 		$shippingTaxAmount = $address->getShippingTaxAmount();
-		$shippingTaxAmount = round($this->addZeroes($shippingTaxAmount));
+		$shippingTaxAmount = round($this->addZeros($shippingTaxAmount));
 
         if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
             $orderItem = SingleOrderItemFactory::createItem();
@@ -659,13 +591,13 @@ class Items
 		$feeItem
 			->setName($invoiceLabel)
 			->setReference(strtolower(str_replace(" ", "_", $invoiceLabel)))
-			->setTaxRate($this->addZeroes($taxRate))
-			->setGrossTotalAmount($this->addZeroes($invoiceFeeInclTax)) // incl tax
-			->setNetTotalAmount($this->addZeroes($invoiceFeeExclTax)) // // excl. tax
+			->setTaxRate($this->addZeros($taxRate))
+			->setGrossTotalAmount($this->addZeros($invoiceFeeInclTax)) // incl tax
+			->setNetTotalAmount($this->addZeros($invoiceFeeExclTax)) // // excl. tax
 			->setUnit("unit")
 			->setQuantity(1)
-			->setUnitPrice($this->addZeroes($invoiceFeeExclTax)) // // excl. tax
-			->setTaxAmount($this->addZeroes($taxAmount)); // tax amount
+			->setUnitPrice($this->addZeros($invoiceFeeExclTax)) // // excl. tax
+			->setTaxAmount($this->addZeros($taxAmount)); // tax amount
 
 		return $feeItem;
 	}
@@ -708,7 +640,7 @@ class Items
             if($itemQty ==10 ){
                 $discountAmount = (int)round($quoteDiscountAmount * 100, 2);
             }else{
-                $discountAmount = $this->addZeroes($quoteDiscountAmount);
+                $discountAmount = $this->addZeros($quoteDiscountAmount);
             }
 
                 $referenceArray = array_unique($referenceArray);
@@ -784,12 +716,12 @@ class Items
 			if ((int) $this->scopeConfig->getValue('tax/calculation/discount_tax', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) === 1) {
 				$discountTaxRate = 0;
 				$discountTaxAmount = 0;
-				$discountPrice	 = round($this->addZeroes($discountAmount));
-				$discountNet	 = round($this->addZeroes($discountAmount));
-				$discountGross	 = round($this->addZeroes($discountAmount));
+				$discountPrice	 = round($this->addZeros($discountAmount));
+				$discountNet	 = round($this->addZeros($discountAmount));
+				$discountGross	 = round($this->addZeros($discountAmount));
 			} else {
-				$discountTaxRate = $this->addZeroes($taxRate);
-				$discountPrice = round($this->addZeroes($discountAmount));
+				$discountTaxRate = $this->addZeros($taxRate);
+				$discountPrice = round($this->addZeros($discountAmount));
 				$discountNet = round($discountPrice);
 				$discountGross = round(($discountPrice*$taxFormat) / 100);
 				$discountTaxAmount = $discountGross-$discountNet;
@@ -834,7 +766,7 @@ class Items
             }
 
             $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
-            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountInclTax = $this->addZeros($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
             if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
@@ -848,7 +780,7 @@ class Items
                     )
                     ->setUnit("st")
                     ->setQuantity(1)
-                    ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                    ->setTaxRate($this->addZeros($vat)) // the tax rate i.e 25% (2500)
                     ->setTaxAmount($taxAmount) // total tax amount
                     ->setUnitPrice(-$amountExclTax) // excl. tax price per item
                     ->setNetTotalAmount(-$amountExclTax) // excl. tax
@@ -882,7 +814,7 @@ class Items
 		}
 
 		//quote/order/invoice/creditmemo total taxes
-		$grandTotal = $this->addZeroes($grandTotal);
+		$grandTotal = $this->addZeros($grandTotal);
 		$difference = $grandTotal - $calculatedTotal;
 		$difference = 0;
 
@@ -1150,7 +1082,7 @@ class Items
     public function getTotalTaxAmount($price, $vat, $addZeroes = true)
     {
         if ($addZeroes) {
-            return $this->addZeroes($this->calculationTool->calcTaxAmount($price, $vat, true));
+            return $this->addZeros($this->calculationTool->calcTaxAmount($price, $vat, true));
         } else {
             return $this->calculationTool->calcTaxAmount($price, $vat, true);
         }
@@ -1161,7 +1093,7 @@ class Items
      *
      * @return int
      */
-    public function addZeroes($amount)
+    public function addZeros($amount)
     {
         return (int)round($amount * 100, 0);
     }
@@ -1185,7 +1117,7 @@ class Items
             $vat = 25;
 
             $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
-            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountInclTax = $this->addZeros($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
             if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
@@ -1195,7 +1127,7 @@ class Items
                     ->setName($total->getTitle() ?: $total->getCode())
                     ->setUnit("st")
                     ->setQuantity(1)
-                    ->setTaxRate((int)$this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                    ->setTaxRate((int)$this->addZeros($vat)) // the tax rate i.e 25% (2500)
                     ->setTaxAmount((int)$taxAmount) // total tax amount
                     ->setUnitPrice((int)$amountExclTax) // excl. tax price per item
                     ->setNetTotalAmount((int)$amountExclTax) // excl. tax
@@ -1219,7 +1151,7 @@ class Items
             }
 
             $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
-            $amountInclTax = $this->addZeroes($amountInclTax);
+            $amountInclTax = $this->addZeros($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
             // Special case for older orders where discounts were sent with positive tax amount -
@@ -1237,7 +1169,7 @@ class Items
                     ->setName((string)__('Discount'))
                     ->setUnit("st")
                     ->setQuantity(1)
-                    ->setTaxRate($this->addZeroes($vat)) // the tax rate i.e 25% (2500)
+                    ->setTaxRate($this->addZeros($vat)) // the tax rate i.e 25% (2500)
                     ->setTaxAmount(-$taxAmount) // total tax amount
                     ->setUnitPrice(-$amountExclTax) // excl. tax price per item
                     ->setNetTotalAmount(-$amountExclTax) // excl. tax
@@ -1252,17 +1184,19 @@ class Items
     }
 
     public function generateFakeOrderItem(Quote $quote) {
+//        $this->logger->error("Fake item flow: " . $quote->getOrigOrderId() . " " . $quote->getReservedOrderId());
+
         $orderItem = SingleOrderItemFactory::createItem();
         $orderItem
             ->setReference('test_item') // change to order id
             ->setName('Test item') // change to order id
             ->setUnit("pcs")
             ->setQuantity(1)
-//            ->setTaxRate($this->addZeroes($taxRate)) // optional
+//            ->setTaxRate($this->addZeroes($taxRate)) // optional - make sure
 //            ->setTaxAmount($taxAmount) // optional
-            ->setUnitPrice($quote->getGrandTotal() * 100)
-            ->setNetTotalAmount($quote->getGrandTotal() * 100)
-            ->setGrossTotalAmount($quote->getGrandTotal() * 100);
+            ->setUnitPrice($quote->getGrandTotal() * 100) // check if correct
+            ->setNetTotalAmount($quote->getGrandTotal() * 100) // change to something else
+            ->setGrossTotalAmount($quote->getGrandTotal() * 100); // check if correct
 
         return $this->_cart[] = $orderItem;
     }
