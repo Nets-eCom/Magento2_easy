@@ -5,6 +5,7 @@ namespace Dibs\EasyCheckout\Model\Dibs;
 use Dibs\EasyCheckout\Model\CheckoutException;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Factory\SingleOrderItemFactory;
+use Magento\Checkout\Model\Session;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
@@ -40,18 +41,12 @@ class Items
     protected $_itemsArray = [];
     protected $addCustomOptionsToItemName = null;
     protected $_checkoutSession;
-
     private \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository;
-
     protected $scopeConfig;
-
     protected $_productloader;
-
     protected $_taxRate;
-
-    protected $logger;
-
-    protected $quote;
+    private $logger;
+    private $quote;
 
     /**
      * Items constructor.
@@ -75,9 +70,7 @@ class Items
         $this->_helper = $helper;
         $this->_productConfig = $productConfig;
         $this->calculationTool = $calculationTool;
-
-        // resets all values
-        $this->init();
+        $this->init(); // resets all values
         $this->ruleRepository = $ruleRepository;
         $this->_checkoutSession = $checkoutSession;
         $this->scopeConfig = $scopeConfig;
@@ -1114,7 +1107,7 @@ class Items
             /** @var \Magento\Quote\Model\Quote\Address\Total $total */
             $total = $totals[$customTotal];
             $amountInclTax = $total->getValue();
-            $vat = 25;
+            $vat = 25; // will always be added to e.g. surcharges
 
             $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
             $amountInclTax = $this->addZeros($amountInclTax);
@@ -1184,16 +1177,18 @@ class Items
     }
 
     public function generateFakeOrderItem(Quote $quote) {
-//        $this->logger->error("Fake item flow: " . $quote->getOrigOrderId() . " " . $quote->getReservedOrderId());
+        $order = $this->_checkoutSession->getLastRealOrder();
+        $longOrderId = $order->getIncrementId();
+        $orderId = $order->getEntityId();
 
         $orderItem = SingleOrderItemFactory::createItem();
         $orderItem
-            ->setReference('test_item') // change to order id
-            ->setName('Test item') // change to order id
+            ->setReference($longOrderId)
+            ->setName($orderId)
             ->setUnit("pcs")
             ->setQuantity(1)
 //            ->setTaxRate($this->addZeroes($taxRate)) // optional - make sure
-//            ->setTaxAmount($taxAmount) // optional
+//            ->setTaxAmount($taxAmount) // optional - make sure
             ->setUnitPrice($quote->getGrandTotal() * 100) // check if correct
             ->setNetTotalAmount($quote->getGrandTotal() * 100) // change to something else
             ->setGrossTotalAmount($quote->getGrandTotal() * 100); // check if correct
