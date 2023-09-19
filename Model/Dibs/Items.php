@@ -355,12 +355,6 @@ class Items
 
         $items = $quote->getAllVisibleItems();
 
-        if (!$this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-            $this->generateFakeOrderItem($quote);
-
-            return $this;
-        }
-
         foreach ($items as $item) {
             $quantity           = (int)$item->getQty();
             $taxRate            = $this->addZeros($item->getTaxPercent());
@@ -642,21 +636,19 @@ class Items
                     }
                 }
 
-                if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-                    $orderItem = SingleOrderItemFactory::createItem();
-                    $orderItem
-                        ->setReference((string)__('Discount'))
-                        ->setName($reference)
-                        ->setUnit("st")
-                        ->setQuantity(1)
-                        ->setTaxRate(0)
-                        ->setTaxAmount(0)
-                        ->setUnitPrice(-$discountAmount)
-                        ->setNetTotalAmount(-$discountAmount)
-                        ->setGrossTotalAmount(-$discountAmount);
+                $orderItem = SingleOrderItemFactory::createItem();
+                $orderItem
+                    ->setReference((string)__('Discount'))
+                    ->setName($reference)
+                    ->setUnit("st")
+                    ->setQuantity(1)
+                    ->setTaxRate(0)
+                    ->setTaxAmount(0)
+                    ->setUnitPrice(-$discountAmount)
+                    ->setNetTotalAmount(-$discountAmount)
+                    ->setGrossTotalAmount(-$discountAmount);
 
-                    $this->_cart[$reference] = $orderItem;
-                }
+                $this->_cart[$reference] = $orderItem;
 
                 return $this;
             }
@@ -721,21 +713,19 @@ class Items
             $discountReference = $rule->getSimpleAction();
             $discountName = $rule->getName().' ('.$couponCode.')';
 
-            if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-                $orderItem = SingleOrderItemFactory::createItem();
-                $orderItem
-                    ->setReference($discountReference)
-                    ->setName($discountName)
-                    ->setUnit("unit")
-                    ->setQuantity(1)
-                    ->setTaxRate(0)
-                    ->setTaxAmount(0)
-                    ->setUnitPrice($discountPrice)
-                    ->setNetTotalAmount($discountPrice)
-                    ->setGrossTotalAmount($discountPrice);
+            $orderItem = SingleOrderItemFactory::createItem();
+            $orderItem
+                ->setReference($discountReference)
+                ->setName($discountName)
+                ->setUnit("unit")
+                ->setQuantity(1)
+                ->setTaxRate(0)
+                ->setTaxAmount(0)
+                ->setUnitPrice($discountPrice)
+                ->setNetTotalAmount($discountPrice)
+                ->setGrossTotalAmount($discountPrice);
 
-                $this->_cart[$discountReference] = $orderItem;
-            }
+            $this->_cart[$discountReference] = $orderItem;
 
 			break;
 		}
@@ -760,25 +750,23 @@ class Items
             $amountInclTax = $this->addZeros($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
-            if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-                $orderItem = SingleOrderItemFactory::createItem();
-                $orderItem
-                    ->setReference($reference)
-                    ->setName(
-                        $couponCode
-                            ? (string)__('Discount (%1)', $couponCode)
-                            : (string)__('Discount')
-                    )
-                    ->setUnit("st")
-                    ->setQuantity(1)
-                    ->setTaxRate($this->addZeros($vat)) // the tax rate i.e 25% (2500)
-                    ->setTaxAmount($taxAmount) // total tax amount
-                    ->setUnitPrice(-$amountExclTax) // excl. tax price per item
-                    ->setNetTotalAmount(-$amountExclTax) // excl. tax
-                    ->setGrossTotalAmount(-$amountInclTax); // incl. tax
+            $orderItem = SingleOrderItemFactory::createItem();
+            $orderItem
+                ->setReference($reference)
+                ->setName(
+                    $couponCode
+                        ? (string)__('Discount (%1)', $couponCode)
+                        : (string)__('Discount')
+                )
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate($this->addZeros($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount($taxAmount) // total tax amount
+                ->setUnitPrice(-$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount(-$amountExclTax) // excl. tax
+                ->setGrossTotalAmount(-$amountInclTax); // incl. tax
 
-                $this->_cart[$reference] = $orderItem;
-            }
+            $this->_cart[$reference] = $orderItem;
         }
     }
 
@@ -875,6 +863,12 @@ class Items
      */
     public function generateOrderItemsFromQuote(Quote $quote)
 	{
+        if (!$this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
+            $this->generateFakeOrderItem($quote);
+
+            return array_values($this->_cart);
+        }
+
 		$this->init($quote->getStore());
 		$billingAddress = $quote->getBillingAddress();
 		$shippingAddress = $quote->isVirtual() ? $billingAddress : $quote->getShippingAddress();
@@ -1111,21 +1105,19 @@ class Items
             $amountInclTax = $this->addZeros($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
-            if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-                $orderItem = SingleOrderItemFactory::createItem();
-                $orderItem
-                    ->setReference($total->getCode())
-                    ->setName($total->getTitle() ?: $total->getCode())
-                    ->setUnit("st")
-                    ->setQuantity(1)
-                    ->setTaxRate((int)$this->addZeros($vat)) // the tax rate i.e 25% (2500)
-                    ->setTaxAmount((int)$taxAmount) // total tax amount
-                    ->setUnitPrice((int)$amountExclTax) // excl. tax price per item
-                    ->setNetTotalAmount((int)$amountExclTax) // excl. tax
-                    ->setGrossTotalAmount((int)$amountInclTax); // incl. tax
+            $orderItem = SingleOrderItemFactory::createItem();
+            $orderItem
+                ->setReference($total->getCode())
+                ->setName($total->getTitle() ?: $total->getCode())
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate((int)$this->addZeros($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount((int)$taxAmount) // total tax amount
+                ->setUnitPrice((int)$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount((int)$amountExclTax) // excl. tax
+                ->setGrossTotalAmount((int)$amountInclTax); // incl. tax
 
-                $this->_cart[$total->getCode()] = $orderItem;
-            }
+            $this->_cart[$total->getCode()] = $orderItem;
         }
     }
 
@@ -1153,28 +1145,26 @@ class Items
                 $amountExclTax = $amountInclTax;
             }
 
-            if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-                $orderItem = SingleOrderItemFactory::createItem();
-                $orderItem
-                    ->setReference($reference)
-                    ->setName((string)__('Discount'))
-                    ->setUnit("st")
-                    ->setQuantity(1)
-                    ->setTaxRate($this->addZeros($vat)) // the tax rate i.e 25% (2500)
-                    ->setTaxAmount(-$taxAmount) // total tax amount
-                    ->setUnitPrice(-$amountExclTax) // excl. tax price per item
-                    ->setNetTotalAmount(-$amountExclTax) // excl. tax
-                    // ->setGrossTotalAmount(-$amountInclTax); // incl. tax
-                    ->setGrossTotalAmount(-$amountExclTax); // incl. tax
+            $orderItem = SingleOrderItemFactory::createItem();
+            $orderItem
+                ->setReference($reference)
+                ->setName((string)__('Discount'))
+                ->setUnit("st")
+                ->setQuantity(1)
+                ->setTaxRate($this->addZeros($vat)) // the tax rate i.e 25% (2500)
+                ->setTaxAmount(-$taxAmount) // total tax amount
+                ->setUnitPrice(-$amountExclTax) // excl. tax price per item
+                ->setNetTotalAmount(-$amountExclTax) // excl. tax
+                // ->setGrossTotalAmount(-$amountInclTax); // incl. tax
+                ->setGrossTotalAmount(-$amountExclTax); // incl. tax
 
-                $this->_cart[$reference] = $orderItem;
-            }
+            $this->_cart[$reference] = $orderItem;
         }
 
         return $this;
     }
 
-    public function generateFakeOrderItem(Quote $quote) {
+    public function generateFakeOrderItem(Quote $quote):void {
         $grandTotal = $quote->getGrandTotal() * 100;
 
         $orderItem = SingleOrderItemFactory::createItem();
@@ -1187,6 +1177,6 @@ class Items
             ->setNetTotalAmount($grandTotal)
             ->setGrossTotalAmount($grandTotal);
 
-        return $this->_cart[] = $orderItem;
+        $this->_cart[] = $orderItem;
     }
 }
