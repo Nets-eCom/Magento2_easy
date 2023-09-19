@@ -45,7 +45,6 @@ class Items
     protected $scopeConfig;
     protected $_productloader;
     protected $_taxRate;
-    private $logger;
     private $quote;
 
     /**
@@ -64,7 +63,6 @@ class Items
         ScopeConfigInterface $scopeConfig,
         \Magento\Catalog\Model\ProductFactory $_productloader,
         Rate $taxRate,
-        \Dibs\EasyCheckout\Logger\Logger $logger,
         Quote $quote
     ) {
         $this->_helper = $helper;
@@ -76,7 +74,6 @@ class Items
         $this->scopeConfig = $scopeConfig;
         $this->_productloader = $_productloader;
         $this->_taxRate = $taxRate;
-        $this->logger = $logger;
         $this->quote = $quote;
     }
 
@@ -354,9 +351,15 @@ class Items
     /* Item block */
     public function addCustomItemTotal(Quote $quote)
     {
-        $priceIncludesTax = $this->scopeConfig->getValue('tax/calculation/price_includes_tax',ScopeInterface::SCOPE_STORE, null);
+        $priceIncludesTax = $this->scopeConfig->getValue('tax/calculation/price_includes_tax', ScopeInterface::SCOPE_STORE, null);
 
         $items = $quote->getAllVisibleItems();
+
+        if (!$this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
+            $this->generateFakeOrderItem($quote);
+
+            return $this;
+        }
 
         foreach ($items as $item) {
             $quantity           = (int)$item->getQty();
@@ -381,29 +384,23 @@ class Items
 
             $itemSku = $item->getSku();
 
-            if ($this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-                $orderItem = SingleOrderItemFactory::createItem();
-                $orderItem
-                    ->setReference($itemSku)
-                    ->setName($itemName)
-                    ->setUnit("pcs")
-                    ->setQuantity(round($quantity, 0))
-                    ->setTaxRate($taxRate)
-                    ->setTaxAmount((int)$taxAmount)
-                    ->setUnitPrice((int)$productPrice)
-                    ->setNetTotalAmount((int)$netTotalAmount)
-                    ->setGrossTotalAmount((int)$grossTotalAmount);
+            $orderItem = SingleOrderItemFactory::createItem();
+            $orderItem
+                ->setReference($itemSku)
+                ->setName($itemName)
+                ->setUnit("pcs")
+                ->setQuantity(round($quantity, 0))
+                ->setTaxRate($taxRate)
+                ->setTaxAmount((int)$taxAmount)
+                ->setUnitPrice((int)$productPrice)
+                ->setNetTotalAmount((int)$netTotalAmount)
+                ->setGrossTotalAmount((int)$grossTotalAmount);
 
-                if (isset($this->_cart[$itemSku])) {
-                    $itemSku = $itemSku . '-' . $item->getId();
-                }
-
-                $this->_cart[$itemSku] = $orderItem;
+            if (isset($this->_cart[$itemSku])) {
+                $itemSku = $itemSku . '-' . $item->getId();
             }
-        }
 
-        if (!$this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-            $this->generateFakeOrderItem($quote);
+            $this->_cart[$itemSku] = $orderItem;
         }
 
         return $this;
@@ -659,8 +656,9 @@ class Items
                         ->setGrossTotalAmount(-$discountAmount);
 
                     $this->_cart[$reference] = $orderItem;
-                    return $this;
                 }
+
+                return $this;
             }
         } catch (\Exception $e) {
 
@@ -1177,21 +1175,17 @@ class Items
     }
 
     public function generateFakeOrderItem(Quote $quote) {
-        $order = $this->_checkoutSession->getLastRealOrder();
-        $longOrderId = $order->getIncrementId();
-        $orderId = $order->getEntityId();
+        $grandTotal = $quote->getGrandTotal() * 100;
 
         $orderItem = SingleOrderItemFactory::createItem();
         $orderItem
-            ->setReference($longOrderId)
-            ->setName($orderId)
+            ->setReference(md5(time() . $grandTotal)) // product number
+            ->setName("Order items") // description
             ->setUnit("pcs")
             ->setQuantity(1)
-//            ->setTaxRate($this->addZeroes($taxRate)) // optional - make sure
-//            ->setTaxAmount($taxAmount) // optional - make sure
-            ->setUnitPrice($quote->getGrandTotal() * 100) // check if correct
-            ->setNetTotalAmount($quote->getGrandTotal() * 100) // change to something else
-            ->setGrossTotalAmount($quote->getGrandTotal() * 100); // check if correct
+            ->setUnitPrice($grandTotal)
+            ->setNetTotalAmount($grandTotal)
+            ->setGrossTotalAmount($grandTotal);
 
         return $this->_cart[] = $orderItem;
     }
