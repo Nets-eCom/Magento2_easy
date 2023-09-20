@@ -103,8 +103,12 @@ class Payment extends Client {
      * @return CreatePaymentChargeResponse
      */
     public function chargePayment(ChargePayment $payment, $paymentId) {
+        $this->getLogger()->info($payment->toJSON());
+
         try {
             $response = $this->post("/v1/payments/" . $paymentId . "/charges", $payment);
+
+            $this->getLogger()->info("CHARGE PAYMENT RESPONSE CREATED");
         } catch (ClientException $e) {
             // handle?
             throw $e;
