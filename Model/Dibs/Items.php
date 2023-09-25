@@ -863,11 +863,6 @@ class Items
      */
     public function generateOrderItemsFromQuote(Quote $quote)
 	{
-        if (!$this->_helper->getSendOrderItemsToEasy($this->quote->getStore())) {
-            $this->generateFakeOrderItem($quote);
-
-            return array_values($this->_cart);
-        }
 
 		$this->init($quote->getStore());
 		$billingAddress = $quote->getBillingAddress();
@@ -902,7 +897,7 @@ class Items
 			//throw $e;
 		}
 
-		return array_values($this->_cart);
+            return $this->getOrderItems($quote->getGrandTotal());
 	}
 
     /**
@@ -1179,4 +1174,34 @@ class Items
 
         $this->_cart[] = $orderItem;
     }
+
+
+    /**
+     * @param $amount
+     * @return OrderItem[]
+     */
+    public function getOrderItems($amount): array
+    {
+        if (!$this->_helper->getSendOrderItemsToEasy()) {
+            return [$this->generateFakeParitalOrderItem($amount * 100)];
+        }
+        return array_values($this->_cart);
+    }
+
+    public function generateFakeParitalOrderItem($amount): OrderItem
+    {
+
+        $orderItem = SingleOrderItemFactory::createItem();
+        $orderItem
+            ->setReference(md5(time() . $amount)) // product number
+            ->setName("Order items") // description
+            ->setUnit("pcs")
+            ->setQuantity(1)
+            ->setUnitPrice($amount)
+            ->setNetTotalAmount($amount)
+            ->setGrossTotalAmount($amount);
+
+        return $this->_cart[] = $orderItem;
+    }
+
 }

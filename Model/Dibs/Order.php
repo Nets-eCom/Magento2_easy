@@ -547,7 +547,7 @@ class Order {
             $this->items->validateTotals($invoice->getGrandTotal());
 
             // now we have our items...
-            $captureItems = $this->items->getCart();
+            $captureItems = $this->items->getOrderItems($amount);
 
             $paymentDetails = $this->paymentApi->getPayment($paymentId, $invoice->getStoreId());
             if($paymentDetails->GetPaymentDetails()->getPaymentMethod() == "EasyInvoice"){
