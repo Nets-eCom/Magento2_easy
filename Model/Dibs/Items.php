@@ -12,6 +12,7 @@ use Magento\Sales\Model\Order\Payment as OrderPayment;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Tax\Model\Calculation\Rate;
+use Magento\Tax\Api\Data\OrderTaxDetailsAppliedTaxInterface;
 
 /**
  * Dibs (Checkout) Order Items Model
@@ -46,6 +47,7 @@ class Items
     protected $_productloader;
     protected $_taxRate;
     private $quote;
+    private $orderTaxDetailsAppliedTaxInterface;
 
     /**
      * Items constructor.
@@ -63,7 +65,8 @@ class Items
         ScopeConfigInterface $scopeConfig,
         \Magento\Catalog\Model\ProductFactory $_productloader,
         Rate $taxRate,
-        Quote $quote
+        Quote $quote,
+        OrderTaxDetailsAppliedTaxInterface $orderTaxDetailsAppliedTaxInterface
     ) {
         $this->_helper = $helper;
         $this->_productConfig = $productConfig;
@@ -75,6 +78,7 @@ class Items
         $this->_productloader = $_productloader;
         $this->_taxRate = $taxRate;
         $this->quote = $quote;
+        $this->orderTaxDetailsAppliedTaxInterface = $orderTaxDetailsAppliedTaxInterface;
     }
 
     /**
@@ -863,7 +867,6 @@ class Items
      */
     public function generateOrderItemsFromQuote(Quote $quote)
 	{
-
 		$this->init($quote->getStore());
 		$billingAddress = $quote->getBillingAddress();
 		$shippingAddress = $quote->isVirtual() ? $billingAddress : $quote->getShippingAddress();
@@ -897,7 +900,7 @@ class Items
 			//throw $e;
 		}
 
-            return $this->getOrderItems($quote->getGrandTotal());
+        return $this->getOrderItems($quote);
 	}
 
     /**
@@ -1159,49 +1162,38 @@ class Items
         return $this;
     }
 
-    public function generateFakeOrderItem(Quote $quote):void {
-        $grandTotal = $quote->getGrandTotal() * 100;
-
-        $orderItem = SingleOrderItemFactory::createItem();
-        $orderItem
-            ->setReference(md5(time() . $grandTotal)) // product number
-            ->setName("Order items") // description
-            ->setUnit("pcs")
-            ->setQuantity(1)
-            ->setUnitPrice($grandTotal)
-            ->setNetTotalAmount($grandTotal)
-            ->setGrossTotalAmount($grandTotal);
-
-        $this->_cart[] = $orderItem;
-    }
-
-
     /**
      * @param $amount
      * @return OrderItem[]
      */
-    public function getOrderItems($amount): array
+    public function getOrderItems($quote): array
     {
+        $amount = $quote->getGrandTotal();
+
         if (!$this->_helper->getSendOrderItemsToEasy()) {
-            return [$this->generateFakeParitalOrderItem($amount * 100)];
+            return [$this->generateFakePartialOrderItem($amount * 100, $quote)];
         }
+
         return array_values($this->_cart);
     }
 
-    public function generateFakeParitalOrderItem($amount): OrderItem
+    public function generateFakePartialOrderItem($amount, $quote): OrderItem
     {
+//        dd($this->quote->getData('amount'));
+//        dd($this->orderTaxDetailsAppliedTaxInterface->getAmount());
 
         $orderItem = SingleOrderItemFactory::createItem();
         $orderItem
-            ->setReference(md5(time() . $amount)) // product number
+            ->setReference(md5($amount)) // product number
             ->setName("Order items") // description
             ->setUnit("pcs")
             ->setQuantity(1)
+            ->setTaxRate(0) // the tax rate i.e 25% (2500)
+            ->setTaxAmount(0) // total tax amount
             ->setUnitPrice($amount)
-            ->setNetTotalAmount($amount)
+            ->setNetTotalAmount($amount) // -tax
             ->setGrossTotalAmount($amount);
 
         return $this->_cart[] = $orderItem;
     }
-
 }
