@@ -889,7 +889,7 @@ class Items
 			//throw $e;
 		}
 
-        return $this->getOrderItems($quote);
+        return $this->getOrderItems($quote->getGrandTotal());
 	}
 
     /**
@@ -1155,10 +1155,8 @@ class Items
      * @param $amount
      * @return OrderItem[]
      */
-    public function getOrderItems($quote): array
+    public function getOrderItems($amount): array
     {
-        $amount = $quote->getGrandTotal();
-
         if (!$this->_helper->getSendOrderItemsToEasy()) {
             return [$this->generateFakePartialOrderItem($amount * 100)];
         }
