@@ -638,7 +638,7 @@ class Order {
             // We validate the items before we send them to Dibs. This might throw an exception!
             $this->items->validateTotals($creditMemo->getGrandTotal());
 
-            $refundItems = $this->items->getCart();
+            $refundItems = $this->items->getOrderItems($creditMemo->getGrandTotal());
             $amountToRefund = $this->fixPrice($amount);
 
             $paymentObj = new RefundPayment();
