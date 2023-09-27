@@ -2,7 +2,6 @@
 
 namespace Dibs\EasyCheckout\Model\Dibs;
 
-use Dibs\EasyCheckout\Logger\Logger;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
@@ -57,8 +56,6 @@ class Order {
 
     private \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory;
 
-    private $logger;
-
     /**
      * Order constructor.
      *
@@ -76,8 +73,7 @@ class Order {
             \Magento\Directory\Model\CountryFactory $countryFactory,
             \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory,
             Items $itemsHandler,
-            StoreManagerInterface $storeManager,
-            Logger $logger
+            StoreManagerInterface $storeManager
     ) {
         $this->helper = $helper;
         $this->consumerTypeFactory = $consumerTypeFactory;
@@ -86,7 +82,6 @@ class Order {
         $this->_countryFactory = $countryFactory;
         $this->storeManager = $storeManager;
         $this->consumerDataProviderFactory = $consumerDataProviderFactory;
-        $this->logger = $logger;
     }
 
     /** @var $_quote Quote */
@@ -565,8 +560,6 @@ class Order {
             } else if ($paymentDetails->getPaymentDetails()->getPaymentType() == "A2A") {
                 $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
             } else if ($this->helper->canCapturePartial()) {
-                $this->logger->info("CAN CAPTURE PARTIAL: YES");
-
                 if ($paymentDetails->getSummary()->getReservedAmount() == $paymentDetails->getSummary()->getChargedAmount()) {
                     $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
                 } else {
@@ -574,15 +567,11 @@ class Order {
                     $paymentObj->setAmount($this->fixPrice($amount));
                     $paymentObj->setItems($captureItems);
 
-                    $this->logger->info("CHARGE PAYMENT FLOW WORKED");
-
                     // capture/charge it now!
                     $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
                     $chargeId = $response->getChargeId();
                 }
             } else {
-                $this->logger->info("CAN CAPTURE PARTIAL: NO");
-
                 $paymentObj = new ChargePayment();
                 $paymentObj->setAmount($this->fixPrice($amount));
                 $paymentObj->setItems($captureItems);
