@@ -9,6 +9,7 @@ use Dibs\EasyCheckout\Model\Factory\SingleOrderItemFactory;
 use Magento\Catalog\Helper\Product\Configuration;
 use Magento\Checkout\Model\Session;
 use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Model\Order;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\SalesRule\Api\RuleRepositoryInterface;
@@ -37,7 +38,7 @@ class Items
      *
      * @return $this
      */
-    public function init($store = null)
+    public function init($store = null): Items
     {
         $this->_store = $store;
         $this->_cart = [];
@@ -156,7 +157,7 @@ class Items
         return $this->getOrderItems($quote->getGrandTotal());
     }
 
-    public function addCustomItemTotal(Quote $quote)
+    public function addCustomItemTotal(Quote $quote): Items
     {
         $priceIncludesTax = $this->scopeConfig->getValue(
             'tax/calculation/price_includes_tax',
@@ -217,7 +218,7 @@ class Items
      *
      * @return $this
      */
-    public function addShipping($address)
+    public function addShipping($address): Items
     {
         if ($this->_toInvoice && $address->getBaseShippingAmount() <= $address->getBaseShippingInvoiced()) {
             return $this;
@@ -329,13 +330,14 @@ class Items
      *
      * @return $this
      */
-    public function addCustomDiscountTotal($quote)
+    public function addCustomDiscountTotal($quote): Items
     {
         $quoteItems = $quote->getAllVisibleItems();
 
         $quoteDiscountAmount = 0;
         $referenceArray = array();
         $reference = '';
+
         try {
             foreach ($quoteItems as $quoteItem) {
                 $quoteDiscountAmount += $quoteItem->getBaseDiscountAmount();
@@ -390,6 +392,8 @@ class Items
             }
         } catch (\Exception $e) {
         }
+
+        return $this;
     }
 
     /**
@@ -452,7 +456,7 @@ class Items
      * @return $this
      * @throws CheckoutException
      */
-    public function validateTotals($grandTotal)
+    public function validateTotals($grandTotal): Items
     {
         $calculatedTotal = 0;
         $calculatedTax = 0;
@@ -519,7 +523,7 @@ class Items
     {
         $this->init($order->getStore());
 
-        // we will validate the grand total that we send to dibs, since we dont send invocie fee with it, we remove it now
+        // we will validate the grand total that we send to dibs, since we don't send invoice fee with it, we remove it now
         $grandTotal = $order->getGrandTotal();
         $this->addItems($order->getAllItems())
             ->addShipping($order)
@@ -576,7 +580,7 @@ class Items
      *
      * @return $this
      */
-    public function addItems($items)
+    public function addItems($items): Items
     {
         if ($this->addCustomOptionsToItemName === null) {
             $shouldAdd = $this->helper->addCustomOptionsToItemName();
@@ -588,7 +592,7 @@ class Items
 
         foreach ($items as $magentoItem) {
             if (is_null($isQuote)) {
-                $isQuote = ($magentoItem instanceof \Magento\Quote\Model\Quote\Item);
+                $isQuote = ($magentoItem instanceof Item);
             }
 
             //invoice or creditmemo item
@@ -800,6 +804,7 @@ class Items
                 }
             }
         }
+
         return $this;
     }
 
@@ -861,7 +866,7 @@ class Items
      */
     public function addDibsItemsByInvoice(Order\Invoice $invoice)
     {
-        //coupon code is not copied to invoice so we take it from the order!
+        //coupon code is not copied to invoice, so we take it from the order!
         $order = $invoice->getOrder();
 
         $this
@@ -875,7 +880,7 @@ class Items
             $iShipping = $invoice->getShippingAmount();
             $oShipping = $order->getShippingAmount();
 
-            //this should never happen but if it does , we will adjust shipping discount amoutn
+            //this should never happen but if it does , we will adjust shipping discount amount
             if ($iShipping != $oShipping && $oShipping > 0) {
                 $oShippingDiscount = round($iShipping * $oShippingDiscount / $oShipping, 4);
             }
