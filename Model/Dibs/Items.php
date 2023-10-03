@@ -2,75 +2,34 @@
 
 namespace Dibs\EasyCheckout\Model\Dibs;
 
+use Dibs\EasyCheckout\Helper\Data;
 use Dibs\EasyCheckout\Model\CheckoutException;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Factory\SingleOrderItemFactory;
+use Magento\Catalog\Helper\Product\Configuration;
+use Magento\Checkout\Model\Session;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Payment as OrderPayment;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
-use Magento\Tax\Model\Calculation\Rate;
+use Magento\Tax\Model\Calculation;
 
 /**
  * Dibs (Checkout) Order Items Model
  */
 class Items
 {
-    /**
-     * @var \Dibs\EasyCheckout\Helper\Data
-     */
-    protected $_helper;
-
-    /** @var \Magento\Tax\Model\Calculation */
-    protected $calculationTool;
-
-    /**
-     * Catalog product configuration
-     *
-     * @var \Magento\Catalog\Helper\Product\Configuration
-     */
-    protected $_productConfig;
-    protected $_cart = [];
-    protected $_discounts = [];
-    protected $_maxvat = 0;
-    protected $_inclTAX = false;
-    protected $_toInvoice = false;
-    protected $_store = null;
-    protected $_itemsArray = [];
-    protected $addCustomOptionsToItemName = null;
-    protected $_checkoutSession;
-    protected $scopeConfig;
-    protected $_productloader;
-    protected $_taxRate;
-    private \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository;
-
-    /**
-     * Items constructor.
-     *
-     * @param \Dibs\EasyCheckout\Helper\Data $helper
-     * @param \Magento\Catalog\Helper\Product\Configuration $productConfig
-     * @param \Magento\Tax\Model\Calculation $calculationTool
-     */
     public function __construct(
-        \Dibs\EasyCheckout\Helper\Data $helper,
-        \Magento\Catalog\Helper\Product\Configuration $productConfig,
-        \Magento\Tax\Model\Calculation $calculationTool,
-        \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        ScopeConfigInterface $scopeConfig,
-        \Magento\Catalog\Model\ProductFactory $_productloader,
-        Rate $taxRate
+        protected Data $helper,
+        protected Configuration $productConfig,
+        protected Calculation $calculationTool,
+        protected Session $checkoutSession,
+        protected ScopeConfigInterface $scopeConfig,
+        private RuleRepositoryInterface $ruleRepository,
+        private SingleOrderItemFactory $singleOrderItemFactory
     ) {
-        $this->_helper = $helper;
-        $this->_productConfig = $productConfig;
-        $this->calculationTool = $calculationTool;
         $this->init(); // resets all values
-        $this->ruleRepository = $ruleRepository;
-        $this->_checkoutSession = $checkoutSession;
-        $this->scopeConfig = $scopeConfig;
-        $this->_productloader = $_productloader;
-        $this->_taxRate = $taxRate;
     }
 
     /**
@@ -122,10 +81,8 @@ class Items
         // here we calculate if there are taxes!
         if ($taxRate > 0) {
             if (!$vatIncluded) {
-                $invoiceFeeExclTax = $invoiceFee;
                 $invoiceFeeInclTax = $invoiceFee * ((100 + $taxRate) / 100);
             } else {
-                $invoiceFeeInclTax = $invoiceFee;
                 $invoiceFeeExclTax = $invoiceFeeInclTax / ((100 + $taxRate) / 100);
             }
 
@@ -133,7 +90,7 @@ class Items
             $taxAmount = $invoiceFeeInclTax - $invoiceFeeExclTax;
         }
 
-        $feeItem = SingleOrderItemFactory::createItem(
+        $feeItem = $this->singleOrderItemFactory->createItem(
             strtolower(str_replace(" ", "_", $invoiceLabel)),
             $invoiceLabel,
             "unit",
@@ -233,7 +190,7 @@ class Items
 
             $itemSku = $item->getSku();
 
-            $orderItem = SingleOrderItemFactory::createItem(
+            $orderItem = $this->singleOrderItemFactory->createItem(
                 $itemSku,
                 $itemName,
                 "pcs",
@@ -320,7 +277,7 @@ class Items
         $shippingTaxAmount = $address->getShippingTaxAmount();
         $shippingTaxAmount = round($this->convertToInt($shippingTaxAmount));
 
-        $orderItem = SingleOrderItemFactory::createItem(
+        $orderItem = $this->singleOrderItemFactory->createItem(
             'shipping_fee',
             (string)__('Shipping Fee (%1)', $shippingDescription),
             "unit",
@@ -336,7 +293,7 @@ class Items
         $this->_cart['shipping_fee'] = $orderItem;
 
         //keep discounts grouped by VAT
-        //if catalog prices include tax, then discount INCLUDE TAX (tax coresponding to that discount is set onto shipping_discount_tax_compensation_amount)
+        //if catalog prices include tax, then discount INCLUDE TAX (tax corresponding to that discount is set onto shipping_discount_tax_compensation_amount)
         //if catalog prices exclude tax, alto the discount excl. tax
 
         $discountAmount = $address->getShippingDiscountAmount();
@@ -415,7 +372,7 @@ class Items
                     }
                 }
 
-                $orderItem = SingleOrderItemFactory::createItem(
+                $orderItem = $this->singleOrderItemFactory->createItem(
                     $reference,
                     (string)__('Discount'),
                     "st",
@@ -457,7 +414,7 @@ class Items
             $amountInclTax = $this->convertToInt($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
-            $orderItem = SingleOrderItemFactory::createItem(
+            $orderItem = $this->singleOrderItemFactory->createItem(
                 $total->getCode(),
                 $total->getTitle() ?: $total->getCode(),
                 "st",
@@ -524,7 +481,7 @@ class Items
      */
     public function getOrderItems(float $amount): array
     {
-        if (!$this->_helper->getSendOrderItemsToEasy()) {
+        if (!$this->helper->getSendOrderItemsToEasy()) {
             return [$this->generateFakePartialOrderItem($this->convertToInt($amount))];
         }
 
@@ -533,11 +490,11 @@ class Items
 
     public function generateFakePartialOrderItem(float $amount): OrderItem
     {
-        $quote = $this->_checkoutSession->getQuote();
+        $quote = $this->checkoutSession->getQuote();
         $totals = $quote->getTotals();
         $taxAmount = (isset($totals['tax'])) ? $this->convertToInt($totals['tax']->getValue()) : 0;
 
-        $orderItem = SingleOrderItemFactory::createItem(
+        $orderItem = $this->singleOrderItemFactory->createItem(
             md5($amount),
             "Order items",
             "pcs",
@@ -596,7 +553,7 @@ class Items
                 $amountExclTax = $amountInclTax;
             }
 
-            $orderItem = SingleOrderItemFactory::createItem(
+            $orderItem = $this->singleOrderItemFactory->createItem(
                 $reference,
                 (string)__('Discount'),
                 "st",
@@ -622,7 +579,7 @@ class Items
     public function addItems($items)
     {
         if ($this->addCustomOptionsToItemName === null) {
-            $shouldAdd = $this->_helper->addCustomOptionsToItemName();
+            $shouldAdd = $this->helper->addCustomOptionsToItemName();
             $this->addCustomOptionsToItemName = $shouldAdd ? true : false;
         }
 
@@ -693,8 +650,6 @@ class Items
                 $allItems[] = $magentoItem;
             }
 
-            $cartData = $this->_checkoutSession->getQuote();
-
             // Now we can loop through the items!
             foreach ($allItems as $item) {
                 $oid = $item->getData('order_item_id');
@@ -730,7 +685,7 @@ class Items
                         $comment = [];
                         //add configurable/children information, as comment
                         if ($isQuote) {
-                            $options = $this->_productConfig->getOptions($item);
+                            $options = $this->productConfig->getOptions($item);
                         } else {
                             $options = null;
                         }
@@ -802,7 +757,7 @@ class Items
                     )
                 );
 
-                $orderItem = SingleOrderItemFactory::createItem(
+                $orderItem = $this->singleOrderItemFactory->createItem(
                     $sku,
                     $itemName,
                     "pcs",
@@ -992,12 +947,6 @@ class Items
                 continue;
             }
 
-            //mai - hotfix - Discount generic
-            $getAllTaxRates = $this->_taxRate->getCollection()->getData();
-            foreach ($getAllTaxRates as $tax) {
-                $taxRate = $tax["rate"];
-            }
-
             // Discount Tax classes and rules
             if ((int)$this->scopeConfig->getValue(
                     'tax/calculation/discount_tax',
@@ -1011,7 +960,7 @@ class Items
             $discountReference = $rule->getSimpleAction();
             $discountName = $rule->getName() . ' (' . $couponCode . ')';
 
-            $orderItem = SingleOrderItemFactory::createItem(
+            $orderItem = $this->singleOrderItemFactory->createItem(
                 $discountReference,
                 $discountName,
                 "unit",
@@ -1085,7 +1034,7 @@ class Items
             $amountInclTax = $this->convertToInt($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
-            $orderItem = SingleOrderItemFactory::createItem(
+            $orderItem = $this->singleOrderItemFactory->createItem(
                 $reference,
                 $couponCode
                     ? (string)__('Discount (%1)', $couponCode)

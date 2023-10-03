@@ -5,7 +5,7 @@ namespace Dibs\EasyCheckout\Model\Factory;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 
 class SingleOrderItemFactory {
-    public static function createItem(
+    public function createItem(
         string $reference,
         string $name,
         string $unit,
