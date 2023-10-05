@@ -2,35 +2,79 @@
 
 namespace Dibs\EasyCheckout\Model\Dibs;
 
-use Dibs\EasyCheckout\Helper\Data;
 use Dibs\EasyCheckout\Model\CheckoutException;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Factory\SingleOrderItemFactory;
-use Magento\Catalog\Helper\Product\Configuration;
-use Magento\Checkout\Model\Session;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment as OrderPayment;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
-use Magento\Tax\Model\Calculation;
+use Magento\Tax\Model\Calculation\Rate;
 
 /**
  * Dibs (Checkout) Order Items Model
  */
 class Items
 {
+    /**
+     * @var \Dibs\EasyCheckout\Helper\Data
+     */
+    protected $_helper;
+
+    /** @var \Magento\Tax\Model\Calculation */
+    protected $calculationTool;
+
+    /**
+     * Catalog product configuration
+     *
+     * @var \Magento\Catalog\Helper\Product\Configuration
+     */
+    protected $_productConfig;
+    protected $_cart = [];
+    protected $_discounts = [];
+    protected $_maxvat = 0;
+    protected $_inclTAX = false;
+    protected $_toInvoice = false;
+    protected $_store = null;
+    protected $_itemsArray = [];
+    protected $addCustomOptionsToItemName = null;
+    protected $_checkoutSession;
+    protected $scopeConfig;
+    protected $_productloader;
+    protected $_taxRate;
+    private \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository;
+    private SingleOrderItemFactory $singleOrderItemFactory;
+
+    /**
+     * Items constructor.
+     *
+     * @param \Dibs\EasyCheckout\Helper\Data $helper
+     * @param \Magento\Catalog\Helper\Product\Configuration $productConfig
+     * @param \Magento\Tax\Model\Calculation $calculationTool
+     */
     public function __construct(
-        protected Data $helper,
-        protected Configuration $productConfig,
-        protected Calculation $calculationTool,
-        protected Session $checkoutSession,
-        protected ScopeConfigInterface $scopeConfig,
-        private RuleRepositoryInterface $ruleRepository,
-        private SingleOrderItemFactory $singleOrderItemFactory
+        \Dibs\EasyCheckout\Helper\Data $helper,
+        \Magento\Catalog\Helper\Product\Configuration $productConfig,
+        \Magento\Tax\Model\Calculation $calculationTool,
+        \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        ScopeConfigInterface $scopeConfig,
+        \Magento\Catalog\Model\ProductFactory $_productloader,
+        Rate $taxRate,
+        SingleOrderItemFactory $singleOrderItemFactory
     ) {
+        $this->_helper = $helper;
+        $this->_productConfig = $productConfig;
+        $this->calculationTool = $calculationTool;
         $this->init(); // resets all values
+        $this->ruleRepository = $ruleRepository;
+        $this->_checkoutSession = $checkoutSession;
+        $this->scopeConfig = $scopeConfig;
+        $this->_productloader = $_productloader;
+        $this->_taxRate = $taxRate;
+        $this->singleOrderItemFactory = $singleOrderItemFactory;
     }
 
     /**
@@ -38,7 +82,7 @@ class Items
      *
      * @return $this
      */
-    public function init($store = null): Items
+    public function init($store = null)
     {
         $this->_store = $store;
         $this->_cart = [];
@@ -82,8 +126,10 @@ class Items
         // here we calculate if there are taxes!
         if ($taxRate > 0) {
             if (!$vatIncluded) {
+                $invoiceFeeExclTax = $invoiceFee;
                 $invoiceFeeInclTax = $invoiceFee * ((100 + $taxRate) / 100);
             } else {
+                $invoiceFeeInclTax = $invoiceFee;
                 $invoiceFeeExclTax = $invoiceFeeInclTax / ((100 + $taxRate) / 100);
             }
 
@@ -154,10 +200,10 @@ class Items
             throw new CheckoutException(__("The grand total price does not match the API price."), 'checkout/cart');
         }
 
-        return $this->getOrderItems($quote->getGrandTotal());
+        return $this->getOrderItems($quote->getGrandTotal(), $quote->getId());
     }
 
-    public function addCustomItemTotal(Quote $quote): Items
+    public function addCustomItemTotal(Quote $quote)
     {
         $priceIncludesTax = $this->scopeConfig->getValue(
             'tax/calculation/price_includes_tax',
@@ -218,7 +264,7 @@ class Items
      *
      * @return $this
      */
-    public function addShipping($address): Items
+    public function addShipping($address)
     {
         if ($this->_toInvoice && $address->getBaseShippingAmount() <= $address->getBaseShippingInvoiced()) {
             return $this;
@@ -294,7 +340,7 @@ class Items
         $this->_cart['shipping_fee'] = $orderItem;
 
         //keep discounts grouped by VAT
-        //if catalog prices include tax, then discount INCLUDE TAX (tax corresponding to that discount is set onto shipping_discount_tax_compensation_amount)
+        //if catalog prices include tax, then discount INCLUDE TAX (tax coresponding to that discount is set onto shipping_discount_tax_compensation_amount)
         //if catalog prices exclude tax, alto the discount excl. tax
 
         $discountAmount = $address->getShippingDiscountAmount();
@@ -330,14 +376,13 @@ class Items
      *
      * @return $this
      */
-    public function addCustomDiscountTotal($quote): Items
+    public function addCustomDiscountTotal($quote)
     {
         $quoteItems = $quote->getAllVisibleItems();
 
         $quoteDiscountAmount = 0;
         $referenceArray = array();
         $reference = '';
-
         try {
             foreach ($quoteItems as $quoteItem) {
                 $quoteDiscountAmount += $quoteItem->getBaseDiscountAmount();
@@ -392,8 +437,6 @@ class Items
             }
         } catch (\Exception $e) {
         }
-
-        return $this;
     }
 
     /**
@@ -456,7 +499,7 @@ class Items
      * @return $this
      * @throws CheckoutException
      */
-    public function validateTotals($grandTotal): Items
+    public function validateTotals($grandTotal)
     {
         $calculatedTotal = 0;
         $calculatedTax = 0;
@@ -483,24 +526,24 @@ class Items
     /**
      * @return OrderItem[]
      */
-    public function getOrderItems(float $amount): array
+    public function getOrderItems(float $amount, int $quoteId): array
     {
-        if (!$this->helper->getSendOrderItemsToEasy()) {
-            return [$this->generateFakePartialOrderItem($this->convertToInt($amount))];
+        if (!$this->_helper->getSendOrderItemsToEasy()) {
+            return [$this->generateFakePartialOrderItem($this->convertToInt($amount), $quoteId)];
         }
 
         return array_values($this->_cart);
     }
 
-    public function generateFakePartialOrderItem(float $amount): OrderItem
+    public function generateFakePartialOrderItem(float $amount, int $quoteId): OrderItem
     {
-        $quote = $this->checkoutSession->getQuote();
+        $quote = $this->_checkoutSession->getQuote();
         $totals = $quote->getTotals();
         $taxAmount = (isset($totals['tax'])) ? $this->convertToInt($totals['tax']->getValue()) : 0;
 
         $orderItem = $this->singleOrderItemFactory->createItem(
-            md5($amount),
-            "Order items",
+            md5("item" . $quoteId),
+            "Order (all items)",
             "pcs",
             1,
             0,
@@ -523,7 +566,7 @@ class Items
     {
         $this->init($order->getStore());
 
-        // we will validate the grand total that we send to dibs, since we don't send invoice fee with it, we remove it now
+        // we will validate the grand total that we send to dibs, since we dont send invocie fee with it, we remove it now
         $grandTotal = $order->getGrandTotal();
         $this->addItems($order->getAllItems())
             ->addShipping($order)
@@ -580,10 +623,10 @@ class Items
      *
      * @return $this
      */
-    public function addItems($items): Items
+    public function addItems($items)
     {
         if ($this->addCustomOptionsToItemName === null) {
-            $shouldAdd = $this->helper->addCustomOptionsToItemName();
+            $shouldAdd = $this->_helper->addCustomOptionsToItemName();
             $this->addCustomOptionsToItemName = $shouldAdd ? true : false;
         }
 
@@ -592,7 +635,7 @@ class Items
 
         foreach ($items as $magentoItem) {
             if (is_null($isQuote)) {
-                $isQuote = ($magentoItem instanceof Item);
+                $isQuote = ($magentoItem instanceof \Magento\Quote\Model\Quote\Item);
             }
 
             //invoice or creditmemo item
@@ -654,6 +697,8 @@ class Items
                 $allItems[] = $magentoItem;
             }
 
+            $cartData = $this->_checkoutSession->getQuote();
+
             // Now we can loop through the items!
             foreach ($allItems as $item) {
                 $oid = $item->getData('order_item_id');
@@ -689,7 +734,7 @@ class Items
                         $comment = [];
                         //add configurable/children information, as comment
                         if ($isQuote) {
-                            $options = $this->productConfig->getOptions($item);
+                            $options = $this->_productConfig->getOptions($item);
                         } else {
                             $options = null;
                         }
@@ -804,7 +849,6 @@ class Items
                 }
             }
         }
-
         return $this;
     }
 
@@ -866,7 +910,7 @@ class Items
      */
     public function addDibsItemsByInvoice(Order\Invoice $invoice)
     {
-        //coupon code is not copied to invoice, so we take it from the order!
+        //coupon code is not copied to invoice so we take it from the order!
         $order = $invoice->getOrder();
 
         $this
@@ -880,7 +924,7 @@ class Items
             $iShipping = $invoice->getShippingAmount();
             $oShipping = $order->getShippingAmount();
 
-            //this should never happen but if it does , we will adjust shipping discount amount
+            //this should never happen but if it does , we will adjust shipping discount amoutn
             if ($iShipping != $oShipping && $oShipping > 0) {
                 $oShippingDiscount = round($iShipping * $oShippingDiscount / $oShipping, 4);
             }
@@ -950,6 +994,12 @@ class Items
                 $rule = $this->ruleRepository->getById($ruleId);
             } catch (\Exception $e) {
                 continue;
+            }
+
+            //mai - hotfix - Discount generic
+            $getAllTaxRates = $this->_taxRate->getCollection()->getData();
+            foreach ($getAllTaxRates as $tax) {
+                $taxRate = $tax["rate"];
             }
 
             // Discount Tax classes and rules
