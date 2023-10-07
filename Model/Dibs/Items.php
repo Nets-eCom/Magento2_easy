@@ -2,15 +2,19 @@
 
 namespace Dibs\EasyCheckout\Model\Dibs;
 
+use Dibs\EasyCheckout\Helper\Data;
 use Dibs\EasyCheckout\Model\CheckoutException;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentOrder;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 use Dibs\EasyCheckout\Model\Factory\SingleOrderItemFactory;
+use Magento\Catalog\Helper\Product\Configuration;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Checkout\Model\Session;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Payment as OrderPayment;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Tax\Model\Calculation;
 use Magento\Tax\Model\Calculation\Rate;
 
 /**
@@ -19,17 +23,17 @@ use Magento\Tax\Model\Calculation\Rate;
 class Items
 {
     /**
-     * @var \Dibs\EasyCheckout\Helper\Data
+     * @var Data
      */
     protected $_helper;
 
-    /** @var \Magento\Tax\Model\Calculation */
+    /** @var Calculation */
     protected $calculationTool;
 
     /**
      * Catalog product configuration
      *
-     * @var \Magento\Catalog\Helper\Product\Configuration
+     * @var Configuration
      */
     protected $_productConfig;
     protected $_cart = [];
@@ -44,24 +48,24 @@ class Items
     protected $scopeConfig;
     protected $_productloader;
     protected $_taxRate;
-    private \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository;
+    private RuleRepositoryInterface $ruleRepository;
     private SingleOrderItemFactory $singleOrderItemFactory;
 
     /**
      * Items constructor.
      *
-     * @param \Dibs\EasyCheckout\Helper\Data $helper
-     * @param \Magento\Catalog\Helper\Product\Configuration $productConfig
-     * @param \Magento\Tax\Model\Calculation $calculationTool
+     * @param Data $helper
+     * @param Configuration $productConfig
+     * @param Calculation $calculationTool
      */
     public function __construct(
-        \Dibs\EasyCheckout\Helper\Data $helper,
-        \Magento\Catalog\Helper\Product\Configuration $productConfig,
-        \Magento\Tax\Model\Calculation $calculationTool,
-        \Magento\SalesRule\Api\RuleRepositoryInterface $ruleRepository,
-        \Magento\Checkout\Model\Session $checkoutSession,
+        Data $helper,
+        Configuration $productConfig,
+        Calculation $calculationTool,
+        RuleRepositoryInterface $ruleRepository,
+        Session $checkoutSession,
         ScopeConfigInterface $scopeConfig,
-        \Magento\Catalog\Model\ProductFactory $_productloader,
+        ProductFactory $_productloader,
         Rate $taxRate,
         SingleOrderItemFactory $singleOrderItemFactory
     ) {
@@ -811,9 +815,9 @@ class Items
                     $itemName,
                     "pcs",
                     round($qty, 0),
-                    $this->convertToInt($unitPriceExclTax),
                     $this->convertToInt($vat),
                     $this->convertToInt($item->getBaseTaxAmount()),
+                    $this->convertToInt($unitPriceExclTax),
                     (int)$netPrice,
                     (int)$grossPrice
                 );
