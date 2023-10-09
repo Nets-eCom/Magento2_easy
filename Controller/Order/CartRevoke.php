@@ -4,23 +4,38 @@ namespace Dibs\EasyCheckout\Controller\Order;
 
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ActionInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\View\Result\Page;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Quote\Api\CartRepositoryInterface;
 
 class CartRevoke implements ActionInterface
 {
-    protected $resultPageFactory;
+    protected Context $context;
+    protected PageFactory $resultPageFactory;
+    protected Session $checkoutSession;
+    protected CartRepositoryInterface $quoteFactory;
 
+    /**
+     * @param Context $context
+     * @param PageFactory $resultPageFactory
+     * @param Session $checkoutSession
+     * @param CartRepositoryInterface $quoteFactory
+     */
     public function __construct(Context $context, PageFactory $resultPageFactory, Session $checkoutSession, CartRepositoryInterface $quoteFactory)
     {
-
+        $this->context = $context;
         $this->resultPageFactory = $resultPageFactory;
         $this->checkoutSession = $checkoutSession;
         $this->quoteFactory = $quoteFactory;
     }
 
-    public function execute()
+    /**
+     * @return Page
+     * @throws NoSuchEntityException
+     */
+    public function execute(): Page
     {
         $session = $this->checkoutSession;
 
