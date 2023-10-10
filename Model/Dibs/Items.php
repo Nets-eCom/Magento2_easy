@@ -17,7 +17,6 @@ use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Tax\Model\Calculation;
 use Magento\Tax\Model\Calculation\Rate;
-use Dibs\EasyCheckout\Logger\Logger;
 
 /**
  * Dibs (Checkout) Order Items Model
@@ -52,7 +51,6 @@ class Items
     protected $_taxRate;
     private RuleRepositoryInterface $ruleRepository;
     private SingleOrderItemFactory $singleOrderItemFactory;
-    private Logger $logger;
     private CartRepositoryInterface $cartRepository;
 
     /**
@@ -72,7 +70,6 @@ class Items
         ProductFactory $_productloader,
         Rate $taxRate,
         SingleOrderItemFactory $singleOrderItemFactory,
-        Logger $logger,
         CartRepositoryInterface $cartRepository
     ) {
         $this->_helper = $helper;
@@ -85,7 +82,6 @@ class Items
         $this->_productloader = $_productloader;
         $this->_taxRate = $taxRate;
         $this->singleOrderItemFactory = $singleOrderItemFactory;
-        $this->logger = $logger;
         $this->cartRepository = $cartRepository;
     }
 
@@ -553,9 +549,6 @@ class Items
         $totals = $quote->getTotals();
         $taxAmount = (isset($totals['tax'])) ? $this->convertToInt($totals['tax']->getValue()) : 0;
         $netAmount = $amount - $taxAmount;
-
-        $this->logger->error("Last tax update: " . $taxAmount);
-        $this->logger->error("Last net update: " . $netAmount);
 
         $orderItem = $this->singleOrderItemFactory->createItem(
             md5("item" . $quoteId),
