@@ -1121,7 +1121,7 @@ class Items
         $quote = $this->cartRepository->get($quoteId);
 
         if (!$quote instanceof Quote) {
-            throw new \RuntimeException("Unexpected Quote type");
+            throw new CheckoutException(__("Unexpected type, Quote expected."));
         }
 
         return $quote;
