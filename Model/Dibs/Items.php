@@ -356,9 +356,9 @@ class Items
         if ($discountAmount != 0) {
             //check if Taxes are applied BEFORE or AFTER the discount
             //if taxes are applied BEFORE the discount we have shipping_incl_tax = shipping_amount + shipping_tax_amount
-            if ($vat != 0 && abs(
-                    $address->getShippingInclTax() - ($address->getShippingAmount() + $address->getShippingTaxAmount())
-                ) < .001) {
+            if ($vat != 0
+                && abs($address->getShippingInclTax() - ($address->getShippingAmount() + $address->getShippingTaxAmount())) < .001
+            ) {
                 //the taxes are applied BEFORE discount; add discount without VAT (is not OK for EU, but, is customer settings
                 $vat = 0;
             }
@@ -367,8 +367,9 @@ class Items
                 $this->_discounts[$vat] = 0;
             }
 
-            if ($vat != 0 && $address->getShippingDiscountTaxCompensationAmount(
-                ) == 0) {   //prices (and discount) EXCL taxes,
+            if ($vat != 0
+                && $address->getShippingDiscountTaxCompensationAmount() == 0
+            ) {   //prices (and discount) EXCL taxes,
                 $discountAmount += $discountAmount * $vat / 100;
             }
 
@@ -396,8 +397,10 @@ class Items
                 $quoteDiscountAmount += $quoteItem->getBaseDiscountAmount();
 
                 //Bundle product Discount Calculation
-                if ($quoteItem->getProductType() == 'bundle' && $quoteItem->getBaseDiscountAmount(
-                    ) == 0 && $quoteItem->getTotalDiscountAmount() > 0) {
+                if ($quoteItem->getProductType() == 'bundle'
+                    && $quoteItem->getBaseDiscountAmount() == 0
+                    && $quoteItem->getTotalDiscountAmount() > 0
+                ) {
                     $quoteDiscountAmount += $quoteItem->getTotalDiscountAmount();
                 }
 
@@ -837,9 +840,9 @@ class Items
                     }
 
                     if ($discountAmount != 0 && $mainItem->getDiscountPercent() > 0) {
-                        if ($vat != 0 && abs(
-                                $item->getRowTotalInclTax() - ($item->getRowTotal() + $item->getTaxAmount())
-                            ) < .001) {
+                        if ($vat != 0
+                            && abs($item->getRowTotalInclTax() - ($item->getRowTotal() + $item->getTaxAmount())) < .001
+                        ) {
                             //add discount without VAT (is not OK for EU, but, it is customer setting/choice
                             $vat = 0;
                         }
@@ -848,8 +851,9 @@ class Items
                             $this->_discounts[$vat] = 0;
                         }
 
-                        if ($vat != 0 && $item->getDiscountTaxCompensationAmount(
-                            ) == 0) { //discount without taxes, we want discount INCL taxes
+                        if ($vat != 0
+                            && $item->getDiscountTaxCompensationAmount() == 0
+                        ) { //discount without taxes, we want discount INCL taxes
                             $discountAmount += $discountAmount * $vat / 100;
                         }
 
@@ -1101,8 +1105,8 @@ class Items
             $orderItem = $this->singleOrderItemFactory->createItem(
                 $reference,
                 $couponCode
-                    ? (string)__('Discount (%1)', $couponCode)
-                    : (string)__('Discount'),
+                    ? __('Discount (%1)', $couponCode)
+                    : __('Discount'),
                 "st",
                 1,
                 $this->convertToInt($vat),
