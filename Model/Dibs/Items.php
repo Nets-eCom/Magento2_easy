@@ -1121,7 +1121,7 @@ class Items
         $quote = $this->cartRepository->get($quoteId);
 
         if (!$quote instanceof Quote) {
-            throw new CheckoutException(__("Unexpected type, Quote expected."));
+            throw new \UnexpectedValueException(sprintf("Unable to load a quote with id %d", $quoteId));
         }
 
         return $quote;
