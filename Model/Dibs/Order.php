@@ -304,19 +304,12 @@ class Order {
         $webhookCheckoutCompleted->setUrl($webHookUrl);
         $webhooks[] = $webhookCheckoutCompleted;
 
-//EVENT_PAYMENT_CHARGE_CREATED
+        //EVENT_PAYMENT_CHARGE_CREATED
         $webhookChargeCreated = new CreatePaymentWebhook();
         $webhookChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHARGE_CREATED);
         $webHookChargeUrl = $this->helper->getWebHookCallbackUrl($webhookChargeCreated->getControllerName());
         $webhookChargeCreated->setUrl($webHookChargeUrl);
         $webhooks[] = $webhookChargeCreated;
-
-        //EVENT_PAYMENT_NEW_CHARGE_CREATED
-        $webhookNewChargeCreated = new CreatePaymentWebhook();
-        $webhookNewChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_CHARGE_CREATED);
-        $webHookNewChargeUrl = $this->helper->getWebHookCallbackUrl($webhookNewChargeCreated->getControllerName());
-        $webhookNewChargeCreated->setUrl($webHookNewChargeUrl);
-        $webhooks[] = $webhookNewChargeCreated;
 
         //EVENT_PAYMENT_REFUND_INITIATED
         $webhookRefundInit = new CreatePaymentWebhook();

@@ -5,7 +5,7 @@ namespace Dibs\EasyCheckout\Helper;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Magento\Sales\Model\Order;
 
-class SwishResponseHandler
+class ResponseHandler
 {
     private \Magento\Sales\Api\OrderRepositoryInterface $orderRepository;
 
@@ -38,7 +38,7 @@ class SwishResponseHandler
      *
      * @return bool
      */
-    public function isSwishOrderValid(GetPaymentResponse $paymentResponse)
+    public function isOrderValid(GetPaymentResponse $paymentResponse)
     {
         return $paymentResponse->getSummary()->getChargedAmount() == $paymentResponse->getOrderDetails()->getAmount();
     }
@@ -53,18 +53,10 @@ class SwishResponseHandler
             GetPaymentResponse $paymentResponse,
             Order $order
     ) {
-        if (!$this->isSwishOrderValid($paymentResponse)) {
+        if (!$this->isOrderValid($paymentResponse)) {
             return;
         }
         $this->invoiceOrder($order);
-        $paymentMethod = $paymentResponse->getPaymentDetails()->getPaymentMethod();
-        if (strtoupper($paymentMethod) == 'SWISH') {
-            $order
-                ->setState(\Magento\Sales\Model\Order::STATE_PROCESSING)
-                ->addCommentToStatusHistory('Swish Payment Completed', true, true)
-            ;
-            $this->orderRepository->save($order);
-        }
     }
 
     /**
@@ -90,13 +82,12 @@ class SwishResponseHandler
             $this->invoiceSender->send($invoice);
 
             $invoice->capture();
-            $order->setIsInProcess(true);
             //send notification code
             $order->addCommentToStatusHistory(
                 __('Notified customer about invoice #%1.', $invoice->getId())
 	    )->setIsCustomerNotified(true)
 	    ->save();
-         
+
         } catch (\Exception $e) {
             // We cannot brake transaction
         }
