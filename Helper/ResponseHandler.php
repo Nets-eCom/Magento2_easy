@@ -15,8 +15,10 @@ class ResponseHandler
 
     private \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender;
 
+    private \Dibs\EasyCheckout\Helper\Data $dibsDataHelper;
+
     /**
-     * SwishResponseHandler constructor.
+     * ResponseHandler constructor.
      *
      * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
      */
@@ -24,12 +26,14 @@ class ResponseHandler
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
-        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
+        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
+        \Dibs\EasyCheckout\Helper\Data $dibsDataHelper
     ) {
         $this->orderRepository = $orderRepository;
         $this->invoiceService = $invoiceService;
         $this->transaction = $transaction;
         $this->invoiceSender = $invoiceSender;
+        $this->dibsDataHelper = $dibsDataHelper;
     }
 
     /**
@@ -50,8 +54,8 @@ class ResponseHandler
      * @param Order $order
      */
     public function saveOrder(
-            GetPaymentResponse $paymentResponse,
-            Order $order
+        GetPaymentResponse $paymentResponse,
+        Order $order
     ) {
         if (!$this->isOrderValid($paymentResponse)) {
             return;
@@ -68,9 +72,13 @@ class ResponseHandler
             return;
         }
 
+        if (!$this->dibsDataHelper->getCharge()) {
+            return;
+        }
+
         try {
             $invoice = $this->invoiceService->prepareInvoice($order);
-      	    $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
+            $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
             $invoice->register();
             $invoice->save();
             $transactionSave = $this->transaction->addObject(
@@ -85,8 +93,8 @@ class ResponseHandler
             //send notification code
             $order->addCommentToStatusHistory(
                 __('Notified customer about invoice #%1.', $invoice->getId())
-	    )->setIsCustomerNotified(true)
-	    ->save();
+            )->setIsCustomerNotified(true)
+            ->save();
 
         } catch (\Exception $e) {
             // We cannot brake transaction
