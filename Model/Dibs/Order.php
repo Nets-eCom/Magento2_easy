@@ -206,7 +206,8 @@ class Order {
         }
         $paymentCheckout->setPrivacyUrl($privacyUrl);
 
-        if ($this->helper->getCancelUrl() !== null) {
+
+        if (in_array($this->helper->getCheckoutFlow(), [CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY, CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED])) {
             $cancelUrl = $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB) . "easycheckout/order/cartrevoke";
             $paymentCheckout->setCancelUrl($cancelUrl);
         }
