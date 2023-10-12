@@ -28,14 +28,10 @@ class PaymentCharged extends Webhook {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function afterSave()
+    protected function afterSave(): void
     {
         $responseHandler = $this->dibsCheckoutContext->getResponseHandler();
         $paymentResponse = $this->dibsCheckoutContext->getDibsOrderHandler()->loadDibsPaymentById($this->paymentId, $this->storeId);
         $responseHandler->saveOrder($paymentResponse, $this->order);
-
     }
 }
