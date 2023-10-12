@@ -23,7 +23,8 @@ class CreateOrderOnPaymentCreatedObserver implements ObserverInterface
 
     public function execute(EventObserver $observer)
     {
-        if ($observer->getData('integrationType') !== CheckoutFlow::FLOW_REDIRECT) {
+
+        if (!in_array($observer->getData('integrationType'), [CheckoutFlow::FLOW_EMBEDED, CheckoutFlow::FLOW_REDIRECT])) {
             return;
         }
 

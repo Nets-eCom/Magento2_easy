@@ -9,10 +9,7 @@ class PaymentMutex
      */
     private const CACHE_IDENTIFIER = 'PAYMENT_LOCK_';
 
-    /**
-     * @var \Magento\Framework\App\Cache\Type\Config
-     */
-    private $backendCache;
+    private \Magento\Framework\App\Cache\Type\Config $backendCache;
 
     /**
      * Mutex constructor.

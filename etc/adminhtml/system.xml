@@ -156,12 +156,12 @@
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status\Processing</source_model>
                     <comment>Choose status that orders will have after customer has completed the Easy checkout process</comment>
                 </field>
-                <field id="electronic_data_store" translate="label comment" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="electronic_data_store" translate="label comment" type="select" sortOrder="104" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Services / Downloadable Goods </label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>If Yes, Nets Easy will not collect any Customer Data.</comment>
                 </field>
-                <field id="newsletter_subscribe" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
+                <field id="newsletter_subscribe" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="106">
                     <label>Subscribe Newsletter Checked by default</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>

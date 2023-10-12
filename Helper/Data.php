@@ -60,15 +60,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $orderRepository;
 
-    /**
-     * @var \Magento\Framework\Serialize\SerializerInterface
-     */
-    private $serializer;
+    private \Magento\Framework\Serialize\SerializerInterface $serializer;
 
-    /**
-     * @var \Magento\Cms\Api\GetPageByIdentifierInterface
-     */
-    private $_cmsPage;
+    private \Magento\Cms\Api\GetPageByIdentifierInterface $_cmsPage;
 
     /**
      * Data constructor.
@@ -204,7 +198,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-    
+
     public function getLogo($store = null)
     {
         return $this->scopeConfig->getValue(
@@ -213,7 +207,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
-    
+
     public function useInvoiceFee($store = null)
     {
         return $this->scopeConfig->isSetFlag(
@@ -549,16 +543,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCancelUrl($store = null)
     {
-        // Not available in Embeded
-        $integrations = [
-            CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY,
-            CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED
-        ];
-
-        if (!in_array($this->getCheckoutFlow(), $integrations)) {
-            return null;
-        }
-
         return $this->scopeConfig->getValue(
             self::XML_PATH_SETTINGS . 'cancel_url',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -702,12 +686,22 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-    protected function splitStringToArray($values){
-        $version =phpversion();
-        if($version >= 8 ){
+    public function getSendOrderItemsToEasy($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_SETTINGS . 'send_order_items_to_easy',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    protected function splitStringToArray($values)
+    {
+        $version = phpversion();
+        if ($version >= 8) {
             return preg_split("#\s*[ ,;]\s*#", $values, -1, PREG_SPLIT_NO_EMPTY);
         }
-        return preg_split("#\s*[ ,;]\s*#", $values, null, PREG_SPLIT_NO_EMPTY);
+        return preg_split("#\s*[ ,;]\s*#", $values, -1, PREG_SPLIT_NO_EMPTY);
     }
 
     /**

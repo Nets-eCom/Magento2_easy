@@ -55,15 +55,9 @@ class CheckoutContext
     /** @var OrderSender */
     protected $orderSender;
 
-    /**
-     * @var SwishResponseHandler
-     */
-    private $swishHandler;
+    private \Dibs\EasyCheckout\Helper\SwishResponseHandler $swishHandler;
 
-    /**
-     * @var PaymentMutex
-     */
-    private $paymentMutex;
+    private \Dibs\EasyCheckout\Model\Cache\PaymentMutex $paymentMutex;
 
     /**
      * Constructor

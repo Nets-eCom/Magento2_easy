@@ -5,7 +5,6 @@ namespace Dibs\EasyCheckout\Controller\Webhook;
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
 use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
-use Dibs\EasyCheckout\Controller\Order\SaveOrder;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
@@ -101,7 +100,6 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
     public function __construct(
             \Dibs\EasyCheckout\Helper\Data $helper,
             \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
-            SaveOrder $saveOrder,
             RequestInterface $request,
             DibsCheckout $dibsCheckout,
             DibsCheckoutContext $dibsCheckoutContext,
@@ -113,7 +111,6 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
     ) {
         $this->helper = $helper;
         $this->paymentApi = $paymentApi;
-        $this->saveOrder = $saveOrder;
         $this->request = $request;
         $this->dibsCheckout = $dibsCheckout;
         $this->dibsCheckoutContext = $dibsCheckoutContext;
