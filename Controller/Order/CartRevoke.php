@@ -2,53 +2,54 @@
 
 namespace Dibs\EasyCheckout\Controller\Order;
 
+use Dibs\EasyCheckout\Helper\Data;
+use Magento\Backend\Model\View\Result\RedirectFactory;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ActionInterface;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\View\Result\Page;
-use Magento\Framework\View\Result\PageFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Quote\Api\CartRepositoryInterface;
 
+
 class CartRevoke implements ActionInterface
 {
-    protected Context $context;
-    protected PageFactory $resultPageFactory;
-    protected Session $checkoutSession;
-    protected CartRepositoryInterface $quoteFactory;
+    private Context $context;
+    private Session $session;
+    private CartRepositoryInterface $cartRepository;
+    private RedirectFactory $redirectFactory;
+    private Data $data;
 
-    /**
-     * @param Context $context
-     * @param PageFactory $resultPageFactory
-     * @param Session $checkoutSession
-     * @param CartRepositoryInterface $quoteFactory
-     */
-    public function __construct(Context $context, PageFactory $resultPageFactory, Session $checkoutSession, CartRepositoryInterface $quoteFactory)
+    public function __construct(
+        Context                 $context,
+        Session                 $session,
+        CartRepositoryInterface $cartRepository,
+        RedirectFactory         $redirectFactory,
+        Data    $data)
     {
         $this->context = $context;
-        $this->resultPageFactory = $resultPageFactory;
-        $this->checkoutSession = $checkoutSession;
-        $this->quoteFactory = $quoteFactory;
+        $this->session = $session;
+        $this->cartRepository = $cartRepository;
+        $this->redirectFactory = $redirectFactory;
+        $this->data = $data;
     }
 
     /**
-     * @return Page
      * @throws NoSuchEntityException
      */
-    public function execute(): Page
+    public function execute(): ResultInterface
     {
-        $session = $this->checkoutSession;
+        $session = $this->session;
 
-        $quote = $this->quoteFactory->get($session->getQuoteId());
+        $quote = $this->cartRepository->get($session->getQuoteId());
         $quote->setIsActive(true)->setReservedOrderId(null);
 
         //Mismatch interface but is bug from Magento 2
         $session->replaceQuote($quote);
-        $this->quoteFactory->save($quote);
+        $this->cartRepository->save($quote);
 
-        $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set(__("You revoked the payment and your shopping cart was restored. "));
+        $redirect = $this->redirectFactory->create();
 
-        return $resultPage;
+        return $redirect->setUrl($this->data->getCancelUrl() ?? '/checkout/cart/');
     }
 }

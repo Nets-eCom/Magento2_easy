@@ -20,6 +20,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Store\Model\StoreManagerInterface;
@@ -201,7 +202,9 @@ class Order {
         }
         $paymentCheckout->setPrivacyUrl($privacyUrl);
 
-        if ($cancelUrl = $this->helper->getCancelUrl()) {
+
+        if (in_array($this->helper->getCheckoutFlow(), [CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY, CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED])) {
+            $cancelUrl = $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB) . "easycheckout/order/cartrevoke";
             $paymentCheckout->setCancelUrl($cancelUrl);
         }
 

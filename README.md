@@ -6,7 +6,7 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.6.3`
+|Version | `1.6.4`
 |Documentation Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-magento/nets-easy-for-magento-magento-2/
 |Github | https://github.com/Nets-eCom/Magento2_easy
 |License | `MIT License`
@@ -69,6 +69,6 @@ https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-magento/nets-easy-
 
 ### Contact
 * Nets customer service
-- Nets Easy provides support for both test and live Easy accounts. Contact information can be found here : https://nets.eu/en/payments/customerservice/
+- Nets Easy provides support for both test and live Easy accounts. Contact information can be found here : https://developer.nexigroup.com/nexi-checkout/en-EU/support/
 
 ** CREATE YOUR FREE NETS EASY TEST ACCOUNT HERE : https://portal.dibspayment.eu/registration **
