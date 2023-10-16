@@ -9,8 +9,7 @@ class CreatePaymentWebhook extends AbstractRequest
     const EVENT_PAYMENT_CREATED = 'payment.created';
     const EVENT_PAYMENT_RESERVATION_CREATED = 'payment.reservation.created';
     const EVENT_PAYMENT_CHECKOUT_COMPLETED = 'payment.checkout.completed';
-    const EVENT_PAYMENT_CHARGE_CREATED = 'payment.charge.created';
-    const EVENT_PAYMENT_NEW_CHARGE_CREATED = 'payment.charge.created.v2';
+    const EVENT_PAYMENT_CHARGE_CREATED = 'payment.charge.created.v2';
     const EVENT_PAYMENT_CHARGE_FAILED = 'payment.charge.failed';
     const EVENT_PAYMENT_REFUND_INITIATED = 'payment.refund.initiated';
     const EVENT_PAYMENT_NEW_REFUND_INITIATED = 'payment.refund.initiated.v2';
@@ -26,7 +25,6 @@ class CreatePaymentWebhook extends AbstractRequest
         self::EVENT_PAYMENT_RESERVATION_CREATED => 'ReservationCreated',
         self::EVENT_PAYMENT_CHECKOUT_COMPLETED => 'CheckoutCompleted',
         self::EVENT_PAYMENT_CHARGE_CREATED => 'PaymentCharged',
-        self::EVENT_PAYMENT_NEW_CHARGE_CREATED => 'PaymentCharged',
         self::EVENT_PAYMENT_CHARGE_FAILED => '',
         self::EVENT_PAYMENT_REFUND_INITIATED => 'PaymentRefund',
         self::EVENT_PAYMENT_NEW_REFUND_INITIATED => 'PaymentRefund',
