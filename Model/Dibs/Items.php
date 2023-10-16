@@ -9,7 +9,6 @@ use Dibs\EasyCheckout\Model\Factory\SingleOrderItemFactory;
 use Magento\Catalog\Helper\Product\Configuration;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Checkout\Model\Session;
-use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -51,7 +50,6 @@ class Items
     protected $_taxRate;
     private RuleRepositoryInterface $ruleRepository;
     private SingleOrderItemFactory $singleOrderItemFactory;
-    private CartRepositoryInterface $cartRepository;
 
     /**
      * Items constructor.
@@ -69,8 +67,7 @@ class Items
         ScopeConfigInterface $scopeConfig,
         ProductFactory $_productloader,
         Rate $taxRate,
-        SingleOrderItemFactory $singleOrderItemFactory,
-        CartRepositoryInterface $cartRepository
+        SingleOrderItemFactory $singleOrderItemFactory
     ) {
         $this->_helper = $helper;
         $this->_productConfig = $productConfig;
@@ -82,7 +79,6 @@ class Items
         $this->_productloader = $_productloader;
         $this->_taxRate = $taxRate;
         $this->singleOrderItemFactory = $singleOrderItemFactory;
-        $this->cartRepository = $cartRepository;
     }
 
     /**
@@ -548,20 +544,15 @@ class Items
 
     public function generateFakePartialOrderItem(float $amount, int $quoteId): OrderItem
     {
-        $quote = $this->loadQuoteById($quoteId);
-        $totals = $quote->getTotals();
-        $taxAmount = (isset($totals['tax'])) ? $this->convertToInt($totals['tax']->getValue()) : 0;
-        $netAmount = $amount - $taxAmount;
-
         $orderItem = $this->singleOrderItemFactory->createItem(
             md5("item" . $quoteId),
             "Order (all items)",
             "pcs",
             1,
             0,
-            $taxAmount,
+            0,
             $amount,
-            $netAmount,
+            $amount,
             $amount
         );
 
@@ -1118,16 +1109,5 @@ class Items
 
             $this->_cart[$reference] = $orderItem;
         }
-    }
-
-    private function loadQuoteById(int $quoteId): Quote
-    {
-        $quote = $this->cartRepository->get($quoteId);
-
-        if (!$quote instanceof Quote) {
-            throw new \UnexpectedValueException(sprintf("Unable to load a quote with id %d", $quoteId));
-        }
-
-        return $quote;
     }
 }
