@@ -32,17 +32,4 @@ class ReservationCreated extends Webhook
             }
         }
     }
-
-    /**
-     * @inheritDoc
-     */
-    protected function afterSave()
-    {
-        $swishHandler = $this->dibsCheckoutContext->getSwishHandler();
-        $paymentResponse = $this->dibsCheckoutContext->getDibsOrderHandler()->loadDibsPaymentById($this->paymentId, $this->storeId);
-        $swishValid = $swishHandler->isSwishOrderValid($paymentResponse);
-        if ($swishValid) {
-            $swishHandler->saveOrder($paymentResponse, $this->order);
-        }
-    }
 }

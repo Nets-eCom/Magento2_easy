@@ -17,7 +17,7 @@ class PaymentCharged extends Webhook {
             } else if($data['event'] == 'payment.charge.created.v2') {
                 $dibs_order_status_id = 6;
             }
-            
+
             if($dibs_order_status_id > $additionalInformation['dibs_order_status_id']) {
                 $additionalInformation['dibs_payment_status'] = "Charged";
 		            $additionalInformation['dibs_payment_method'] = $paymentMethod;
@@ -28,4 +28,10 @@ class PaymentCharged extends Webhook {
         }
     }
 
+    protected function afterSave(): void
+    {
+        $responseHandler = $this->dibsCheckoutContext->getResponseHandler();
+        $paymentResponse = $this->dibsCheckoutContext->getDibsOrderHandler()->loadDibsPaymentById($this->paymentId, $this->storeId);
+        $responseHandler->saveOrder($paymentResponse, $this->order);
+    }
 }
