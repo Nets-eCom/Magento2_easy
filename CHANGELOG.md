@@ -6,11 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
-|Version | `1.6.4`
+|Version | `1.6.5`
 |Guide | https://tech.nets.eu/magento
 |Github | https://github.com/Nets-eCom/Magento2_easy
 
 ## CHANGELOG
+
+### Version 1.6.5 - Released - 2023-10-19
+* Update: allow to configure how order items are sent to the API
+* Fix: invoice order on payment.charge.created.v2 event (autocharge)
+
 
 ### Version 1.6.4 - Released - 2023-10-12
 * Update: Items in shopping basket.
