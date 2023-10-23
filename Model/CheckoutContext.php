@@ -2,7 +2,7 @@
 
 namespace Dibs\EasyCheckout\Model;
 
-use Dibs\EasyCheckout\Helper\SwishResponseHandler;
+use Dibs\EasyCheckout\Helper\ResponseHandler;
 use Dibs\EasyCheckout\Model\Cache\PaymentMutex;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 use Magento\Sales\Model\ResourceModel\OrderFactory as OrderResourceFactory;
@@ -55,15 +55,9 @@ class CheckoutContext
     /** @var OrderSender */
     protected $orderSender;
 
-    /**
-     * @var SwishResponseHandler
-     */
-    private $swishHandler;
+    private \Dibs\EasyCheckout\Helper\ResponseHandler $responseHandler;
 
-    /**
-     * @var PaymentMutex
-     */
-    private $paymentMutex;
+    private \Dibs\EasyCheckout\Model\Cache\PaymentMutex $paymentMutex;
 
     /**
      * Constructor
@@ -75,7 +69,7 @@ class CheckoutContext
      * @param \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement
      * @param OrderCollectionFactory $orderCollectionFactory
      * @param \Magento\Newsletter\Model\Subscriber $subscriber
-     * @param SwishResponseHandler $swishHandler
+     * @param ResponseHandler $responseHandler
      * @param PaymentMutex $paymentMutex
      */
     public function __construct(
@@ -86,7 +80,7 @@ class CheckoutContext
         \Magento\Sales\Api\OrderCustomerManagementInterface $orderCustomerManagement,
         OrderCollectionFactory $orderCollectionFactory,
         \Magento\Newsletter\Model\Subscriber $subscriber,
-        SwishResponseHandler $swishHandler,
+        ResponseHandler $responseHandler,
         PaymentMutex $paymentMutex,
         OrderResourceFactory $orderResourceFactory,
         OrderFactory $orderFactory,
@@ -101,7 +95,7 @@ class CheckoutContext
         $this->orderCustomerManagement = $orderCustomerManagement;
         $this->subscriber = $subscriber;
         $this->orderCollectionFactory = $orderCollectionFactory;
-        $this->swishHandler = $swishHandler;
+        $this->responseHandler = $responseHandler;
         $this->paymentMutex = $paymentMutex;
         $this->orderResourceFactory = $orderResourceFactory;
         $this->orderFactory = $orderFactory;
@@ -167,11 +161,11 @@ class CheckoutContext
     }
 
     /**
-     * @return SwishResponseHandler
+     * @return ResponseHandler
      */
-    public function getSwishHandler(): SwishResponseHandler
+    public function getResponseHandler(): ResponseHandler
     {
-        return $this->swishHandler;
+        return $this->responseHandler;
     }
 
     /**

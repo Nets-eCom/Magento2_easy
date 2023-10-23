@@ -15,9 +15,10 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
      */
     protected $helper;
 
-    /**
-     * @var Order
-     */
+    /** @var \Dibs\EasyCheckout\Model\Client\Api\Payment */
+    protected $paymentApi;
+
+    /** @var Order */
     protected $order;
 
     /** @var \Dibs\EasyCheckout\Model\Checkout */
@@ -35,7 +36,6 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
     public function __construct(
         \Dibs\EasyCheckout\Helper\Data $helper,
         \Dibs\EasyCheckout\Model\Client\Api\Payment $paymentApi,
-        //\Dibs\EasyCheckout\Model\Client\Client $clientApi,
         \Dibs\EasyCheckout\Model\Checkout $dibsOrderHandler,
         \Magento\Framework\Session\Config\ConfigInterface $sessionConfig,
         \Magento\Framework\Stdlib\CookieManagerInterface $cookieManager,
@@ -43,7 +43,6 @@ class OnepageSuccessObserver extends Client implements ObserverInterface
     ) {
         $this->helper = $helper;
         $this->paymentApi = $paymentApi;
-       // $this->clientApi  = $clientApi;
         $this->dibsOrderHandler = $dibsOrderHandler;
         $this->cookieMetadataFactory = $cookieMetadataFactory;
         $this->cookieManager = $cookieManager;

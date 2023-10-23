@@ -9,15 +9,9 @@ use Magento\Checkout\Model\Session;
 
 class FetchOrderByPaymentId
 {
-    /**
-     * @var CheckoutContext
-     */
-    private $checkoutContext;
+    private \Dibs\EasyCheckout\Model\CheckoutContext $checkoutContext;
 
-    /**
-     * @var Session
-     */
-    private $checkoutSession;
+    private \Magento\Checkout\Model\Session $checkoutSession;
 
     /**
      * FetchOrderByPaymentId constructor.

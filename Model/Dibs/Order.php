@@ -3,6 +3,7 @@
 namespace Dibs\EasyCheckout\Model\Dibs;
 
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
+use Magento\Sales\Model\Order\Payment as MagentoPayment;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\ChargePayment;
@@ -19,6 +20,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Store\Model\StoreManagerInterface;
@@ -54,10 +56,7 @@ class Order {
     /** @var StoreManagerInterface */
     protected $storeManager;
 
-    /**
-     * @var \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory
-     */
-    private $consumerDataProviderFactory;
+    private \Dibs\EasyCheckout\Model\Quote\ConsumerDataProviderFactory $consumerDataProviderFactory;
 
     /**
      * Order constructor.
@@ -171,14 +170,9 @@ class Order {
         }
 
         $dibsAmount = $this->fixPrice($quote->getBaseGrandTotal());
-
-        // let it throw exception, should be handled somewhere else
         $items = $this->items->generateOrderItemsFromQuote($quote);
-
         $consumerType = $this->generateConsumerType($quote);
-
         $integrationType = (isset($checkoutInfo['integrationType'])) ? $checkoutInfo['integrationType'] : '';
-
         $checkoutFlow = (isset($checkoutInfo['checkoutFlow'])) ? $checkoutInfo['checkoutFlow'] : '';
         $flowIsVanilla = $checkoutFlow === CheckoutFlow::FLOW_VANILLA;
 
@@ -208,7 +202,9 @@ class Order {
         }
         $paymentCheckout->setPrivacyUrl($privacyUrl);
 
-        if ($cancelUrl = $this->helper->getCancelUrl()) {
+
+        if (in_array($this->helper->getCheckoutFlow(), [CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY, CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED])) {
+            $cancelUrl = $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB) . "easycheckout/order/cartrevoke";
             $paymentCheckout->setCancelUrl($cancelUrl);
         }
 
@@ -305,19 +301,12 @@ class Order {
         $webhookCheckoutCompleted->setUrl($webHookUrl);
         $webhooks[] = $webhookCheckoutCompleted;
 
-//EVENT_PAYMENT_CHARGE_CREATED
+        //EVENT_PAYMENT_CHARGE_CREATED
         $webhookChargeCreated = new CreatePaymentWebhook();
         $webhookChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_CHARGE_CREATED);
         $webHookChargeUrl = $this->helper->getWebHookCallbackUrl($webhookChargeCreated->getControllerName());
         $webhookChargeCreated->setUrl($webHookChargeUrl);
         $webhooks[] = $webhookChargeCreated;
-
-        //EVENT_PAYMENT_NEW_CHARGE_CREATED
-        $webhookNewChargeCreated = new CreatePaymentWebhook();
-        $webhookNewChargeCreated->setEventName(CreatePaymentWebhook::EVENT_PAYMENT_NEW_CHARGE_CREATED);
-        $webHookNewChargeUrl = $this->helper->getWebHookCallbackUrl($webhookNewChargeCreated->getControllerName());
-        $webhookNewChargeCreated->setUrl($webHookNewChargeUrl);
-        $webhooks[] = $webhookNewChargeCreated;
 
         //EVENT_PAYMENT_REFUND_INITIATED
         $webhookRefundInit = new CreatePaymentWebhook();
@@ -529,56 +518,51 @@ class Order {
     public function captureDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount) {
         $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
 
-        if ($paymentId) {
+        if (!$paymentId || !$payment instanceof MagentoPayment) {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('You need a dibs payment ID to capture.')
+            );
+        }
 
-            /** @var Invoice $invoice */
-            $invoice = $payment->getCapturedInvoice(); // we get this from Observer\PaymentCapture
+        /** @var Invoice $invoice */
+        $invoice = $payment->getCapturedInvoice(); // we get this from Observer\PaymentCapture
 
-            if (!$invoice) {
-                throw new LocalizedException(__('Cannot capture online, no invoice set'));
-            }
+        if (!$invoice) {
+            throw new LocalizedException(__('Cannot capture online, no invoice set'));
+        }
 
-            // generate items
-            $this->items->addDibsItemsByInvoice($invoice);
+        // generate items
+        $this->items->addDibsItemsByInvoice($invoice);
 
-            // at this point we got VAT/Tax Rate from items above.
-            if ($invoice->getDibsInvoiceFee()) {
-                $this->items->addInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $invoice->getDibsInvoiceFee(), true);
-            }
+        // at this point we got VAT/Tax Rate from items above.
+        if ($invoice->getDibsInvoiceFee()) {
+            $this->items->addInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $invoice->getDibsInvoiceFee(), true);
+        }
 
-            // We validate the items before we send them to Dibs. This might throw an exception!
-            $this->items->validateTotals($invoice->getGrandTotal());
+        // We validate the items before we send them to Dibs. This might throw an exception!
+        $this->items->validateTotals($invoice->getGrandTotal());
 
-            // now we have our items...
-            $captureItems = $this->items->getCart();
+        // now we have our items...
+        $captureItems = $this->items->getOrderItems($amount, (int)$payment->getOrder()->getQuoteId());
 
-            $paymentDetails = $this->paymentApi->getPayment($paymentId, $invoice->getStoreId());
-            if($paymentDetails->GetPaymentDetails()->getPaymentMethod() == "EasyInvoice"){
-              foreach($captureItems as $captureItem){
-                $untiPrice = $captureItem->getGrossTotalAmount()/$captureItem->getQuantity();
-                $captureItem->setTaxRate(0);
-                $captureItem->setTaxAmount(0);
-                $captureItem->setUnitPrice($untiPrice);
-                //$captureItem->setUnitPrice();
-                $captureItem->setNetTotalAmount($captureItem->getGrossTotalAmount());
-              }
-            }
-            if ($this->helper->getCharge() && !empty($paymentDetails->getChargeDetails())) {
+        $paymentDetails = $this->paymentApi->getPayment($paymentId, $invoice->getStoreId());
+        if($paymentDetails->GetPaymentDetails()->getPaymentMethod() == "EasyInvoice"){
+          foreach($captureItems as $captureItem){
+            $untiPrice = $captureItem->getGrossTotalAmount()/$captureItem->getQuantity();
+            $captureItem->setTaxRate(0);
+            $captureItem->setTaxAmount(0);
+            $captureItem->setUnitPrice($untiPrice);
+            //$captureItem->setUnitPrice();
+            $captureItem->setNetTotalAmount($captureItem->getGrossTotalAmount());
+          }
+        }
+        if ($this->helper->getCharge() && !empty($paymentDetails->getChargeDetails())) {
+            $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
+        } else if ($paymentDetails->getPaymentDetails()->getPaymentType() == "A2A") {
+            $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
+        } else if ($this->helper->canCapturePartial()) {
+            if ($paymentDetails->getSummary()->getReservedAmount() == $paymentDetails->getSummary()->getChargedAmount()) {
                 $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
-            } else if ($paymentDetails->getPaymentDetails()->getPaymentType() == "A2A") {
-                $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
-            } else if ($this->helper->canCapturePartial()) {
-                if ($paymentDetails->getSummary()->getReservedAmount() == $paymentDetails->getSummary()->getChargedAmount()) {
-                    $chargeId = $paymentDetails->getChargeDetails()->getChargeId();
-                } else {
-                    $paymentObj = new ChargePayment();
-                    $paymentObj->setAmount($this->fixPrice($amount));
-                    $paymentObj->setItems($captureItems);
-
-                    // capture/charge it now!
-                    $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
-                    $chargeId = $response->getChargeId();
-                }
             } else {
                 $paymentObj = new ChargePayment();
                 $paymentObj->setAmount($this->fixPrice($amount));
@@ -588,15 +572,19 @@ class Order {
                 $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
                 $chargeId = $response->getChargeId();
             }
-
-            // save charge id, we need it later! if a refund will be made
-            $payment->setAdditionalInformation('dibs_charge_id', $chargeId);
-            $payment->setTransactionId($chargeId);
         } else {
-            throw new \Magento\Framework\Exception\LocalizedException(
-                            __('You need an dibs payment ID to capture.')
-            );
+            $paymentObj = new ChargePayment();
+            $paymentObj->setAmount($this->fixPrice($amount));
+            $paymentObj->setItems($captureItems);
+
+            // capture/charge it now!
+            $response = $this->paymentApi->chargePayment($paymentObj, $paymentId);
+            $chargeId = $response->getChargeId();
         }
+
+        // save charge id, we need it later! if a refund will be made
+        $payment->setAdditionalInformation('dibs_charge_id', $chargeId);
+        $payment->setTransactionId($chargeId);
     }
 
     /**
@@ -635,7 +623,7 @@ class Order {
             // We validate the items before we send them to Dibs. This might throw an exception!
             $this->items->validateTotals($creditMemo->getGrandTotal());
 
-            $refundItems = $this->items->getCart();
+            $refundItems = $this->items->getOrderItems($creditMemo->getGrandTotal(), (int)$payment->getOrder()->getQuoteId());
             $amountToRefund = $this->fixPrice($amount);
 
             $paymentObj = new RefundPayment();

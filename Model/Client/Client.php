@@ -31,8 +31,7 @@ abstract class Client
     protected $testMode;
 
 
-    /** @var \GuzzleHttp\Client $httpClient */
-    private $httpClient;
+    private \GuzzleHttp\Client $httpClient;
 
     /**
      * Constructor

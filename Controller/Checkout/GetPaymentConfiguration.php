@@ -2,34 +2,12 @@
 namespace Dibs\EasyCheckout\Controller\Checkout;
 
 use Dibs\EasyCheckout\Controller\Checkout;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
 use Dibs\EasyCheckout\Api\CheckoutFlow;
 
 class GetPaymentConfiguration extends Checkout
 {
     const URL_CHECKOUT_CART_PATH = 'checkout/cart';
     const URL_CHECKOUT_PATH      = 'checkout';
-
-    protected $context;
-    protected $cart;
-
-    public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Checkout\Model\Cart $cart,
-        \Magento\Customer\Model\ResourceModel\CustomerRepository $customerRepository,
-        \Magento\Customer\Model\AccountManagement $accountManagement,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-        \Dibs\EasyCheckout\Model\Checkout $dibsCheckout,
-        \Dibs\EasyCheckout\Model\CheckoutContext $dibsCheckoutContext,
-        array $data = []
-    ){
-        parent::__construct($context, $customerSession, $customerRepository, $accountManagement, $checkoutSession, $storeManager, $resultPageFactory, $dibsCheckout, $dibsCheckoutContext);
-       // $this->_customerRepository   = $customerRepository;
-        $this->_cart = $cart;
-    }
 
     /**
      * @inheridoc

@@ -245,10 +245,7 @@ class Locale
         "AT" => "de-AT"
     ];
     
-    /**
-     * @var Resolver
-     */
-    private $localeResolver;
+    private \Magento\Framework\Locale\Resolver $localeResolver;
 
     public function __construct(
         Resolver $localeResolver
