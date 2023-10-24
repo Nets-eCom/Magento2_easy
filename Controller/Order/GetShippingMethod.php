@@ -8,6 +8,7 @@ use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutCOntext;
 use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Directory\Model\Country\Postcode\ValidatorInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 
 class GetShippingMethod extends Update
 {
@@ -46,7 +47,8 @@ class GetShippingMethod extends Update
         DibsCheckout $dibsCheckout,
         DibsCheckoutCOntext $dibsCheckoutContext,
         ValidatorInterface $validatorInterface,
-        DibsCartHelper $dibsCartHelper
+        DibsCartHelper $dibsCartHelper,
+        Json $json
     )
     {
         parent::__construct(
@@ -58,7 +60,8 @@ class GetShippingMethod extends Update
             $storeManager,
             $resultPageFactory,
             $dibsCheckout,
-            $dibsCheckoutContext
+            $dibsCheckoutContext,
+            $json
         );
         $this->validatorInterface = $validatorInterface;
         $this->dibsCartHelper = $dibsCartHelper;
