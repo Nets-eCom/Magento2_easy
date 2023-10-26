@@ -20,39 +20,38 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="test_mode" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Testmode</label>
+                    <label>Test Mode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="merchant_id" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
-                    <label>Merchant Id</label>
-                    <comment>Merchant Id</comment>
+                    <label>Merchant ID</label>
                 </field>
                 <field id="payment_name" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Name of Payment Gateway</label>
-                    <comment>Max length (30 characters)</comment>
+                    <comment>Max length: 30 characters.</comment>
                 </field>
                 <field id="logo" translate="label" type="image" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Logo</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
                     <upload_dir config="system/filesystem/media" scope_info="1">payments/logo</upload_dir>
                     <base_url type="media" scope_info="1">payments/logo</base_url>
-                    <comment>Logo supported format(jpg, jpeg, png)</comment>
+                    <comment>Supported logo formats: jpg, jpeg, png.</comment>
                 </field>
                 <field id="live_secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Live Secret Key</label>
-                    <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
+                    <comment>The secret key found in the Nexi | Nets Checkout Portal.</comment>
                 </field>
                 <field id="live_checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Live Checkout Key</label>
-                    <comment>Merchant Identifier, found in Easy-Portal</comment>
+                    <comment>The merchant identifier found in the Nexi | Nets Checkout Portal.</comment>
                 </field>
                 <field id="test_secret_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Test Secret Key</label>
-                    <comment>The secret key found in the Nets Easy portal. Use only UUID, that is without the Live-Secret-Key- or Test-Secret-Key-</comment>
+                    <comment>The secret key found in the Nexi | Nets Checkout Portal.</comment>
                 </field>
                 <field id="test_checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Test Checkout Key</label>
-                    <comment>Merchant Identifier, found in Easy-Portal</comment>
+                    <comment>The merchant identifier found in the Nexi | Nets Checkout Portal.</comment>
                 </field>
                 <!-- <field id="checkout_key" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="30">
                     <label>Checkout Key</label>
@@ -65,13 +64,13 @@
 
                 <field id="webhook_auth" type="password" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
                     <label>Webhook Authentication Password</label>
-                    <comment>Choose a password that we will send to Nets (with no spaces), they will then send this back to us when we try to create an order, with this way and other algorithms we can validate that the request comes from them.</comment>
+                    <comment>Choose a password that will be sent to Nexi | Nets (with no spaces). It will be sent back when a user tries to create an order. Thanks to the password and other algorithms the request can be validated.</comment>
                 </field>
 
                 <field id="webhook_timeout" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="40">
                     <label>Webhook Confirmation Timeout</label>
                     <validate>validate-digits</validate>
-                    <comment>Time, which Magento waits until recieves order confirmation from Nets.</comment>
+                    <comment>The time Magento waits for an order confirmation from Nexi | Nets.</comment>
                 </field>
             </group>
 
@@ -95,25 +94,25 @@
                 <field id="checkout_flow" translate="label comment" type="select" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Checkout Flow</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\CheckoutFlow</source_model>
-                    <comment>Choose checkout flow.</comment>
+                    <comment>Choose the checkout flow.</comment>
                 </field>
 
                 <field id="cancel_url" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="87">
-                    <label>Cancel / Return url</label>
+                    <label>Cancel / Return Url</label>
                     <validate>validate-url</validate>
-                    <comment>Url, a customer should be redirected after he cancel the payment on Nets side (Works only in redirect / overlay flows).</comment>
+                    <comment>Specifies where the user should be redirected after canceling the payment on Nexi | Nets side (works only with redirect / overlay flows).</comment>
                 </field>
 
                 <field id="handle_customer_data" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="60">
-                    <label>Handle customer data</label>
+                    <label>Handle Customer Data</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Enables the merchant to full fill the NETS payment popup with customer data from Magento Checkout. Note, that invoices can be not available if address is invalid.</comment>
+                    <comment>Allows the merchant to fill in the Nexi | Nets payment popup with customer data from Magento checkout. Invoices are not available if the address is invalid.</comment>
                 </field>
 
                 <field id="customer_types" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Allowed Customer Types</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
-                    <comment>Choose at least one customer type that is allowed in the checkout. Only applies when "Handle customer data" is disabled.</comment>
+                    <comment>Choose at least one customer type that is allowed in the checkout. It only applies when "Handle Customer Data" is disabled.</comment>
                     <depends>
                         <field id="handle_customer_data">0</field>
                     </depends>
@@ -122,59 +121,59 @@
                 <field id="default_customer_type" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Default Customer Type</label>
                     <source_model>Dibs\EasyCheckout\Model\System\Config\Source\ConsumerType</source_model>
-                    <comment>Choose default customer type. Only applies when "Handle customer data" is disabled.</comment>
+                    <comment>Choose the default customer type. Only applies when "Handle Customer Data" is disabled.</comment>
                     <depends>
                         <field id="handle_customer_data">0</field>
                     </depends>
                 </field>
 
                 <field id="split_addresses" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="61">
-                    <label>Split billing and shipping addresses</label>
+                    <label>Split Billing and Shipping Addresses</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Please note, that you should support shipping to different countries.</comment>
+                    <comment>You should support shipping to different countries in order to use it.</comment>
                 </field>
 
                 <field id="can_capture" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Capture/Refund payment</label>
+                    <label>Capture / Refund Payments</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If NO, no payment operations will be done (Capture/Refund/Void) on Invoice/Creditmemo/Order</comment>
+                    <comment>If set to "No", payment operations will not be done (charges and refunds will not work).</comment>
                 </field>
                 <field id="can_capture_partial" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Can capture partial </label>
+                    <label>Can Capture Partially</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If NO, you cannot make partial invoices/refunds</comment>
+                    <comment>If set to "No", partial invoices and refunds will not be available.</comment>
                 </field>
 
                 <field id="charge" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable Auto-capture</label>
+                    <label>Enable Auto-Capture</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If enabled your customers will be charged immediately. You do not need to confirm order's fulfilment in Magento to capture the payment. Only enable for compliant products/services.</comment>
+                    <comment>If enabled, your customers will be charged immediately. You do not need to confirm order's fulfilment in Magento to capture the payment. Enable only for compliant products / services.</comment>
                 </field>
 
                 <field id="processing_order_status" translate="label comment" type="select" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Completed checkout order status</label>
+                    <label>Completed Checkout Order Status</label>
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status\Processing</source_model>
-                    <comment>Choose status that orders will have after customer has completed the Easy checkout process</comment>
+                    <comment>Choose the status that orders will have after a customer completes the Easy checkout process.</comment>
                 </field>
                 <field id="electronic_data_store" translate="label comment" type="select" sortOrder="104" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Services / Downloadable Goods </label>
+                    <label>Services / Downloadable Goods</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If Yes, Nets Easy will not collect any Customer Data.</comment>
+                    <comment>If set to "Yes", Nexi | Nets will not collect any customer data.</comment>
                 </field>
                 <field id="newsletter_subscribe" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="106">
-                    <label>Subscribe Newsletter Checked by default</label>
+                    <label>Subscribe to the Newsletter Checked by Default</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="send_order_items_to_easy" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="108">
-                    <label>Send individual order items to Nexi | Nets</label>
-                    <comment>If set to "No", all order items will be sent to the Nexi/Nets checkout gateway as one item with tax included. It enables support for custom surcharges and discounts.</comment>
+                    <label>Send Individual Order Items to Nexi | Nets</label>
+                    <comment>If set to "No", all order items will be sent to the Nexi | Nets checkout gateway as one item with tax included. It enables support for custom surcharges and discounts.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="checkout_add_options_to_name" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="110">
-                    <label>Add Product Options to Name in Nets</label>
-                    <comment>If yes, the cart items will be sent to Nets appending the custom product options and values to the name. If you have lots of custom product options, then it would be a good idea to set this option to No.</comment>
+                    <label>Add Product Options to Name in Nexi | Nets</label>
+                    <comment>If set to "Yes", cart items will be sent to Nexi | Nets, appending custom product options and values to the name. If you have lots of custom product options, then it would be a good idea to set this option to "No".</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
@@ -184,28 +183,28 @@
                 </field>
 
                 <field id="terms_url" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="130" >
-                    <label>Url for Terms page</label>
+                    <label>URL for the Terms Page</label>
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                 </field>
 
                 <field id="send_transaction_mails" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="121">
-                    <label>Send order emails?</label>
+                    <label>Send Order Emails</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="privacy_url" translate="label" type="text" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="135" >
-                    <label>Url for Privacy Policy page</label>
+                    <label>URL for the Privacy Policy Page</label>
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                 </field>
                 <field id="replace_checkout" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="140">
-                    <label>Replace checkout url with Easy Checkout</label>
+                    <label>Replace the Checkout URL with Easy Checkout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If Yes, the "Go to Checkout" button in the minicart and cart will point to Easy checkout.</comment>
+                    <comment>If set to "Yes", the "Go to Checkout" button in the Mini Cart and cart will point to the Easy Checkout.</comment>
                 </field>
                 <field id="add_css" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="150">
-                    <label>Add Nets Css file</label>
+                    <label>Add Nets CSS File</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment><![CDATA[If yes, <strong>Nets.css</strong> will be added to the frontend <strong>(Only needed if styles-l.css and styles-m.css are removed or if magento default less file compiler is not been used)!</strong>]]></comment>
+                    <comment><![CDATA[If set to "Yes", <strong>Nets.css</strong> will be added to the frontend <strong>(only needed if styles-l.css and styles-m.css are removed or if Magento default file compiler is not used).</strong>]]></comment>
                 </field>
 
                 <!-- <field id="nets_successpage" type="select" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="155">
@@ -224,7 +223,7 @@
 
                 <field id="invoice_fee_label" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="320">
                     <label>Invoice Fee Label</label>
-                    <comment>This will be displayed in the invoice row</comment>
+                    <comment>It will be displayed in the invoice row.</comment>
                     <depends>
                         <field id="*/*/use_invoice_fee">1</field>
                     </depends>
@@ -232,7 +231,7 @@
 
                 <field id="invoice_fee" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="320">
                     <label>Invoice Fee</label>
-                    <comment>Invoice fee excl. Taxes. The tax will be calculated accordingly to the tax rates of the cart.</comment>
+                    <comment>Invoice fee excl. taxes. Tax will be calculated according to the tax rates of the cart.</comment>
                     <depends>
                         <field id="*/*/use_invoice_fee">1</field>
                     </depends>
@@ -240,40 +239,40 @@
             </group>
 
             <group id="layout" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Layout options</label>
+                <label>Layout Options</label>
                 <field id="display_newsletter" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display Newsletter checkbox</label>
+                    <label>Display the Newsletter Checkbox</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="display_discount" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display Discount Form</label>
+                    <label>Display the Discount Form</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="display_link" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display link to a different payment method</label>
+                    <label>Display a Link to a Different Payment Method</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="display_additional_block" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display Additional block</label>
+                    <label>Display an Additional Block</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="display_default_shipping_methods" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display default magento shipping methods</label>
+                    <label>Display Default Magento Shipping Methods</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="display_dibs_shipping_methods" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display Easy shipping methods</label>
+                    <label>Display Easy Shipping Methods</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="additional_block" translate="label" type="editor" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Additional block Content</label>
+                    <label>Additional Block Content</label>
                     <frontend_model>Dibs\EasyCheckout\Block\Adminhtml\System\Config\Editor</frontend_model>
                     <depends>
                         <field id="display_additional_block">1</field>
                     </depends>
                 </field>
                 <field id="replace_shipping_mediastrategi_udc" translate="label" type="select" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Replace shipping block with Mediastrategi Unifaun Delivery Checkout</label>
+                    <label>Replace the Shipping Block with Mediastrategi Unifaun DeliveryCheckout</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="display_dibs_shipping_methods">1</field>
@@ -282,9 +281,9 @@
             </group>
 
             <group id="crosssell" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Cross Sell Products</label>
+                <label>Cross-Sell Products</label>
                 <field id="display_crosssell" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display Cross Sell Products</label>
+                    <label>Display Cross-Sell Products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="crosssell_limit" type="text" translate="label comment" showInDefault="1" showInWebsite="1" showInStore="1" sortOrder="20">
