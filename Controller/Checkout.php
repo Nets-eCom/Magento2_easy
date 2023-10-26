@@ -3,13 +3,12 @@
 
 namespace Dibs\EasyCheckout\Controller;
 
-
 use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
-
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
 use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
 use Magento\Checkout\Controller\Action;
+use Magento\Framework\Serialize\Serializer\Json;
 
 abstract class Checkout extends Action
 {
@@ -26,7 +25,6 @@ abstract class Checkout extends Action
      */
     protected $checkoutSession;
 
-
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
      */
@@ -35,6 +33,8 @@ abstract class Checkout extends Action
 
     /** @var DibsCheckoutContext $dibsCheckoutContext */
     protected $dibsCheckoutContext;
+
+    private Json $json;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -45,14 +45,15 @@ abstract class Checkout extends Action
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         DibsCheckout $dibsCheckout,
-        DibsCheckoutContext $dibsCheckoutContext
+        DibsCheckoutContext $dibsCheckoutContext,
+        Json $json
     ) {
         $this->dibsCheckout = $dibsCheckout;
         $this->resultPageFactory = $resultPageFactory;
         $this->checkoutSession = $checkoutSession;
         $this->storeManager= $storeManager;
-
         $this->dibsCheckoutContext = $dibsCheckoutContext;
+        $this->json = $json;
 
         parent::__construct(
             $context,
@@ -99,11 +100,11 @@ abstract class Checkout extends Action
                 'reload'   => 1,
                 'messages' =>(string)__('The cart was updated (from another location), reloading the checkout, please wait...')
             );
-            $this->messageManager->addErrorMessage($this->__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
-            $this->getResponse()->setBody(Zend_Json::encode($response));
+            $this->messageManager->addErrorMessage(__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
+            $this->getResponse()->setBody($this->json->serialize($response));
+
             return true;
         }
-
 
         return false;
     }

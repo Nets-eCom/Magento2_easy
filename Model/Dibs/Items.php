@@ -16,6 +16,7 @@ use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Tax\Model\Calculation;
 use Magento\Tax\Model\Calculation\Rate;
+use Magento\Framework\Encryption\Encryptor;
 
 /**
  * Dibs (Checkout) Order Items Model
@@ -50,6 +51,7 @@ class Items
     protected $_taxRate;
     private RuleRepositoryInterface $ruleRepository;
     private SingleOrderItemFactory $singleOrderItemFactory;
+    private Encryptor $encryptor;
 
     /**
      * Items constructor.
@@ -67,7 +69,8 @@ class Items
         ScopeConfigInterface $scopeConfig,
         ProductFactory $_productloader,
         Rate $taxRate,
-        SingleOrderItemFactory $singleOrderItemFactory
+        SingleOrderItemFactory $singleOrderItemFactory,
+        Encryptor $encryptor
     ) {
         $this->_helper = $helper;
         $this->_productConfig = $productConfig;
@@ -79,6 +82,7 @@ class Items
         $this->_productloader = $_productloader;
         $this->_taxRate = $taxRate;
         $this->singleOrderItemFactory = $singleOrderItemFactory;
+        $this->encryptor = $encryptor;
     }
 
     /**
@@ -545,7 +549,7 @@ class Items
     public function generateFakePartialOrderItem(float $amount, int $quoteId): OrderItem
     {
         $orderItem = $this->singleOrderItemFactory->createItem(
-            md5("item" . $quoteId),
+            $this->encryptor->hash("item" . $quoteId, Encryptor::HASH_VERSION_MD5),
             "Order (all items)",
             "pcs",
             1,
