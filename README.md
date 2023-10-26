@@ -7,7 +7,7 @@
 |Prefix | `EASY-M2`
 |Shop Version | `2.4+`
 |Version | `1.6.5`
-|Documentation Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-magento/nets-easy-for-magento-magento-2/
+|Documentation Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/
 |Github | https://github.com/Nets-eCom/Magento2_easy
 |License | `MIT License`
 
@@ -42,7 +42,7 @@ Enable the Nets Easy module in Magento by running the following commands:
    NOTE. Capturing a payment before shipment of the order might be liable to restrictions based upon legislations set in your country. Misuse can result in your Easy account being forfeit.
    
 For more details, please find below URL :-
-https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-magento/nets-easy-for-magento-magento-2/#build-configuration
+https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/#build-configuration
 
 ### Operations
 * Cancel / Capture / Refund
