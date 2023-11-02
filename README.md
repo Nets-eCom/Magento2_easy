@@ -20,8 +20,10 @@
 
 * Method 2
 Another option is to install the module via composer at your magento site by running the following commands:
-	$ composer config repositories.dibs_easycheckout vcs git@github.com:/Nets-eCom/Magento2_easy.git
-	$ composer require --prefer-source dibs/easycheckout:*
+
+
+	$ composer config repositories.nets_easycheckout vcs git@github.com:/Nets-eCom/Magento2_easy.git
+	$ composer require --prefer-source nets/easycheckout:*
 
 NOTE : It is strongly recommended to have cleanup of Pending Payment orders active in Sales > Orders, Orders Cron Settings > Pending Payment Order Lifetime (minutes)
 
