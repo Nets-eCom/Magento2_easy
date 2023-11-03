@@ -73,7 +73,7 @@ class Checkout extends AbstractMethod
             ->setAdditionalInformation('dibs_payment_id', $data->getDibsPaymentId())
             ->setAdditionalInformation('dibs_payment_method', $data->getDibsPaymentMethod())
             ->setAdditionalInformation('country_id', $data->getCountryId())
-	    ->setAdditionalInformation('dibs_order_status_id', 1);
+            ->setAdditionalInformation('dibs_order_status_id', 1);
 
         // This flag is set to differentiate orders placed before and after 1.3.2
         // Orders placed before needs to handle discount VAT differently when captured and credited
@@ -301,6 +301,14 @@ class Checkout extends AbstractMethod
 
     public function cancel(\Magento\Payment\Model\InfoInterface $payment)
     {
+        try {
+            if ($payment->getOrder()->getState() === Order::STATE_PENDING_PAYMENT) {
+                $this->dibsHandler->terminateDibsPayment($payment);
+            }
+        } catch (ClientException $e) {
+            throw new LocalizedException(__("Could not terminate pending payment. %1", $e->getMessage()), $e);
+        }
+
         return $this->void($payment);
     }
 
@@ -312,8 +320,8 @@ class Checkout extends AbstractMethod
 
         try {
             if ($this->getOrder()->getState() === Order::STATE_PROCESSING) {
-		$storeId = $this->getOrder()->getStoreId();
-		$this->dibsHandler->cancelDibsPayment($payment, $storeId);
+                $storeId = $this->getOrder()->getStoreId();
+                $this->dibsHandler->cancelDibsPayment($payment, $storeId);
             }
         } catch (ClientException $e) {
             throw new LocalizedException(__("Could not cancel order. %1", $e->getMessage()), $e);
