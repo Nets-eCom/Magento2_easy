@@ -13,11 +13,5 @@
     "psr-4": {
       "Dibs\\EasyCheckout\\": ""
     }
-  },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://github.com/Nets-eCom/Magento2_easy.git"
-    }
-  ]
+  }
 }
