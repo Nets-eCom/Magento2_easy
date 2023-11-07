@@ -1,14 +1,14 @@
 # NETS A/S - Magento 2 Payment Module
 ============================================
 
-|Module | Nets Easy Payment Module for Magento 2
-|------|----------
-|Author | `Nets eCom`
-|Prefix | `EASY-M2`
-|Shop Version | `2.4+`
-|Version | `1.6.5`
-|Guide | https://tech.nets.eu/magento
-|Github | https://github.com/Nets-eCom/Magento2_easy
+| Module       | Nets Easy Payment Module for Magento 2     |
+|--------------|--------------------------------------------|
+| Author       | `Nets eCom`                                |
+| Prefix       | `EASY-M2`                                  |
+| Shop Version | `2.4+`                                     |
+| Version      | `1.6.5`                                    |
+| Guide        | https://tech.nets.eu/magento               |
+| Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
 
@@ -20,7 +20,7 @@
 ### Version 1.6.4 - Released - 2023-10-12
 * Update: Items in shopping basket.
 * Fix: Mismatch in orders/amounts when updating cart after created payment.
-* Update: On embedded flow with a an order creation before the payment.
+* Update: On embedded flow with an order creation before the payment.
 * Update: PHP 8.2 deprecation.
 
 ### Version 1.6.3 - Released - 2023-09-11

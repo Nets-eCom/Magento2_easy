@@ -1,5 +1,5 @@
 {
-  "name": "nets/easycheckout",
+  "name": "nexi-checkout/magento2",
   "description": "Nets Easy Checkout",
   "type": "magento2-module",
   "version": "1.6.5",
