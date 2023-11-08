@@ -13,6 +13,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
+use Dibs\EasyCheckout\Model\Client\DTO\TerminatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 
 class Payment extends Client {
@@ -79,6 +80,13 @@ class Payment extends Client {
         }
 
         return new GetPaymentResponse($response);
+    }
+
+    /**
+     * @throws ClientException
+     */
+    public function terminatePayment(TerminatePayment $payment, string $paymentId) {
+        $this->put("/v1/payments/" . $paymentId . "/terminate", $payment);
     }
 
     /**

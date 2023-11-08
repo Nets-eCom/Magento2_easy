@@ -25,6 +25,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Store\Model\StoreManagerInterface;
 use Dibs\EasyCheckout\Api\CheckoutFlow;
+use Dibs\EasyCheckout\Model\Client\DTO\TerminatePayment;
 
 class Order {
 
@@ -483,6 +484,21 @@ class Order {
         ];
 
         return $data;
+    }
+
+    /**
+     * @throws ClientException
+     * @throws LocalizedException
+     */
+    public function terminateDibsPayment(\Magento\Payment\Model\InfoInterface $payment) {
+        $paymentId = $payment->getAdditionalInformation('dibs_payment_id');
+        if (!$paymentId) {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('You need an dibs payment ID to terminate.')
+            );
+        }
+
+        $this->paymentApi->terminatePayment(new TerminatePayment(), $paymentId);
     }
 
     /**

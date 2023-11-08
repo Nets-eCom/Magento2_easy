@@ -12,6 +12,7 @@ use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
 use Magento\Checkout\Model\Cart;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
+use Magento\Framework\Serialize\Serializer\Json;
 
 class ConfirmOrder extends Checkout {
 
@@ -46,11 +47,11 @@ class ConfirmOrder extends Checkout {
             DibsCheckout $dibsCheckout,
             DibsCheckoutContext $dibsCheckoutContext,
             Cart $cart,
-            Payment $payment
+            Payment $payment,
+            Json $json
     ) {
         $this->helper = $helper;
         $this->resultPageFactory = $resultPageFactory;
-        $this->checkoutSession = $checkoutSession;
         $this->checkoutSession = $checkoutSession;
         $this->storeManager = $storeManager;
 	    $this->cart = $cart;
@@ -65,7 +66,8 @@ class ConfirmOrder extends Checkout {
                 $storeManager,
                 $resultPageFactory,
                 $dibsCheckout,
-                $dibsCheckoutContext
+                $dibsCheckoutContext,
+                $json
         );
     }
 
@@ -174,9 +176,9 @@ class ConfirmOrder extends Checkout {
                 $paymentObj = new CancelPayment();
                 $cancelAmount = (int) round($quote->getBaseGrandTotal() * 100, 0);
                 $paymentObj->setAmount($cancelAmount);
-            
+
                 $this->logInfo("canceled the tranasaction");
-            
+
                 $this->payment->cancelPayment($paymentObj, $this->hostedPaymentId);
 
                 $errorMessage = $arrayErrorData['message'];
@@ -185,10 +187,10 @@ class ConfirmOrder extends Checkout {
                 $this->messageManager->addErrorMessage(__($message));
                 return $this->_redirect('checkout/cart');
             }
-            
+
             header("Refresh:0");
         }
-        
+
     }
 
     /**
@@ -248,7 +250,7 @@ class ConfirmOrder extends Checkout {
 
         $this->order->addCommentToStatusHistory($comment, false);
     }
-    
+
     protected function logInfo($message) {
         $this->dibsCheckoutContext->getLogger()->info($message);
     }
