@@ -5,15 +5,14 @@ use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
 
 class ConsumerCompany extends AbstractRequest
 {
-
     /**
      * Company Name
      * @var string $name
      */
     protected $name;
 
-    /** @var ConsumerContact $contact */
-    protected $contact;
+    protected $firstname;
+    protected $lastname;
 
     /**
      * @return string
