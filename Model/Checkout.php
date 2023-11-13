@@ -752,6 +752,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
     /**
      * @param $message
      * @throws CheckoutException
+     * @return never
      */
     protected function throwRedirectToCartException($message) {
         throw new CheckoutException($message, 'checkout/cart');
@@ -760,6 +761,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
     /**
      * @param $message
      * @throws CheckoutException
+     * @return never
      */
     protected function throwReloadException($message) {
         throw new CheckoutException($message, '*/*');

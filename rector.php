@@ -12,14 +12,17 @@ use Rector\CodeQuality\Rector\ClassMethod\OptionalParametersAfterRequiredRector;
 use Rector\Php80\Rector\ClassMethod\SetStateToStaticRector;
 use Rector\Php81\Rector\FuncCall\Php81ResourceReturnToObjectRector;
 use Magento2\Rector\Src\ReplacePregSplitNullLimit;
+use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\Set\ValueObject\SetList;
 
 return static function (RectorConfig $rectorConfig): void {
-    $rectorConfig->phpVersion(PhpVersion::PHP_80);
-    $rectorConfig->phpVersion(PhpVersion::PHP_81);
+    $rectorConfig->phpVersion(PhpVersion::PHP_74);
 
     $rectorConfig->sets([
         SetList::PHP_74,
+        SetList::PHP_80,
+        SetList::PHP_81,
+        SetList::PHP_82,
     ]);
 
     // get services (needed for register a single rule)
@@ -34,4 +37,5 @@ return static function (RectorConfig $rectorConfig): void {
     $services->set(ReplacePregSplitNullLimit::class);
     $services->set(ReplaceMbStrposNullLimit::class);
     $services->set(ReplaceNewDateTimeNull::class);
+    $services->set(CompleteDynamicPropertiesRector::class);
 };
