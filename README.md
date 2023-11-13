@@ -16,22 +16,18 @@
 ### Download / Installation
 
 * Method 1
-1. Download the latest Nets Easy module from GitHub: https://github.com/Nets-eCom/Magento2_easy/archive/refs/heads/master.zip 
+1. Download the latest Nets Easy module from GitHub: https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.6.6.zip.
 2. Unzip the file and upload the content to your Magento site via FTP, into the directory /app/code/Dibs/EasyCheckout. Please create the folder /Dibs/EasyCheckout first time you install the plugin.
 
 * Method 2
 
-1. Another option is to install the module via composer at your magento site by running the following command:
+Another option is to install the module via composer at your magento site by running the following command:
 
   
 	$ composer require nexi-checkout/magento2
 
-2. To update the module via composer it to run the command shown below:
-    
 
-    $ composer update nexi-checkout/magento2
-
-NOTE : It is strongly recommended to have cleanup of Pending Payment orders active in Sales > Orders, Orders Cron Settings > Pending Payment Order Lifetime (minutes)
+NOTE: It is strongly recommended to have cleanup of Pending Payment orders active in Sales > Orders, Orders Cron Settings > Pending Payment Order Lifetime (minutes)
 
 ### Enable the module
 
@@ -40,6 +36,29 @@ Enable the Nets Easy module in Magento by running the following commands:
 	$ php bin/magento module:enable --clear-static-content Dibs_EasyCheckout
 	$ php bin/magento setup:upgrade
 
+### Update
+
+- Method 1 (FTP):
+
+If you installed plugin via FTP, you can update the module by following these steps:
+1. Download the latest Nets Easy module from GitHub:  https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.6.6.zip.
+2. Remove contents of /app/code/Dibs/EasyCheckout directory.
+3. Unzip the downloaded file and upload the content into the directory /app/code/Dibs/EasyCheckout.
+
+- Method 2 (VCS):
+
+If you previously installed plugin by adding GitHub repository to composer, you can update the module by running following commands:
+
+	$ composer remove nets/easycheckout
+	$ composer require nexi-checkout/magento2
+	$ php bin/magento setup:upgrade
+
+- Method 3 (composer):
+
+If you have installed plugin via composer, you can update the module by running following commands:
+
+	$ composer update nexi-checkout/magento2
+	$ php bin/magento setup:upgrade
 ### Configuration
 
 1. To configure and setup the plugin navigate to : Stores > Configuration > Nets > Easy Checkout
