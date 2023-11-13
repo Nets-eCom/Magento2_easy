@@ -6,7 +6,7 @@
 | Author              | `Nets eCom`                                                                                                   |
 | Prefix              | `EASY-M2`                                                                                                     |
 | Shop Version        | `2.4+`                                                                                                        |
-| Version             | `1.6.5`                                                                                                       |
+| Version             | `1.6.6`                                                                                                       |
 | Documentation Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/ |
 | Github              | https://github.com/Nets-eCom/Magento2_easy                                                                    |
 | License             | `MIT License`                                                                                                 |

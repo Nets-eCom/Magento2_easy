@@ -6,11 +6,18 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.6.5`                                    |
+| Version      | `1.6.6`                                    |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
+
+### Version 1.6.6 - Released - 2023-11-08
+* Update: Improved naming of plugin configuration fields in the admin panel.
+* Update: Repository added to Packagist.
+* Update: Documentation Guide links in README.md.
+* Update: Order is now terminated on cancel.
+* Fixed: Plugin incompatible with Adobe Marketplace.
 
 ### Version 1.6.5 - Released - 2023-10-19
 * Update: allow to configure how order items are sent to the API
