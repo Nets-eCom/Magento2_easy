@@ -11,10 +11,10 @@ class SingleOrderItemFactory {
         string $unit,
         float $quantity,
         int $taxRate,
-        float $taxAmount,
-        float $unitPrice,
-        float $netTotalAmount,
-        mixed $grossTotalAmount
+        int $taxAmount,
+        int $unitPrice,
+        int $netTotalAmount,
+        int $grossTotalAmount
     ): OrderItem {
         $orderItem = new OrderItem();
 

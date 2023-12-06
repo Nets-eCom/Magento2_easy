@@ -170,7 +170,7 @@ class Items
 
     private function convertToInt(float $amount): int
     {
-        return (int)round($amount * 100, 0);
+        return (int) round($amount * 100, 0);
     }
 
     /**
@@ -221,10 +221,10 @@ class Items
         $items = $quote->getAllVisibleItems();
 
         foreach ($items as $item) {
-            $quantity = (int)$item->getQty();
+            $quantity = (int) $item->getQty();
             $taxRate = $this->convertToInt($item->getTaxPercent());
             $productPrice = $this->convertToInt($item->getPrice());
-            $netTotalAmount = round($quantity * $productPrice);
+            (int) $netTotalAmount = round($quantity * $productPrice);
             $taxAmount = $this->convertToInt($item->getBaseTaxAmount());
 
             $grossTotalAmount = $this->convertToInt($item->getBaseRowTotal() + $item->getBaseTaxAmount());
@@ -253,7 +253,7 @@ class Items
                 $taxRate,
                 $taxAmount,
                 $productPrice,
-                (int)$netTotalAmount,
+                $netTotalAmount,
                 $grossTotalAmount
             );
 
@@ -303,38 +303,38 @@ class Items
         $taxRate = $vat;
         $taxFormat = '1' . str_pad(number_format($taxRate, 2, '.', ''), 5, '0', STR_PAD_LEFT);
 
-        if ((int)$this->scopeConfig->getValue(
+        if ((int) $this->scopeConfig->getValue(
                 'tax/classes/shipping_tax_class',
                 \Magento\Store\Model\ScopeInterface::SCOPE_STORE
             ) !== 0) {
             // Shipping Tax class
             $shippingTaxRate = $this->convertToInt($taxRate);
             $shippingPrice = round(round(($inclTax * 100) / $taxFormat, 2) * 100);
-            $shippingNet = round($shippingPrice);
+            (int) $shippingNet = round($shippingPrice);
         } else {
             $shippingTaxRate = 0;
 
             // Shipping price in catalog tax setting.
-            if ((int)$this->scopeConfig->getValue(
+            if ((int) $this->scopeConfig->getValue(
                     'tax/calculation/shipping_includes_tax',
                     \Magento\Store\Model\ScopeInterface::SCOPE_STORE
                 ) === 1) {
-                $shippingNet = round($this->convertToInt($inclTax));
+                (int) $shippingNet = round($this->convertToInt($inclTax));
             } else {
-                $shippingNet = round($this->convertToInt($inclTax));
+                (int) $shippingNet = round($this->convertToInt($inclTax));
             }
         }
 
         $shippingGross = $address->getBaseShippingAmount() + $address->getBaseShippingTaxAmount() - $address->getBaseShippingDiscountAmount();
-        $shippingGross = round($this->convertToInt($shippingGross));
+        (int) $shippingGross = round($this->convertToInt($shippingGross));
         $shippingUnitPrice = $address->getShippingAmount() - $address->getShippingDiscountAmount();
-        $shippingUnitPrice = round($this->convertToInt($shippingUnitPrice));
+        (int) $shippingUnitPrice = round($this->convertToInt($shippingUnitPrice));
         $shippingTaxAmount = $address->getShippingTaxAmount();
-        $shippingTaxAmount = round($this->convertToInt($shippingTaxAmount));
+        (int) $shippingTaxAmount = round($this->convertToInt($shippingTaxAmount));
 
         $orderItem = $this->singleOrderItemFactory->createItem(
             'shipping_fee',
-            (string)__('Shipping Fee (%1)', $shippingDescription),
+            (string) __('Shipping Fee (%1)', $shippingDescription),
             "unit",
             1,
             $shippingTaxRate,
@@ -416,7 +416,7 @@ class Items
             if ($quoteDiscountAmount > 0) {
                 $itemQty = $quote->getItemsQty();
                 if ($itemQty == 10) {
-                    $discountAmount = (int)round($quoteDiscountAmount * 100, 2);
+                    $discountAmount = (int) round($quoteDiscountAmount * 100, 2);
                 } else {
                     $discountAmount = $this->convertToInt($quoteDiscountAmount);
                 }
@@ -432,7 +432,7 @@ class Items
 
                 $orderItem = $this->singleOrderItemFactory->createItem(
                     $reference,
-                    (string)__('Discount'),
+                    (string) __('Discount'),
                     "st",
                     1,
                     0,
@@ -468,7 +468,7 @@ class Items
             $amountInclTax = $total->getValue();
             $vat = 25; // will always be added to e.g. surcharges
 
-            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            (int) $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
             $amountInclTax = $this->convertToInt($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
@@ -478,9 +478,9 @@ class Items
                 "st",
                 1,
                 $this->convertToInt($vat),
-                (int)$taxAmount,
-                (int)$amountExclTax,
-                (int)$amountExclTax,
+                $taxAmount,
+                $amountExclTax,
+                $amountExclTax,
                 $amountInclTax
             );
 
@@ -546,7 +546,7 @@ class Items
         return array_values($this->_cart);
     }
 
-    public function generateFakePartialOrderItem(float $amount, int $quoteId): OrderItem
+    public function generateFakePartialOrderItem(int $amount, int $quoteId): OrderItem
     {
         $orderItem = $this->singleOrderItemFactory->createItem(
             $this->encryptor->hash("item" . $quoteId, Encryptor::HASH_VERSION_MD5),
@@ -590,12 +590,12 @@ class Items
                 continue;
             }
 
-            $reference = 'discount' . (int)$vat;
+            $reference = 'discount' . (int) $vat;
             if ($this->_toInvoice) {
                 $reference = 'discount-toinvoice';
             }
 
-            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            (int) $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
             $amountInclTax = $this->convertToInt($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
@@ -609,7 +609,7 @@ class Items
 
             $orderItem = $this->singleOrderItemFactory->createItem(
                 $reference,
-                (string)__('Discount'),
+                (string) __('Discount'),
                 "st",
                 1,
                 $this->convertToInt($vat),
@@ -805,9 +805,9 @@ class Items
 
                 // Product price in catalog is excluding tax.
                 $unitPrice = round(round(($unitPriceExclTax), 2) * 100);
-                $netPrice = round($qty * $unitPrice);
+                (int) $netPrice = round($qty * $unitPrice);
                 $grossPrice = $unitPrice * $qty;
-                $grossPrice = round(
+                (int) $grossPrice = round(
                     $grossPrice + $this->convertToInt($item->getBaseTaxAmount()) + $this->convertToInt(
                         $item->getBaseDiscountTaxCompensationAmount()
                     )
@@ -821,8 +821,8 @@ class Items
                     $this->convertToInt($vat),
                     $this->convertToInt($item->getBaseTaxAmount()),
                     $this->convertToInt($unitPriceExclTax),
-                    (int)$netPrice,
-                    (int)$grossPrice
+                    $netPrice,
+                    $grossPrice
                 );
 
                 // Add to array
@@ -1011,13 +1011,13 @@ class Items
             }
 
             // Discount Tax classes and rules
-            if ((int)$this->scopeConfig->getValue(
+            if ((int) $this->scopeConfig->getValue(
                     'tax/calculation/discount_tax',
                     \Magento\Store\Model\ScopeInterface::SCOPE_STORE
                 ) === 1) {
-                $discountPrice = round($this->convertToInt($discountAmount));
+                (int) $discountPrice = round($this->convertToInt($discountAmount));
             } else {
-                $discountPrice = round($this->convertToInt($discountAmount));
+                (int) $discountPrice = round($this->convertToInt($discountAmount));
             }
 
             $discountReference = $rule->getSimpleAction();
@@ -1088,12 +1088,12 @@ class Items
                 continue;
             }
 
-            $reference = 'discount' . (int)$vat;
+            $reference = 'discount' . (int) $vat;
             if ($this->_toInvoice) {
                 $reference = 'discount-toinvoice';
             }
 
-            $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
+            (int) $taxAmount = $this->getTotalTaxAmount($amountInclTax, $vat);
             $amountInclTax = $this->convertToInt($amountInclTax);
             $amountExclTax = $amountInclTax - $taxAmount;
 
