@@ -57,10 +57,11 @@ define([
             validateTest: function(paymentId) { 
                 //alert('pay created');
             },
-            validatePayment: function(paymentId) {
+            saveOrder: function(paymentId) {
                 //return this.sendPaymentOrderFinalizedEvent(true);
+                const ctrlkey = this.ctrlkey;
                 $.ajax({
-                    url: mageurl.build("easycheckout/order/SaveOrder"),
+                    url: mageurl.build("easycheckout/order/SaveOrder")+'?ctrlkey='+ctrlkey,
                     type: "POST",
                     context: this,
                     data: {pid: paymentId},
@@ -72,7 +73,7 @@ define([
                         checkoutLoader.stopLoader();
                     },
                     success: function (response) {
-                        if ($.type(response) === 'object' && !$.isEmptyObject(response) && !response.error) {
+                        if ($.type(response) === 'object' && !$.isEmptyObject(response) && !response.reload) {
                             this.sendPaymentOrderFinalizedEvent(true);
                             if (response.messages) {
                                 alert(jQuery.mage.__(response.messages));

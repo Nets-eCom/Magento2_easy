@@ -16,6 +16,7 @@ use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Quote\Model\QuoteFactory;
 
 class SaveOrder extends Checkout {
@@ -33,7 +34,7 @@ class SaveOrder extends Checkout {
      */
     private $paymentId;
 
-    private ?\Magento\Quote\Model\Quote $quote = null;
+    private ?Quote $quote = null;
 
     /**
      * @inheridoc
@@ -51,7 +52,8 @@ class SaveOrder extends Checkout {
             DibsCheckoutContext $dibsCheckoutContext,
             RequestInterface $request,
             JsonFactory $resultFactory,
-            QuoteFactory $quoteFactory
+            QuoteFactory $quoteFactory,
+            Json $json
     ) {
         $this->helper = $helper;
         $this->resultPageFactory = $resultPageFactory;
@@ -70,11 +72,16 @@ class SaveOrder extends Checkout {
                 $storeManager,
                 $resultPageFactory,
                 $dibsCheckout,
-                $dibsCheckoutContext
+                $dibsCheckoutContext,
+                $json
         );
     }
 
     public function execute() {
+
+        if ($this->ajaxRequestAllowed()) {
+            return;
+        }
 
         $this->logInfo("in saveorder to create order");
 
