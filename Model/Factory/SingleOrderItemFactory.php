@@ -14,7 +14,7 @@ class SingleOrderItemFactory {
         float $taxAmount,
         float $unitPrice,
         float $netTotalAmount,
-        mixed $grossTotalAmount
+        int $grossTotalAmount
     ): OrderItem {
         $orderItem = new OrderItem();
 
