@@ -61,7 +61,7 @@ define([
                 //return this.sendPaymentOrderFinalizedEvent(true);
                 const ctrlkey = this.ctrlkey;
                 $.ajax({
-                    url: mageurl.build("easycheckout/order/SaveOrder")+'?ctrlkey='+ctrlkey,
+                    url: mageurl.build("easycheckout/order/EmbeddedSaveOrder")+'?ctrlkey='+ctrlkey,
                     type: "POST",
                     context: this,
                     data: {pid: paymentId},

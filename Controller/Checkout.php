@@ -107,4 +107,30 @@ abstract class Checkout extends Action
 
         return false;
     }
+
+     /**
+     * @return bool
+     */
+    protected function validateQuoteSignature()
+    {
+        //check if quote was changed
+        $ctrlkey = (string)$this->getRequest()->getParam('ctrlkey');
+
+        //check if cart was updated
+        $checkout = $this->getDibsCheckout();
+        $checkout->setCheckoutContext($this->dibsCheckoutContext);
+        $currkey = $checkout->getQuoteSignature();
+        if($currkey != $ctrlkey) {
+            $response = array(
+                'reload'   => 1,
+                'messages' =>(string)__('The cart was updated (from another location), page will be reloaded.')
+            );
+            $this->messageManager->addErrorMessage(__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
+            $this->getResponse()->setBody($this->json->serialize($response));
+
+            return false;
+        }
+
+        return true;
+    }
 }

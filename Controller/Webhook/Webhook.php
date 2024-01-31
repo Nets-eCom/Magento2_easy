@@ -6,7 +6,6 @@ use Dibs\EasyCheckout\Helper\Data;
 use Dibs\EasyCheckout\Model\Checkout as DibsCheckout;
 use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
-use Dibs\EasyCheckout\Controller\Order\SaveOrder;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
