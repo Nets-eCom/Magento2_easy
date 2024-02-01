@@ -40,16 +40,17 @@ class GetPaymentConfiguration extends Checkout
       	    return $this->getResponse()->setBody(json_encode(array('error_message' => substr($error_messages, strpos($error_messages, ":") + 1))));
         }
 
+        $quote = $this->getDibsCheckout()->getQuote();
+        $this->getDibsCheckout()->getHelper()->lockQuoteSignature($quote);
+
         $paymentResponse = [
             'checkoutKey' => $this->getDibsCheckoutKey(),
             'paymentId'   => $dibsPayment->getPaymentId(),
             'language'    => $this->getDibsCheckout()->getLocale(),
       	    'checkoutUrl' => $dibsPayment->getCheckoutUrl() . '&language=' .  $this->getDibsCheckout()->getLocale(),
+            'ctrlkey'     => $quote->getHashSignature(),
       	    'error_message' => '',
         ];
-
-        $quote = $this->getDibsCheckout()->getQuote();
-        $this->getDibsCheckout()->getHelper()->lockQuoteSignature($quote);
 
         $this
             ->_eventManager
