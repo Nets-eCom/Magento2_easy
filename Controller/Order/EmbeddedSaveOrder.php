@@ -57,7 +57,7 @@ class EmbeddedSaveOrder extends Checkout {
         }
 
         $quote = $this->dibsCheckout->getQuote();
-        $lastOrderStatus = $this->dibsCheckout->getCheckout()->setLastOrderStatus();
+        $lastOrderStatus = $this->dibsCheckout->getCheckout()->getLastOrderStatus();
         if (!$quote->getId() && $lastOrderStatus === Order::STATE_PENDING_PAYMENT) {
             // quote might be empty if payment failed first time and customer tries again
             $result = $this->resultFactory->create('json');
@@ -92,6 +92,7 @@ class EmbeddedSaveOrder extends Checkout {
             $this->logInfo("validation successful, creating order");
             $dibsPayment = $this->dibsCheckout->getDibsPaymentHandler()->loadDibsPaymentById($paymentId, $quote->getStoreId());
             $order = $this->dibsCheckout->placeOrder($dibsPayment, $quote);
+            $this->dibsCheckout->getCheckout()->setLastOrderStatus($order->getStatus());
             $this->logInfo("order created");
 
         } catch (\Exception $e) {
