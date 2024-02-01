@@ -12,6 +12,7 @@ use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Model\Order;
 
 class EmbeddedSaveOrder extends Checkout {
 
@@ -56,7 +57,8 @@ class EmbeddedSaveOrder extends Checkout {
         }
 
         $quote = $this->dibsCheckout->getQuote();
-        if (!$quote->getId()) {
+        $lastOrderStatus = $this->dibsCheckout->getCheckout()->setLastOrderStatus();
+        if (!$quote->getId() && $lastOrderStatus === Order::STATE_PENDING_PAYMENT) {
             // quote might be empty if payment failed first time and customer tries again
             $result = $this->resultFactory->create('json');
             $result->setData([
@@ -65,6 +67,10 @@ class EmbeddedSaveOrder extends Checkout {
             $result->setHttpResponseCode(200);
 
             return $result;
+        }
+
+        if (!$quote->getId()) {
+            return $this->respondWithError('Empty quote');
         }
         
         $this->logInfo("in EmbeddedSaveOrder to create order");
@@ -84,8 +90,6 @@ class EmbeddedSaveOrder extends Checkout {
         
         try {
             $this->logInfo("validation successful, creating order");
-            // $this->dibsCheckout->setCheckoutContext($this->dibsCheckoutContext);
-            // $checkout = $this->dibsCheckout->getCheckout();
             $dibsPayment = $this->dibsCheckout->getDibsPaymentHandler()->loadDibsPaymentById($paymentId, $quote->getStoreId());
             $order = $this->dibsCheckout->placeOrder($dibsPayment, $quote);
             $this->logInfo("order created");
@@ -108,10 +112,7 @@ class EmbeddedSaveOrder extends Checkout {
         return $result;
     }
 
-    /**
-     * @return ResponseInterface
-     */
-    protected function respondWithError($message) {
+    protected function respondWithError(string $message): ResponseInterface {
         $data = ['messages' => __($message), 'error' => true];
         $response = $this->getResponse();
         $response->setBody(json_encode($data));
@@ -120,7 +121,7 @@ class EmbeddedSaveOrder extends Checkout {
         return $response;
     }
 
-    protected function logInfo($message) {
+    protected function logInfo(string $message): void {
         $this->dibsCheckoutContext->getLogger()->info($message);
     }
 }
