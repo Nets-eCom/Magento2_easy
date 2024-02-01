@@ -29,7 +29,7 @@ class ValidateOrder extends Update {
         }
 
         try {
-            $storeId = $this->quote->getStoreId();
+            $storeId = $quote->getStoreId();
             $payment = $checkout->getDibsPaymentHandler()->loadDibsPaymentById($checkoutPaymentId, $storeId);
         } catch (ClientException $e) {
             if ($e->getHttpStatusCode() == 404) {

@@ -1,6 +1,6 @@
 "Column1","Column2"
 "Incl. Tax","Inkl. moms"
-"The cart was updated (from another location), reloading the checkout, please wait...","Varukorgen uppdaterades, laddar om kassan. Vänligen vänta..."
+"The cart was updated (from another location), page will be reloaded.","Varukorgen uppdaterad, kassan kommer att laddas om."
 "The requested changes were not applied. The cart was updated (from another location), please review the cart.","Ändringarna applicerades inte. Varukorgen uppdaterades, var god granska varukorgen."
 "Cannot initialize Nets Easy Checkout (%1)","Kan inte ladda Nets Easy Checkout (%1)"
 "Nets Easy Checkout","Nets Easy Checkout"

@@ -5,8 +5,7 @@ define(
             'jquery',
             'Magento_Checkout/js/view/payment/default',
             'mage/url',
-            'Dibs_EasyCheckout/js/action/before-order',
-            'Magento_Checkout/js/model/full-screen-loader',
+            'Dibs_EasyCheckout/js/action/set-payment-information',
             'Magento_Checkout/js/model/payment/additional-validators',
             'uiRegistry',
             'vanillaCheckoutHandler',
@@ -19,8 +18,7 @@ define(
                 $,
                 Component,
                 url,
-                dibs,
-                fullScreenLoader,
+                dibsSetPaymentInformation,
                 additionalValidators,
                 uiRegistry,
                 vanillaCheckoutHandler,
@@ -45,7 +43,13 @@ define(
                     let billingAddressComponent = require('uiRegistry').get('checkout.steps.billing-step.payment.payments-list.'+this.getCode()+'-form');
                     billingAddressComponent.updateAddress();
                     if (additionalValidators.validate()) {
-                        dibs("dibseasycheckout", agreementsCheck, function () {
+                        const jqxhr = dibsSetPaymentInformation(
+                            this.getCode(),
+                            agreementsCheck,
+                            this.messageContainer
+                        );
+
+                        jqxhr.done(function () {
                             let callback = function (paymentConfiguration) {
                                 if (paymentConfiguration.error_message != "") {
                                     alert(paymentConfiguration.error_message);
@@ -60,7 +64,12 @@ define(
                     }
                 },
                 continueToDibs: function () {
-                    dibs("dibseasycheckout", agreementsCheck, function () {});
+                    dibsSetPaymentInformation(
+                        this.getCode(),
+                        agreementsCheck,
+                        this.messageContainer
+                    );
+
                     return false;
                 },
                 getNetsUrl: function () {
@@ -90,9 +99,9 @@ define(
                     if (!window.isVanillaEmbeded) {
                         return;
                     }
-                    let placehplder = document.getElementById('nets-placeholder');
-                    if (placehplder) {
-                        placehplder.innerHTML = "";
+                    let placeholder = document.getElementById('nets-placeholder');
+                    if (placeholder) {
+                        placeholder.innerHTML = "";
                     }
 
                     let callback = function (paymentConfiguration) {
@@ -107,9 +116,10 @@ define(
                                 language: paymentConfiguration.language
                             };
                             self.dibsPayment = new Dibs.Checkout(checkoutOptions);
+                            self.dibsPayment.ctrlkey = paymentConfiguration.ctrlkey;
                             if (self.eventsInstantiated == false) {
                                 self.dibsPayment.on('payment-completed', vanillaCheckoutHandler.onCheckoutCompleteAction);
-                                self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.validatePayment);
+                                self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.saveOrder);
                                 self.dibsPayment.on('payment-created', vanillaCheckoutHandler.validateTest);
                                 setCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
                                 cancelCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);

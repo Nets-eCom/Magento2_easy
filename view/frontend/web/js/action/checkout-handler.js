@@ -54,12 +54,76 @@ define([
                     }
                 });
             },
-            validateTest: function(paymentId) {
-                //alert('pay created');
+            validateTest: function() {
+
             },
-            validatePayment: function(paymentId) {
-                //return this.sendPaymentOrderFinalizedEvent(true);
-                this.sendPaymentOrderFinalizedEvent(true);
+            saveOrder: function(paymentId) {
+                const ctrlkey = this.ctrlkey;
+                $.ajax({
+                    url: mageurl.build("easycheckout/order/EmbeddedSaveOrder")+'?ctrlkey='+ctrlkey,
+                    type: "POST",
+                    context: this,
+                    data: {pid: paymentId},
+                    dataType: 'json',
+                    beforeSend: function () {
+                        checkoutLoader.startLoader();
+                    },
+                    complete: function () {
+                        checkoutLoader.stopLoader();
+                    },
+                    success: function (response) {
+                        if ($.type(response) === 'object' && !$.isEmptyObject(response) && !response.reload) {
+                            this.sendPaymentOrderFinalizedEvent(true);
+                            if (response.messages) {
+                                alert(jQuery.mage.__(response.messages));
+                            }
+                        } else {
+                            netsAlert({
+                                title: 'Error',
+                                content: response.messages,
+                                clickableOverlay: false,
+                                responsive: true,
+                                innerScroll: true,
+                                closed: function () {
+                                    $.mage.redirect(mageurl.build("checkout/cart"));
+                                },
+                                buttons: [{
+                                    text: $.mage.__('Close'),
+                                    class: 'modal-close',
+                                    click: function (){
+                                        this.closeModal();
+                                    }
+                                }]
+                            });
+                            checkoutLoader.stopLoader();
+                            this.sendPaymentOrderFinalizedEvent(false);
+                            messageList.addErrorMessage({
+                               message: response.messages
+                            });
+                        }
+                    },
+                    error: function(data) {
+                        // tell dibs not to finish order!
+                        netsAlert({
+                                title: 'Error',
+                                content: "Error happened, please try again",
+                                clickableOverlay: false,
+                                responsive: true,
+                                innerScroll: true,
+                                closed: function () {
+                                    $.mage.redirect(mageurl.build("checkout/cart"));
+                                },
+                                buttons: [{
+                                    text: $.mage.__('Close'),
+                                    class: 'modal-close',
+                                    click: function (){
+                                        this.closeModal();
+                                    }
+                                }]
+                            });
+                        this.sendPaymentOrderFinalizedEvent(false);
+                    }
+                });
             }
         };
     }

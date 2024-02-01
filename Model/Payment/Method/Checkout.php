@@ -328,6 +328,9 @@ class Checkout extends AbstractMethod
         }
     }
 
+    /**
+     * @return never
+     */
     public function detach(\Magento\Payment\Model\InfoInterface $payment)
     {
         throw new LocalizedException(__('Detach is not available.'));

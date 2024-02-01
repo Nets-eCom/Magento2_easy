@@ -5,248 +5,180 @@ use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
 
 class OrderItem extends AbstractRequest
 {
-
     /**
      * Required
      * Product Reference (SKU?)
-     * @var string $reference
      */
-    protected $reference;
+    protected string $reference;
 
     /**
      * Required
      * Product Name
-     * @var string $name
      */
-    protected $name;
-
-    /**
-     * Required
-     * Product Quantity
-     * @var float $quantity
-     */
-    protected $quantity;
+    protected string $name;
 
     /**
      * Required
      * Product unit, for instance pcs or Kg
-     * @var string $unit
      */
-    protected $unit;
+    protected string $unit;
 
     /**
      * Required
-     * Product price per unit
-     * @var float $unitPrice
+     * Product Quantity
      */
-    protected $unitPrice;
+    protected float $quantity;
 
     /**
      * Required
      * Product tax rate
-     * @var int $taxRate
      */
-    protected $taxRate;
+    protected int $taxRate;
 
     /**
      * Required
-     * Product tax/VAT amoun
-     * @var float $taxAmount
+     * Product tax/VAT amount
      */
-    protected $taxAmount;
+    protected int $taxAmount;
 
     /**
      * Required
-     * Product total amount including VAT
-     * @var
+     * Product price per unit
      */
-    protected $grossTotalAmount;
+    protected int $unitPrice;
 
     /**
      * Required
      * Product total amount excluding VAT
-     * @var float $netTotalAmount
      */
-    protected $netTotalAmount;
+    protected int $netTotalAmount;
 
     /**
-     * @return string
+     * Required
+     * Product total amount including VAT
      */
-    public function getReference()
+    protected int $grossTotalAmount;
+
+    public function getReference(): string
     {
         return $this->reference;
     }
 
-    /**
-     * @param string $reference
-     * @return OrderItem
-     */
-    public function setReference($reference)
+    public function setReference(string $reference): OrderItem
     {
         $this->reference = $reference;
+
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     * @return OrderItem
-     */
-    public function setName($name)
+    public function setName(string $name): OrderItem
     {
         $this->name = $name;
+
         return $this;
     }
 
-    /**
-     * @return float
-     */
-    public function getQuantity()
-    {
-        return $this->quantity;
-    }
-
-    /**
-     * @param float $quantity
-     * @return OrderItem
-     */
-    public function setQuantity($quantity)
-    {
-        $this->quantity = $quantity;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUnit()
+    public function getUnit(): string
     {
         return $this->unit;
     }
 
-    /**
-     * @param string $unit
-     * @return OrderItem
-     */
-    public function setUnit($unit)
+    public function setUnit(string $unit): OrderItem
     {
         $this->unit = $unit;
+
         return $this;
     }
 
-    /**
-     * @return float
-     */
-    public function getUnitPrice()
+    public function getQuantity(): float
     {
-        return $this->unitPrice;
+        return $this->quantity;
     }
 
-    /**
-     * @param float $unitPrice
-     * @return OrderItem
-     */
-    public function setUnitPrice($unitPrice)
+    public function setQuantity(float $quantity): OrderItem
     {
-        $this->unitPrice = $unitPrice;
+        $this->quantity = $quantity;
+
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getTaxRate()
+    public function getTaxRate(): int
     {
         return $this->taxRate;
     }
 
-    /**
-     * @param int $taxRate
-     * @return OrderItem
-     */
-    public function setTaxRate($taxRate)
+    public function setTaxRate(int $taxRate): OrderItem
     {
         $this->taxRate = $taxRate;
+
         return $this;
     }
 
-    /**
-     * @return float
-     */
-    public function getTaxAmount()
+    public function getTaxAmount(): int
     {
         return $this->taxAmount;
     }
 
-    /**
-     * @param float $taxAmount
-     * @return OrderItem
-     */
-    public function setTaxAmount($taxAmount)
+    public function setTaxAmount(int $taxAmount): OrderItem
     {
         $this->taxAmount = $taxAmount;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getGrossTotalAmount()
+    public function getUnitPrice(): int
     {
-        return $this->grossTotalAmount;
+        return $this->unitPrice;
     }
 
-    /**
-     * @param mixed $grossTotalAmount
-     * @return OrderItem
-     */
-    public function setGrossTotalAmount($grossTotalAmount)
+    public function setUnitPrice(int $unitPrice): OrderItem
     {
-        $this->grossTotalAmount = $grossTotalAmount;
+        $this->unitPrice = $unitPrice;
+
         return $this;
     }
 
-    /**
-     * @return float
-     */
-    public function getNetTotalAmount()
+    public function getNetTotalAmount(): int
     {
         return $this->netTotalAmount;
     }
 
-    /**
-     * @param float $netTotalAmount
-     * @return OrderItem
-     */
-    public function setNetTotalAmount($netTotalAmount)
+    public function setNetTotalAmount(int $netTotalAmount): OrderItem
     {
         $this->netTotalAmount = $netTotalAmount;
+
         return $this;
     }
 
+    public function getGrossTotalAmount(): int
+    {
+        return $this->grossTotalAmount;
+    }
+
+    public function setGrossTotalAmount(int $grossTotalAmount): OrderItem
+    {
+        $this->grossTotalAmount = $grossTotalAmount;
+
+        return $this;
+    }
 
     public function toArray()
     {
-
         return [
             'reference' => $this->getReference(),
             'name' => $this->getName(),
-            'quantity' => $this->getQuantity(),
             'unit' => $this->getUnit(),
-            'unitPrice' => $this->getUnitPrice(),
+            'quantity' => $this->getQuantity(),
             'taxRate' => $this->getTaxRate(),
             'taxAmount' => $this->getTaxAmount(),
-            'grossTotalAmount' => $this->getGrossTotalAmount(),
+            'unitPrice' => $this->getUnitPrice(),
             'netTotalAmount' => $this->getNetTotalAmount(),
+            'grossTotalAmount' => $this->getGrossTotalAmount(),
         ];
     }
-
-
 }
