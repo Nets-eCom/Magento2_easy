@@ -482,18 +482,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
             return;
         }
 
-        try {
-            $this->updateMagentoPaymentReference($order, $paymentId);
-        } catch (\Exception $e) {
-            $this->getLogger()->error(
-                    "Order created with ID: " . $order->getIncrementId() . ".
-                But we could not update reference ID at dibs. Please handle it manually, it has id: quote_id_: " . $this->getQuote()->getId() . "...  Dibs Payment ID: " . $payment->getPaymentId()
-            );
-
-            // lets ignore this and save it in logs! let customer see his/her order confirmation!
-            $this->getLogger()->error("Error message:" . $e->getMessage());
-        }
-
         // Add info comment
         try {
             $order->addCommentToStatusHistory("Updated Nets Payment reference to: " . $order->getIncrementId());
@@ -625,7 +613,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
             } else{
                 $customerEmail = $billingAddress->getEmail();
             }
-            
+
             $quote->setCheckoutMethod(self::METHOD_GUEST)
                     ->setCustomerId(null)
                     ->setCustomerEmail($customerEmail)
@@ -715,17 +703,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
         $paymentMutex->release($dibsPayment->getPaymentId());
 
         return $order;
-    }
-
-    /**
-     * @param Order $order
-     * @param $paymentId
-     * @param $changeUrl bool
-     * @return void
-     * @throws ClientException
-     */
-    public function updateMagentoPaymentReference(Order $order, $paymentId) {
-        $this->getDibsPaymentHandler()->updateMagentoPaymentReference($order, $paymentId);
     }
 
     /**

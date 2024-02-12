@@ -18,7 +18,6 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
 use Dibs\EasyCheckout\Model\Client\DTO\PaymentMethod;
 use Dibs\EasyCheckout\Model\Client\DTO\RefundPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
-use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
@@ -346,25 +345,6 @@ class Order {
         $createPaymentRequest->setWebHooks($webhooks);
 
         return $this->paymentApi->createNewPayment($createPaymentRequest);
-    }
-
-    /**
-     * @param \Magento\Sales\Model\Order $order
-     * @param $paymentId
-     * @return void
-     * @throws ClientException
-     */
-    public function updateMagentoPaymentReference(\Magento\Sales\Model\Order $order, $paymentId) {
-        $reference = new UpdatePaymentReference();
-        $reference->setReference($order->getIncrementId());
-        $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
-        $storeId = $order->getStoreId();
-        if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
-            $payment = $this->paymentApi->getPayment($paymentId, $storeId);
-            $checkoutUrl = $payment->getCheckoutUrl();
-            $reference->setCheckoutUrl($checkoutUrl);
-        }
-        $this->paymentApi->UpdatePaymentReference($reference, $paymentId, $storeId);
     }
 
     /**

@@ -16,4 +16,8 @@
         <observer name="dibs_create_order_on_payment_created_observer" instance="Dibs\EasyCheckout\Observer\CreateOrderOnPaymentCreatedObserver"/>
     </event>
 
+    <event name="checkout_submit_all_after">
+        <observer name="dibs_update_payment_reference" instance="Dibs\EasyCheckout\Observer\UpdatePaymentReferenceOnSubmitAllObserver"/>
+    </event>
+
 </config>
