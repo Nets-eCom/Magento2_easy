@@ -6,11 +6,16 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.6.6`                                    |
+| Version      | `1.6.7`                                    |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
+
+### Version 1.6.7 - Released - 2024-02-01
+* Update: Create order on click Pay button (embedded flow)
+* Fix: PHP 8.2 deprecation.
+* Fix: Wrong country codes found in Magento 2 plugin
 
 ### Version 1.6.6 - Released - 2023-11-08
 * Update: Improved naming of plugin configuration fields in the admin panel.
