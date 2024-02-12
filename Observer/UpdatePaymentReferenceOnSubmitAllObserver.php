@@ -10,7 +10,6 @@ use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 
 class UpdatePaymentReferenceOnSubmitAllObserver implements ObserverInterface
 {
-
     private Payment $api;
 
     private Data $helper;
@@ -27,20 +26,25 @@ class UpdatePaymentReferenceOnSubmitAllObserver implements ObserverInterface
     {
         $order   = $observer->getEvent()->getOrder();
         $payment = $order->getPayment();
-        if ( ! $payment->getMethod() == "dibseasycheckout") {
+        if ($payment->getMethod() != "dibseasycheckout") {
             return;
         }
         $paymentId = $order->getDibsPaymentId();
         $storeId   = $order->getStoreId();
         $reference = new UpdatePaymentReference();
         $reference->setReference($order->getIncrementId());
-        if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
-            $payment     = $this->api->getPayment($paymentId, $storeId);
-            $checkoutUrl = $payment->getCheckoutUrl();
-            $reference->setCheckoutUrl($checkoutUrl);
-        } else {
-            $reference->setCheckoutUrl($this->helper->getCheckoutUrl());
-        }
+        $checkoutUrl = $this->getCheckoutUrl($paymentId, $storeId);
+        $reference->setCheckoutUrl($checkoutUrl);
         $this->api->UpdatePaymentReference($reference, $paymentId, $storeId);
     }
+
+    private function getCheckoutUrl($paymentId, $storeId): string
+    {
+        if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
+            $payment     = $this->api->getPayment($paymentId, $storeId);
+            return $payment->getCheckoutUrl();
+        }
+        return $this->helper->getCheckoutUrl();
+    }
 }
+
