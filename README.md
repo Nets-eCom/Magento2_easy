@@ -40,7 +40,7 @@ Enable the Nets Easy module in Magento by running the following commands:
 
 - Method 1 (FTP):
 
-If you installed plugin via FTP, you can update the module by following these steps:
+If you installed the plugin via FTP, you can update the module by following these steps:
 1. Download the latest Nets Easy module from GitHub:  https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.6.7.zip.
 2. Remove contents of /app/code/Dibs/EasyCheckout directory.
 3. Unzip the downloaded file and upload the content into the directory /app/code/Dibs/EasyCheckout.
