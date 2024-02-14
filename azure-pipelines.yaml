@@ -1,0 +1,43 @@
+trigger:
+  - main
+  - develop
+
+parameters:
+  - name: ShouldDeployInfrastructure
+    type: boolean
+    default: true
+  - name: ShouldDeployApplication
+    type: boolean
+    default: true
+  - name: phpVersion
+    type: string
+    default: 8.1
+
+pool:
+  vmImage: ubuntu-latest
+
+resources:
+  repositories:
+    - repository: Infra
+      type: git
+      name: ECOM-EASY-PLUGINS/connect
+      ref: refs/heads/feature/86321-add-install-php
+
+stages:
+  - stage: Validate
+    displayName: Validate
+    jobs:
+      - job: Validate_Code
+        steps:
+          - template: /pipelines/steps/install-php.yaml@Infra
+            parameters:
+              phpVersion: ${{ parameters.phpVersion }}
+          - script: |
+              find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
+                | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
+            displayName: 'PHP Syntax Checker (lint)'
+
+  - template: shops/magento2/pipelines/azure-pipelines.yaml@Infra
+    parameters:
+      ShouldDeployInfrastructure: ${{ parameters.ShouldDeployInfrastructure }}
+      ShouldDeployApplication: ${{ parameters.ShouldDeployApplication }}
