@@ -37,7 +37,7 @@ stages:
                 | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
             displayName: 'PHP Syntax Checker (lint)'
 
-  - template: shops/magento2/pipelines/azure-pipelines.yaml@Infra
+  - template: /platforms/magento2/pipelines/azure-pipelines.yaml@Infra
     parameters:
       ShouldDeployInfrastructure: ${{ parameters.ShouldDeployInfrastructure }}
       ShouldDeployApplication: ${{ parameters.ShouldDeployApplication }}
