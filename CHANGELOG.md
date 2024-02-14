@@ -6,11 +6,14 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.6.7`                                    |
+| Version      | `1.6.8`                                    |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
+
+### Version 1.6.8 - Released - 2024-02-14
+* Fix: Order ID was not updated after reservation in some cases.
 
 ### Version 1.6.7 - Released - 2024-02-01
 * Update: Create order on click Pay button (embedded flow)
