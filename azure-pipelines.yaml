@@ -3,15 +3,12 @@ trigger:
   - develop
 
 parameters:
-  - name: ShouldDeployInfrastructure
-    type: boolean
-    default: true
-  - name: ShouldDeployApplication
-    type: boolean
-    default: true
   - name: phpVersion
     type: string
     default: 8.1
+  - name: ShouldDeployApplication
+    type: boolean
+    default: false
 
 pool:
   vmImage: ubuntu-latest
@@ -21,7 +18,7 @@ resources:
     - repository: Infra
       type: git
       name: ECOM-EASY-PLUGINS/connect
-      ref: refs/heads/feature/86321-add-install-php
+      ref: refs/heads/main
 
 stages:
   - stage: Validate
@@ -36,8 +33,6 @@ stages:
               find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
                 | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
             displayName: 'PHP Syntax Checker (lint)'
-
-  - template: /platforms/magento2/pipelines/azure-pipelines.yaml@Infra
-    parameters:
-      ShouldDeployInfrastructure: ${{ parameters.ShouldDeployInfrastructure }}
-      ShouldDeployApplication: ${{ parameters.ShouldDeployApplication }}
+  - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Magento2
+    displayName: Deploy_Development
+    condition: and(succeeded(), or(in(variables['Build.SourceBranch'], 'refs/heads/development'), eq(variables['Build.Reason'], 'Manual')), ${{ parameters.ShouldDeployApplication }})
