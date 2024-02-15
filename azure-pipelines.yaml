@@ -33,9 +33,3 @@ stages:
               find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
                 | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
             displayName: 'PHP Syntax Checker (lint)'
-  - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Magento2
-    displayName: Deploy_Development
-    condition: and(succeeded(), or(in(variables['Build.SourceBranch'], 'refs/heads/development'), eq(variables['Build.Reason'], 'Manual')), ${{ parameters.ShouldDeployApplication }})
-    jobs:
-      - deployment: Deploy_Development
-        environment: dev.d-econmagento2-weu-capp
