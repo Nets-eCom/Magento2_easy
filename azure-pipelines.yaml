@@ -37,5 +37,5 @@ stages:
     displayName: Deploy_Development
     condition: and(succeeded(), or(in(variables['Build.SourceBranch'], 'refs/heads/development'), eq(variables['Build.Reason'], 'Manual')), ${{ parameters.ShouldDeployApplication }})
     jobs:
-      - job: CD-Services-Magento2
-        - bash: echo "CD-Services-Magento2 runs after this completes"
+      - deployment: Deploy_Development
+        environment: dev.d-econmagento2-weu-capp
