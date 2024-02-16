@@ -3,9 +3,9 @@ trigger:
   - develop
 
 parameters:
-  - name: phpVersion
+  - name: validateOnPhpVersion
     type: string
-    default: 8.1
+    default: 8.2
   - name: ShouldDeployApplication
     type: boolean
     default: false
@@ -18,7 +18,7 @@ resources:
     - repository: Infra
       type: git
       name: ECOM-EASY-PLUGINS/connect
-      ref: refs/heads/main
+      ref: refs/heads/feature/run-deploy-after-magento2-module
 
 stages:
   - stage: Validate
@@ -28,7 +28,7 @@ stages:
         steps:
           - template: /pipelines/steps/install-php.yaml@Infra
             parameters:
-              phpVersion: ${{ parameters.phpVersion }}
+              phpVersion: ${{ parameters.validateOnPhpVersion }}
           - script: |
               find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
                 | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
