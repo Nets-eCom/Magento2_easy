@@ -18,7 +18,7 @@ resources:
     - repository: Infra
       type: git
       name: ECOM-EASY-PLUGINS/connect
-      ref: refs/heads/feature/run-deploy-after-magento2-module
+      ref: refs/heads/main
 
 stages:
   - stage: Validate
@@ -35,7 +35,15 @@ stages:
             displayName: 'PHP Syntax Checker (lint)'
   - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Magento2
     displayName: Deploy_Development
-    condition: and(succeeded(), or(in(variables['Build.SourceBranch'], 'refs/heads/development'), eq(variables['Build.Reason'], 'Manual')), ${{ parameters.ShouldDeployApplication }})
+    condition: |
+      and(
+        succeeded(),
+        or(
+          in(variables['Build.SourceBranch'], 'refs/heads/development'),
+          and(${{ parameters.ShouldDeployApplication }}, eq(variables['Build.Reason'], 'Manual'))
+        )
+      )
     jobs:
-      - job: CD-Services-Magento2
-        - bash: echo "CD-Services-Magento2 runs after this completes"
+      - job: Trigger_Deploy_Development
+        steps:
+          - bash: echo "CD-Services-Magento2 runs after this completes"
