@@ -46,4 +46,5 @@ stages:
     jobs:
       - job: Trigger_Deploy_Development
         steps:
+          - checkout: none
           - bash: echo "CD-Services-Magento2 runs after this completes"
