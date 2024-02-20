@@ -1,0 +1,50 @@
+trigger:
+  - main
+  - develop
+
+parameters:
+  - name: validateOnPhpVersion
+    type: string
+    default: 8.2
+  - name: ShouldDeployApplication
+    type: boolean
+    default: false
+
+pool:
+  vmImage: ubuntu-latest
+
+resources:
+  repositories:
+    - repository: Infra
+      type: git
+      name: ECOM-EASY-PLUGINS/connect
+      ref: refs/heads/feature/run-deploy-after-magento2-module
+
+stages:
+  - stage: Validate
+    displayName: Validate
+    jobs:
+      - job: Validate_Code
+        steps:
+          - template: /pipelines/steps/install-php.yaml@Infra
+            parameters:
+              phpVersion: ${{ parameters.validateOnPhpVersion }}
+          - script: |
+              find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
+                | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
+            displayName: 'PHP Syntax Checker (lint)'
+  - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Magento2
+    displayName: Deploy_Development
+    condition: |
+      and(
+        succeeded(),
+        or(
+          in(variables['Build.SourceBranch'], 'refs/heads/development'),
+          and(${{ parameters.ShouldDeployApplication }}, eq(variables['Build.Reason'], 'Manual'))
+        )
+      )
+    jobs:
+      - job: Trigger_Deploy_Development
+        steps:
+          - checkout: none
+          - bash: echo "CD-Services-Magento2 runs after this completes"
