@@ -2,21 +2,17 @@
 
 namespace Dibs\EasyCheckout\Observer;
 
-use Dibs\EasyCheckout\Helper\Data;
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
 use Magento\Framework\Event\Observer as EventObserver;
 use Magento\Framework\Event\ObserverInterface;
 
 class OnepageSuccessObserver implements ObserverInterface
 {
-    private Data $helper;
     private Payment $paymentApi;
 
     public function __construct(
-        Data $helper,
         Payment $paymentApi,
     ) {
-        $this->helper     = $helper;
         $this->paymentApi = $paymentApi;
     }
 
