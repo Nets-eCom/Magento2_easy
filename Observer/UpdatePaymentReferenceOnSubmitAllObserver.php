@@ -18,7 +18,7 @@ class UpdatePaymentReferenceOnSubmitAllObserver implements ObserverInterface
 
     public function __construct(
         Data $helper,
-        Payment $api,
+        Payment $api
     ) {
         $this->api    = $api;
         $this->helper = $helper;
