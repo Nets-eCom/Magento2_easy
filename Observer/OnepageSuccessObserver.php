@@ -11,7 +11,7 @@ class OnepageSuccessObserver implements ObserverInterface
     private Payment $paymentApi;
 
     public function __construct(
-        Payment $paymentApi,
+        Payment $paymentApi
     ) {
         $this->paymentApi = $paymentApi;
     }
