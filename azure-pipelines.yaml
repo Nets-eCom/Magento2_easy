@@ -18,7 +18,7 @@ resources:
     - repository: Infra
       type: git
       name: ECOM-EASY-PLUGINS/connect
-      ref: refs/heads/feature/run-deploy-after-magento2-module
+      ref: refs/heads/main
 
 stages:
   - stage: Validate
