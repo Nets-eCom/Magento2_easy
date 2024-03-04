@@ -30,7 +30,7 @@ stages:
             parameters:
               phpVersion: ${{ parameters.validateOnPhpVersion }}
           - script: |
-              find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
+              find ./ -type f -name '*.php' ! -path './vendor/*' -print0 \
                 | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
             displayName: 'PHP Syntax Checker (lint)'
   - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Magento2
