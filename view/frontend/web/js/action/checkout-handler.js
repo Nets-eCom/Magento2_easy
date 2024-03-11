@@ -54,9 +54,6 @@ define([
                     }
                 });
             },
-            validateTest: function() {
-
-            },
             saveOrder: function(paymentId) {
                 const ctrlkey = this.ctrlkey;
                 $.ajax({
@@ -73,13 +70,13 @@ define([
                     },
                     success: function (response) {
                         if ($.type(response) === 'object' && !$.isEmptyObject(response) && !response.reload) {
-                            this.sendPaymentOrderFinalizedEvent(true);
+                            this.send('payment-order-finalized', true);
                             if (response.messages) {
                                 alert(jQuery.mage.__(response.messages));
                             }
                         } else {
                             netsAlert({
-                                title: 'Error',
+                                title: 'Warning',
                                 content: response.messages,
                                 clickableOverlay: false,
                                 responsive: true,
@@ -96,7 +93,7 @@ define([
                                 }]
                             });
                             checkoutLoader.stopLoader();
-                            this.sendPaymentOrderFinalizedEvent(false);
+                            this.send('payment-order-finalized', false);
                             messageList.addErrorMessage({
                                message: response.messages
                             });
@@ -121,7 +118,7 @@ define([
                                     }
                                 }]
                             });
-                        this.sendPaymentOrderFinalizedEvent(false);
+                        this.send('payment-order-finalized', true);
                     }
                 });
             }

@@ -10,7 +10,6 @@ use Dibs\EasyCheckout\Model\CheckoutContext as DibsCheckoutContext;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
-use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\Order;
 
@@ -72,22 +71,22 @@ class EmbeddedSaveOrder extends Checkout {
         if (!$quote->getId()) {
             return $this->respondWithError('Empty quote');
         }
-        
+
         $this->logInfo("in EmbeddedSaveOrder to create order");
-        
+
         if (!$this->validateQuoteSignature()) {
             $this->logInfo("validation of quote signature failed");
-            
+
             return;
         }
-        
+
         $paymentId = $this->getRequest()->getPostValue('pid', null);
         if (!$paymentId) {
             return $this->respondWithError('Invalid payment id');
         }
-        
+
         $this->dibsCheckout->checkCart();
-        
+
         try {
             $this->logInfo("validation successful, creating order");
             $dibsPayment = $this->dibsCheckout->getDibsPaymentHandler()->loadDibsPaymentById($paymentId, $quote->getStoreId());
@@ -106,7 +105,8 @@ class EmbeddedSaveOrder extends Checkout {
         $result = $this->resultFactory->create('json');
         $result->setData([
                 'status' => 'Success.',
-                'paymentId' => $paymentId
+                'paymentId' => $paymentId,
+                'reload' => 0,
             ]);
         $result->setHttpResponseCode(200);
 
