@@ -118,7 +118,7 @@ define([
                                     }
                                 }]
                             });
-                        this.send('payment-order-finalized', true);
+                        this.send('payment-order-finalized', false);
                     }
                 });
             }
