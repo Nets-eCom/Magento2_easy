@@ -2,7 +2,7 @@
   "name": "nexi-checkout/magento2",
   "description": "Nets Easy Checkout",
   "type": "magento2-module",
-  "version": "1.6.8",
+  "version": "1.6.9",
   "require": {
     "php": "~7.4 | ~8.0 | ~8.1 | ~8.2"
   },
