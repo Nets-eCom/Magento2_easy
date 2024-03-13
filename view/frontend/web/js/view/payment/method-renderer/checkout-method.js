@@ -30,7 +30,7 @@ define(
             'use strict';
             var agreementsConfig = window.checkoutConfig.checkoutAgreements;
             var agreementsCheck = agreementsConfig.isEnabled;
-            
+
             var component = Component.extend({
 
                 defaults: {
@@ -38,7 +38,6 @@ define(
                     iframeUrl: null,
                     hideLoader: false
                 },
-                eventsInstantiated: false,
                 continueToDibsRedirect: function () {
                     let billingAddressComponent = require('uiRegistry').get('checkout.steps.billing-step.payment.payments-list.'+this.getCode()+'-form');
                     billingAddressComponent.updateAddress();
@@ -57,7 +56,7 @@ define(
                                     $.mage.redirect(paymentConfiguration.checkoutUrl);
                                 }
                             };
-    
+
                             this.initPaymentConfiguration(0, callback);
                         }.bind(this));
                         return false;
@@ -117,14 +116,12 @@ define(
                             };
                             self.dibsPayment = new Dibs.Checkout(checkoutOptions);
                             self.dibsPayment.ctrlkey = paymentConfiguration.ctrlkey;
-                            if (self.eventsInstantiated == false) {
-                                self.dibsPayment.on('payment-completed', vanillaCheckoutHandler.onCheckoutCompleteAction);
-                                self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.saveOrder);
-                                self.dibsPayment.on('payment-created', vanillaCheckoutHandler.validateTest);
-                                setCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
-                                cancelCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
-                                self.eventsInstantiated = true;
-                            }
+                            self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.saveOrder);
+                            self.dibsPayment.on('payment-completed', vanillaCheckoutHandler.onCheckoutCompleteAction);
+
+                            setCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
+                            cancelCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
+
                             self.hideLoader(true);
                         }
                     }.bind(this);

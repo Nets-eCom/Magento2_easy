@@ -68,9 +68,6 @@ define([
                     }
 
                     var dibsCheckout = uiRegistry.get('nwtdibsCheckout');
-                    if (dibsCheckout) {
-                        dibsCheckout.initializeNewPayment();
-                    }
 
                     if (window.dibs_msuodc_enabled && dibsCheckout) {
                         dibsCheckout._ajaxSubmit(
