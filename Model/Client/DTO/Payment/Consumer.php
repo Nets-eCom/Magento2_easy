@@ -21,8 +21,11 @@ class Consumer extends AbstractRequest {
      */
     protected $email;
 
-    /** @var ConsumerShippingAddress $shippingAddress */
+    /** @var ConsumerAddress $shippingAddress */
     protected $shippingAddress;
+
+    /** @var ConsumerAddress $billingAddress */
+    protected $billingAddress;
 
     /** @var ConsumerPhoneNumber $phoneNumber */
     protected $phoneNumber;
@@ -74,18 +77,34 @@ class Consumer extends AbstractRequest {
     }
 
     /**
-     * @return ConsumerShippingAddress
+     * @return ConsumerAddress
      */
     public function getShippingAddress() {
         return $this->shippingAddress;
     }
 
     /**
-     * @param ConsumerShippingAddress $shippingAddress
+     * @param ConsumerAddress $shippingAddress
      * @return Consumer
      */
     public function setShippingAddress($shippingAddress) {
         $this->shippingAddress = $shippingAddress;
+        return $this;
+    }
+
+    /**
+     * @return ConsumerAddress|null
+     */
+    public function getBillingAddress() {
+        return $this->billingAddress;
+    }
+
+    /**
+     * @param ConsumerAddress $billingAddress
+     * @return Consumer
+     */
+    public function setBillingAddress($billingAddress) {
+        $this->billingAddress = $billingAddress;
         return $this;
     }
 
@@ -143,6 +162,12 @@ class Consumer extends AbstractRequest {
             "email" => $this->getEmail(),
             "shippingAddress" => $this->getShippingAddress()->toArray(),
         ];
+
+        // billing address filled only if different then shipping
+        if ($this->getBillingAddress()) {
+            $data["billingAddress"] = $this->getBillingAddress()->toArray();
+        }
+
         //If phone number is not empty
         if ($this->getPhoneNumber()) {
             $data["phoneNumber"] = $this->getPhoneNumber()->toArray();

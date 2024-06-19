@@ -51,7 +51,7 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
      * @throws CheckoutException
      * @throws LocalizedException
      */
-    public function initCheckout($reloadIfCurrencyChanged = true, $useDefaultAddresses = true) {
+    public function initCheckout($reloadIfCurrencyChanged = true) {
         if (!($this->context instanceof CheckoutContext)) {
             throw new \Exception("Dibs Context must be set first!");
         }
@@ -63,10 +63,6 @@ class Checkout extends \Magento\Checkout\Model\Type\Onepage {
         $customer = $this->getCustomerSession();
         if ($customer->getId()) {
             $quote->setCustomer($customer->getCustomerDataObject());
-            if ($useDefaultAddresses) {
-                //this will set also primary billing/shipping address as billing address
-                $quote->assignCustomer($customer->getCustomerDataObject());
-            }
         }
 
         $allowCountries = $this->getAllowedCountries(); //this is not null (it is checked in $this->checkCart())

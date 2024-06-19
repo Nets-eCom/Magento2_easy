@@ -1,6 +1,6 @@
 <?php
 namespace Dibs\EasyCheckout\Model\Client\DTO\Payment;
-class GetConsumerShippingAddress extends ConsumerShippingAddress
+class GetConsumerShippingAddress extends ConsumerAddress
 {
 
 
