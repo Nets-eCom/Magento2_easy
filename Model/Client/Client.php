@@ -12,8 +12,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
  */
 abstract class Client
 {
-
-    const COMMERCE_PLATFORM_TAG = 'NWTMagento2';
+    const COMMERCE_PLATFORM_TAG = 'Magento2';
 
     /**
      * @var int
