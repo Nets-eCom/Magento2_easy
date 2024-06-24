@@ -235,10 +235,8 @@ abstract class Client
      */
     protected function getDefaultOptions()
     {
-
         $options['headers'] = [
             'Content-Type' => 'application/json',
-            'commercePlatformTag' => self::COMMERCE_PLATFORM_TAG,
             'Authorization' => $this->apiContext->getHelper()->getApiSecretKey(),
         ];
 
