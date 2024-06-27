@@ -3,7 +3,7 @@ namespace Dibs\EasyCheckout\Model\Client\DTO\Payment;
 
 use Dibs\EasyCheckout\Model\Client\DTO\AbstractRequest;
 
-class ConsumerShippingAddress extends AbstractRequest
+class ConsumerAddress extends AbstractRequest
 {
 
     /**
@@ -41,7 +41,7 @@ class ConsumerShippingAddress extends AbstractRequest
 
     /**
      * @param string $addressLine1
-     * @return ConsumerShippingAddress
+     * @return ConsumerAddress
      */
     public function setAddressLine1($addressLine1)
     {
@@ -59,7 +59,7 @@ class ConsumerShippingAddress extends AbstractRequest
 
     /**
      * @param string $addressLine2
-     * @return ConsumerShippingAddress
+     * @return ConsumerAddress
      */
     public function setAddressLine2($addressLine2)
     {
@@ -77,7 +77,7 @@ class ConsumerShippingAddress extends AbstractRequest
 
     /**
      * @param string $postalCode
-     * @return ConsumerShippingAddress
+     * @return ConsumerAddress
      */
     public function setPostalCode($postalCode)
     {
@@ -95,7 +95,7 @@ class ConsumerShippingAddress extends AbstractRequest
 
     /**
      * @param string $city
-     * @return ConsumerShippingAddress
+     * @return ConsumerAddress
      */
     public function setCity($city)
     {
@@ -113,7 +113,7 @@ class ConsumerShippingAddress extends AbstractRequest
 
     /**
      * @param string $country
-     * @return ConsumerShippingAddress
+     * @return ConsumerAddress
      */
     public function setCountry($country)
     {

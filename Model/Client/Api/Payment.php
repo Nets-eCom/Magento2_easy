@@ -4,6 +4,7 @@ namespace Dibs\EasyCheckout\Model\Client\Api;
 
 use Dibs\EasyCheckout\Model\Client\Client;
 use Dibs\EasyCheckout\Model\Client\ClientException;
+use Dibs\EasyCheckout\Model\Client\Context;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
 use Dibs\EasyCheckout\Model\Client\DTO\ChargePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePayment;
@@ -15,8 +16,23 @@ use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentCart;
 use Dibs\EasyCheckout\Model\Client\DTO\CreatePaymentResponse;
 use Dibs\EasyCheckout\Model\Client\DTO\TerminatePayment;
 use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
+use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\Module\ModuleListInterface;
 
 class Payment extends Client {
+
+    private ProductMetadataInterface $productMetadata;
+    private ModuleListInterface $moduleList;
+
+    public function __construct(
+        Context $apiContext,
+        ProductMetadataInterface $productMetadata,
+        ModuleListInterface $moduleList
+    ) {
+        parent::__construct($apiContext);
+        $this->productMetadata = $productMetadata;
+        $this->moduleList = $moduleList;
+    }
 
     /**
      * @param CreatePayment $createPayment
@@ -24,8 +40,11 @@ class Payment extends Client {
      * @throws ClientException
      */
     public function createNewPayment(CreatePayment $createPayment) {
+        $options = [
+            'commercePlatformTag' => $this->buildCommercePlatformTag(),
+        ];
         try {
-            $response = $this->post("/v1/payments", $createPayment);
+            $response = $this->post("/v1/payments", $createPayment, $options);
         } catch (ClientException $e) {
             // handle?
             throw $e;
@@ -138,4 +157,13 @@ class Payment extends Client {
         return new CreateRefundResponse($response);
     }
 
+    private function buildCommercePlatformTag(): string
+    {
+        return sprintf('%s %s, %s, php%s',
+            self::COMMERCE_PLATFORM_TAG,
+            $this->productMetadata->getVersion(),
+            $this->moduleList->getOne('Dibs_EasyCheckout')['setup_version'],
+            PHP_VERSION
+        );
+    }
 }

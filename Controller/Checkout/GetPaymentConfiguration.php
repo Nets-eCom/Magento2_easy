@@ -32,7 +32,7 @@ class GetPaymentConfiguration extends Checkout
 
         $checkoutInfo = ['integrationType' => $integrationType, 'checkoutFlow' => $checkoutFlow];
         try {
-            $checkout->initCheckout(false, !$vanillaCheckout);
+            $checkout->initCheckout(false);
             $dibsPayment = $checkout->initDibsCheckout($checkoutInfo, true);
         } catch (\Exception $e) {
             $checkout->getLogger()->critical($e);

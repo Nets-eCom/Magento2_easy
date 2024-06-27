@@ -6,7 +6,7 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\Consumer;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPhoneNumber;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerPrivatePerson;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerCompany;
-use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerShippingAddress;
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerAddress;
 use Magento\Quote\Model\Quote;
 use Dibs\EasyCheckout\Model\Dibs\LocaleFactory;
 use Dibs\EasyCheckout\Helper\Data;
@@ -82,7 +82,10 @@ class ConsumerDataProvider
           } else {
               $consumer->setPrivatePerson($this->getPrivatePersonData());
           }
-          
+
+          if ($this->helper->getSplitAddresses() && !$quote->getShippingAddress()->getSameAsBilling()) {
+              $consumer->setBillingAddress($this->getBillingAddressData());
+          }
         } else{
           $consumer = new Consumer();
           $consumer->setReference($quote->getCustomerId());
@@ -170,7 +173,7 @@ class ConsumerDataProvider
     }
 
     /**
-     * @return ConsumerShippingAddress
+     * @return ConsumerAddress
      */
     private function getAddressData()
     {
@@ -197,7 +200,7 @@ class ConsumerDataProvider
             }
         }
 
-        $paymentShippingAddress = new ConsumerShippingAddress();
+        $paymentShippingAddress = new ConsumerAddress();
         $paymentShippingAddress->setCity($city);
         $paymentShippingAddress->setAddressLine1($address1);
         $paymentShippingAddress->setAddressLine2($shippingAddressLine2);
@@ -236,7 +239,7 @@ class ConsumerDataProvider
             }
         }
 
-        $paymentShippingAddress = new ConsumerShippingAddress();
+        $paymentShippingAddress = new ConsumerAddress();
         $paymentShippingAddress->setCity($city);
         $paymentShippingAddress->setAddressLine1($address1);
         $paymentShippingAddress->setAddressLine2($shippingAddressLine2);
