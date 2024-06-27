@@ -6,11 +6,15 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.6.11`                                   |
+| Version      | `1.6.12`                                   |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
+
+### Version 1.6.12 - Released - 2024-06-27
+- Update: added possibility to send billing and shipping adders in payload
+- Update: updated commercePlatformTag
 
 ### Version 1.6.11 - Released - 2024-05-28
 - Fix: Prevent order duplication for same payment ID
