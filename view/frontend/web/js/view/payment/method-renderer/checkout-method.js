@@ -30,6 +30,7 @@ define(
             'use strict';
             var agreementsConfig = window.checkoutConfig.checkoutAgreements;
             var agreementsCheck = agreementsConfig.isEnabled;
+            var prevAddress;
 
             var component = Component.extend({
 
@@ -91,7 +92,9 @@ define(
                     this._super();
                     if (window.isVanillaEmbeded) {
                         this.initializeNewPayment();
+                        this.subscribeBillingAddressChange();
                     }
+
                     uiRegistry.set('nwtdibsCheckout', this);
                 },
                 initializeNewPayment: function () {
@@ -139,6 +142,24 @@ define(
                             {'vanilla': vanilla, 'email': quoteModel.guestEmail},
                             callback
                             );
+                },
+                subscribeBillingAddressChange: function () {
+                    quoteModel.billingAddress.subscribe(function (newAddress) {
+                        if (!window.isVanillaEmbeded) {
+                            return;
+                        }
+
+                        if (newAddress && prevAddress && newAddress.getKey() !== prevAddress.getKey()) {
+                            prevAddress = newAddress;
+                            if (newAddress) {
+                                this.initializeNewPayment();
+                            }
+                        }
+
+                        if (!prevAddress) {
+                            prevAddress = newAddress;
+                        }
+                    }, this);
                 }
             });
             return component

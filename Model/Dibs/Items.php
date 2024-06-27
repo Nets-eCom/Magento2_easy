@@ -515,7 +515,7 @@ class Items
         $calculatedTotal = 0;
         $calculatedTax = 0;
         foreach ($this->_cart as $item) {
-            /** @var $item OrderItem */
+            /** @var OrderItem $item */
             $total_price_including_tax = $item->getGrossTotalAmount();
             $calculatedTotal += $total_price_including_tax;
         }
