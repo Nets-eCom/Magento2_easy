@@ -56,7 +56,7 @@ class Payment extends Client {
      * @return void
      * @throws ClientException
      */
-    public function UpdatePaymentReference(UpdatePaymentReference $reference, $paymentId, $storeId) {
+    public function updatePaymentReference(UpdatePaymentReference $reference, $paymentId, $storeId) {
         try {
             $this->put("/v1/payments/" . $paymentId . "/referenceinformation", $reference, $storeId);
         } catch (ClientException $e) {

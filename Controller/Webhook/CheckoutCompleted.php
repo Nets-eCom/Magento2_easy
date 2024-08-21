@@ -22,4 +22,34 @@ class CheckoutCompleted extends Webhook
             $this->order->getPayment()->setAdditionalInformation($additionalInformation);
         }
     }
+
+    /**
+     * @inheritDoc
+     */
+    protected function afterSave()
+    {
+        // update reference if on order submit was to early to update
+        $this->dibsCheckoutContext->getDibsOrderHandler()->updatePaymentReference($this->order);
+
+        // To sent email for Swish payment method
+        if (strtoupper($this->paymentMethod) === 'SWISH') {
+            try {
+                $this->dibsCheckoutContext->getOrderSender()->send($this->order);
+                $this->logInfo("Sent order confirmation");
+            } catch (\Exception $e) {
+                $this->logError("Error sending order confirmation email");
+                $this->logError("Error message: {$e->getMessage()}");
+                $this->logError("Stack trace: {$e->getPrevious()->getTraceAsString()}");
+                $this->order->addCommentToStatusHistory(
+                        "Callback for {$this->expectedEvent} encountered an error when trying to send order confirmation email",
+                        false
+                );
+            }
+        }
+    }
+
+    protected function getSuccessComment(): string
+    {
+        return 'Checkout completed for payment ID: %s';
+    }
 }
