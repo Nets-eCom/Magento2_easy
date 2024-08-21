@@ -25,6 +25,8 @@ use Magento\Sales\Model\Order\Invoice;
 use Magento\Store\Model\StoreManagerInterface;
 use Dibs\EasyCheckout\Api\CheckoutFlow;
 use Dibs\EasyCheckout\Model\Client\DTO\TerminatePayment;
+use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
+use Magento\Sales\Model\Order as OrderEntity;
 
 class Order {
 
@@ -643,6 +645,21 @@ class Order {
         }
     }
 
+    public function updatePaymentReference(OrderEntity $orderEntity): void {
+        $paymentId = $orderEntity->getDibsPaymentId();
+        $storeId = $orderEntity->getStoreId();
+        $payment = $this->loadDibsPaymentById($paymentId, $storeId);
+
+        if ($orderEntity->getIncrementId() === $payment->getOrderDetails()->getReference()) {
+            return;
+        }
+
+        $reference = new UpdatePaymentReference();
+        $reference->setReference($orderEntity->getIncrementId());
+        $reference->setCheckoutUrl($this->getCheckoutUrl($payment));
+        $this->paymentApi->updatePaymentReference($reference, $paymentId, $storeId);
+    }
+
     /**
      * @param $paymentId
      * @param $storeId
@@ -711,6 +728,15 @@ class Order {
         $consumerType->setDefault($defaultConsumerType);
         $consumerType->setSupportedTypes($consumerTypes);
         return $consumerType;
+    }
+
+    private function getCheckoutUrl(GetPaymentResponse $payment): string
+    {
+        if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
+            return $payment->getCheckoutUrl();
+        }
+
+        return $this->helper->getCheckoutUrl();
     }
 
 }

@@ -24,4 +24,9 @@ class CancelCreated extends Webhook
             $this->order->setStatus('canceled');
         }
     }
+
+    protected function getSuccessComment(): string
+    {
+        return 'Cancel created for payment ID: %s';
+    }
 }
