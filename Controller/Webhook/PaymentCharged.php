@@ -34,4 +34,9 @@ class PaymentCharged extends Webhook {
         $paymentResponse = $this->dibsCheckoutContext->getDibsOrderHandler()->loadDibsPaymentById($this->paymentId, $this->storeId);
         $responseHandler->saveOrder($paymentResponse, $this->order);
     }
+
+    protected function getSuccessComment(): string
+    {
+        return 'Charge created for payment ID: %s';
+    }
 }
