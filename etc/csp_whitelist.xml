@@ -6,5 +6,20 @@
                 <value id="dibspayment" type="host">https://*.dibspayment.eu</value>
             </values>
         </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="dibspayment" type="host">https://*.dibspayment.eu</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="dibspayment" type="host">https://*.dibspayment.eu</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="dibspayment" type="host">https://info.dibs.se</value>
+            </values>
+        </policy>
     </policies>
 </csp_whitelist>

@@ -18,11 +18,16 @@
     </script>
 <?php endif; ?>
 <?php if ($block->getUseEmbededVanillaFlow()): ?>
-    <script>
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = '<?= $block->getChildBlock('dibs_easy_checkout_script')->getSource(); ?>';
-
-        document.getElementsByTagName('head')[0].appendChild(script);
-    </script>
+    <?php //https://developer.adobe.com/commerce/php/development/security/content-security-policies/#whitelist-an-inline-script-or-style ?>
+    <?= $secureRenderer->renderTag(
+        'script',
+        ['type' => 'text/javascript'],
+        "\n
+        var script = document.createElement('script');\n
+        script.type = 'text/javascript';\n
+        script.src = '" . $block->getChildBlock('dibs_easy_checkout_script')->getSource() ."';\n
+        \n
+        document.getElementsByTagName('head')[0].appendChild(script);\n",
+        false
+    ); ?>
 <?php endif; ?>
