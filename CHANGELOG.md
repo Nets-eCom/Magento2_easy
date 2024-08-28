@@ -6,15 +6,20 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.6.12`                                   |
+| Version      | `1.6.13`                                   |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
 
-### Version 1.6.12 - Released - 2024-06-27
-- Update: added possibility to send billing and shipping adders in payload
+### Version 1.7.0-beta - Released - 2024-08-28
+- Update: added possibility to send billing and shipping adderss in payload
 - Update: updated commercePlatformTag
+
+### Version 1.6.13 - Released - 2024-08-28
+- Fix: Order reference send on payment.checkout.completed if on create order call failed
+- Fix: Move the code for sending email to proper webhook classes
+- Fix: Added changes to csp_whitelist for CSP restricted mode on checkout page for embedded
 
 ### Version 1.6.11 - Released - 2024-05-28
 - Fix: Prevent order duplication for same payment ID
