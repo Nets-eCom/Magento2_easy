@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace Dibs\EasyCheckout\Observer;
 
-use Dibs\EasyCheckout\Helper\Data;
-use Dibs\EasyCheckout\Model\Client\Api\Payment;
+use Dibs\EasyCheckout\Logger\Logger;
 use Magento\Framework\Event\Observer as EventObserver;
 use Magento\Framework\Event\ObserverInterface;
-use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
+use Dibs\EasyCheckout\Model\Dibs\Order;
 
 class UpdatePaymentReferenceOnSubmitAllObserver implements ObserverInterface
 {
-    private Payment $api;
-
-    private Data $helper;
+    private Order $dibsHandler;
+    private Logger $logger;
 
     public function __construct(
-        Data $helper,
-        Payment $api
+        Order $dibsHandler,
+        Logger $logger
     ) {
-        $this->api    = $api;
-        $this->helper = $helper;
+        $this->dibsHandler = $dibsHandler;
+        $this->logger = $logger;
     }
 
     public function execute(EventObserver $observer)
@@ -31,23 +29,15 @@ class UpdatePaymentReferenceOnSubmitAllObserver implements ObserverInterface
         if ($payment->getMethod() !== "dibseasycheckout") {
             return;
         }
-        $paymentId = $order->getDibsPaymentId();
-        $storeId   = $order->getStoreId();
-        $reference = new UpdatePaymentReference();
-        $reference->setReference($order->getIncrementId());
-        $reference->setCheckoutUrl($this->getCheckoutUrl($paymentId, $storeId));
-        $this->api->UpdatePaymentReference($reference, $paymentId, $storeId);
-    }
 
-    private function getCheckoutUrl(string $paymentId, int $storeId): string
-    {
-        if ($this->helper->getCheckoutFlow() === "HostedPaymentPage") {
-            $payment = $this->api->getPayment($paymentId, $storeId);
-
-            return $payment->getCheckoutUrl();
+        try {
+            $this->dibsHandler->updatePaymentReference($order);
+        } catch (\Exception $e) {
+            $this->logger->error(
+                'updatePaymentReference in submit observer failed',
+                ['paymentId' => $order->getDibsPaymentId(), 'exception' => $e]
+            );
         }
-
-        return $this->helper->getCheckoutUrl();
     }
 }
 

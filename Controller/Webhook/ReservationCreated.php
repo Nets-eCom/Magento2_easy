@@ -32,4 +32,33 @@ class ReservationCreated extends Webhook
             }
         }
     }
+
+    /**
+     * @inheritDoc
+     */
+    protected function afterSave()
+    {
+        // Send order confirmation if not sent already
+        if ($this->order->getEmailSent()) {
+            return;
+        }
+
+        try {
+            $this->dibsCheckoutContext->getOrderSender()->send($this->order);
+            $this->logInfo("Sent order confirmation");
+        } catch (\Exception $e) {
+            $this->logError("Error sending order confirmation email");
+            $this->logError("Error message: {$e->getMessage()}");
+            $this->logError("Stack trace: {$e->getPrevious()->getTraceAsString()}");
+            $this->order->addCommentToStatusHistory(
+                    "Callback for {$this->expectedEvent} encountered an error when trying to send order confirmation email",
+                    false
+            );
+        }
+    }
+
+    protected function getSuccessComment(): string
+    {
+        return 'Reservation created for payment ID: %s';
+    }
 }

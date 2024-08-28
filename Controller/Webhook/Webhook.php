@@ -57,22 +57,8 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
     /**
      * @var string
      */
-    protected $logPrefix;
-
-    /**
-     * @var string
-     */
     protected $expectedEvent;
 
-    /**
-     * @var string
-     */
-    protected $successComment;
-
-    /**
-     * @var bool
-     */
-    protected $sendEmail;
     //
     // Processing properties
 
@@ -116,9 +102,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
             DibsCheckoutContext $dibsCheckoutContext,
             JsonFactory $resultFactory,
             OrderPaymentRepositoryInterface $paymentRepo,
-            string $expectedEvent,
-            string $successComment,
-            bool $sendEmail
+            string $expectedEvent
     ) {
         $this->helper = $helper;
         $this->paymentApi = $paymentApi;
@@ -128,8 +112,6 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
         $this->resultFactory = $resultFactory;
         $this->paymentRepo = $paymentRepo;
         $this->expectedEvent = $expectedEvent;
-        $this->successComment = $successComment;
-        $this->sendEmail = $sendEmail;
     }
 
     public function execute() {
@@ -187,26 +169,6 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
             $this->paymentRepo->save($this->order->getPayment());
 
             $this->logInfo("Order is updated successfully");
-            $orderId = $this->order->getIncrementId();
-            $payment = $this->order->getPayment();
-            if ($payment->getMethod() == "dibseasycheckout") {
-                $this->logInfo('from the webhook ' . $this->order->getIncrementId());
-                // To sent email for Swish payment method
-                if (strtoupper($this->paymentMethod) == 'SWISH' && $data['event'] == 'payment.checkout.completed') {
-                    try {
-                        $this->dibsCheckoutContext->getOrderSender()->send($this->order);
-                        $this->logInfo("Sent order confirmation");
-                    } catch (\Exception $e) {
-                        $this->logError("Error sending order confirmation email");
-                        $this->logError("Error message: {$e->getMessage()}");
-                        $this->logError("Stack trace: {$e->getPrevious()->getTraceAsString()}");
-                        $this->order->addCommentToStatusHistory(
-                                "Callback for {$this->expectedEvent} encountered an error when trying to send order confirmation email",
-                                false
-                        );
-                    }
-                }
-            }
         } catch (\Exception $e) {
             $this->logError("Could not update order");
             $this->logError("Error message: {$e->getMessage()}");
@@ -219,23 +181,8 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
             return $result;
         }
 
-        // Send order confirmation if not sent already
-        if ($this->sendEmail && !$this->order->getEmailSent()) {
-            try {
-                $this->dibsCheckoutContext->getOrderSender()->send($this->order);
-                $this->logInfo("Sent order confirmation");
-            } catch (\Exception $e) {
-                $this->logError("Error sending order confirmation email");
-                $this->logError("Error message: {$e->getMessage()}");
-                $this->logError("Stack trace: {$e->getPrevious()->getTraceAsString()}");
-                $this->order->addCommentToStatusHistory(
-                        "Callback for {$this->expectedEvent} encountered an error when trying to send order confirmation email",
-                        false
-                );
-            }
-        }
-
         $this->afterSave();
+
         $result->setHttpResponseCode(200);
         return $result;
     }
@@ -316,7 +263,7 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
      * @return void
      */
     protected function addSuccessCommentToOrder() {
-        $comment = sprintf($this->successComment, $this->paymentId);
+        $comment = sprintf($this->getSuccessComment(), $this->paymentId);
         if ($this->order->getState() === Order::STATE_PENDING_PAYMENT) {
             $this->order->setState(Order::STATE_PROCESSING);
             $status = $this->dibsCheckoutContext->getHelper()->getProcessingOrderStatus($this->order->getStore());
@@ -326,4 +273,6 @@ abstract class Webhook implements HttpPostActionInterface, CsrfAwareActionInterf
 
         $this->order->addCommentToStatusHistory($comment, false);
     }
+
+    abstract protected function getSuccessComment(): string;
 }
