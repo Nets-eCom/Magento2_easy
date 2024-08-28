@@ -2,6 +2,8 @@
 
 namespace Dibs\EasyCheckout\Controller\Webhook;
 
+use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentWebhook;
+
 class PaymentRefund extends Webhook {
 
     protected function beforeSave() {
@@ -35,4 +37,10 @@ class PaymentRefund extends Webhook {
         }
     }
 
+    protected function getSuccessComment(): string
+    {
+        return $this->expectedEvent === CreatePaymentWebhook::EVENT_PAYMENT_REFUND_COMPLETED
+            ? 'Refund completed for payment ID: %s'
+            : 'Refund initiated for payment ID: %s';
+    }
 }
