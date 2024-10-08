@@ -390,7 +390,7 @@ class Order {
             'company' => $company,
             'telephone' => $phone,
             'email' => $email,
-            'street' => $streets,
+            'street' => implode(PHP_EOL, $streets),
             'city' => $address->getCity(),
             'postcode' => $address->getPostalCode(),
         ];
