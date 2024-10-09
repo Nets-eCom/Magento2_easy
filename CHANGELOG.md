@@ -6,14 +6,17 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.6.13`                                   |
+| Version      | `1.7.0`                                   |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
 
+### Version 1.7.0 - Released - 2024-10-09
+- Fix: store address lines as string
+
 ### Version 1.7.0-beta - Released - 2024-08-28
-- Update: added possibility to send billing and shipping adderss in payload
+- Update: added possibility to send billing and shipping address in payload
 - Update: updated commercePlatformTag
 
 ### Version 1.6.13 - Released - 2024-08-28
