@@ -6,7 +6,7 @@
 | Author              | `Nets eCom`                                                                                                   |
 | Prefix              | `EASY-M2`                                                                                                     |
 | Shop Version        | `2.4+`                                                                                                        |
-| Version             | `1.6.13`                                                                                                      |
+| Version             | `1.7.0`                                                                                                      |
 | Documentation Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/ |
 | Github              | https://github.com/Nets-eCom/Magento2_easy                                                                    |
 | License             | `MIT License`                                                                                                 |
@@ -16,7 +16,7 @@
 ### Download / Installation
 
 * Method 1
-1. Download the latest Nets Easy module from GitHub: https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.6.13.zip.
+1. Download the latest Nets Easy module from GitHub: https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.7.0.zip.
 2. Unzip the file and upload the content to your Magento site via FTP, into the directory /app/code/Dibs/EasyCheckout. Please create the folder /Dibs/EasyCheckout first time you install the plugin.
 
 * Method 2
@@ -41,7 +41,7 @@ Enable the Nets Easy module in Magento by running the following commands:
 - Method 1 (FTP):
 
 If you installed plugin via FTP, you can update the module by following these steps:
-1. Download the latest Nets Easy module from GitHub:  https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.6.13.zip.
+1. Download the latest Nets Easy module from GitHub:  https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.7.0.zip.
 2. Remove contents of /app/code/Dibs/EasyCheckout directory.
 3. Unzip the downloaded file and upload the content into the directory /app/code/Dibs/EasyCheckout.
 
