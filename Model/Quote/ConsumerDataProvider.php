@@ -63,12 +63,12 @@ class ConsumerDataProvider
     public function getFromQuote(Quote $quote) : Consumer
     {
         $this->quote = $quote;
-        
+
         if(!$quote->isVirtual()){
 
           $consumer = new Consumer();
           $consumer->setReference($quote->getCustomerId());
-  
+
           $consumer->setShippingAddress($this->getAddressData());
   	      //If phone number is not empty
           if($quote->getShippingAddress()->getTelephone()) {
@@ -89,7 +89,7 @@ class ConsumerDataProvider
         } else{
           $consumer = new Consumer();
           $consumer->setReference($quote->getCustomerId());
-  
+
           $consumer->setShippingAddress($this->getBillingAddressData());
   	      //If phone number is not empty
           if($quote->getBillingAddress()->getTelephone()) {
@@ -193,11 +193,9 @@ class ConsumerDataProvider
             }
         }
 
-        $shippingAddressLine2 = '';
-        if (!empty($shippingAddress->getStreetLine(2))) {
-            if (strlen($shippingAddress->getStreetLine(2)) > 128) {
-                $shippingAddressLine2 = substr($shippingAddress->getStreetLine(2), 0, 128);
-            }
+        $shippingAddressLine2 = $shippingAddress->getStreetLine(2);
+        if ($shippingAddressLine2 !== '' && strlen($shippingAddressLine2) > 128) {
+            $shippingAddressLine2 = substr($shippingAddressLine2, 0, 128);
         }
 
         $paymentShippingAddress = new ConsumerAddress();
@@ -213,7 +211,7 @@ class ConsumerDataProvider
 
         return $paymentShippingAddress;
     }
-    
+
     private function getBillingAddressData()
     {
         $shippingAddress = $this->quote->getBillingAddress();
@@ -232,11 +230,9 @@ class ConsumerDataProvider
             }
         }
 
-        $shippingAddressLine2 = '';
-        if (!empty($shippingAddress->getStreetLine(2))) {
-            if (strlen($shippingAddress->getStreetLine(2)) > 128) {
-                $shippingAddressLine2 = substr($shippingAddress->getStreetLine(2), 0, 128);
-            }
+        $shippingAddressLine2 = $shippingAddress->getStreetLine(2);
+        if ($shippingAddressLine2 !== '' && strlen($shippingAddressLine2) > 128) {
+            $shippingAddressLine2 = substr($shippingAddressLine2, 0, 128);
         }
 
         $paymentShippingAddress = new ConsumerAddress();
