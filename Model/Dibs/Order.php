@@ -3,6 +3,7 @@
 namespace Dibs\EasyCheckout\Model\Dibs;
 
 use Dibs\EasyCheckout\Model\Client\Api\Payment;
+use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Model\Order\Payment as MagentoPayment;
 use Dibs\EasyCheckout\Model\Client\ClientException;
 use Dibs\EasyCheckout\Model\Client\DTO\CancelPayment;
@@ -29,6 +30,8 @@ use Dibs\EasyCheckout\Model\Client\DTO\UpdatePaymentReference;
 use Magento\Sales\Model\Order as OrderEntity;
 
 class Order {
+
+    private const PAYMENT_METHOD_EASY_INVOICE = 'easy-invoice';
 
     /**
      * @var Items $items
@@ -586,20 +589,23 @@ class Order {
     }
 
     /**
-     * @param \Magento\Payment\Model\InfoInterface $payment
+     * @param \Magento\Payment\Model\InfoInterface $paymentInfo
      * @param $amount
      * @throws ClientException
      * @throws LocalizedException
      */
-    public function refundDibsPayment(\Magento\Payment\Model\InfoInterface $payment, $amount) {
-        //$chargeId = $payment->getAdditionalInformation('dibs_charge_id');
-        $chargeId = $payment->getRefundTransactionId();
+    public function refundDibsPayment(\Magento\Payment\Model\InfoInterface $paymentInfo, $amount) {
+        $chargeId = $paymentInfo->getRefundTransactionId();
+        $payment = $this->paymentApi->getPayment(
+            $paymentInfo->getAdditionalInformation('dibs_payment_id'),
+            '' // @todo remove unused
+        );
+
         if ($chargeId) {
-            $creditMemo = $payment->getCreditMemo();
+            $creditMemo = $paymentInfo->getCreditMemo();
             $this->items->addDibsItemsByCreditMemo($creditMemo);
 
-            // remove dibs invoice fee from amount
-            if ($creditMemo->getDibsInvoiceFee()) {
+            if ($this->shouldRemoveInvoiceFee($creditMemo, $payment)) {
                 $invoiceFee = $this->items->generateInvoiceFeeItem($this->helper->getInvoiceFeeLabel(), $creditMemo->getDibsInvoiceFee(), true);
 
                 $fee = ($invoiceFee->getGrossTotalAmount() / 100);
@@ -612,16 +618,12 @@ class Order {
                 if ($creditMemo->getAdjustmentNegative() != $fee) {
                     $this->items->addToCart($invoiceFee);
                 }
-            } else {
-                if ($creditMemo->getAdjustmentNegative() > 0) {
-                    throw new LocalizedException(__("You can only add an adjustment fee that matches the Dibs Invoice Fee"));
-                }
             }
 
             // We validate the items before we send them to Dibs. This might throw an exception!
             $this->items->validateTotals($creditMemo->getGrandTotal());
 
-            $refundItems = $this->items->getOrderItems($creditMemo->getGrandTotal(), (int)$payment->getOrder()->getQuoteId());
+            $refundItems = $this->items->getOrderItems($creditMemo->getGrandTotal(), (int)$paymentInfo->getOrder()->getQuoteId());
             $amountToRefund = $this->fixPrice($amount);
 
             $paymentObj = new RefundPayment();
@@ -633,8 +635,8 @@ class Order {
 
             try {
                 // save refund id, just for debugging purposes
-                $payment->setAdditionalInformation('dibs_refund_id', $response->getRefundId());
-                $payment->setTransactionId($response->getRefundId());
+                $paymentInfo->setAdditionalInformation('dibs_refund_id', $response->getRefundId());
+                $paymentInfo->setTransactionId($response->getRefundId());
             } catch (\Exception $e) {
                 // do nothing we dont really  need this
             }
@@ -739,4 +741,10 @@ class Order {
         return $this->helper->getCheckoutUrl();
     }
 
+    private function shouldRemoveInvoiceFee(CreditmemoInterface $creditMemo, GetPaymentResponse $payment): bool
+    {
+        return
+            $creditMemo->getDibsInvoiceFee()
+            && $payment->getPaymentDetails()->getPaymentMethod() === self::PAYMENT_METHOD_EASY_INVOICE;
+    }
 }
