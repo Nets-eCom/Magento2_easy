@@ -6,11 +6,15 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.7.0`                                   |
+| Version      | `1.7.1`                                   |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
+
+### Version 1.7.1 - Released - 2024-11-12
+- Fix: don't throw exception on adjustment
+- Fix: truncate street line
 
 ### Version 1.7.0 - Released - 2024-10-09
 - Fix: store address lines as string
