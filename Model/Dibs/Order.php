@@ -31,7 +31,7 @@ use Magento\Sales\Model\Order as OrderEntity;
 
 class Order {
 
-    private const PAYMENT_METHOD_EASY_INVOICE = 'easy-invoice';
+    private const PAYMENT_METHOD_EASY_INVOICE = 'EasyInvoice';
 
     /**
      * @var Items $items
