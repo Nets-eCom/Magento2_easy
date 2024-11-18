@@ -12,7 +12,6 @@ define(
             'Magento_SalesRule/js/action/set-coupon-code',
             'Magento_SalesRule/js/action/cancel-coupon',
             'Magento_Checkout/js/model/quote',
-            'Magento_CheckoutAgreements/js/view/checkout-agreements'
         ],
         function (
                 $,
@@ -25,7 +24,6 @@ define(
                 setCouponCodeAction,
                 cancelCouponCodeAction,
                 quoteModel,
-                checkoutAgreements
                 ) {
             'use strict';
             var agreementsConfig = window.checkoutConfig.checkoutAgreements;
@@ -33,15 +31,17 @@ define(
             var prevAddress;
 
             var component = Component.extend({
-
                 defaults: {
                     template: 'Dibs_EasyCheckout/payment/checkout',
                     iframeUrl: null,
                     hideLoader: false
                 },
                 continueToDibsRedirect: function () {
-                    let billingAddressComponent = require('uiRegistry').get('checkout.steps.billing-step.payment.payments-list.'+this.getCode()+'-form');
-                    billingAddressComponent.updateAddress();
+                    const billingAddress = uiRegistry.get('checkout.steps.billing-step.payment.payments-list.'+this.getCode()+'-form');
+                    if (billingAddress) {
+                        billingAddress.updateAddress();
+                    }
+
                     if (additionalValidators.validate()) {
                         const jqxhr = dibsSetPaymentInformation(
                             this.getCode(),
