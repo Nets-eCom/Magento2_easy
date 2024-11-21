@@ -34,7 +34,7 @@ abstract class Checkout extends Action
     /** @var DibsCheckoutContext $dibsCheckoutContext */
     protected $dibsCheckoutContext;
 
-    private Json $json;
+    protected Json $json;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -51,7 +51,7 @@ abstract class Checkout extends Action
         $this->dibsCheckout = $dibsCheckout;
         $this->resultPageFactory = $resultPageFactory;
         $this->checkoutSession = $checkoutSession;
-        $this->storeManager= $storeManager;
+        $this->storeManager = $storeManager;
         $this->dibsCheckoutContext = $dibsCheckoutContext;
         $this->json = $json;
 
@@ -83,7 +83,7 @@ abstract class Checkout extends Action
      */
     protected function ajaxRequestAllowed()
     {
-        if(!$this->getRequest()->isXmlHttpRequest()) {
+        if (!$this->getRequest()->isXmlHttpRequest()) {
             return false;
         }
 
@@ -91,13 +91,11 @@ abstract class Checkout extends Action
         $ctrlkey = (string)$this->getRequest()->getParam('ctrlkey');
 
         //check if cart was updated
-        $checkout = $this->getDibsCheckout();
-        $checkout->setCheckoutContext($this->dibsCheckoutContext);
-        $currkey = $checkout->getQuoteSignature();
-        if($currkey != $ctrlkey) {
+        $currkey = $this->getCurrentKey();
+        if ($currkey != $ctrlkey) {
             $response = array(
-                'reload'   => 1,
-                'messages' =>(string)__('The cart was updated (from another location), reloading the checkout, please wait...')
+                'reload' => 1,
+                'messages' => (string)__('The cart was updated (from another location), reloading the checkout, please wait...'),
             );
             $this->messageManager->addErrorMessage(__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
             $this->getResponse()->setBody($this->json->serialize($response));
@@ -108,7 +106,7 @@ abstract class Checkout extends Action
         return false;
     }
 
-     /**
+    /**
      * @return bool
      */
     protected function validateQuoteSignature()
@@ -117,20 +115,19 @@ abstract class Checkout extends Action
         $ctrlkey = (string)$this->getRequest()->getParam('ctrlkey');
 
         //check if cart was updated
-        $checkout = $this->getDibsCheckout();
-        $checkout->setCheckoutContext($this->dibsCheckoutContext);
-        $currkey = $checkout->getQuoteSignature();
-        if($currkey != $ctrlkey) {
-            $response = array(
-                'reload'   => 1,
-                'messages' =>(string)__('The cart was updated (from another location), page will be reloaded.')
-            );
-            $this->messageManager->addErrorMessage(__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
-            $this->getResponse()->setBody($this->json->serialize($response));
-
+        $currkey = $this->getCurrentKey();
+        if ($currkey != $ctrlkey) {
             return false;
         }
 
         return true;
+    }
+
+    protected function getCurrentKey()
+    {
+        $checkout = $this->getDibsCheckout();
+        $checkout->setCheckoutContext($this->dibsCheckoutContext);
+
+        return $checkout->getQuoteSignature();
     }
 }

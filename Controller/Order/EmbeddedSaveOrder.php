@@ -61,6 +61,7 @@ class EmbeddedSaveOrder extends Checkout {
         }
 
         $paymentId = $this->getRequest()->getPostValue('pid', null);
+
         if (!$paymentId) {
             return $this->respondWithError('Invalid payment id');
         }
@@ -82,10 +83,16 @@ class EmbeddedSaveOrder extends Checkout {
             return $this->respondWithError('Empty quote');
         }
 
-        $this->logInfo("in EmbeddedSaveOrder to create order");
+        $this->logInfo("create order", $paymentId);
 
         if (!$this->validateQuoteSignature()) {
-            $this->logInfo("validation of quote signature failed");
+            $this->logInfo("validation of quote signature failed", $paymentId);
+            $response = array(
+                'reload' => 1,
+                'messages' => (string)__('The cart was updated (from another location), page will be reloaded.'),
+            );
+            $this->messageManager->addErrorMessage(__('The requested changes were not applied. The cart was updated (from another location), please review the cart.'));
+            $this->getResponse()->setBody($this->json->serialize($response));
 
             return;
         }
@@ -93,15 +100,15 @@ class EmbeddedSaveOrder extends Checkout {
         $this->dibsCheckout->checkCart();
 
         try {
-            $this->logInfo("validation successful, creating order");
+            $this->logInfo("validation successful, creating order", $paymentId);
             $dibsPayment = $this->dibsCheckout->getDibsPaymentHandler()->loadDibsPaymentById($paymentId, $quote->getStoreId());
             $order = $this->dibsCheckout->placeOrder($dibsPayment, $quote);
             $this->dibsCheckout->getCheckout()->setLastOrderStatus($order->getStatus());
             $this->dibsCheckout->getCheckout()->setLastOrderId($order->getId());
-            $this->logInfo("order created");
+            $this->logInfo("order created", $paymentId);
 
         } catch (\Exception $e) {
-            $this->logInfo("could not create order, error is: " . $e->getMessage());
+            $this->logInfo("could not create order, error is: " . $e->getMessage(), $paymentId);
 
             return $this->respondWithError("Could not create order, error is: " . $e->getMessage());
         }
@@ -128,8 +135,8 @@ class EmbeddedSaveOrder extends Checkout {
         return $response;
     }
 
-    protected function logInfo(string $message): void {
-        $this->dibsCheckoutContext->getLogger()->info($message);
+    protected function logInfo(string $message, string $paymentId): void {
+        $this->dibsCheckoutContext->getLogger()->info("[EmbeddedSaveOrder][{$paymentId}]" . $message);
     }
 
     private function getLastOrderPaymentId(): ?string {
