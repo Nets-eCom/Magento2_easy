@@ -34,6 +34,6 @@ class SingleOrderItemFactory
 
     protected function clearString(string $string): string
     {
-        return preg_replace('#\+#', '\\', $string);
+        return str_replace(["\\", "<", ">"], ["\\", "", ""], $string);
     }
 }
