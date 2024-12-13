@@ -125,7 +125,7 @@ class ConsumerDataProvider
         $string = str_replace([' ', '-', '(', ')'], '', $phone);
 
         $matches = [];
-        preg_match_all('/^(\+)?(45|46|358|47|43|1|44|49|34|33|55|380|31|48|39)?(\d{8,12})$/', $string, $matches);
+        preg_match_all('/^(\+)?(45|46|358|47|43|1|44|49|34|33|55|380|31|48|39|41)?(\d{8,12})$/', $string, $matches);
         $prefix = $this->prefixes[$address->getCountryId()] ?? null;
         if (empty($matches[3][0]) || !$prefix) {
             throw new \Exception('Missing phone data');
