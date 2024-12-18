@@ -4,7 +4,8 @@ namespace Dibs\EasyCheckout\Model\Factory;
 
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\OrderItem;
 
-class SingleOrderItemFactory {
+class SingleOrderItemFactory
+{
     public function createItem(
         string $reference,
         string $name,
@@ -18,8 +19,8 @@ class SingleOrderItemFactory {
     ): OrderItem {
         $orderItem = new OrderItem();
 
-        $orderItem->setReference($reference); // product number
-        $orderItem->setName($name); // description
+        $orderItem->setReference($this->clearString($reference)); // product number
+        $orderItem->setName($this->clearString($name)); // description
         $orderItem->setUnit($unit);
         $orderItem->setQuantity($quantity);
         $orderItem->setTaxRate($taxRate);
@@ -29,5 +30,10 @@ class SingleOrderItemFactory {
         $orderItem->setGrossTotalAmount($grossTotalAmount);
 
         return $orderItem;
+    }
+
+    protected function clearString(string $string): string
+    {
+        return str_replace(["\\", "<", ">"], ["\\", "", ""], $string);
     }
 }
