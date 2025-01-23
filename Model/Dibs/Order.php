@@ -209,7 +209,12 @@ class Order {
 
 
         if (in_array($this->helper->getCheckoutFlow(), [CreatePaymentCheckout::INTEGRATION_TYPE_OVERLAY, CreatePaymentCheckout::INTEGRATION_TYPE_HOSTED])) {
-            $cancelUrl = $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB) . "easycheckout/order/cartrevoke";
+            $cancelUrl = $this->helper->getCancelUrl();
+
+            if ($cancelUrl === null || $cancelUrl === '') {
+                $cancelUrl = $this->storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB) . "checkout/cart";
+            }
+
             $paymentCheckout->setCancelUrl($cancelUrl);
         }
 

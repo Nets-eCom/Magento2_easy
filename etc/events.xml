@@ -9,4 +9,8 @@
     <event name="sales_model_service_quote_submit_before">
         <observer name="dibs_easy_checkout_invoice_fee" instance="Dibs\EasyCheckout\Observer\AddInvoiceFeeToOrder" />
     </event>
+
+    <event name="controller_action_predispatch_checkout_cart_index">
+        <observer name="initiate_checkout_onepage" instance="Dibs\EasyCheckout\Observer\CartRevokeObserver"/>
+    </event>
 </config>
