@@ -6,11 +6,14 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.7.3`                                   |
+| Version      | `1.7.4`                                   |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
+
+### Version 1.7.4 - Released - 2025-01-23
+- Update: handle cart revoke gracefully
 
 ### Version 1.7.3 - Released - 2024-12-18
 - Update: sanitize item name and reference
