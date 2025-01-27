@@ -1,0 +1,65 @@
+{
+    "name": "nexi-checkout/magento-nexi-checkout",
+    "description": "Nets Easy Checkout",
+    "authors": [
+        {
+            "name": "Solteq Oyj",
+            "email": "magentoservices@solteq.com",
+            "homepage": "https://github.com/Solteq",
+            "role": "Developer"
+        },
+        {
+            "name": "Konrad Konieczny",
+            "email": "konrad.konieczny@solteq.com",
+            "homepage": "https://github.com/bartoszkaluzny-solteq",
+            "role": "Lead Developer"
+        },
+        {
+            "name": "Bartosz Kałużny",
+            "email": "bartosz.kaluzny@solteq.com",
+            "homepage": "https://github.com/bartoszkaluzny-solteq",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "nexi-checkout/php-payment-sdk": "*",
+        "magento/framework": ">=102.0.0",
+        "ext-curl": "*",
+        "nesbot/carbon": "^2.57.0"
+    },
+    "require-dev": {
+        "magento/magento-coding-standard": "*"
+    },
+    "type": "magento2-module",
+    "version": "0.0.1",
+    "license": "MIT",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "NexiCheckout\\MagentoNexiCheckout\\": ""
+        }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    ],
+    "keywords": [
+        "magento 2",
+        "adobe commerce",
+        "payment gateway",
+        "nexi"
+    ],
+    "config": {
+        "allow-plugins": {
+            "magento/composer-dependency-version-audit-plugin": false,
+            "magento/magento-composer-installer": false,
+            "magento/inventory-composer-installer": false,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}
