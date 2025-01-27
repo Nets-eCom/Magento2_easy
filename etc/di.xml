@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <virtualType name="NexiFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">Nexi\Checkout\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="valueHandlerPool" xsi:type="object">NexiValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">Magento\Payment\Gateway\Validator\ValidatorPool</argument>
+            <argument name="commandPool" xsi:type="object">NexiCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">NexiConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">NexiConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Nexi\Checkout\Model\Ui\ConfigProvider::CODE</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="\Nexi\Checkout\Model\Ui\ConfigProvider">
+        <arguments>
+            <argument name="config" xsi:type="object">NexiConfig</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="NexiCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">NexiCommandCreatePayment</item>
+<!--                <item name="capture" xsi:type="string">NexiCommandCapture</item>-->
+<!--                <item name="void" xsi:type="string">NexiCommandVoid</item>-->
+<!--                <item name="refund" xsi:type="string">NexiCommandRefund</item>-->
+<!--                <item name="retrieve_payment" xsi:type="string">NexiCommandRetrievePayment</item>-->
+<!--                <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>-->
+<!--                <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>-->
+<!--                <item name="update_my_reference" xsi:type="string">NexiCommandUpdateMyReference</item>-->
+<!--                <item name="terminate_payment" xsi:type="string">NexiCommandTerminatePayment</item>-->
+<!--                <iten name="cancel_payment" xsi:type="string">NexiCommandCancelPayment</iten>-->
+
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandCreatePayment" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">NexiRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Magento\Payment\Gateway\Http\ClientInterface</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiRequestBuilder" type="Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder">
+        <arguments>
+            <argument name="config" xsi:type="object">NexiConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiHandler" type="Nexi\Checkout\Gateway\Response\Handler">
+        <arguments>
+            <argument name="config" xsi:type="object">NexiConfig</argument>
+        </arguments>
+    </virtualType>
+
+</config>
