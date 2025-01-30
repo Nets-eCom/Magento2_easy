@@ -28,26 +28,7 @@ define(
         return Component.extend({
             defaults: {
                 template: 'Nexi_Checkout/payment/nexi'
-            },
-            /**
-             * Returns send check to info.
-             *
-             * @return {*}
-             */
-            getMailingAddress: function () {
-                return window.checkoutConfig.payment.checkmo.mailingAddress;
-            },
-
-            /**
-             * Returns payable to info.
-             *
-             * @return {*}
-             */
-            getPayableTo: function () {
-                return window.checkoutConfig.payment.checkmo.payableTo;
             }
         });
-
-
     }
 );
