@@ -53,7 +53,7 @@ class TestConnection extends Action implements HttpPostActionInterface
 
         try {
             $api = $this->paymentApiFactory->create(
-                secretKey : $options['secret_key'] ?? "test",
+                secretKey : $options['api_key'],
                 isLiveMode: $options['environment'] == Environment::LIVE
             );
 

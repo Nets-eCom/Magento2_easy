@@ -9,10 +9,6 @@
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="integration_type" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1">
-                    <label>Payment Type</label>
-                    <source_model>Nexi\Checkout\Model\Config\Source\IntegrationType</source_model>
-                </field>
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
                     <label>Title</label>
                 </field>
