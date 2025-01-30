@@ -1,11 +1,3 @@
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
-
-/**
- * @api
- */
 define([
     'jquery',
     'Magento_Ui/js/modal/alert',
