@@ -12,13 +12,61 @@
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
                     <label>Title</label>
                 </field>
-                <field id="order_status" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1">
+                <field id="api_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
+                    <label>API Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="api_identifier" translate="label" type="obscure" sortOrder="31" showInDefault="1" showInWebsite="1">
+                    <label>API Identifier</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="nexi_test_connection" translate="button_label" sortOrder="32" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label/>
+                    <button_label>Test API Connection</button_label>
+                    <frontend_model>Magento\OpenSearch\Block\Adminhtml\System\Config\TestConnection</frontend_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="webshop_terms_and_conditions_url" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1">
+                    <label>Webshop Terms and Conditions URL</label>
+                    <comment>add URL to your Webshop Terms and Conditions site.</comment>
+                </field>
+                <field id="payment_terms_and_conditions_url" translate="label" type="text" sortOrder="41" showInDefault="1" showInWebsite="1">
+                    <label>Payment Terms and Conditions URL</label>
+                    <comment>add URL to your payment Terms and Conditions site.</comment>
+                </field>
+                <field id="hosted_payment_page" translate="label" type="select" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Payment method selection on a separate page</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="order_status" translate="label" type="select" sortOrder="51" showInDefault="1" showInWebsite="1">
                     <label>New Order Status</label>
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
                 </field>
-                <field id="environment" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1">
+                <field id="environment" translate="label" type="select" sortOrder="33" showInDefault="1" showInWebsite="1">
                     <label>Environment</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
+                </field>
+                <field id="request_log" translate="label" type="select" sortOrder="70" showInDefault="1"
+                       showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Nexi request logging</label>
+                    <comment>Log file: var/log/nexi_checkout_request.log</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="response_log" translate="label" type="select" sortOrder="71" showInDefault="1"
+                       showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Nexi response logging</label>
+                    <comment>Log file: var/log/nexi_checkout_response.log</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
         </section>
