@@ -8,13 +8,15 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Block\Adminhtml\System\Config;
 
 use Magento\Backend\Block\Template\Context;
+use Magento\Config\Block\System\Config\Form\Field;
+use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Framework\View\Helper\SecureHtmlRenderer;
 use Nexi\Checkout\Gateway\Config\Config;
 
 /**
  * Nexi API test connection block
  */
-class TestConnection extends \Magento\Config\Block\System\Config\Form\Field
+class TestConnection extends Field
 {
     /**
      * TestConnection constructor.
@@ -43,7 +45,7 @@ class TestConnection extends \Magento\Config\Block\System\Config\Form\Field
         return $this;
     }
 
-    protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    protected function _getElementHtml(AbstractElement $element)
     {
         // TODO: add Nexi URL
         $originalData = $element->getOriginalData();
