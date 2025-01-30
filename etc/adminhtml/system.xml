@@ -9,9 +9,21 @@
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="integration_type" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1">
+                    <label>Payment Type</label>
+                    <source_model>Nexi\Checkout\Model\Config\Source\IntegrationType</source_model>
+                </field>
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
                     <label>Title</label>
                 </field>
+
+                <field id="nexi_api_test_connect_wizard" translate="button_label" sortOrder="68" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label/>
+                    <button_label>Test Connection</button_label>
+                    <frontend_model>Nexi\Checkout\Block\Adminhtml\System\Config\TestConnection</frontend_model>
+                </field>
+
                 <field id="api_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
                     <label>API Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
@@ -22,15 +34,6 @@
                 <field id="api_identifier" translate="label" type="obscure" sortOrder="31" showInDefault="1" showInWebsite="1">
                     <label>API Identifier</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
-                </field>
-                <field id="nexi_test_connection" translate="button_label" sortOrder="32" showInDefault="1"
-                       showInWebsite="0" showInStore="0">
-                    <label/>
-                    <button_label>Test API Connection</button_label>
-                    <frontend_model>Magento\OpenSearch\Block\Adminhtml\System\Config\TestConnection</frontend_model>
                     <depends>
                         <field id="active">1</field>
                     </depends>

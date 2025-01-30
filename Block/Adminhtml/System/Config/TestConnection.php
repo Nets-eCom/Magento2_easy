@@ -1,42 +1,33 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
-declare(strict_types=1);
 
 namespace Nexi\Checkout\Block\Adminhtml\System\Config;
 
-use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
-use Nexi\Checkout\Gateway\Config\Config;
 
-/**
- * Nexi API test connection block
- */
 class TestConnection extends Field
 {
+
     /**
-     * TestConnection constructor.
+     * Unset some non-related element parameters
      *
-     * @param Context $context
-     * @param array $data
-     * @param SecureHtmlRenderer|null $secureRenderer
-     * @param Config $gatewayConfig
+     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     *
+     * @return string
+     * @since 100.1.0
      */
-    public function __construct(
-        Context $context,
-        array $data = [],
-        ?SecureHtmlRenderer $secureRenderer = null,
-        private Config $gatewayConfig
-    ) {
-        parent::__construct($context, $data, $secureRenderer);
+    public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    {
+        $element = clone $element;
+        $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
+        return parent::render($element);
     }
 
     /**
-     * @return $this|TestConnection
+     * Set template to itself
+     *
+     * @return $this
+     * @since 100.1.0
      */
     protected function _prepareLayout()
     {
@@ -45,16 +36,21 @@ class TestConnection extends Field
         return $this;
     }
 
+    /**
+     * @param AbstractElement $element
+     *
+     * @return string
+     */
     protected function _getElementHtml(AbstractElement $element)
     {
-        // TODO: add Nexi URL
         $originalData = $element->getOriginalData();
         $this->addData(
             [
-                'button_label' => __($originalData['button_label']),
-                'html_id' => $element->getHtmlId(),
-                'ajax_url' => $this->_urlBuilder->getUrl('nexi-api-url'),
+                'button_label'  => __($originalData['button_label']),
+                'html_id'       => $element->getHtmlId(),
+                'ajax_url'      => $this->_urlBuilder->getUrl('nexi/system_config/testconnection'),
                 'field_mapping' => str_replace('"', '\\"', json_encode($this->_getFieldMapping()))
+
             ]
         );
 
@@ -62,13 +58,15 @@ class TestConnection extends Field
     }
 
     /**
+     * Get configuration field mapping
+     *
      * @return string[]
      */
     protected function _getFieldMapping(): array
     {
-        return $fields = [
-            'api_key' => $this->gatewayConfig->getApiKey(),
-            'api_identifier' => $this->gatewayConfig->getApiIdentifier(),
+        return [
+            'environment' => 'payment_us_nexi_environment',
+            'api_key'     => 'payment_us_nexi_api_key',
         ];
     }
 }

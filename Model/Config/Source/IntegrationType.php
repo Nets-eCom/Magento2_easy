@@ -4,11 +4,8 @@ namespace Nexi\Checkout\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
-class Environment implements OptionSourceInterface
+class IntegrationType implements OptionSourceInterface
 {
-    const TEST = 'test';
-    const LIVE = 'live';
-
     /**
      * Return array of options as value-label pairs
      *
@@ -17,8 +14,8 @@ class Environment implements OptionSourceInterface
     public function toOptionArray()
     {
         return [
-            ['value' => self::TEST, 'label' => __('Test')],
-            ['value' => self::LIVE, 'label' => __('Live')]
+            ['value' => 'hosted', 'label' => __('Hosted')],
+            ['value' => 'embedded', 'label' => __('Embedded')]
         ];
     }
 }
