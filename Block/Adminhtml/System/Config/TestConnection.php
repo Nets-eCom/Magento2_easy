@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Block\Adminhtml\System\Config;
 
+use Magento\Backend\Block\Template\Context;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
 use Nexi\Checkout\Gateway\Config\Config;
 
 /**
@@ -17,12 +19,18 @@ class TestConnection extends \Magento\Config\Block\System\Config\Form\Field
     /**
      * TestConnection constructor.
      *
+     * @param Context $context
+     * @param array $data
+     * @param SecureHtmlRenderer|null $secureRenderer
      * @param Config $gatewayConfig
      */
     public function __construct(
-       private Config $gatewayConfig
-    )
-    {
+        Context $context,
+        array $data = [],
+        ?SecureHtmlRenderer $secureRenderer = null,
+        private Config $gatewayConfig
+    ) {
+        parent::__construct($context, $data, $secureRenderer);
     }
 
     /**
