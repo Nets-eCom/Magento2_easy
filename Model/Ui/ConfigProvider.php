@@ -26,7 +26,7 @@ class ConfigProvider implements ConfigProviderInterface
             'payment' => [
                 self::CODE => [
                     'isActive'    => $this->config->isActive(),
-                    'clientToken' => $this->config->getClientToken(),
+                    'clientToken' => $this->config->getApiIdentifier(),
                     'environment' => $this->config->getEnvironment(),
                     'label'       => $this->paymentHelper->getMethodInstance(self::CODE)->getTitle(),
                 ]
