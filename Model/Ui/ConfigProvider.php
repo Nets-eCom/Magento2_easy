@@ -8,14 +8,24 @@ use Magento\Payment\Helper\Data as PaymentHelper;
 
 class ConfigProvider implements ConfigProviderInterface
 {
-    const CODE = 'nexi';
-
+    /**
+     * ConfigProvider constructor.
+     *
+     * @param Config $config
+     * @param PaymentHelper $paymentHelper
+     */
     public function __construct(
         private readonly Config        $config,
         private readonly PaymentHelper $paymentHelper,
     ) {
     }
 
+    /**
+     * Returns Nexi configuration values.
+     *
+     * @return array|\array[][]
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
     public function getConfig()
     {
         if (!$this->config->isActive()) {
@@ -24,11 +34,11 @@ class ConfigProvider implements ConfigProviderInterface
 
         return [
             'payment' => [
-                self::CODE => [
+                Config::CODE => [
                     'isActive'    => $this->config->isActive(),
                     'clientToken' => $this->config->getApiIdentifier(),
                     'environment' => $this->config->getEnvironment(),
-                    'label'       => $this->paymentHelper->getMethodInstance(self::CODE)->getTitle(),
+                    'label'       => $this->paymentHelper->getMethodInstance(Config::CODE)->getTitle(),
                 ]
             ]
         ];
