@@ -29,7 +29,8 @@
         "nesbot/carbon": "^2.57.0"
     },
     "require-dev": {
-        "magento/magento-coding-standard": "*"
+        "magento/magento-coding-standard": "*",
+        "phpunit/phpunit": "^9.6"
     },
     "type": "magento2-module",
     "version": "0.0.1",
