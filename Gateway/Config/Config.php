@@ -20,13 +20,13 @@ class Config extends MagentoConfig
      * Gateway Config constructor.
      *
      * @param ScopeConfigInterface $scopeConfig
-     * @param string $methodCode
+     * @param string|null $methodCode
      * @param string $pathPattern
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        string $methodCode = self::CODE,
-        string $pathPattern = MagentoConfig::DEFAULT_PATH_PATTERN,
+        $methodCode = null,
+        $pathPattern = MagentoConfig::DEFAULT_PATH_PATTERN,
     ) {
         parent::__construct($scopeConfig, $methodCode, $pathPattern);
     }
