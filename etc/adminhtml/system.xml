@@ -56,16 +56,10 @@
                     <label>Environment</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
                 </field>
-                <field id="request_log" translate="label" type="select" sortOrder="70" showInDefault="1"
+                <field id="nexi_logs" translate="label" type="select" sortOrder="70" showInDefault="1"
                        showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Enable Nexi request logging</label>
-                    <comment>Log file: var/log/nexi_checkout_request.log</comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="response_log" translate="label" type="select" sortOrder="71" showInDefault="1"
-                       showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Enable Nexi response logging</label>
-                    <comment>Log file: var/log/nexi_checkout_response.log</comment>
+                    <comment>Log file: var/log/nexi_checkout.log</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
