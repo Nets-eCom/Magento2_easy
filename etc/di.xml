@@ -77,4 +77,18 @@
             <argument name="config" xsi:type="object">NexiConfig</argument>
         </arguments>
     </virtualType>
+
+    <type name="NexiCheckout\Factory\HttpClientFactory">
+        <arguments>
+                <argument name="client" xsi:type="object">GuzzleHttp\Client</argument>
+                <argument name="requestFactory" xsi:type="object">GuzzleHttp\Psr7\HttpFactory</argument>
+                <argument name="streamFactory" xsi:type="object">GuzzleHttp\Psr7\HttpFactory</argument>
+        </arguments>
+    </type>
+    <type name="NexiCheckout\Factory\PaymentApiFactory">
+        <arguments>
+            <argument name="configurationProvider" xsi:type="object">\NexiCheckout\Factory\Provider\HttpClientConfigurationProvider</argument>
+        </arguments>
+    </type>
+
 </config>

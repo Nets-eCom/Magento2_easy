@@ -6,6 +6,9 @@ use Magento\Framework\Data\OptionSourceInterface;
 
 class Environment implements OptionSourceInterface
 {
+    const TEST = 'test';
+    const LIVE = 'live';
+
     /**
      * Return array of options as value-label pairs
      *
@@ -14,8 +17,8 @@ class Environment implements OptionSourceInterface
     public function toOptionArray()
     {
         return [
-            ['value' => 'test', 'label' => __('Test')],
-            ['value' => 'live', 'label' => __('Live')]
+            ['value' => self::TEST, 'label' => __('Test')],
+            ['value' => self::LIVE, 'label' => __('Live')]
         ];
     }
 }
