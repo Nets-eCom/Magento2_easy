@@ -20,8 +20,8 @@ class Config extends MagentoConfig
      * Gateway Config constructor.
      *
      * @param ScopeConfigInterface $scopeConfig
-     * @param $methodCode
-     * @param $pathPattern
+     * @param string|null $methodCode
+     * @param string $pathPattern
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -32,6 +32,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * GetEnvironment method.
+     *
      * @return string
      */
     public function getEnvironment(): string
@@ -40,6 +42,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * IsLiveMode method.
+     *
      * @return bool
      */
     public function isLiveMode(): bool
@@ -48,6 +52,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * IsActive method.
+     *
      * @return bool
      */
     public function isActive(): bool
@@ -56,6 +62,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * GetApiKey method.
+     *
      * @return string
      */
     public function getApiKey(): string
@@ -64,6 +72,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * GetApiIdentifier method.
+     *
      * @return string
      */
     public function getApiIdentifier(): string
@@ -72,6 +82,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * GetWebshopTermsAndConditions method.
+     *
      * @return string
      */
     public function getWebshopTermsAndConditions(): string
@@ -80,6 +92,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * GetPaymentTermsAndConditions method.
+     *
      * @return string
      */
     public function getPaymentTermsAndConditions(): string
