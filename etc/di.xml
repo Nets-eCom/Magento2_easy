@@ -27,7 +27,7 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="NexiConfig" type="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="NexiConfig" type="Nexi\Checkout\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="const">Nexi\Checkout\Model\Ui\ConfigProvider::CODE</argument>
         </arguments>
@@ -77,5 +77,4 @@
             <argument name="config" xsi:type="object">NexiConfig</argument>
         </arguments>
     </virtualType>
-
 </config>
