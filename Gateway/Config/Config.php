@@ -2,26 +2,46 @@
 
 namespace Nexi\Checkout\Gateway\Config;
 
-class Config extends \Magento\Payment\Gateway\Config\Config
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Payment\Gateway\Config\Config as MagentoConfig;
+use Nexi\Checkout\Model\Config\Source\Environment;
+
+class Config extends MagentoConfig
 {
     public const CODE = 'nexi';
 
-    public const KEY_ENVIRONMENT = 'environment';
-    public const KEY_ACTIVE = 'active';
-    public const KEY_CLIENT_TOKEN = 'client_token';
-
-    public function getEnvironment(): string
+    public function getEnvironment(): ?string
     {
-        return $this->getValue(self::KEY_ENVIRONMENT);
+        return $this->getValue('environment');
+    }
+
+    public function isLiveMode(): bool
+    {
+        return $this->getEnvironment() === Environment::LIVE;
     }
 
     public function isActive(): bool
     {
-        return (bool) $this->getValue(self::KEY_ACTIVE);
+        return (bool) $this->getValue('active');
     }
 
-    public function getClientToken()
+    public function getApiKey(): ?string
     {
-        return $this->getValue('client_token');
+        return $this->getValue('api_key');
+    }
+
+    public function getApiIdentifier()
+    {
+        return $this->getValue('api_identifier');
+    }
+
+    public function getWebshopTermsAndConditionsUrl()
+    {
+        return $this->getValue('webshop_terms_and_conditions_url');
+    }
+
+    public function getPaymentsTermsAndConditionsUrl()
+    {
+        return $this->getValue('payments_terms_and_conditions_url');
     }
 }

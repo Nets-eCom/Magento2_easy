@@ -45,7 +45,10 @@ define(
              */
             getPayableTo: function () {
                 return window.checkoutConfig.payment.checkmo.payableTo;
-            }
+            },
+            paymentMethod: 'nexi',
+            redirectAfterPlaceOrder: false,
+
         });
 
 
