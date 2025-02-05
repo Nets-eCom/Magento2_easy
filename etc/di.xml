@@ -27,6 +27,12 @@
         </arguments>
     </virtualType>
 
+    <type name="Nexi\Checkout\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Nexi\Checkout\Gateway\Config\Config::CODE</argument>
+        </arguments>
+    </type>
+
     <virtualType name="NexiConfig" type="Nexi\Checkout\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="const">Nexi\Checkout\Gateway\Config\Config::CODE</argument>
