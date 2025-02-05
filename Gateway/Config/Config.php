@@ -2,7 +2,6 @@
 
 namespace Nexi\Checkout\Gateway\Config;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as MagentoConfig;
 use Nexi\Checkout\Model\Config\Source\Environment;
 
@@ -35,13 +34,13 @@ class Config extends MagentoConfig
         return $this->getValue('api_identifier');
     }
 
-    public function getWebshopTermsAndConditionsUrl()
+    public function getWebshopTermsAndConditionsUrl():string
     {
-        return $this->getValue('webshop_terms_and_conditions_url');
+        return (string)$this->getValue('webshop_terms_and_conditions_url');
     }
 
-    public function getPaymentsTermsAndConditionsUrl()
+    public function getPaymentsTermsAndConditionsUrl(): string
     {
-        return $this->getValue('payments_terms_and_conditions_url');
+        return (string)$this->getValue('payments_terms_and_conditions_url');
     }
 }

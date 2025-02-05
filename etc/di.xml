@@ -4,7 +4,7 @@
 
     <virtualType name="NexiFacade" type="Magento\Payment\Model\Method\Adapter">
         <arguments>
-            <argument name="code" xsi:type="const">Nexi\Checkout\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="code" xsi:type="const">Nexi\Checkout\Gateway\Config\Config::CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
             <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
             <argument name="valueHandlerPool" xsi:type="object">NexiValueHandlerPool</argument>
@@ -29,7 +29,7 @@
 
     <virtualType name="NexiConfig" type="Nexi\Checkout\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">Nexi\Checkout\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="methodCode" xsi:type="const">Nexi\Checkout\Gateway\Config\Config::CODE</argument>
         </arguments>
     </virtualType>
 
