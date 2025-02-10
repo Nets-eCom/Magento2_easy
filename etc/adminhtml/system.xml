@@ -23,13 +23,15 @@
                 <field id="api_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
                     <label>API Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
                 </field>
                 <field id="api_identifier" translate="label" type="obscure" sortOrder="31" showInDefault="1" showInWebsite="1">
                     <label>API Identifier</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="webhook_secret" translate="label" type="obscure" sortOrder="31" showInDefault="1" showInWebsite="1">
+                    <label>Webhook Secret</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <validate>required-entry</validate>
                     <depends>
                         <field id="active">1</field>
                     </depends>
@@ -42,14 +44,15 @@
                     <label>Payment Terms and Conditions URL</label>
                     <comment>add URL to your payment Terms and Conditions site.</comment>
                 </field>
-                <field id="hosted_payment_page" translate="label" type="select" sortOrder="50" showInDefault="1"
+                <field id="integration_type" translate="label" type="select" sortOrder="50" showInDefault="1"
                        showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Payment method selection on a separate page</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <label>Integration type</label>
+                    <source_model>Nexi\Checkout\Model\Config\Source\IntegrationType</source_model>
                 </field>
                 <field id="payment_action" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" canRestore="1">
                     <label>Payment Action</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\PaymentAction</source_model>
+                    <comment>If set to "Authorize and Capture", the transaction will be charged automatically after the reservation has been accepted.</comment>
                 </field>
                 <field id="order_status" translate="label" type="select" sortOrder="51" showInDefault="1" showInWebsite="1">
                     <label>New Order Status</label>
@@ -58,12 +61,6 @@
                 <field id="environment" translate="label" type="select" sortOrder="33" showInDefault="1" showInWebsite="1">
                     <label>Environment</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
-                </field>
-                <field id="nexi_logs" translate="label" type="select" sortOrder="70" showInDefault="1"
-                       showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Enable Nexi request logging</label>
-                    <comment>Log file: var/log/nexi_checkout.log</comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
         </section>

@@ -37,13 +37,41 @@ class Client implements ClientInterface
                 $this->config->isLiveMode()
             );
             $nexiMethod = $transferObject->getUri();
-
+            $this->logger->debug(
+                'Nexi method: ' . $nexiMethod . PHP_EOL .
+                'Nexi request: ' . json_encode($transferObject->getBody())
+            );
             $response = $paymentApi->$nexiMethod($transferObject->getBody());
+            $this->logger->debug(
+                'Nexi response: ' . $this->getResponseData($response)
+            );
         } catch (PaymentApiException $e) {
             $this->logger->error($e->getMessage());
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 
-        return $response;
+        return [$response];
+    }
+
+    /**
+     * @param $response
+     *
+     * @return false|string
+     */
+    public function getResponseData($response): string|false
+    {
+        $responseData = [];
+
+        $responseReflection = new \ReflectionClass($response);
+        $methods            = $responseReflection->getMethods(\ReflectionMethod::IS_PUBLIC);
+
+        foreach ($methods as $method) {
+            if (str_starts_with($method->getName(), 'get')) {
+                $name                = $method->getName();
+                $value               = $method->invoke($response);
+                $responseData[$name] = $value;
+            }
+        }
+        return json_encode($responseData);
     }
 }

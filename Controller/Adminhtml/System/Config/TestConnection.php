@@ -23,6 +23,7 @@ class TestConnection extends Action implements HttpPostActionInterface
      * @see _isAllowed()
      */
     public const ADMIN_RESOURCE = 'Magento_Catalog::config_catalog';
+    const        NOT_GUID_PAYMENT_ID           = '86709f62dabf45aebd0b6eeef6615f1a';
 
     /**
      * @param Context $context
@@ -57,13 +58,13 @@ class TestConnection extends Action implements HttpPostActionInterface
             $options['api_key'] = $this->config->getApiKey();
         }
         try {
-            $api = $this->paymentApiFactory->create(
+             $api = $this->paymentApiFactory->create(
                 secretKey : $options['api_key'],
                 isLiveMode: $options['environment'] == Environment::LIVE
             );
 
             $result = $api->retrievePayment(
-                'test'
+                self::NOT_GUID_PAYMENT_ID
             );
 
 
@@ -73,7 +74,7 @@ class TestConnection extends Action implements HttpPostActionInterface
         } catch (LocalizedException $e) {
             $result['errorMessage'] = $e->getMessage();
         } catch (\Exception $e) {
-            if ($e->getMessage() !== 'Unauthorized: ') {
+            if (str_contains(mb_strtolower($e->getMessage()), 'should be in guid format')) {
                 $result['success'] = true;
             } else {
                 $message                = $e->getMessage();

@@ -21,7 +21,7 @@ class Config extends MagentoConfig
 
     public function isActive(): bool
     {
-        return (bool) $this->getValue('active');
+        return (bool)$this->getValue('active');
     }
 
     public function getApiKey(): ?string
@@ -34,13 +34,23 @@ class Config extends MagentoConfig
         return $this->getValue('api_identifier');
     }
 
-    public function getWebshopTermsAndConditionsUrl():string
+    public function getWebshopTermsAndConditionsUrl(): string
     {
         return (string)$this->getValue('webshop_terms_and_conditions_url');
     }
 
     public function getPaymentsTermsAndConditionsUrl(): string
     {
-        return (string)$this->getValue('payments_terms_and_conditions_url');
+        return (string)$this->getValue('payment_terms_and_conditions_url');
+    }
+
+    public function getIntegrationType(): string
+    {
+        return $this->getValue('integration_type');
+    }
+
+    public function getWebhookSecret(): string
+    {
+        return $this->getValue('webhook_secret');
     }
 }
