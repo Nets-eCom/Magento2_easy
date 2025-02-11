@@ -1,5 +1,3 @@
-/*browser:true*/
-/*global define*/
 define(
     [
         'ko',
@@ -22,12 +20,28 @@ define(
         'mage/translate',
         'Magento_Ui/js/modal/modal'
     ],
-    function (ko, $, _, storage, Component) {
+    function (ko, $, _, storage, Component, placeOrderAction, selectPaymentMethodAction, additionalValidators, quote, getTotalsAction, urlBuilder, url, fullScreenLoader, customer, checkoutData, totals, messageList, $t, modal) {
         'use strict';
 
         return Component.extend({
             defaults: {
-                template: 'Nexi_Checkout/payment/nexi'
+                template: 'Nexi_Checkout/payment/nexi',
+                config: window.checkoutConfig.payment.nexi
+            },
+            placeOrder: function (data, event) {
+                var placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
+
+                $.when(placeOrder).done(function (response) {
+                    this.afterPlaceOrder(response);
+                }.bind(this));
+            },
+            afterPlaceOrder: function (response) {
+                if (this.config.integrationType === 'HostedPaymentPage') {
+                    var redirectUrl = JSON.parse(response).redirect_url;
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    }
+                }
             }
         });
     }

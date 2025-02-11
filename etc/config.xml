@@ -6,9 +6,10 @@
                 <title>Nexi Payments</title>
                 <payment_action>authorize_capture</payment_action>
                 <active>0</active>
-                <is_gateway>1</is_gateway>
+                <is_gateway>0</is_gateway>
                 <can_use_checkout>1</can_use_checkout>
-                <can_authorize>1</can_authorize>
+                <can_authorize>0</can_authorize>
+                <can_initialize>1</can_initialize>
                 <can_capture>1</can_capture>
                 <can_capture_partial>1</can_capture_partial>
                 <can_authorize_vault>1</can_authorize_vault>
@@ -32,6 +33,9 @@
                 <privateInfoKeys>avsPostalCodeResponseCode,avsStreetAddressResponseCode,cvvResponseCode,processorAuthorizationCode,processorResponseCode,processorResponseText,liabilityShifted,liabilityShiftPossible,riskDataId,riskDataDecision</privateInfoKeys>
                 <paymentInfoKeys>cc_type,cc_number,avsPostalCodeResponseCode,avsStreetAddressResponseCode,cvvResponseCode,processorAuthorizationCode,processorResponseCode,processorResponseText,liabilityShifted,liabilityShiftPossible</paymentInfoKeys>
                 <group>nexi_group</group>
+                <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <integration_type>HostedPaymentPage</integration_type>
             </nexi>
         </payment>
     </default>
