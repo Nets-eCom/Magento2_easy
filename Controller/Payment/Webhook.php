@@ -76,8 +76,6 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
             $this->config->getWebhookSecret(),
         );
 
-        $this->logger->error('Webhook authorization failed.');
-
         return hash_equals($hash, $authString);
     }
 }
