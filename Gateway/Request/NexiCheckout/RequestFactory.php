@@ -36,15 +36,18 @@ class RequestFactory
     {
         if ($this->config->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout) {
             return new EmbeddedCheckout(
-                url     : $this->url->getUrl('nexi/checkout/success'),
-                termsUrl: $this->config->getWebshopTermsAndConditionsUrl()
+                url             : $this->url->getUrl('nexi/checkout/success'),
+                termsUrl        : $this->config->getPaymentsTermsAndConditionsUrl(),
+                merchantTermsUrl: $this->config->getWebshopTermsAndConditionsUrl(),
+                consumer        : $this->getConsumer($order),
             );
         }
 
         return new HostedCheckout(
-            returnUrl: $this->url->getUrl('nexi/hpp/returnaction'),
-            cancelUrl: $this->url->getUrl('nexi/hpp/cancelaction'),
-            termsUrl : $this->config->getWebshopTermsAndConditionsUrl()
+            returnUrl   : $this->url->getUrl('nexi/hpp/returnaction'),
+            cancelUrl   : $this->url->getUrl('nexi/hpp/cancelaction'),
+            termsUrl    : $this->config->getWebshopTermsAndConditionsUrl(),
+            isAutoCharge: $this->config->getPaymentAction() == 'authorize_capture',
         );
     }
 
@@ -111,5 +114,35 @@ class RequestFactory
         }
 
         return $webhooks;
+    }
+
+    private function getConsumer(Order $order)
+    {
+        return new Payment\Consumer(
+            email         : $order->getCustomerEmail(),
+            reference     : $order->getCustomerId(),
+            shippingAddress: new Payment\Address(
+                addressLine1: $order->getShippingAddress()->getStreetLine(1),
+                addressLine2: $order->getShippingAddress()->getStreetLine(2),
+                postalCode  : $order->getShippingAddress()->getPostcode(),
+                city        : $order->getShippingAddress()->getCity(),
+                country     : $order->getShippingAddress()->getCountryId(),
+            ),
+            billingAddress: new Payment\Address(
+                addressLine1: $order->getBillingAddress()->getStreetLine(1),
+                addressLine2: $order->getBillingAddress()->getStreetLine(2),
+                postalCode  : $order->getBillingAddress()->getPostcode(),
+                city        : $order->getBillingAddress()->getCity(),
+                country     : $order->getBillingAddress()->getCountryId(),
+            ),
+            phoneNumber: new Payment\PhoneNumber(
+                prefix: '', //TODO: implement prefix for phone number
+                number     : $order->getBillingAddress()->getTelephone(),
+            ),
+            privatePerson: new Payment\PrivatePerson(
+                firstName: $order->getCustomerFirstname(),
+                lastName : $order->getCustomerLastname(),
+            )
+        );
     }
 }

@@ -53,4 +53,14 @@ class Config extends MagentoConfig
     {
         return $this->getValue('webhook_secret');
     }
+
+    /**
+     * authorize, authorize_capture
+     *
+     * @return string
+     */
+    public function getPaymentAction(): string
+    {
+        return $this->getValue('payment_action');
+    }
 }

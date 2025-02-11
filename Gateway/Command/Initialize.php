@@ -49,8 +49,8 @@ class Initialize implements CommandInterface
 
         $stateObject->setIsNotified(false);
 
-        $stateObject->setState(Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus(Order::STATE_PENDING_PAYMENT);
+        $stateObject->setState(Order::STATE_NEW);
+        $stateObject->setStatus('pending');
 
         $stateObject->setIsNotified(false);
 
