@@ -22,8 +22,8 @@ class TestConnection extends Action implements HttpPostActionInterface
      *
      * @see _isAllowed()
      */
-    public const ADMIN_RESOURCE = 'Magento_Catalog::config_catalog';
-    const        NOT_GUID_PAYMENT_ID           = '86709f62dabf45aebd0b6eeef6615f1a';
+    public const ADMIN_RESOURCE      = 'Magento_Catalog::config_catalog';
+    const        NOT_GUID_PAYMENT_ID = 'test';
 
     /**
      * @param Context $context
@@ -58,7 +58,7 @@ class TestConnection extends Action implements HttpPostActionInterface
             $options['api_key'] = $this->config->getApiKey();
         }
         try {
-             $api = $this->paymentApiFactory->create(
+            $api = $this->paymentApiFactory->create(
                 secretKey : $options['api_key'],
                 isLiveMode: $options['environment'] == Environment::LIVE
             );
