@@ -106,7 +106,7 @@ class RequestFactory
     {
         $webhooks = [];
         foreach (EventNameEnum::cases() as $eventName) {
-            $baseUrl    = 'https://47c0-89-151-24-127.ngrok-free.app'; //$this->url->getBaseUrl();
+            $baseUrl    = $this->url->getBaseUrl();
             $webhooks[] = new Payment\Webhook(
                 eventName    : $eventName->value,
                 url          : $baseUrl . self::NEXI_PAYMENT_WEBHOOK_PATH,
