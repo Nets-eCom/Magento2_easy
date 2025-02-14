@@ -2,21 +2,32 @@
 
 namespace Nexi\Checkout\Block\Adminhtml\System\Config;
 
+use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
+use Magento\Config\Model\Config\Structure;
 use Magento\Framework\Data\Form\Element\AbstractElement;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 class TestConnection extends Field
 {
+    public function __construct(
+        Context                    $context,
+        private readonly Structure $configStructure,
+        array                      $data = [],
+        ?SecureHtmlRenderer        $secureRenderer = null
+    ) {
+        parent::__construct($context, $data, $secureRenderer);
+    }
 
     /**
      * Unset some non-related element parameters
      *
-     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     * @param AbstractElement $element
      *
      * @return string
      * @since 100.1.0
      */
-    public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element)
+    public function render(AbstractElement $element)
     {
         $element = clone $element;
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
@@ -49,8 +60,7 @@ class TestConnection extends Field
                 'button_label'  => __($originalData['button_label']),
                 'html_id'       => $element->getHtmlId(),
                 'ajax_url'      => $this->_urlBuilder->getUrl('nexi/system_config/testconnection'),
-                'field_mapping' => str_replace('"', '\\"', json_encode($this->_getFieldMapping()))
-
+                'field_mapping' => str_replace('"', '\\"', json_encode($this->getFieldMapping()))
             ]
         );
 
@@ -62,11 +72,14 @@ class TestConnection extends Field
      *
      * @return string[]
      */
-    protected function _getFieldMapping(): array
+    private function getFieldMapping(): array
     {
+        $apiKeyPath      = $this->configStructure->getElementByConfigPath('payment/nexi/api_key');
+        $environmentPath = $this->configStructure->getElementByConfigPath('payment/nexi/environment');
+
         return [
-            'environment' => 'payment_us_nexi_environment',
-            'api_key'     => 'payment_us_nexi_api_key',
+            'environment' => str_replace('/', '_', $environmentPath->getPath()),
+            'api_key'     => str_replace('/', '_', $apiKeyPath->getPath())
         ];
     }
 }
