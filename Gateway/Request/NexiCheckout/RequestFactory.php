@@ -47,8 +47,8 @@ class RequestFactory
             returnUrl   : $this->url->getUrl('nexi/hpp/returnaction'),
             cancelUrl   : $this->url->getUrl('nexi/hpp/cancelaction'),
             termsUrl    : $this->config->getWebshopTermsAndConditionsUrl(),
+            consumer    : $this->getConsumer($order),
             isAutoCharge: $this->config->getPaymentAction() == 'authorize_capture',
-            consumer    : $this->getConsumer($order)
         );
     }
 
