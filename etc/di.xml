@@ -135,6 +135,18 @@
         </arguments>
     </type>
 
+    <type name="\Nexi\Checkout\Controller\Hpp\ReturnAction">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="\Nexi\Checkout\Controller\Hpp\CancelAction">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
+
     <type name="Magento\Checkout\Model\GuestPaymentInformationManagement">
         <plugin name="Nexy_Checkout::guest_payment_information"
                 type="Nexi\Checkout\Plugin\GuestPaymentInformationManagement"
