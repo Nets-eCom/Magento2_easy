@@ -2,11 +2,20 @@
 
 namespace Nexi\Checkout\Gateway\Config;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as MagentoConfig;
 use Nexi\Checkout\Model\Config\Source\Environment;
 
 class Config extends MagentoConfig
 {
+    public function __construct(
+        private readonly ScopeConfigInterface $scopeConfig,
+        $methodCode = null,
+        $pathPattern = MagentoConfig::DEFAULT_PATH_PATTERN
+    ) {
+        parent::__construct($scopeConfig, $methodCode, $pathPattern);
+    }
+
     public const CODE = 'nexi';
 
     public function getEnvironment(): ?string
@@ -62,5 +71,15 @@ class Config extends MagentoConfig
     public function getPaymentAction(): string
     {
         return $this->getValue('payment_action');
+    }
+
+    public function getMerchantHandlesConsumerData()
+    {
+        return $this->getValue('merchant_handles_consumer_data');
+    }
+
+    public function getCountryCode()
+    {
+        return $this->scopeConfig->getValue('general/country/default');
     }
 }

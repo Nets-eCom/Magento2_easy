@@ -36,6 +36,7 @@
                 <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <integration_type>HostedPaymentPage</integration_type>
+                <merchant_handles_consumer_data>1</merchant_handles_consumer_data>
             </nexi>
         </payment>
     </default>

@@ -3,7 +3,8 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
-            <group id="nexi" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="nexi" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
                 <label>Nexi Payments</label>
                 <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1">
                     <label>Enabled</label>
@@ -24,11 +25,13 @@
                     <label>API Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="api_identifier" translate="label" type="obscure" sortOrder="31" showInDefault="1" showInWebsite="1">
+                <field id="api_identifier" translate="label" type="obscure" sortOrder="31" showInDefault="1"
+                       showInWebsite="1">
                     <label>API Identifier</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="webhook_secret" translate="label" type="obscure" sortOrder="31" showInDefault="1" showInWebsite="1">
+                <field id="webhook_secret" translate="label" type="obscure" sortOrder="31" showInDefault="1"
+                       showInWebsite="1">
                     <label>Webhook Secret</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <validate>required-entry</validate>
@@ -36,11 +39,13 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="webshop_terms_and_conditions_url" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1">
+                <field id="webshop_terms_and_conditions_url" translate="label" type="text" sortOrder="40"
+                       showInDefault="1" showInWebsite="1">
                     <label>Webshop Terms and Conditions URL</label>
                     <comment>add URL to your Webshop Terms and Conditions site.</comment>
                 </field>
-                <field id="payment_terms_and_conditions_url" translate="label" type="text" sortOrder="41" showInDefault="1" showInWebsite="1">
+                <field id="payment_terms_and_conditions_url" translate="label" type="text" sortOrder="41"
+                       showInDefault="1" showInWebsite="1">
                     <label>Payment Terms and Conditions URL</label>
                     <comment>add URL to your payment Terms and Conditions site.</comment>
                 </field>
@@ -49,18 +54,31 @@
                     <label>Integration type</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\IntegrationType</source_model>
                 </field>
-                <field id="payment_action" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" canRestore="1">
+                <field id="payment_action" translate="label" type="select" sortOrder="3" showInDefault="1"
+                       showInWebsite="1" canRestore="1">
                     <label>Payment Action</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\PaymentAction</source_model>
-                    <comment>If set to "Authorize and Capture", the transaction will be charged automatically after the reservation has been accepted.</comment>
+                    <comment>If set to "Authorize and Capture", the transaction will be charged automatically after the
+                        reservation has been accepted.
+                    </comment>
                 </field>
-                <field id="order_status" translate="label" type="select" sortOrder="51" showInDefault="1" showInWebsite="1">
+                <field id="order_status" translate="label" type="select" sortOrder="51" showInDefault="1"
+                       showInWebsite="1">
                     <label>New Order Status</label>
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
                 </field>
-                <field id="environment" translate="label" type="select" sortOrder="33" showInDefault="1" showInWebsite="1">
+                <field id="environment" translate="label" type="select" sortOrder="33" showInDefault="1"
+                       showInWebsite="1">
                     <label>Environment</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
+                </field>
+                <field id="merchant_handles_consumer_data" translate="label" type="select" sortOrder="60"
+                       showInDefault="1" showInWebsite="1">
+                    <label>Merchant handles consumer data</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[Allows you to initiate the checkout with customer data so that your customer only need to provide payment details. It is possible to exclude all consumer and company information from the payment (only for certain payment methods) when it is set to true.]]>
+                    </comment>
                 </field>
             </group>
         </section>

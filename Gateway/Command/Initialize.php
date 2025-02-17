@@ -12,18 +12,15 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
+use Psr\Log\LoggerInterface;
 
 class Initialize implements CommandInterface
 {
-    /**
-     * Initialize constructor.
-     *
-     * @param SubjectReader $subjectReader
-     */
     public function __construct(
-        private SubjectReader $subjectReader,
+        private readonly SubjectReader $subjectReader,
         private readonly CommandManagerPoolInterface $commandManagerPool,
-        private readonly Session $checkoutSession
+        private readonly Session $checkoutSession,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -67,8 +64,9 @@ class Initialize implements CommandInterface
                 commandCode: 'create_payment',
                 arguments  : ['payment' => $payment,]
             );
-        } catch (LocalizedException $e) {
-            $result['errorMessage'] = $e->getMessage();
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+            throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 
         return $result;

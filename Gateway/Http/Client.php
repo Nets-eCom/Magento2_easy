@@ -42,10 +42,14 @@ class Client implements ClientInterface
                 'Nexi request: ' . json_encode($transferObject->getBody())
             );
             $response = $paymentApi->$nexiMethod($transferObject->getBody());
+
             $this->logger->debug(
                 'Nexi response: ' . $this->getResponseData($response)
             );
         } catch (PaymentApiException $e) {
+            $this->logger->error($e->getMessage());
+            throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
+        } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
