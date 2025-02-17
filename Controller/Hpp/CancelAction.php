@@ -2,39 +2,49 @@
 
 namespace Nexi\Checkout\Controller\Hpp;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Nexi\Checkout\Model\Config\Source\Environment;
 use NexiCheckout\Factory\PaymentApiFactory;
+use Psr\Log\LoggerInterface;
 
 class CancelAction implements ActionInterface
 {
     public function __construct(
-        private readonly RedirectFactory $resultRedirectFactory,
+        private readonly RedirectFactory   $resultRedirectFactory,
         private readonly PaymentApiFactory $paymentApiFactory,
-        private readonly RequestInterface $request,
-        private readonly UrlInterface $url
+        private readonly RequestInterface  $request,
+        private readonly UrlInterface      $url,
+        private readonly LoggerInterface   $logger,
+        private readonly Session           $checkoutSession,
+        private readonly ManagerInterface  $messageManager
     ) {
     }
 
     public function execute(): ResultInterface
     {
-        $result = ['success' => false, 'errorMessage' => ''];
-        $options = $this->request->getParams();
-
         try {
-            $api = $this->paymentApiFactory->create(
-                secretKey: $options['api_key'],
-                isLiveMode: $options['environment'] == Environment::LIVE
-            );
-
-            $result = $api->retrievePayment($options['payment_id']);
+            $this->checkoutSession->restoreQuote();
+            $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
         } catch (LocalizedException $e) {
-            $result['errorMessage'] = $e->getMessage();
+            $this->logger->error($e->getMessage() . ' - ' . $e->getTraceAsString());
+            $this->messageManager->addErrorMessage($e->getMessage());
+        } catch (\Exception $e) {
+            $logId = uniqid();
+            $this->logger->critical($logId . ' - ' . $e->getMessage() . ' - ' . $e->getTraceAsString());
+            $this->messageManager->addErrorMessage(
+                __(
+                    'An error occurred during the payment process. Please try again later.' .
+                    'Log ID: %1',
+                    $logId
+                )
+            );
         }
 
         return $this->resultRedirectFactory->create()->setUrl(
