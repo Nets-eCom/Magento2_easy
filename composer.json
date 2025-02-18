@@ -41,7 +41,7 @@
             "registration.php"
         ],
         "psr-4": {
-            "NexiCheckout\\MagentoNexiCheckout\\": ""
+            "Nexi\\Checkout\\": ""
         }
     },
     "repositories": [
