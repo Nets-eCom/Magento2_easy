@@ -111,7 +111,7 @@
     </type>
     <type name="NexiCheckout\Factory\PaymentApiFactory">
         <arguments>
-            <argument name="configurationProvider" xsi:type="object">\NexiCheckout\Factory\Provider\HttpClientConfigurationProvider</argument>
+            <argument name="configurationProvider" xsi:type="object">NexiCheckout\Factory\Provider\HttpClientConfigurationProvider</argument>
         </arguments>
     </type>
 
@@ -153,12 +153,28 @@
                 sortOrder="100"/>
     </type>
 
+    <type name="Magento\Checkout\Model\PaymentInformationManagement">
+        <plugin name="Nexy_Checkout::payment_information"
+                type="Nexi\Checkout\Plugin\PaymentInformationManagement"
+                sortOrder="100"/>
+    </type>
+
     <type name="Nexi\Checkout\Controller\Hpp\ReturnAction">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
     <type name="Nexi\Checkout\Gateway\Command\Initialize">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Plugin\GuestPaymentInformationManagement">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Plugin\PaymentInformationManagement">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
