@@ -81,4 +81,4 @@ jobs:
           vendor/bin/phpcs --standard=Magento2 -q --report=checkstyle ${{needs.changed-files.outputs.php}} | cs2pr --graceful-warnings
       - name: Run Unit test
         run: |
-          vendor/bin/phpunit Test/Unit/Model/
+          vendor/bin/phpunit Test/Unit/
