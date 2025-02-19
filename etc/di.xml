@@ -65,8 +65,7 @@
             <argument name="commands" xsi:type="array">
                 <item name="create_payment" xsi:type="string">NexiCommandCreatePayment</item>
                 <item name="initialize" xsi:type="string">Nexi\Checkout\Gateway\Command\Initialize</item>
-
-                <!--                <item name="capture" xsi:type="string">NexiCommandCapture</item>-->
+                <item name="capture" xsi:type="string">NexiCommandCapture</item>
 <!--                <item name="void" xsi:type="string">NexiCommandVoid</item>-->
 <!--                <item name="refund" xsi:type="string">NexiCommandRefund</item>-->
 <!--                <item name="retrieve_payment" xsi:type="string">NexiCommandRetrievePayment</item>-->
@@ -90,6 +89,16 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="NexiCommandCapture" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="nexiMethod" xsi:type="string">createPayment</argument>
+            <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\CreatePayment</argument>
+        </arguments>
+    </virtualType>
+
     <type name="Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder">
         <arguments>
             <argument name="config" xsi:type="object">NexiConfig</argument>
@@ -102,16 +111,24 @@
         </arguments>
     </virtualType>
 
-    <type name="NexiCheckout\Factory\HttpClientFactory">
+    <virtualType name="NexiClientFactory" type="NexiCheckout\Factory\HttpClientFactory">
         <arguments>
                 <argument name="client" xsi:type="object">GuzzleHttp\Client</argument>
                 <argument name="requestFactory" xsi:type="object">GuzzleHttp\Psr7\HttpFactory</argument>
                 <argument name="streamFactory" xsi:type="object">GuzzleHttp\Psr7\HttpFactory</argument>
         </arguments>
-    </type>
-    <type name="NexiCheckout\Factory\PaymentApiFactory">
+    </virtualType>
+
+    <virtualType name="NexiPaymentApiFactory" type="NexiCheckout\Factory\PaymentApiFactory">
         <arguments>
+            <argument name="clientFactory" xsi:type="object">NexiClientFactory</argument>
             <argument name="configurationProvider" xsi:type="object">NexiCheckout\Factory\Provider\HttpClientConfigurationProvider</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="\Nexi\Checkout\Controller\Adminhtml\System\Config\TestConnection">
+        <arguments>
+            <argument name="paymentApiFactory" xsi:type="object">NexiPaymentApiFactory</argument>
         </arguments>
     </type>
 
@@ -132,6 +149,7 @@
     <type name="Nexi\Checkout\Gateway\Http\Client">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+            <argument name="paymentApiFactory">NexiPaymentApiFactory</argument>
         </arguments>
     </type>
 
