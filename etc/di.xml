@@ -89,6 +89,12 @@
         </arguments>
     </virtualType>
 
+    <type name="Nexi\Checkout\Gateway\Http\Client">
+        <arguments>
+            <argument name="paymentApiFactory" xsi:type="object">NexiPaymentApiFactory</argument>
+        </arguments>
+    </type>
+
     <virtualType name="NexiCommandCapture" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
             <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder</argument>
