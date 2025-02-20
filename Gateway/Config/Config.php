@@ -116,7 +116,7 @@ class Config extends MagentoConfig
     }
 
     /**
-     * authorize, authorize_capture
+     * Get payment action: authorize, authorize_capture
      *
      * @return string
      */
