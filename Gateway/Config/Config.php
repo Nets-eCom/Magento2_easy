@@ -16,6 +16,8 @@ class Config extends MagentoConfig
      * @param ScopeConfigInterface $scopeConfig
      * @param string|null $methodCode
      * @param string $pathPattern
+     *
+     * @phpcsSuppress Generic.CodeAnalysis.UselessOverridingMethod
      */
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
