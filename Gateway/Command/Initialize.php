@@ -2,7 +2,6 @@
 
 namespace Nexi\Checkout\Gateway\Command;
 
-use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
 use Magento\Payment\Gateway\Command\ResultInterface;
@@ -16,10 +15,14 @@ use Psr\Log\LoggerInterface;
 
 class Initialize implements CommandInterface
 {
+    /**
+     * @param SubjectReader $subjectReader
+     * @param CommandManagerPoolInterface $commandManagerPool
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         private readonly SubjectReader $subjectReader,
         private readonly CommandManagerPoolInterface $commandManagerPool,
-        private readonly Session $checkoutSession,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -29,7 +32,8 @@ class Initialize implements CommandInterface
      *
      * @param array $commandSubject
      *
-     * @return $this|ResultInterface|null
+     * @return $this
+     * @throws LocalizedException
      */
     public function execute(array $commandSubject)
     {
@@ -56,7 +60,15 @@ class Initialize implements CommandInterface
         return $this;
     }
 
-    public function cratePayment($payment)
+    /**
+     * Create payment in Nexi Gateway
+     *
+     * @param $payment
+     *
+     * @return ResultInterface|null
+     * @throws LocalizedException
+     */
+    public function cratePayment($payment): ?ResultInterface
     {
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);

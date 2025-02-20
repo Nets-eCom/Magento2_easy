@@ -5,6 +5,7 @@ namespace Nexi\Checkout\Gateway\Request\NexiCheckout;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Url;
+use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use Nexi\Checkout\Gateway\Config\Config;
@@ -134,14 +135,18 @@ class RequestFactory
                                  addressLine2: $order->getShippingAddress()->getStreetLine(2),
                                  postalCode  : $order->getShippingAddress()->getPostcode(),
                                  city        : $order->getShippingAddress()->getCity(),
-                                 country     : $this->getThreeLetterAbbreviation($order->getShippingAddress()->getCountryId()),
+                                 country     : $this->getThreeLetterAbbreviation(
+                                                   $order->getShippingAddress()->getCountryId()
+                                               ),
                              ),
             billingAddress : new Payment\Address(
                                  addressLine1: $order->getBillingAddress()->getStreetLine(1),
                                  addressLine2: $order->getBillingAddress()->getStreetLine(2),
                                  postalCode  : $order->getBillingAddress()->getPostcode(),
                                  city        : $order->getBillingAddress()->getCity(),
-                                 country     : $this->getThreeLetterAbbreviation($order->getBillingAddress()->getCountryId()),
+                                 country     : $this->getThreeLetterAbbreviation(
+                                                   $order->getBillingAddress()->getCountryId()
+                                               ),
                              ),
 
             privatePerson  : new Payment\PrivatePerson(
@@ -162,5 +167,39 @@ class RequestFactory
         return $this->countryInformationAcquirer->getCountryInfo(
             $countyId
         )->getThreeLetterAbbreviation();
+    }
+
+    public function getCreditmemoItems(CreditmemoInterface $creditmemo)
+    {
+        $items = [];
+        foreach ($creditmemo->getAllItems() as $item) {
+            $items[] = new \NexiCheckout\Model\Request\Item(
+                name            : $item->getName(),
+                quantity        : (int)$item->getQty(),
+                unit            : 'pcs',
+                unitPrice       : (int)($item->getPrice() * 100),
+                grossTotalAmount: (int)($item->getRowTotalInclTax() * 100),
+                netTotalAmount  : (int)($item->getRowTotal() * 100),
+                reference       : $item->getSku(),
+                taxRate         : (int)($item->getTaxPercent() * 100),
+                taxAmount       : (int)($item->getTaxAmount() * 100),
+            );
+        }
+
+        if ($creditmemo->getShippingInclTax()) {
+            $items[] = new \NexiCheckout\Model\Request\Item(
+                name            : $creditmemo->getOrder()->getShippingDescription(),
+                quantity        : 1,
+                unit            : 'pcs',
+                unitPrice       : (int)($creditmemo->getShippingAmount() * 100),
+                grossTotalAmount: (int)($creditmemo->getShippingInclTax() * 100),
+                netTotalAmount  : (int)($creditmemo->getShippingAmount() * 100),
+                reference       : $creditmemo->getOrder()->getShippingMethod(),
+                taxRate         : (int)($creditmemo->getTaxAmount() / $creditmemo->getShippingInclTax() * 100),
+                taxAmount       : (int)($creditmemo->getShippingTaxAmount() * 100),
+            );
+        }
+
+        return $items;
     }
 }

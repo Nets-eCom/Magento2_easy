@@ -31,11 +31,11 @@ class Builder
      *
      * @return TransactionInterface
      */
-    public function build(Order $order, $transactionData, $action ): TransactionInterface
+    public function build($transactionId, Order $order, $transactionData, $action ): TransactionInterface
     {
         return $this->transactionBuilder->setOrder($order)
             ->setPayment($order->getPayment())
-            ->setTransactionId($order->getPayment()->getAdditionalInformation('payment_id'))
+            ->setTransactionId($transactionId)
             ->setAdditionalInformation(
                 [\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => $transactionData]
             )

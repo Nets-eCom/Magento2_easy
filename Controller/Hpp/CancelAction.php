@@ -4,22 +4,25 @@ namespace Nexi\Checkout\Controller\Hpp;
 
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ActionInterface;
-use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
-use Nexi\Checkout\Model\Config\Source\Environment;
-use NexiCheckout\Factory\PaymentApiFactory;
 use Psr\Log\LoggerInterface;
 
 class CancelAction implements ActionInterface
 {
+
+    /**
+     * @param RedirectFactory $resultRedirectFactory
+     * @param UrlInterface $url
+     * @param LoggerInterface $logger
+     * @param Session $checkoutSession
+     * @param ManagerInterface $messageManager
+     */
     public function __construct(
         private readonly RedirectFactory   $resultRedirectFactory,
-        private readonly PaymentApiFactory $paymentApiFactory,
-        private readonly RequestInterface  $request,
         private readonly UrlInterface      $url,
         private readonly LoggerInterface   $logger,
         private readonly Session           $checkoutSession,
@@ -27,6 +30,11 @@ class CancelAction implements ActionInterface
     ) {
     }
 
+    /**
+     * Execute action based on request and return result
+     *
+     * @return ResultInterface
+     */
     public function execute(): ResultInterface
     {
         try {

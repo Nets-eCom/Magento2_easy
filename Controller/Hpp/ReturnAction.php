@@ -6,34 +6,58 @@ use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Model\MethodInterface;
+use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\OrderRepository;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Transaction\Builder;
+use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
+use NexiCheckout\Model\Result\RetrievePaymentResult;
 use Psr\Log\LoggerInterface;
+use Nexi\Checkout\Gateway\Http\Client;
 
 class ReturnAction implements ActionInterface
 {
+    /**
+     * @param RedirectFactory $resultRedirectFactory
+     * @param RequestInterface $request
+     * @param UrlInterface $url
+     * @param Session $checkoutSession
+     * @param Config $config
+     * @param Builder $transactionBuilder
+     * @param OrderRepository $orderRepository
+     * @param LoggerInterface $logger
+     * @param ManagerInterface $messageManager
+     * @param Client $client
+     */
     public function __construct(
-        private RedirectFactory  $resultRedirectFactory,
-        private RequestInterface $request,
-        private UrlInterface     $url,
-        private Session          $checkoutSession,
-        private Config           $config,
-        private Builder          $transactionBuilder,
-        private OrderRepository  $orderRepository,
-        private LoggerInterface  $logger,
-        private ManagerInterface $messageManager
+        private readonly RedirectFactory  $resultRedirectFactory,
+        private readonly RequestInterface $request,
+        private readonly UrlInterface     $url,
+        private readonly Session          $checkoutSession,
+        private readonly Config           $config,
+        private readonly Builder          $transactionBuilder,
+        private readonly OrderRepository  $orderRepository,
+        private readonly LoggerInterface  $logger,
+        private readonly ManagerInterface $messageManager,
+        private readonly Client           $client,
     ) {
     }
 
+    /**
+     * Execute action based on request and return result
+     *
+     * @return ResultInterface
+     */
     public function execute(): ResultInterface
     {
         $order = $this->checkoutSession->getLastRealOrder();
@@ -57,31 +81,53 @@ class ReturnAction implements ActionInterface
             $paymentAction = $this->config->getPaymentAction();
             $paymentId     = $this->request->getParam('paymentid');
 
-            if ($paymentAction == MethodInterface::ACTION_AUTHORIZE) {
-                $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-                $paymentTransaction = $this->transactionBuilder->build(
-                    $order,
-                    ['payment_id' => $paymentId],
-                    Transaction::TYPE_AUTH
-                );
-                $order->addRelatedObject($paymentTransaction);
-            } elseif ($paymentAction == MethodInterface::ACTION_AUTHORIZE_CAPTURE) {
-                $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
-                $paymentTransaction = $this->transactionBuilder->build(
-                    $order,
-                    ['payment_id' => $paymentId],
-                    Transaction::TYPE_CAPTURE
-                );
 
-                $invoice = $order->prepareInvoice();
-                $invoice->register();
-                $invoice->setTransactionId($paymentTransaction->getTxnId());
-                $invoice->pay();
+            $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+            $paymentTransaction = $this->transactionBuilder->build(
+                $paymentId,
+                $order,
+                ['payment_id' => $paymentId],
+                Transaction::TYPE_AUTH
+            );
+            $order->addRelatedObject($paymentTransaction);
 
-                $order->addRelatedObject($invoice);
-                $order->addRelatedObject($paymentTransaction);
-            }
+            $order->addCommentToStatusHistory(__('Nexi Payment authorized successfully.'));
             $this->orderRepository->save($order);
+
+            if (MethodInterface::ACTION_AUTHORIZE_CAPTURE == $paymentAction) {
+                $paymentDetails = $this->getPaymentDetails($paymentId);
+
+                if ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::RESERVED) {
+                    $this->messageManager->addNoticeMessage(__('Payment reserved, but not charged yet.'));
+                    $this->logger->notice('Payment reserved, but not charged yet. Redirecting to success page.');
+
+                    return $this->getSuccessRedirect();
+                } elseif ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::CHARGED) {
+                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                    $chargeTxnId       = $paymentDetails->getPayment()->getCharges()[0]->getChargeId();
+                    $chargeTransaction = $this->transactionBuilder
+                        ->build(
+                            $chargeTxnId,
+                            $order,
+                            serialize($paymentDetails->getPayment()),
+                            Transaction::TYPE_CAPTURE
+                        )->setParentId($paymentTransaction->getTransactionId())
+                        ->setParentTxnId($paymentTransaction->getTxnId());
+
+
+                    $invoice = $order->prepareInvoice();
+                    $invoice->register();
+                    $invoice->setTransactionId($chargeTxnId);
+                    $invoice->pay();
+
+
+                    $order->addCommentToStatusHistory(__('Nexi Payment charged successfully.'));
+
+                    $order->addRelatedObject($invoice);
+
+                    $this->orderRepository->save($order);
+                }
+            }
         } catch (Exception $e) {
             $this->logger->error($e->getMessage() . ' - ' . $e->getTraceAsString());
             $this->messageManager->addErrorMessage(
@@ -93,6 +139,25 @@ class ReturnAction implements ActionInterface
             );
         }
 
+        return $this->getSuccessRedirect();
+    }
+
+    /**
+     * @param $paymentId
+     *
+     * @return RetrievePaymentResult
+     * @throws PaymentApiException
+     */
+    private function getPaymentDetails($paymentId): RetrievePaymentResult
+    {
+        return $this->client->getPaymentApi()->retrievePayment($paymentId);
+    }
+
+    /**
+     * @return Redirect
+     */
+    public function getSuccessRedirect(): Redirect
+    {
         return $this->resultRedirectFactory->create()->setUrl(
             $this->url->getUrl('checkout/onepage/success', ['_secure' => true])
         );

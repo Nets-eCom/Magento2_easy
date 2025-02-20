@@ -67,7 +67,7 @@
                 <item name="initialize" xsi:type="string">Nexi\Checkout\Gateway\Command\Initialize</item>
                 <item name="capture" xsi:type="string">NexiCommandCapture</item>
 <!--                <item name="void" xsi:type="string">NexiCommandVoid</item>-->
-<!--                <item name="refund" xsi:type="string">NexiCommandRefund</item>-->
+                <item name="refund" xsi:type="string">NexiCommandRefund</item>
 <!--                <item name="retrieve_payment" xsi:type="string">NexiCommandRetrievePayment</item>-->
 <!--                <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>-->
 <!--                <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>-->
@@ -89,12 +89,6 @@
         </arguments>
     </virtualType>
 
-    <type name="Nexi\Checkout\Gateway\Http\Client">
-        <arguments>
-            <argument name="paymentApiFactory" xsi:type="object">NexiPaymentApiFactory</argument>
-        </arguments>
-    </type>
-
     <virtualType name="NexiCommandCapture" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
             <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder</argument>
@@ -102,6 +96,16 @@
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="nexiMethod" xsi:type="string">createPayment</argument>
             <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\CreatePayment</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandRefund" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\RefundRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="nexiMethod" xsi:type="string">createPayment</argument>
+            <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\RefundCharge</argument>
         </arguments>
     </virtualType>
 
@@ -155,7 +159,7 @@
     <type name="Nexi\Checkout\Gateway\Http\Client">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
-            <argument name="paymentApiFactory">NexiPaymentApiFactory</argument>
+            <argument name="paymentApiFactory" xsi:type="object">NexiPaymentApiFactory</argument>
         </arguments>
     </type>
 
@@ -168,6 +172,7 @@
     <type name="\Nexi\Checkout\Controller\Hpp\CancelAction">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
 
