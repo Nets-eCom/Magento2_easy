@@ -109,20 +109,20 @@ class ReturnAction implements ActionInterface
                         ->build(
                             $chargeTxnId,
                             $order,
-                            serialize($paymentDetails->getPayment()),
+                            [
+                                'payment_id' => $paymentId,
+                                'charge_id'  => $chargeTxnId,
+                            ],
                             Transaction::TYPE_CAPTURE
                         )->setParentId($paymentTransaction->getTransactionId())
                         ->setParentTxnId($paymentTransaction->getTxnId());
-
 
                     $invoice = $order->prepareInvoice();
                     $invoice->register();
                     $invoice->setTransactionId($chargeTxnId);
                     $invoice->pay();
 
-
                     $order->addCommentToStatusHistory(__('Nexi Payment charged successfully.'));
-
                     $order->addRelatedObject($invoice);
 
                     $this->orderRepository->save($order);

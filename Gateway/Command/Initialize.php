@@ -35,7 +35,7 @@ class Initialize implements CommandInterface
      * @return $this
      * @throws LocalizedException
      */
-    public function execute(array $commandSubject)
+    public function execute(array $commandSubject): static
     {
         /** @var PaymentDataObjectInterface $payment */
         $paymentData = $this->subjectReader->readPayment($commandSubject);
@@ -49,10 +49,8 @@ class Initialize implements CommandInterface
         $order->setCanSendNewEmailFlag(false);
 
         $stateObject->setIsNotified(false);
-
         $stateObject->setState(Order::STATE_NEW);
         $stateObject->setStatus('pending');
-
         $stateObject->setIsNotified(false);
 
         $this->cratePayment($paymentData);
@@ -63,12 +61,12 @@ class Initialize implements CommandInterface
     /**
      * Create payment in Nexi Gateway
      *
-     * @param $payment
+     * @param PaymentDataObjectInterface $payment
      *
      * @return ResultInterface|null
      * @throws LocalizedException
      */
-    public function cratePayment($payment): ?ResultInterface
+    public function cratePayment(PaymentDataObjectInterface $payment): ?ResultInterface
     {
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
