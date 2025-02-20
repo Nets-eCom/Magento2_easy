@@ -81,7 +81,6 @@ class ReturnAction implements ActionInterface
             $paymentAction = $this->config->getPaymentAction();
             $paymentId     = $this->request->getParam('paymentid');
 
-
             $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
             $paymentTransaction = $this->transactionBuilder->build(
                 $paymentId,
@@ -143,6 +142,8 @@ class ReturnAction implements ActionInterface
     }
 
     /**
+     * Get payment details from Nexi API
+     *
      * @param $paymentId
      *
      * @return RetrievePaymentResult
@@ -154,6 +155,8 @@ class ReturnAction implements ActionInterface
     }
 
     /**
+     * Get success redirect
+     *
      * @return Redirect
      */
     public function getSuccessRedirect(): Redirect

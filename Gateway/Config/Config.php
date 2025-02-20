@@ -11,14 +11,16 @@ class Config extends MagentoConfig
     public const CODE = 'nexi';
 
     /**
+     * Config constructor.
+     *
      * @param ScopeConfigInterface $scopeConfig
-     * @param $methodCode
-     * @param $pathPattern
+     * @param string|null $methodCode
+     * @param string $pathPattern
      */
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
-                                              $methodCode = null,
-                                              $pathPattern = MagentoConfig::DEFAULT_PATH_PATTERN
+        $methodCode = null,
+        $pathPattern = MagentoConfig::DEFAULT_PATH_PATTERN
     ) {
         parent::__construct($scopeConfig, $methodCode, $pathPattern);
     }
