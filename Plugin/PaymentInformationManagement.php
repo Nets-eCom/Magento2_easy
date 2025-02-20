@@ -2,17 +2,18 @@
 
 namespace Nexi\Checkout\Plugin;
 
+use Magento\Checkout\Model\PaymentInformationManagement as Subject;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Checkout\Model\GuestPaymentInformationManagement as Subject;
+use Psr\Log\LoggerInterface;
 
-class GuestPaymentInformationManagement
+class PaymentInformationManagement
 {
 
     public function __construct(
         private readonly Session                  $checkoutSession,
-        private readonly \Psr\Log\LoggerInterface $logger
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -21,7 +22,6 @@ class GuestPaymentInformationManagement
      * @param $result
      *
      * @return false|mixed|string
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterSavePaymentInformationAndPlaceOrder(
         Subject $subject,

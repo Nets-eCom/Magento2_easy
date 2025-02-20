@@ -7,6 +7,7 @@ use Magento\Payment\Gateway\Http\TransferInterface;
 use Magento\Payment\Gateway\Http\ClientInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
 use Psr\Log\LoggerInterface;
 
@@ -32,20 +33,25 @@ class Client implements ClientInterface
     {
         $response = [];
         try {
-            $paymentApi = $this->paymentApiFactory->create(
-                (string)$this->config->getApiKey(),
-                $this->config->isLiveMode()
-            );
+            $paymentApi = $this->getPaymentApi();
             $nexiMethod = $transferObject->getUri();
             $this->logger->debug(
                 'Nexi method: ' . $nexiMethod . PHP_EOL .
                 'Nexi request: ' . json_encode($transferObject->getBody())
             );
-            $response = $paymentApi->$nexiMethod($transferObject->getBody());
+            if (is_array($transferObject->getBody())) {
+                $response = $paymentApi->$nexiMethod(...$transferObject->getBody());
+            } else {
+                $response = $paymentApi->$nexiMethod($transferObject->getBody());
+            }
+
             $this->logger->debug(
                 'Nexi response: ' . $this->getResponseData($response)
             );
         } catch (PaymentApiException $e) {
+            $this->logger->error($e->getMessage());
+            throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
+        } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
@@ -73,5 +79,19 @@ class Client implements ClientInterface
             }
         }
         return json_encode($responseData);
+    }
+
+    /**
+     * Get Payment API Client
+     *
+     * @return PaymentApi
+     */
+    public function getPaymentApi(): PaymentApi
+    {
+        $paymentApi = $this->paymentApiFactory->create(
+            (string)$this->config->getApiKey(),
+            $this->config->isLiveMode()
+        );
+        return $paymentApi;
     }
 }

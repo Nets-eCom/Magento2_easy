@@ -2,9 +2,12 @@
 
 namespace Nexi\Checkout\Gateway\Request\NexiCheckout;
 
+use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Url;
+use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Model\Order;
+use Magento\Store\Model\StoreManagerInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
@@ -17,18 +20,21 @@ class RequestFactory
     const NEXI_PAYMENT_WEBHOOK_PATH = '/nexi/payment/webhook';
 
     public function __construct(
-        private readonly Config             $config,
-        private readonly Url                $url,
-        private readonly EncryptorInterface $encryptor
+        private readonly Config                              $config,
+        private readonly Url                                 $url,
+        private readonly EncryptorInterface                  $encryptor,
+        private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
+        private readonly StoreManagerInterface               $storeManager
     ) {
     }
 
     public function createOrder(Order $order): Payment\Order
     {
         return new \NexiCheckout\Model\Request\Payment\Order(
-            items   : $this->getItems($order),
-            currency: $order->getBaseCurrencyCode(),
-            amount  : $order->getGrandTotal() * 100,
+            items    : $this->getItems($order),
+            currency : $order->getBaseCurrencyCode(),
+            amount   : $order->getGrandTotal() * 100,
+            reference: $order->getIncrementId(),
         );
     }
 
@@ -44,11 +50,15 @@ class RequestFactory
         }
 
         return new HostedCheckout(
-            returnUrl   : $this->url->getUrl('nexi/hpp/returnaction'),
-            cancelUrl   : $this->url->getUrl('nexi/hpp/cancelaction'),
-            termsUrl    : $this->config->getWebshopTermsAndConditionsUrl(),
-            consumer    : $this->getConsumer($order),
-            isAutoCharge: $this->config->getPaymentAction() == 'authorize_capture',
+            returnUrl                  : $this->url->getUrl('nexi/hpp/returnaction'),
+            cancelUrl                  : $this->url->getUrl('nexi/hpp/cancelaction'),
+            termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
+            consumer                   : $this->getConsumer($order),
+            isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
+            merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
+            countryCode                : $this->countryInformationAcquirer->getCountryInfo(
+                                             $this->config->getCountryCode()
+                                         )->getThreeLetterAbbreviation(),
         );
     }
 
@@ -88,8 +98,6 @@ class RequestFactory
 
     public function createPayment(Order $order): Payment
     {
-
-
         return new Payment(
             order       : $this->createOrder($order),
             checkout    : $this->createCheckout($order),
@@ -127,23 +135,71 @@ class RequestFactory
                                  addressLine2: $order->getShippingAddress()->getStreetLine(2),
                                  postalCode  : $order->getShippingAddress()->getPostcode(),
                                  city        : $order->getShippingAddress()->getCity(),
-                                 country     : $order->getShippingAddress()->getCountryId(),
+                                 country     : $this->getThreeLetterAbbreviation(
+                                                   $order->getShippingAddress()->getCountryId()
+                                               ),
                              ),
             billingAddress : new Payment\Address(
                                  addressLine1: $order->getBillingAddress()->getStreetLine(1),
                                  addressLine2: $order->getBillingAddress()->getStreetLine(2),
                                  postalCode  : $order->getBillingAddress()->getPostcode(),
                                  city        : $order->getBillingAddress()->getCity(),
-                                 country     : $order->getBillingAddress()->getCountryId(),
+                                 country     : $this->getThreeLetterAbbreviation(
+                                                   $order->getBillingAddress()->getCountryId()
+                                               ),
                              ),
-            phoneNumber    : new Payment\PhoneNumber(
-                                 prefix: '', //TODO: implement prefix for phone number
-                                 number: $order->getBillingAddress()->getTelephone(),
-                             ),
+
             privatePerson  : new Payment\PrivatePerson(
                                  firstName: $order->getCustomerFirstname(),
                                  lastName : $order->getCustomerLastname(),
                              )
         );
+    }
+
+    /**
+     * @param Order $order
+     *
+     * @return string
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function getThreeLetterAbbreviation($countyId): string
+    {
+        return $this->countryInformationAcquirer->getCountryInfo(
+            $countyId
+        )->getThreeLetterAbbreviation();
+    }
+
+    public function getCreditmemoItems(CreditmemoInterface $creditmemo)
+    {
+        $items = [];
+        foreach ($creditmemo->getAllItems() as $item) {
+            $items[] = new \NexiCheckout\Model\Request\Item(
+                name            : $item->getName(),
+                quantity        : (int)$item->getQty(),
+                unit            : 'pcs',
+                unitPrice       : (int)($item->getPrice() * 100),
+                grossTotalAmount: (int)($item->getRowTotalInclTax() * 100),
+                netTotalAmount  : (int)($item->getRowTotal() * 100),
+                reference       : $item->getSku(),
+                taxRate         : (int)($item->getTaxPercent() * 100),
+                taxAmount       : (int)($item->getTaxAmount() * 100),
+            );
+        }
+
+        if ($creditmemo->getShippingInclTax()) {
+            $items[] = new \NexiCheckout\Model\Request\Item(
+                name            : $creditmemo->getOrder()->getShippingDescription(),
+                quantity        : 1,
+                unit            : 'pcs',
+                unitPrice       : (int)($creditmemo->getShippingAmount() * 100),
+                grossTotalAmount: (int)($creditmemo->getShippingInclTax() * 100),
+                netTotalAmount  : (int)($creditmemo->getShippingAmount() * 100),
+                reference       : $creditmemo->getOrder()->getShippingMethod(),
+                taxRate         : (int)($creditmemo->getTaxAmount() / $creditmemo->getShippingInclTax() * 100),
+                taxAmount       : (int)($creditmemo->getShippingTaxAmount() * 100),
+            );
+        }
+
+        return $items;
     }
 }
