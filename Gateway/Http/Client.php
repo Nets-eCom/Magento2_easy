@@ -40,9 +40,8 @@ class Client implements ClientInterface
      * @return array
      * @throws LocalizedException
      */
-    public function placeRequest(TransferInterface $transferObject)
+    public function placeRequest(TransferInterface $transferObject): array
     {
-        $response = [];
         try {
             $paymentApi = $this->getPaymentApi();
             $nexiMethod = $transferObject->getUri();

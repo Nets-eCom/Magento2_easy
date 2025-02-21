@@ -2,31 +2,33 @@
 
 namespace Nexi\Checkout\Gateway\Request;
 
+use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
-use Nexi\Checkout\Gateway\Request\NexiCheckout\RequestFactory;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use NexiCheckout\Model\Request\Charge\Shipping;
-use NexiCheckout\Model\Request\FullCharge;
+use NexiCheckout\Model\Request\PartialCharge;
 
 class CaptureRequestBuilder implements BuilderInterface
 {
     public function __construct(
-        private readonly RequestFactory $requestFactory
+        private readonly SalesDocumentItemsBuilder $documentItemsBuilder
     ) {
     }
 
     public function build(array $buildSubject): array
     {
-        /** @var Order $order */
-        $order = $buildSubject['payment']->getPayment()->getOrder();
+        /** @var Order\Payment $payment */
+        $payment    = SubjectReader::readPayment($buildSubject)->getPayment();
+
+        $invoice = $payment->getOrder()->getInvoiceCollection()->getLastItem();
 
         return [
             'nexi_method' => 'charge',
             'body'        => [
-                'payment_id' => $order->getPayment()->getAdditionalInformation('payment_id'),
-                'charge'     => new FullCharge(
-                    amount  : (int)($order->getGrandTotal() * 100),
-                    shipping: $this->getShipping($order)
+                'paymentId' => $payment->getAdditionalInformation('payment_id'),
+                'charge'     => new PartialCharge(
+                    $this->documentItemsBuilder->build($invoice),
                 )
             ]
         ];
