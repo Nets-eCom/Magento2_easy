@@ -2,17 +2,17 @@
 
 namespace Nexi\Checkout\Plugin;
 
+use Exception;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Checkout\Model\GuestPaymentInformationManagement as Subject;
+use Psr\Log\LoggerInterface;
 
 class GuestPaymentInformationManagement
 {
 
     public function __construct(
-        private readonly Session                  $checkoutSession,
-        private readonly \Psr\Log\LoggerInterface $logger
+        private readonly Session         $checkoutSession,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -33,7 +33,7 @@ class GuestPaymentInformationManagement
             if ($redirectUrl) {
                 $result = json_encode(['result' => $result, 'redirect_url' => $redirectUrl]);
             }
-        } catch (LocalizedException|NoSuchEntityException $e) {
+        } catch (Exception $e) {
             $this->logger->error($e->getMessage() . ' ' . $e->getTraceAsString());
         }
 

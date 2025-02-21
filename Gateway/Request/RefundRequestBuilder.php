@@ -24,7 +24,7 @@ class RefundRequestBuilder implements BuilderInterface
         $payment    = $buildSubject['payment']->getPayment();
         $creditmemo = $payment->getCreditmemo();
 
-        $request = [
+        return [
             'nexi_method' => 'refundCharge',
             'body'        => [
                 'chargeId' => $payment->getRefundTransactionId(),
@@ -34,8 +34,6 @@ class RefundRequestBuilder implements BuilderInterface
                 )
             ]
         ];
-
-        return $request;
     }
 
     /**

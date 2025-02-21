@@ -22,8 +22,8 @@ class TestConnection extends Action implements HttpPostActionInterface
      *
      * @see _isAllowed()
      */
-    public const ADMIN_RESOURCE      = 'Magento_Catalog::config_catalog';
-    const        NOT_GUID_PAYMENT_ID = 'test';
+    public const  ADMIN_RESOURCE      = 'Magento_Catalog::config_catalog';
+    private const NOT_GUID_PAYMENT_ID = 'test';
 
     /**
      * @param Context $context
@@ -63,16 +63,7 @@ class TestConnection extends Action implements HttpPostActionInterface
                 isLiveMode: $options['environment'] == Environment::LIVE
             );
 
-            $result = $api->retrievePayment(
-                self::NOT_GUID_PAYMENT_ID
-            );
-
-
-            if ($result) {
-                $result['success'] = true;
-            }
-        } catch (LocalizedException $e) {
-            $result['errorMessage'] = $e->getMessage();
+            $result = $api->retrievePayment(self::NOT_GUID_PAYMENT_ID);
         } catch (\Exception $e) {
             if (str_contains(mb_strtolower($e->getMessage()), 'should be in guid format')) {
                 $result['success'] = true;

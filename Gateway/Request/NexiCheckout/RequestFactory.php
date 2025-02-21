@@ -17,17 +17,31 @@ use NexiCheckout\Model\Webhook\EventNameEnum;
 
 class RequestFactory
 {
-    const NEXI_PAYMENT_WEBHOOK_PATH = '/nexi/payment/webhook';
+    public const NEXI_PAYMENT_WEBHOOK_PATH = '/nexi/payment/webhook';
 
+    /**
+     * Constructor
+     *
+     * @param Config $config
+     * @param Url $url
+     * @param EncryptorInterface $encryptor
+     * @param CountryInformationAcquirerInterface $countryInformationAcquirer
+     */
     public function __construct(
         private readonly Config                              $config,
         private readonly Url                                 $url,
         private readonly EncryptorInterface                  $encryptor,
         private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
-        private readonly StoreManagerInterface               $storeManager
     ) {
     }
 
+    /**
+     * Create request order instance
+     *
+     * @param Order $order
+     *
+     * @return Payment\Order
+     */
     public function createOrder(Order $order): Payment\Order
     {
         return new \NexiCheckout\Model\Request\Payment\Order(

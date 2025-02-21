@@ -20,7 +20,7 @@ class CaptureRequestBuilder implements BuilderInterface
         /** @var Order $order */
         $order = $buildSubject['payment']->getPayment()->getOrder();
 
-        $request = [
+        return [
             'nexi_method' => 'charge',
             'body'        => [
                 'payment_id' => $order->getPayment()->getAdditionalInformation('payment_id'),
@@ -30,8 +30,6 @@ class CaptureRequestBuilder implements BuilderInterface
                 )
             ]
         ];
-
-        return $request;
     }
 
     /**

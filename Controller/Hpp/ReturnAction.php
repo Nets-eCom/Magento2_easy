@@ -13,6 +13,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Model\MethodInterface;
+use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
@@ -86,7 +87,7 @@ class ReturnAction implements ActionInterface
                 $paymentId,
                 $order,
                 ['payment_id' => $paymentId],
-                Transaction::TYPE_AUTH
+                TransactionInterface::TYPE_AUTH
             );
             $order->addRelatedObject($paymentTransaction);
 
@@ -112,7 +113,7 @@ class ReturnAction implements ActionInterface
                                 'payment_id' => $paymentId,
                                 'charge_id'  => $chargeTxnId,
                             ],
-                            Transaction::TYPE_CAPTURE
+                            TransactionInterface::TYPE_CAPTURE
                         )->setParentId($paymentTransaction->getTransactionId())
                         ->setParentTxnId($paymentTransaction->getTxnId());
 
