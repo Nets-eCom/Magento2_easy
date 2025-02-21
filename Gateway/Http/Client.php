@@ -9,6 +9,7 @@ use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Shared\JsonDeserializeInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -16,6 +17,14 @@ use Psr\Log\LoggerInterface;
  */
 class Client implements ClientInterface
 {
+
+    /**
+     * Class constructor
+     *
+     * @param PaymentApiFactory $paymentApiFactory
+     * @param Config $config
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         private readonly PaymentApiFactory $paymentApiFactory,
         private readonly Config            $config,
@@ -23,11 +32,13 @@ class Client implements ClientInterface
     ) {
     }
 
-    /**
+    /***
+     * Place request
+     *
      * @param TransferInterface $transferObject
      *
      * @return array
-     * @throws PaymentApiException
+     * @throws LocalizedException
      */
     public function placeRequest(TransferInterface $transferObject)
     {
@@ -48,10 +59,7 @@ class Client implements ClientInterface
             $this->logger->debug(
                 'Nexi response: ' . $this->getResponseData($response)
             );
-        } catch (PaymentApiException $e) {
-            $this->logger->error($e->getMessage());
-            throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
-        } catch (\Exception $e) {
+        } catch (PaymentApiException|\Exception $e) {
             $this->logger->error($e->getMessage());
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
@@ -60,9 +68,12 @@ class Client implements ClientInterface
     }
 
     /**
-     * @param $response
+     * Get response data
      *
-     * @return false|string
+     * @param JsonDeserializeInterface $response
+     *
+     * @return string|false
+     * @throws \ReflectionException
      */
     public function getResponseData($response): string|false
     {
@@ -88,10 +99,9 @@ class Client implements ClientInterface
      */
     public function getPaymentApi(): PaymentApi
     {
-        $paymentApi = $this->paymentApiFactory->create(
+        return $this->paymentApiFactory->create(
             (string)$this->config->getApiKey(),
             $this->config->isLiveMode()
         );
-        return $paymentApi;
     }
 }

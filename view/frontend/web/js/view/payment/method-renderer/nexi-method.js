@@ -29,7 +29,7 @@ define(
                 config: window.checkoutConfig.payment.nexi
             },
             placeOrder: function (data, event) {
-                var placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
+                let placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
 
                 $.when(placeOrder).done(function (response) {
                     this.afterPlaceOrder(response);
@@ -37,7 +37,7 @@ define(
             },
             afterPlaceOrder: function (response) {
                 if (this.config.integrationType === 'HostedPaymentPage') {
-                    var redirectUrl = JSON.parse(response).redirect_url;
+                    let redirectUrl = JSON.parse(response).redirect_url;
                     if (redirectUrl) {
                         window.location.href = redirectUrl;
                     }

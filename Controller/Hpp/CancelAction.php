@@ -40,9 +40,6 @@ class CancelAction implements ActionInterface
         try {
             $this->checkoutSession->restoreQuote();
             $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
-        } catch (LocalizedException $e) {
-            $this->logger->error($e->getMessage() . ' - ' . $e->getTraceAsString());
-            $this->messageManager->addErrorMessage($e->getMessage());
         } catch (\Exception $e) {
             $logId = uniqid();
             $this->logger->critical($logId . ' - ' . $e->getMessage() . ' - ' . $e->getTraceAsString());

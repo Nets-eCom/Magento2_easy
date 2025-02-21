@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\Plugin;
 
+use Exception;
 use Magento\Checkout\Model\PaymentInformationManagement as Subject;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
@@ -33,7 +34,7 @@ class PaymentInformationManagement
             if ($redirectUrl) {
                 $result = json_encode(['result' => $result, 'redirect_url' => $redirectUrl]);
             }
-        } catch (LocalizedException|NoSuchEntityException $e) {
+        } catch (Exception $e) {
             $this->logger->error($e->getMessage() . ' ' . $e->getTraceAsString());
         }
 
