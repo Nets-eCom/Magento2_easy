@@ -16,6 +16,8 @@ class Config extends MagentoConfig
      * @param ScopeConfigInterface $scopeConfig
      * @param string|null $methodCode
      * @param string $pathPattern
+     *
+     * @phpcsSuppress Generic.CodeAnalysis.UselessOverridingMethod.Found
      */
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -26,6 +28,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get the environment
+     *
      * @return string|null
      */
     public function getEnvironment(): ?string
@@ -34,6 +38,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Check if the environment is sandbox
+     *
      * @return bool
      */
     public function isLiveMode(): bool
@@ -42,6 +48,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Is the payment method active
+     *
      * @return bool
      */
     public function isActive(): bool
@@ -50,6 +58,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get api key
+     *
      * @return string|null
      */
     public function getApiKey(): ?string
@@ -58,6 +68,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get api identifier
+     *
      * @return mixed|null
      */
     public function getApiIdentifier()
@@ -66,6 +78,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get webshop terms and conditions url
+     *
      * @return string
      */
     public function getWebshopTermsAndConditionsUrl(): string
@@ -74,6 +88,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get payments terms and conditions url
+     *
      * @return string
      */
     public function getPaymentsTermsAndConditionsUrl(): string
@@ -82,6 +98,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get integration type
+     *
      * @return string
      */
     public function getIntegrationType(): string
@@ -90,6 +108,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get webhook secret
+     *
      * @return string
      */
     public function getWebhookSecret(): string
@@ -98,7 +118,7 @@ class Config extends MagentoConfig
     }
 
     /**
-     * authorize, authorize_capture
+     * Get payment action: authorize, authorize_capture
      *
      * @return string
      */
@@ -108,6 +128,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get if the merchant handles consumer data
+     *
      * @return mixed|null
      */
     public function getMerchantHandlesConsumerData()
@@ -116,6 +138,8 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Get the country code
+     *
      * @return mixed
      */
     public function getCountryCode()
