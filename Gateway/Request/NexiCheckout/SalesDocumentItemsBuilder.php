@@ -2,25 +2,16 @@
 
 namespace Nexi\Checkout\Gateway\Request\NexiCheckout;
 
-use Magento\Directory\Api\CountryInformationAcquirerInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Magento\Framework\Url;
 use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\InvoiceInterface;
-use Magento\Sales\Model\Order;
-use Nexi\Checkout\Gateway\Config\Config;
-use NexiCheckout\Model\Request\Payment;
-use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
-use NexiCheckout\Model\Request\Payment\HostedCheckout;
-use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
-use NexiCheckout\Model\Webhook\EventNameEnum;
+use NexiCheckout\Model\Request\Item;
 
 class SalesDocumentItemsBuilder
 {
 
     /**
      * Build sales document items for the given sales object
-     * 
+     *
      * @param CreditmemoInterface|InvoiceInterface $salesObject
      *
      * @return array
@@ -29,7 +20,7 @@ class SalesDocumentItemsBuilder
     {
         $items = [];
         foreach ($salesObject->getAllItems() as $item) {
-            $items[] = new \NexiCheckout\Model\Request\Item(
+            $items[] = new Item(
                 name            : $item->getName(),
                 quantity        : (int)$item->getQty(),
                 unit            : 'pcs',
@@ -43,7 +34,7 @@ class SalesDocumentItemsBuilder
         }
 
         if ($salesObject->getShippingInclTax()) {
-            $items[] = new \NexiCheckout\Model\Request\Item(
+            $items[] = new Item(
                 name            : $salesObject->getOrder()->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
