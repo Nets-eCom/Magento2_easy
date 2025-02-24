@@ -127,7 +127,9 @@ class ReturnAction implements ActionInterface
                     $invoice->setTransactionId($chargeTxnId);
                     $invoice->pay();
 
-                    $order->addCommentToStatusHistory(__('Nexi Payment charged successfully. Payment ID: %1', $paymentId));
+                    $order->addCommentToStatusHistory(
+                        __('Nexi Payment charged successfully. Payment ID: %1', $paymentId)
+                    );
                     $order->addRelatedObject($invoice);
 
                     $this->orderRepository->save($order);
@@ -150,12 +152,12 @@ class ReturnAction implements ActionInterface
     /**
      * Get payment details from Nexi API
      *
-     * @param $paymentId
+     * @param string $paymentId
      *
      * @return RetrievePaymentResult
      * @throws PaymentApiException
      */
-    private function getPaymentDetails($paymentId): RetrievePaymentResult
+    private function getPaymentDetails(string $paymentId): RetrievePaymentResult
     {
         return $this->client->getPaymentApi()->retrievePayment($paymentId);
     }

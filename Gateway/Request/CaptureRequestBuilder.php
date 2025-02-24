@@ -11,11 +11,23 @@ use NexiCheckout\Model\Request\PartialCharge;
 
 class CaptureRequestBuilder implements BuilderInterface
 {
+    /**
+     * Constructor
+     *
+     * @param SalesDocumentItemsBuilder $documentItemsBuilder
+     */
     public function __construct(
         private readonly SalesDocumentItemsBuilder $documentItemsBuilder
     ) {
     }
 
+    /**
+     * Build request
+     *
+     * @param array $buildSubject
+     *
+     * @return array
+     */
     public function build(array $buildSubject): array
     {
         /** @var Order\Payment $payment */
@@ -35,6 +47,8 @@ class CaptureRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Get shipping information
+     *
      * @param Order $order
      *
      * @return Shipping|null
@@ -52,5 +66,4 @@ class CaptureRequestBuilder implements BuilderInterface
 
         return null;
     }
-
 }

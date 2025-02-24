@@ -12,9 +12,6 @@ use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Shared\JsonDeserializeInterface;
 use Psr\Log\LoggerInterface;
 
-/**
- * Class Client
- */
 class Client implements ClientInterface
 {
 

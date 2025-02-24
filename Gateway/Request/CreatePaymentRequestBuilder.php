@@ -21,7 +21,7 @@ use NexiCheckout\Model\Webhook\EventNameEnum;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
-    public const string NEXI_PAYMENT_WEBHOOK_PATH = '/nexi/payment/webhook';
+    public const NEXI_PAYMENT_WEBHOOK_PATH = '/nexi/payment/webhook';
 
     /**
      * @param UrlInterface $url
