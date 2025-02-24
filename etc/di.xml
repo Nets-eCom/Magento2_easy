@@ -204,4 +204,19 @@
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
+
+    <!-- Webhooks -->
+    <type name="Nexi\Checkout\Gateway\Handler\WebhookHandler">
+        <arguments>
+            <argument name="paymentCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</argument>
+            <argument name="paymentReservationCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</argument>
+            <argument name="paymentCheckoutCompleted" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutComplete</argument>
+            <argument name="paymentChargeCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Controller\Payment\Webhook">
+        <arguments>
+            <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Gateway\Handler\WebhookHandler</argument>
+        </arguments>
+    </type>
 </config>

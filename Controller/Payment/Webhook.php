@@ -20,11 +20,11 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
         Context                          $context,
         private readonly LoggerInterface $logger,
         private readonly Encryptor       $encryptor,
-        private readonly Config          $config
+        private readonly Config          $config,
+        private readonly RequestInterface $request,
     ) {
         parent::__construct($context);
     }
-
 
     /**
      * @return void
@@ -38,6 +38,7 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
                 ->setBody('Unauthorized');
         }
 
+        $this->webhookHandler->handle($this->getRequest()->getContent()->getParam('event'));
         // TODO: Implement webhook logic here
         $this->logger->info('Webhook called: ' . json_encode($this->getRequest()->getContent()));
 
