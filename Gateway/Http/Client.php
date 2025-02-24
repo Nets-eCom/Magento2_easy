@@ -12,9 +12,6 @@ use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Shared\JsonDeserializeInterface;
 use Psr\Log\LoggerInterface;
 
-/**
- * Class Client
- */
 class Client implements ClientInterface
 {
 
@@ -40,9 +37,8 @@ class Client implements ClientInterface
      * @return array
      * @throws LocalizedException
      */
-    public function placeRequest(TransferInterface $transferObject)
+    public function placeRequest(TransferInterface $transferObject): array
     {
-        $response = [];
         try {
             $paymentApi = $this->getPaymentApi();
             $nexiMethod = $transferObject->getUri();

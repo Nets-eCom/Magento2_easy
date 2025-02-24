@@ -4,17 +4,14 @@ namespace Nexi\Checkout\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
-use Nexi\Checkout\Gateway\Request\NexiCheckout\RequestFactory;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use NexiCheckout\Model\Request\Charge\Shipping;
-use NexiCheckout\Model\Request\FullCharge;
-use NexiCheckout\Model\Request\FullRefundCharge;
 use NexiCheckout\Model\Request\PartialRefundCharge;
-use NexiCheckout\Model\Request\RefundPayment;
 
 class RefundRequestBuilder implements BuilderInterface
 {
     public function __construct(
-        private readonly RequestFactory $requestFactory
+        private readonly SalesDocumentItemsBuilder $documentItemsBuilder
     ) {
     }
 
@@ -29,7 +26,7 @@ class RefundRequestBuilder implements BuilderInterface
             'body'        => [
                 'chargeId' => $payment->getRefundTransactionId(),
                 'refund'     => new PartialRefundCharge(
-                    orderItems: $this->requestFactory->getCreditmemoItems($creditmemo),
+                    orderItems: $this->documentItemsBuilder->build($creditmemo),
                     myReference: $creditmemo->getIncrementId(),
                 )
             ]

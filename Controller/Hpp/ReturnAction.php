@@ -89,9 +89,14 @@ class ReturnAction implements ActionInterface
                 ['payment_id' => $paymentId],
                 TransactionInterface::TYPE_AUTH
             );
+
+            if (MethodInterface::ACTION_AUTHORIZE) {
+                $paymentTransaction->setIsClosed(0);
+            }
+
             $order->addRelatedObject($paymentTransaction);
 
-            $order->addCommentToStatusHistory(__('Nexi Payment authorized successfully.'));
+            $order->addCommentToStatusHistory(__('Nexi Payment authorized successfully. Payment ID: %1', $paymentId));
             $this->orderRepository->save($order);
 
             if (MethodInterface::ACTION_AUTHORIZE_CAPTURE == $paymentAction) {
@@ -105,7 +110,7 @@ class ReturnAction implements ActionInterface
                 } elseif ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::CHARGED) {
                     $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     $chargeTxnId       = $paymentDetails->getPayment()->getCharges()[0]->getChargeId();
-                    $chargeTransaction = $this->transactionBuilder
+                    $this->transactionBuilder
                         ->build(
                             $chargeTxnId,
                             $order,
@@ -122,7 +127,9 @@ class ReturnAction implements ActionInterface
                     $invoice->setTransactionId($chargeTxnId);
                     $invoice->pay();
 
-                    $order->addCommentToStatusHistory(__('Nexi Payment charged successfully.'));
+                    $order->addCommentToStatusHistory(
+                        __('Nexi Payment charged successfully. Payment ID: %1', $paymentId)
+                    );
                     $order->addRelatedObject($invoice);
 
                     $this->orderRepository->save($order);
@@ -145,12 +152,12 @@ class ReturnAction implements ActionInterface
     /**
      * Get payment details from Nexi API
      *
-     * @param $paymentId
+     * @param string $paymentId
      *
      * @return RetrievePaymentResult
      * @throws PaymentApiException
      */
-    private function getPaymentDetails($paymentId): RetrievePaymentResult
+    private function getPaymentDetails(string $paymentId): RetrievePaymentResult
     {
         return $this->client->getPaymentApi()->retrievePayment($paymentId);
     }
