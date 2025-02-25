@@ -64,7 +64,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     public function buildOrder($order): Payment\Order
     {
         return new Payment\Order(
-            items    : $this->getItems($order),
+            items    : $this->buildItems($order),
             currency : $order->getBaseCurrencyCode(),
             amount   : $order->getGrandTotal() * 100,
             reference: $order->getIncrementId(),
@@ -76,7 +76,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * @return Order\Item|array
      */
-    private function getItems(Order $order): Order\Item|array
+    private function buildItems(Order $order): Order\Item|array
     {
         /** @var Order\Item $items */
         foreach ($order->getAllVisibleItems() as $item) {
@@ -120,8 +120,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         return new Payment(
             order       : $this->buildOrder($order),
-            checkout    : $this->createCheckout($order),
-            notification: new Payment\Notification($this->getWebhooks()),
+            checkout    : $this->buildCheckout($order),
+            notification: new Payment\Notification($this->buildWebhooks()),
         );
     }
 
@@ -130,7 +130,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * added all for now, we need to check wh
      */
-    public function getWebhooks(): array
+    public function buildWebhooks(): array
     {
         $webhooks = [];
         foreach (EventNameEnum::cases() as $eventName) {
@@ -151,14 +151,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @return HostedCheckout|EmbeddedCheckout
      * @throws NoSuchEntityException
      */
-    public function createCheckout(Order $order): HostedCheckout|EmbeddedCheckout
+    public function buildCheckout(Order $order): HostedCheckout|EmbeddedCheckout
     {
         if ($this->config->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout) {
             return new EmbeddedCheckout(
                 url             : $this->url->getUrl('nexi/checkout/success'),
                 termsUrl        : $this->config->getPaymentsTermsAndConditionsUrl(),
                 merchantTermsUrl: $this->config->getWebshopTermsAndConditionsUrl(),
-                consumer        : $this->getConsumer($order),
+                consumer        : $this->buildConsumer($order),
             );
         }
 
@@ -166,7 +166,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             returnUrl                  : $this->url->getUrl('nexi/hpp/returnaction'),
             cancelUrl                  : $this->url->getUrl('nexi/hpp/cancelaction'),
             termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
-            consumer                   : $this->getConsumer($order),
+            consumer                   : $this->buildConsumer($order),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
             countryCode                : $this->countryInformationAcquirer->getCountryInfo(
@@ -175,7 +175,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         );
     }
 
-    private function getConsumer(Order $order): Consumer
+    private function buildConsumer(Order $order): Consumer
     {
         return new Consumer(
             email          : $order->getCustomerEmail(),

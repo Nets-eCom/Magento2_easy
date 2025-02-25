@@ -72,9 +72,9 @@ class Config extends MagentoConfig
      *
      * @return mixed|null
      */
-    public function getApiIdentifier()
+    public function getCheckoutKey()
     {
-        return $this->getValue('api_identifier');
+        return $this->getValue('checkout_key');
     }
 
     /**
