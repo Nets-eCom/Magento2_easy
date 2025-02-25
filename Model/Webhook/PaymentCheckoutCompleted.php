@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Webhook;
 
 
-class PaymentCheckoutComplete
+class PaymentCheckoutCompleted
 {
     public function process()
     {
