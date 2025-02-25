@@ -209,9 +209,15 @@
     <type name="Nexi\Checkout\Gateway\Handler\WebhookHandler">
         <arguments>
             <argument name="paymentCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</argument>
-            <argument name="paymentReservationCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</argument>
-            <argument name="paymentCheckoutCompleted" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutComplete</argument>
-            <argument name="paymentChargeCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</argument>
+            <argument name="paymentReservationCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</argument>
+            <argument name="paymentCheckoutCompleted" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</argument>
+            <argument name="paymentChargeCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentChargeCreated</argument>
+            <argument name="webhookHandlers" xsi:type="array">
+                <item name="payment.created" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</item>
+                <item name="payment.reservation.created.v2" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</item>
+                <item name="payment.checkout.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</item>
+                <item name="payment.charge.created.v2" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentChargeCreated</item>
+            </argument>
         </arguments>
     </type>
     <type name="Nexi\Checkout\Controller\Payment\Webhook">
