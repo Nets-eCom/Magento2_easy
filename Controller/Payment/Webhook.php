@@ -11,6 +11,7 @@ use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\Encryptor;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Gateway\Handler\WebhookHandler;
 use Psr\Log\LoggerInterface;
 
 class Webhook extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
@@ -21,7 +22,7 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
         private readonly LoggerInterface $logger,
         private readonly Encryptor       $encryptor,
         private readonly Config          $config,
-        private readonly RequestInterface $request,
+        private WebhookHandler $webhookHandler
     ) {
         parent::__construct($context);
     }
@@ -38,7 +39,7 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
                 ->setBody('Unauthorized');
         }
 
-        $this->webhookHandler->handle($this->getRequest()->getContent()->getParam('event'));
+        $this->webhookHandler->handle($this->getRequest()->getParam('event'));
         // TODO: Implement webhook logic here
         $this->logger->info('Webhook called: ' . json_encode($this->getRequest()->getContent()));
 

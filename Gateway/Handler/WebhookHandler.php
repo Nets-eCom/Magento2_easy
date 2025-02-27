@@ -22,6 +22,6 @@ class WebhookHandler
      */
     public function handle($response)
     {
-        $this->webhookHandlers[$response]->process($response);
+        $this->webhookHandlers[$response]->processWebhook($response);
     }
 }
