@@ -1,0 +1,8 @@
+<?php
+/** @var $block \Nexi\Checkout\Block\Info\Nexi */
+?>
+
+<p><?= $block->getPaymentMethodTitle() ? $block->getPaymentMethodTitle() : '' ?></p>
+<img src="<?= $block->getNexiLogo() ? $block->getNexiLogo() : ''; ?>">
+<?= $block->getChildHtml()?>
+<span>Payment method: <?= $block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()' ?></span>
