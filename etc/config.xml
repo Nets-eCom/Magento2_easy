@@ -4,6 +4,7 @@
             <nexi>
                 <model>NexiFacade</model>
                 <title>Nexi Payments</title>
+                <logo>https://www.pikpng.com/pngl/m/247-2474711_nexi-nexi-logo-png-clipart.png</logo>
                 <payment_action>authorize_capture</payment_action>
                 <active>0</active>
                 <is_gateway>0</is_gateway>
