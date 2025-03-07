@@ -5,6 +5,7 @@ namespace Nexi\Checkout\Gateway\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as MagentoConfig;
 use Nexi\Checkout\Model\Config\Source\Environment;
+use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 
 class Config extends MagentoConfig
 {
@@ -105,6 +106,16 @@ class Config extends MagentoConfig
     public function getIntegrationType(): string
     {
         return $this->getValue('integration_type');
+    }
+
+    /**
+     * Check integration type
+     *
+     * @return bool
+     */
+    public function isEmbedded(): bool
+    {
+        return $this->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout->name;
     }
 
     /**

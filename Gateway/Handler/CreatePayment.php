@@ -3,6 +3,7 @@
 namespace Nexi\Checkout\Gateway\Handler;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use NexiCheckout\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 
 class CreatePayment implements \Magento\Payment\Gateway\Response\HandlerInterface
 {
@@ -20,6 +21,8 @@ class CreatePayment implements \Magento\Payment\Gateway\Response\HandlerInterfac
         $response = reset($response);
 
         $payment->setAdditionalInformation('payment_id', $response->getPaymentId());
-        $payment->setAdditionalInformation('redirect_url', $response->getHostedPaymentPageUrl());
+        if ($response  instanceof PaymentWithHostedCheckoutResult) {
+            $payment->setAdditionalInformation('redirect_url', $response->getHostedPaymentPageUrl());
+        }
     }
 }

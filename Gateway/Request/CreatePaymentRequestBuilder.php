@@ -7,6 +7,7 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
+use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Model\Request\Item;
@@ -45,13 +46,17 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     public function build(array $buildSubject): array
     {
-        /** @var Order $order */
-        $order = $buildSubject['payment']->getPayment()->getOrder();
+        /** @var Order $paymentSubject */
+        $paymentSubject = $buildSubject['payment']->getPayment()->getOrder();
+
+        if (!$paymentSubject) {
+            $paymentSubject = $buildSubject['payment']->getPayment()->getQuote();
+        }
 
         return [
-            'nexi_method' => 'createPayment',
+            'nexi_method' => $this->isEmbedded() ? 'createEmbeddedPayment' : 'createHostedPayment',
             'body'        => [
-                'payment' => $this->buildPayment($order),
+                'payment' => $this->buildPayment($paymentSubject),
             ]
         ];
     }
@@ -76,7 +81,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * @return Order\Item|array
      */
-    private function buildItems(Order $order): Order\Item|array
+    public function buildItems($order): Order\Item|array
     {
         /** @var Order\Item $items */
         foreach ($order->getAllVisibleItems() as $item) {
@@ -85,7 +90,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 quantity        : (int)$item->getQtyOrdered(),
                 unit            : 'pcs',
                 unitPrice       : (int)($item->getPrice() * 100),
-                grossTotalAmount: (int)($item->getRowTotalInclTax() * 100),
+                grossTotalAmount: (int)($item->getRowTotalInclTax() * 100) - (int)($item->getDiscountAmount() * 100), // TODO: calculate discount tax amount based on tax calculation method
+
                 netTotalAmount  : (int)($item->getRowTotal() * 100),
                 reference       : $item->getSku(),
                 taxRate         : (int)($item->getTaxPercent() * 100),
@@ -93,17 +99,17 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             );
         }
 
-        if ($order->getShippingAmount()) {
+        if ($order->getShippingAddress()->getShippingInclTax() ) {
             $items[] = new Item(
-                name            : $order->getShippingDescription(),
+                name            : $order->getShippingAddress()->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : (int)($order->getShippingAmount() * 100),
-                grossTotalAmount: (int)($order->getShippingInclTax() * 100),
-                netTotalAmount  : (int)($order->getShippingAmount() * 100),
-                reference       : $order->getShippingMethod(),
-                taxRate         : (int)($order->getTaxAmount() / $order->getGrandTotal() * 100),
-                taxAmount       : (int)($order->getShippingTaxAmount() * 100),
+                unitPrice       : (int)($order->getShippingAddress()->getShippingAmount() * 100),
+                grossTotalAmount: (int)($order->getShippingAddress()->getShippingInclTax() * 100),
+                netTotalAmount  : (int)($order->getShippingAddress()->getShippingAmount() * 100),
+                reference       : $order->getShippingAddress()->getShippingMethod(),
+                taxRate         : (int)($order->getShippingAddress()->getTaxAmount() / $order->getShippingAddress()->getGrandTotal() * 100),
+                taxAmount       : (int)($order->getShippingAddress()->getShippingTaxAmount() * 100),
             );
         }
 
@@ -111,12 +117,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @param Order $order
+     * Build payment object for a request
+     *
+     * @param Order|Quote $order
      *
      * @return Payment
      * @throws NoSuchEntityException
      */
-    private function buildPayment(Order $order): Payment
+    private function buildPayment(Order|\Magento\Quote\Model\Quote $order): Payment
     {
         return new Payment(
             order       : $this->buildOrder($order),
@@ -126,15 +134,15 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @return array<Payment\Webhook>
+     * TODO: added all for now, we need to check which is actually needed
      *
-     * added all for now, we need to check wh
+     * @return array<Payment\Webhook>
      */
     public function buildWebhooks(): array
     {
         $webhooks = [];
         foreach (EventNameEnum::cases() as $eventName) {
-            $baseUrl    = $this->url->getBaseUrl();
+            $baseUrl = "https://a556-91-217-18-69.ngrok-free.app";
             $webhooks[] = new Payment\Webhook(
                 eventName    : $eventName->value,
                 url          : $baseUrl . self::NEXI_PAYMENT_WEBHOOK_PATH,
@@ -146,45 +154,30 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @param Order $order
+     * Build Checkout request object
+     *
+     * @param Order|Quote $salesObject
      *
      * @return HostedCheckout|EmbeddedCheckout
      * @throws NoSuchEntityException
      */
-    public function buildCheckout(Order $order): HostedCheckout|EmbeddedCheckout
+    public function buildCheckout(Quote|Order $salesObject): HostedCheckout|EmbeddedCheckout
     {
-        if ($this->config->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout) {
-            return new EmbeddedCheckout(
-                url             : $this->url->getUrl('nexi/checkout/success'),
-                termsUrl        : $this->config->getPaymentsTermsAndConditionsUrl(),
-                merchantTermsUrl: $this->config->getWebshopTermsAndConditionsUrl(),
-                consumer        : $this->buildConsumer($order),
-            );
-        }
-
-        return new HostedCheckout(
-            returnUrl                  : $this->url->getUrl('nexi/hpp/returnaction'),
-            cancelUrl                  : $this->url->getUrl('nexi/hpp/cancelaction'),
-            termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
-            consumer                   : $this->buildConsumer($order),
-            isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
-            merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
-            countryCode                : $this->countryInformationAcquirer->getCountryInfo(
-                                             $this->config->getCountryCode()
-                                         )->getThreeLetterAbbreviation(),
-        );
+        return $this->isEmbedded() ?
+            $this->buildEmbeddedCheckout($salesObject) :
+            $this->buildHostedCheckout($salesObject);
     }
 
-    private function buildConsumer(Order $order): Consumer
+    private function buildConsumer($order): Consumer
     {
         return new Consumer(
-            email          : $order->getCustomerEmail(),
+            email          : $order->getBillingAddress()->getEmail(),
             reference      : $order->getCustomerId(),
             shippingAddress: new Address(
-                                 addressLine1: $order->getShippingAddress()->getStreetLine(1),
-                                 addressLine2: $order->getShippingAddress()->getStreetLine(2),
-                                 postalCode  : $order->getShippingAddress()->getPostcode(),
-                                 city        : $order->getShippingAddress()->getCity(),
+                                 addressLine1: $order->getBillingAddress()->getStreetLine(1),
+                                 addressLine2: $order->getBillingAddress()->getStreetLine(2),
+                                 postalCode  : $order->getBillingAddress()->getPostcode(),
+                                 city        : $order->getBillingAddress()->getCity(),
                                  country     : $this->countryInformationAcquirer->getCountryInfo(
                                                    $this->config->getCountryCode()
                                                )->getThreeLetterAbbreviation(),
@@ -200,9 +193,56 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                              ),
 
             privatePerson  : new PrivatePerson(
-                                 firstName: $order->getCustomerFirstname(),
-                                 lastName : $order->getCustomerLastname(),
+                                 firstName: $order->getBillingAddress()->getFirstname(),
+                                 lastName : $order->getBillingAddress()->getLastname(),
                              )
+        );
+    }
+
+    /**
+     * Check integration type
+     *
+     * @return bool
+     */
+    public function isEmbedded(): bool
+    {
+        return $this->config->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout->name;
+    }
+
+    /**
+     * @param Quote|Order $salesObject
+     *
+     * @return EmbeddedCheckout
+     */
+    public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
+    {
+        return new EmbeddedCheckout(
+            url                        : $this->url->getUrl('nexi/checkout/success'),
+            termsUrl                   : $this->config->getPaymentsTermsAndConditionsUrl(),
+//            consumer                   : $this->buildConsumer($salesObject),
+            isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
+            merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
+        );
+    }
+
+    /**
+     * @param Quote|Order $salesObject
+     *
+     * @return HostedCheckout
+     * @throws NoSuchEntityException
+     */
+    public function buildHostedCheckout(Quote|Order $salesObject): HostedCheckout
+    {
+        return new HostedCheckout(
+            returnUrl                  : $this->url->getUrl('nexi/hpp/returnaction'),
+            cancelUrl                  : $this->url->getUrl('nexi/hpp/cancelaction'),
+            termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
+            consumer                   : $this->buildConsumer($salesObject),
+            isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
+            merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
+            countryCode                : $this->countryInformationAcquirer->getCountryInfo(
+                                             $this->config->getCountryCode()
+                                         )->getThreeLetterAbbreviation(),
         );
     }
 }

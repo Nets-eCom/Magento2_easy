@@ -69,7 +69,7 @@
 <!--                <item name="void" xsi:type="string">NexiCommandVoid</item>-->
                 <item name="refund" xsi:type="string">NexiCommandRefund</item>
 <!--                <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>-->
-<!--                <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>-->
+                <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>
 <!--                <item name="update_my_reference" xsi:type="string">NexiCommandUpdateMyReference</item>-->
 <!--                <item name="terminate_payment" xsi:type="string">NexiCommandTerminatePayment</item>-->
 <!--                <iten name="cancel_payment" xsi:type="string">NexiCommandCancelPayment</iten>-->
@@ -84,6 +84,14 @@
             <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\CreatePayment</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandUpdateOrder" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\UpdateOrderRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
         </arguments>
     </virtualType>
 
@@ -203,5 +211,12 @@
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
+    </type>
+
+    <preference for="Nexi\Checkout\Api\PaymentInitializeInterface" type="Nexi\Checkout\Model\PaymentInitialize"/>
+    <type name="Magento\Quote\Model\ResourceModel\Quote">
+        <plugin name="Nexi_Checkout::update_on_quote_save"
+                type="Nexi\Checkout\Plugin\UpdatePayment"
+                sortOrder="100"/>
     </type>
 </config>

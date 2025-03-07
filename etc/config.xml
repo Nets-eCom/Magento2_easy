@@ -34,6 +34,7 @@
                 <paymentInfoKeys>cc_type,cc_number,avsPostalCodeResponseCode,avsStreetAddressResponseCode,cvvResponseCode,processorAuthorizationCode,processorResponseCode,processorResponseText,liabilityShifted,liabilityShiftPossible</paymentInfoKeys>
                 <group>nexi_group</group>
                 <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <checkout_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <integration_type>HostedPaymentPage</integration_type>
                 <merchant_handles_consumer_data>1</merchant_handles_consumer_data>

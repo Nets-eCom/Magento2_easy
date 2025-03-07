@@ -11,9 +11,13 @@ use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Shared\JsonDeserializeInterface;
 use Psr\Log\LoggerInterface;
+use ReflectionException;
+use function PHPUnit\Framework\isNull;
 
 class Client implements ClientInterface
 {
+
+    private ?string $requestHash = null;
 
     /**
      * Class constructor
@@ -42,19 +46,15 @@ class Client implements ClientInterface
         try {
             $paymentApi = $this->getPaymentApi();
             $nexiMethod = $transferObject->getUri();
-            $this->logger->debug(
-                'Nexi method: ' . $nexiMethod . PHP_EOL .
-                'Nexi request: ' . json_encode($transferObject->getBody())
-            );
+            $this->logRequest($nexiMethod, $transferObject);
             if (is_array($transferObject->getBody())) {
                 $response = $paymentApi->$nexiMethod(...$transferObject->getBody());
             } else {
                 $response = $paymentApi->$nexiMethod($transferObject->getBody());
             }
 
-            $this->logger->debug(
-                'Nexi response: ' . $this->getResponseData($response)
-            );
+            $this->logResponse($response);
+
         } catch (PaymentApiException|\Exception $e) {
             $this->logger->error($e->getMessage());
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
@@ -69,7 +69,7 @@ class Client implements ClientInterface
      * @param JsonDeserializeInterface $response
      *
      * @return string|false
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function getResponseData($response): string|false
     {
@@ -98,6 +98,35 @@ class Client implements ClientInterface
         return $this->paymentApiFactory->create(
             (string)$this->config->getApiKey(),
             $this->config->isLiveMode()
+        );
+    }
+
+    /**
+     * @param $response
+     *
+     * @return void
+     * @throws ReflectionException
+     */
+    public function logResponse($response): void
+    {
+        if ($response instanceof JsonDeserializeInterface) {
+            $this->logger->debug(
+                'Nexi response: ' . $this->getResponseData($response)
+            );
+        }
+    }
+
+    /**
+     * @param string $nexiMethod
+     * @param TransferInterface $transferObject
+     *
+     * @return void
+     */
+    public function logRequest(string $nexiMethod, TransferInterface $transferObject): void
+    {
+        $this->logger->debug(
+            'Nexi method: ' . $nexiMethod . PHP_EOL .
+            'Nexi request: ' . json_encode($transferObject->getBody())
         );
     }
 }

@@ -68,6 +68,10 @@ class Initialize implements CommandInterface
      */
     public function cratePayment(PaymentDataObjectInterface $payment): ?ResultInterface
     {
+        if ($this->isPaymentAlreadyCreated($payment)) {
+            return null;
+        }
+
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
             $result      = $commandPool->executeByCode(
@@ -80,5 +84,10 @@ class Initialize implements CommandInterface
         }
 
         return $result;
+    }
+
+    private function isPaymentAlreadyCreated(PaymentDataObjectInterface $payment)
+    {
+        return $payment->getPayment()->getAdditionalInformation('payment_id');
     }
 }

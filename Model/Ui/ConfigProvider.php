@@ -39,6 +39,7 @@ class ConfigProvider implements ConfigProviderInterface
                     'environment' => $this->config->getEnvironment(),
                     'label'       => $this->paymentHelper->getMethodInstance(Config::CODE)->getTitle(),
                     'integrationType' => $this->config->getIntegrationType(),
+                    'checkoutKey' => $this->config->getCheckoutKey()
                 ]
             ]
         ];
