@@ -34,7 +34,7 @@ class GuestPaymentInformationManagement
                 $result = json_encode(['result' => $result, 'redirect_url' => $redirectUrl]);
             }
         } catch (Exception $e) {
-            $this->logger->error($e->getMessage() . ' ' . $e->getTraceAsString());
+            $this->logger->error($e->getMessage() . ' GuestPaymentInformationManagement.php' . $e->getTraceAsString());
         }
 
         return $result;

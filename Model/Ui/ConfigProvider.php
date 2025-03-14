@@ -32,16 +32,21 @@ class ConfigProvider implements ConfigProviderInterface
             return [];
         }
 
-        return [
+        $config = [
             'payment' => [
                 Config::CODE => [
                     'isActive'    => $this->config->isActive(),
                     'environment' => $this->config->getEnvironment(),
                     'label'       => $this->paymentHelper->getMethodInstance(Config::CODE)->getTitle(),
                     'integrationType' => $this->config->getIntegrationType(),
-                    'checkoutKey' => $this->config->getCheckoutKey()
                 ]
             ]
         ];
+
+        if ($this->config->isEmbedded()) {
+            $config['payment'][Config::CODE]['checkoutKey'] = $this->config->getCheckoutKey();
+        }
+
+        return $config;
     }
 }
