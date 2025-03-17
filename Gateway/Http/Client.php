@@ -56,7 +56,8 @@ class Client implements ClientInterface
                 'Nexi response: ' . $this->getResponseData($response)
             );
         } catch (PaymentApiException|\Exception $e) {
-            $this->logger->error($e->getMessage(), $e);
+            $this->logger->error($e->getMessage(),
+                                 [$e]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 

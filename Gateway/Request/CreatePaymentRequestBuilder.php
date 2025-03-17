@@ -49,7 +49,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         $order = $buildSubject['payment']->getPayment()->getOrder();
 
         return [
-            'nexi_method' => 'createPayment',
+            'nexi_method' => 'createHostedPayment',
             'body'        => [
                 'payment' => $this->buildPayment($order),
             ]

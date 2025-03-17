@@ -43,7 +43,7 @@ class CancelAction implements ActionInterface
             $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
         } catch (Exception $e) {
             $logId = uniqid();
-            $this->logger->critical($logId . ' - ' . $e->getMessage(), $e);
+            $this->logger->critical($logId . ' - ' . $e->getMessage(), [$e]);
             $this->messageManager->addErrorMessage(
                 __(
                     'An error occurred during the payment process. Please try again later.' .

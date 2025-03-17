@@ -16,6 +16,7 @@ use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Transaction\Builder;
 use NexiCheckout\Api\Exception\PaymentApiException;
@@ -49,6 +50,7 @@ class ReturnAction implements ActionInterface
         private readonly LoggerInterface  $logger,
         private readonly ManagerInterface $messageManager,
         private readonly Client           $client,
+        private readonly OrderSender      $orderSender
     ) {
     }
 
@@ -128,17 +130,16 @@ class ReturnAction implements ActionInterface
                         __('Nexi Payment charged successfully. Payment ID: %1', $paymentId)
                     );
                     $order->addRelatedObject($invoice);
-                    $order->setCanSendNewEmailFlag(true);
-
                     $this->orderRepository->save($order);
+                    $this->orderSender->send($order);
                 }
             }
         } catch (LocalizedException $e) {
-            $this->logger->error($e->getMessage(), $e);
+            $this->logger->error($e->getMessage(), [$e]);
             $this->messageManager->addErrorMessage($e->getMessage());
             return $this->getCartRedirect();
         } catch (Exception $e) {
-            $this->logger->error($e->getMessage() . ' - ' . $e->getTraceAsString());
+            $this->logger->error($e->getMessage(), [$e]);
             $this->messageManager->addErrorMessage(
                 __('An error occurred during the payment process. Please try again later.')
             );
