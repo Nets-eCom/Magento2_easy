@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\Controller\Hpp;
 
+use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
@@ -40,9 +41,9 @@ class CancelAction implements ActionInterface
         try {
             $this->checkoutSession->restoreQuote();
             $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $logId = uniqid();
-            $this->logger->critical($logId . ' - ' . $e->getMessage() . ' - ' . $e->getTraceAsString());
+            $this->logger->critical($logId . ' - ' . $e->getMessage(), $e);
             $this->messageManager->addErrorMessage(
                 __(
                     'An error occurred during the payment process. Please try again later.' .
