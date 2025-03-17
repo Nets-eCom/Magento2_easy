@@ -131,6 +131,7 @@ class ReturnAction implements ActionInterface
                         __('Nexi Payment charged successfully. Payment ID: %1', $paymentId)
                     );
                     $order->addRelatedObject($invoice);
+                    $order->setCanSendNewEmailFlag(true);
 
                     $this->orderRepository->save($order);
                 }

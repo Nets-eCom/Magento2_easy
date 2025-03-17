@@ -21,9 +21,9 @@ class Initialize implements CommandInterface
      * @param LoggerInterface $logger
      */
     public function __construct(
-        private readonly SubjectReader $subjectReader,
+        private readonly SubjectReader               $subjectReader,
         private readonly CommandManagerPoolInterface $commandManagerPool,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface             $logger
     ) {
     }
 
@@ -32,10 +32,9 @@ class Initialize implements CommandInterface
      *
      * @param array $commandSubject
      *
-     * @return $this
      * @throws LocalizedException
      */
-    public function execute(array $commandSubject): static
+    public function execute(array $commandSubject)
     {
         /** @var PaymentDataObjectInterface $payment */
         $paymentData = $this->subjectReader->readPayment($commandSubject);
@@ -51,11 +50,8 @@ class Initialize implements CommandInterface
         $stateObject->setIsNotified(false);
         $stateObject->setState(Order::STATE_NEW);
         $stateObject->setStatus('pending');
-        $stateObject->setIsNotified(false);
 
         $this->cratePayment($paymentData);
-
-        return $this;
     }
 
     /**
@@ -63,10 +59,10 @@ class Initialize implements CommandInterface
      *
      * @param PaymentDataObjectInterface $payment
      *
-     * @return ResultInterface|null
+     * @return void
      * @throws LocalizedException
      */
-    public function cratePayment(PaymentDataObjectInterface $payment): ?ResultInterface
+    public function cratePayment(PaymentDataObjectInterface $payment)
     {
         if ($this->isPaymentAlreadyCreated($payment)) {
             return null;
@@ -74,7 +70,7 @@ class Initialize implements CommandInterface
 
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
-            $result      = $commandPool->executeByCode(
+            $commandPool->executeByCode(
                 commandCode: 'create_payment',
                 arguments  : ['payment' => $payment,]
             );
@@ -82,12 +78,17 @@ class Initialize implements CommandInterface
             $this->logger->error($e->getMessage());
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
-
-        return $result;
     }
 
-    private function isPaymentAlreadyCreated(PaymentDataObjectInterface $payment)
+    /**
+     * Check if payment is already created
+     *
+     * @param PaymentDataObjectInterface $payment
+     *
+     * @return bool
+     */
+    private function isPaymentAlreadyCreated(PaymentDataObjectInterface $payment): bool
     {
-        return $payment->getPayment()->getAdditionalInformation('payment_id');
+        return (bool)$payment->getPayment()->getAdditionalInformation('payment_id');
     }
 }
