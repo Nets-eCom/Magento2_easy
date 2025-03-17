@@ -13,6 +13,9 @@ class CreatePayment implements \Magento\Payment\Gateway\Response\HandlerInterfac
     ) {
     }
 
+    /**
+     * Handle response
+     */
     public function handle(array $handlingSubject, array $response)
     {
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);
