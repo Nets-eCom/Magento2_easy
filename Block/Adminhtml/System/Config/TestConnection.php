@@ -60,7 +60,7 @@ class TestConnection extends Field
                 'button_label'  => __($originalData['button_label']),
                 'html_id'       => $element->getHtmlId(),
                 'ajax_url'      => $this->_urlBuilder->getUrl('nexi/system_config/testconnection'),
-                'field_mapping' => str_replace('"', '\\"', json_encode($this->getFieldMapping()))
+                'field_mapping' => str_replace('"', '\\"', \Laminas\Json\Json::encode($this->getFieldMapping()))
             ]
         );
 

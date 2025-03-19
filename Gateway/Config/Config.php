@@ -115,7 +115,7 @@ class Config extends MagentoConfig
      */
     public function isEmbedded(): bool
     {
-        return $this->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout->name;
+        return $this->getIntegrationType() === IntegrationTypeEnum::EmbeddedCheckout->name;
     }
 
     /**

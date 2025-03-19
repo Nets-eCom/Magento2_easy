@@ -6,7 +6,6 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Psr\Log\LoggerInterface;
@@ -37,23 +36,22 @@ class CancelAction implements ActionInterface
      */
     public function execute(): ResultInterface
     {
+        $paymentId = null;
         try {
+            $paymentId = $this->checkoutSession->getQuote()->getPayment()->getAdditionalInformation('payment_id');
             $this->checkoutSession->restoreQuote();
             $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
         } catch (\Exception $e) {
-            $logId = uniqid();
             $this->logger->critical(
-                $logId . ' - ' . $e->getMessage(),
+                $e->getMessage(),
                 [
-                    'exception' => $e
+                    'exception_trace' => $e->getTraceAsString(),
+                    'nexi_payment_id' => $paymentId
                 ]
             );
+
             $this->messageManager->addErrorMessage(
-                __(
-                    'An error occurred during the payment process. Please try again later.' .
-                    'Log ID: %1',
-                    $logId
-                )
+                __('An error occurred during the payment process. Please try again later.')
             );
         }
 

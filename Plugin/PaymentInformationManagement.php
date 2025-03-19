@@ -12,6 +12,10 @@ use Psr\Log\LoggerInterface;
 class PaymentInformationManagement
 {
 
+    /**
+     * @param Session $checkoutSession
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         private readonly Session                  $checkoutSession,
         private readonly LoggerInterface $logger
@@ -19,6 +23,8 @@ class PaymentInformationManagement
     }
 
     /**
+     * After method to add redirect URL to the response
+     *
      * @param Subject $subject
      * @param $result
      *

@@ -9,7 +9,6 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Filter\StripTags;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Config\Source\Environment;
@@ -54,13 +53,13 @@ class TestConnection extends Action implements HttpPostActionInterface
             'errorMessage' => '',
         ];
         $options = $this->getRequest()->getParams();
-        if ($options['api_key'] == '******') {
+        if ($options['api_key'] === '******') {
             $options['api_key'] = $this->config->getApiKey();
         }
         try {
             $api = $this->paymentApiFactory->create(
                 secretKey : $options['api_key'],
-                isLiveMode: $options['environment'] == Environment::LIVE
+                isLiveMode: $options['environment'] === Environment::LIVE
             );
 
             $result = $api->retrievePayment(self::NOT_GUID_PAYMENT_ID);

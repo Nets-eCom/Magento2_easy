@@ -119,12 +119,6 @@
         </arguments>
     </type>
 
-    <virtualType name="NexiHandler" type="Nexi\Checkout\Gateway\Response\Handler">
-        <arguments>
-            <argument name="config" xsi:type="object">NexiConfig</argument>
-        </arguments>
-    </virtualType>
-
     <virtualType name="NexiClientFactory" type="NexiCheckout\Factory\HttpClientFactory">
         <arguments>
                 <argument name="client" xsi:type="object">GuzzleHttp\Client</argument>

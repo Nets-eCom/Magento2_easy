@@ -15,27 +15,15 @@ use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Config\Source\Environment;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class TestConnectionTest extends TestCase
 {
-    /** @var TestConnection */
     private $controller;
-
-    /** @var JsonFactory|MockObject */
     private $jsonFactoryMock;
-
-    /** @var Json|MockObject */
     private $jsonMock;
-
-    /** @var RequestInterface|MockObject */
     private $requestMock;
-
-    /** @var PaymentApiFactory|MockObject */
     private $paymentApiFactoryMock;
-
-    /** @var Config|MockObject */
     private $configMock;
 
     protected function setUp(): void
@@ -67,14 +55,19 @@ class TestConnectionTest extends TestCase
 
     public function testExecuteSuccess()
     {
-        $this->requestMock->method('getParams')->willReturn([
-                                                                'api_key' => 'valid_api_key',
-                                                                'environment' => Environment::LIVE
-                                                            ]);
+        $this->requestMock->method('getParams')
+            ->willReturn(
+                [
+                    'api_key'     => 'valid_api_key',
+                    'environment' => Environment::LIVE
+                ]
+            );
 
         $apiMock = $this->createMock(PaymentApi::class);
-        $this->paymentApiFactoryMock->method('create')->willReturn($apiMock);
-        $apiMock->method('retrievePayment')->willThrowException(new \Exception('should be in guid format'));
+        $this->paymentApiFactoryMock->method('create')
+            ->willReturn($apiMock);
+        $apiMock->method('retrievePayment')
+            ->willThrowException(new \Exception('should be in guid format'));
 
         $this->jsonMock->expects($this->once())
             ->method('setData')
@@ -86,10 +79,13 @@ class TestConnectionTest extends TestCase
 
     public function testExecuteFailure()
     {
-        $this->requestMock->method('getParams')->willReturn([
-                                                                'api_key' => 'invalid_api_key',
-                                                                'environment' => Environment::LIVE
-                                                            ]);
+        $this->requestMock->method('getParams')
+            ->willReturn(
+                [
+                    'api_key'     => 'invalid_api_key',
+                    'environment' => Environment::LIVE
+                ]
+            );
 
         $apiMock = $this->createMock(PaymentApi::class);
         $this->paymentApiFactoryMock->method('create')->willReturn($apiMock);

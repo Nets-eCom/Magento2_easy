@@ -142,7 +142,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         $webhooks = [];
         foreach (EventNameEnum::cases() as $eventName) {
-            $baseUrl = "https://cf28-91-217-18-69.ngrok-free.app";
+            $baseUrl    = $this->url->getBaseUrl();
             $webhooks[] = new Payment\Webhook(
                 eventName    : $eventName->value,
                 url          : $baseUrl . self::NEXI_PAYMENT_WEBHOOK_PATH,
@@ -206,10 +206,13 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     public function isEmbedded(): bool
     {
-        return $this->config->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout->name;
+        return $this->config->getIntegrationType() === IntegrationTypeEnum::EmbeddedCheckout->name;
     }
 
     /**
+     * Build Embedded Checkout request object
+     * TODO: add consumer data (save email on saving shipping address)
+     *
      * @param Quote|Order $salesObject
      *
      * @return EmbeddedCheckout

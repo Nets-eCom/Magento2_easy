@@ -26,7 +26,8 @@
         "nexi-checkout/php-payment-sdk": "*",
         "magento/framework": ">=102.0.0",
         "ext-curl": "*",
-        "nesbot/carbon": "^2.57.0"
+        "nesbot/carbon": "^2.57.0",
+        "ext-mbstring": "*"
     },
     "require-dev": {
         "magento/magento-coding-standard": "*",

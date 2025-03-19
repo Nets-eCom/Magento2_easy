@@ -58,13 +58,18 @@ class ReturnActionTest extends TestCase
             ->onlyMethods(['getPayment', 'getState', 'setState', 'getStatus', 'setStatus', 'addCommentToStatusHistory'])
             ->disableOriginalConstructor()
             ->getMock();
-        $this->order->method('getPayment')->willReturn($this->payment);
-        $this->checkoutSession->method('getLastRealOrder')->willReturn($this->order);
+        $this->order->method('getPayment')
+            ->willReturn($this->payment);
+        $this->checkoutSession->method('getLastRealOrder')
+            ->willReturn($this->order);
 
         $redirect = $this->createMock(Redirect::class);
-        $redirect->method('setUrl')->willReturnSelf();
-        $this->redirectFactory->method('create')->willReturn($redirect);
-        $this->url->method('getUrl')->willReturn('checkout/onepage/success');
+        $redirect->method('setUrl')
+            ->willReturnSelf();
+        $this->redirectFactory->method('create')
+            ->willReturn($redirect);
+        $this->url->method('getUrl')
+            ->willReturn('checkout/onepage/success');
 
         $this->controller = new ReturnAction(
             $this->redirectFactory,
@@ -82,8 +87,11 @@ class ReturnActionTest extends TestCase
 
     public function testExecutePaymentIdMismatch()
     {
-        $this->request->method('getParam')->with('paymentid')->willReturn('wrong_id');
-        $this->order->method('getPayment')->willReturn($this->payment);
+        $this->request->method('getParam')
+            ->with('paymentid')
+            ->willReturn('wrong_id');
+        $this->order->method('getPayment')
+            ->willReturn($this->payment);
 
         $result = $this->controller->execute();
         $this->assertInstanceOf(Redirect::class, $result);
@@ -91,10 +99,15 @@ class ReturnActionTest extends TestCase
 
     public function testExecutePaymentAlreadyProcessed()
     {
-        $this->order->method('getState')->willReturn(Order::STATE_PROCESSING);
-        $this->messageManager->expects($this->once())->method('addNoticeMessage');
-        $this->request->method('getParam')->with('paymentid')->willReturn('correct_id');
-        $this->payment->method('getAdditionalInformation')->willReturn('correct_id');
+        $this->order->method('getState')
+            ->willReturn(Order::STATE_PROCESSING);
+        $this->messageManager->expects($this->once())
+            ->method('addNoticeMessage');
+        $this->request->method('getParam')
+            ->with('paymentid')
+            ->willReturn('correct_id');
+        $this->payment->method('getAdditionalInformation')
+            ->willReturn('correct_id');
 
         $result = $this->controller->execute();
         $this->assertInstanceOf(Redirect::class, $result);
@@ -102,13 +115,19 @@ class ReturnActionTest extends TestCase
 
     public function testExecuteSuccessRedirect()
     {
-        $this->order->method('getState')->willReturn(Order::STATE_NEW);
-        $this->order->method('setState')->willReturnSelf();
-        $this->order->method('setStatus')->willReturnSelf();
-        $this->order->method('addCommentToStatusHistory')->willReturnSelf();
+        $this->order->method('getState')
+            ->willReturn(Order::STATE_NEW);
+        $this->order->method('setState')
+            ->willReturnSelf();
+        $this->order->method('setStatus')
+            ->willReturnSelf();
+        $this->order->method('addCommentToStatusHistory')
+            ->willReturnSelf();
 
-        $this->request->method('getParam')->with('paymentid')->willReturn('correct_id');
-        $this->payment->method('getAdditionalInformation')->willReturn('correct_id');
+        $this->request->method('getParam')->with('paymentid')
+            ->willReturn('correct_id');
+        $this->payment->method('getAdditionalInformation')
+            ->willReturn('correct_id');
 
         $transactionMock = $this->getMockBuilder(Order\Payment\Transaction::class)
             ->onlyMethods([
@@ -122,7 +141,9 @@ class ReturnActionTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->transactionBuilder->method('build')->willReturn($transactionMock);
+        $this->transactionBuilder->method('build')
+            ->willReturn($transactionMock);
+
         $result = $this->controller->execute();
         $this->assertInstanceOf(Redirect::class, $result);
     }

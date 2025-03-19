@@ -16,12 +16,7 @@ use function PHPUnit\Framework\isNull;
 
 class Client implements ClientInterface
 {
-
-    private ?string $requestHash = null;
-
     /**
-     * Class constructor
-     *
      * @param PaymentApiFactory $paymentApiFactory
      * @param Config $config
      * @param LoggerInterface $logger
@@ -52,9 +47,7 @@ class Client implements ClientInterface
             } else {
                 $response = $paymentApi->$nexiMethod($transferObject->getBody());
             }
-
             $this->logResponse($response);
-
         } catch (PaymentApiException|\Exception $e) {
             $this->logger->error($e->getMessage());
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
@@ -71,7 +64,7 @@ class Client implements ClientInterface
      * @return string|false
      * @throws ReflectionException
      */
-    public function getResponseData($response): string|false
+    public function getResponseData(JsonDeserializeInterface $response): string|false
     {
         $responseData = [];
 
@@ -102,12 +95,14 @@ class Client implements ClientInterface
     }
 
     /**
-     * @param $response
+     * Log response
+     *
+     * @param ?JsonDeserializeInterface $response
      *
      * @return void
      * @throws ReflectionException
      */
-    public function logResponse($response): void
+    public function logResponse(?JsonDeserializeInterface $response): void
     {
         if ($response instanceof JsonDeserializeInterface) {
             $this->logger->debug(

@@ -9,7 +9,6 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Model\MethodInterface;
@@ -61,10 +60,13 @@ class ReturnAction implements ActionInterface
     {
         $order = $this->checkoutSession->getLastRealOrder();
 
-        $this->logger->debug(
-            'ReturnAction request: ' . json_encode($this->request->getParams())
-            . ' - Order ID: ' . $order->getIncrementId()
-            . 'http referrer: ' . $this->request->getServer('HTTP_REFERER')
+        $this->logger->info(
+            'ReturnAction request.',
+            [
+                'params'        => json_encode($this->request->getParams()),
+                'order_id'      => $order->getIncrementId(),
+                'http_referrer' => $this->request->getServer('HTTP_REFERER')
+            ]
         );
 
         try {
@@ -101,13 +103,10 @@ class ReturnAction implements ActionInterface
                 $paymentDetails = $this->getPaymentDetails($paymentId);
 
                 if ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::RESERVED) {
-                    $this->messageManager->addNoticeMessage(__('Payment reserved, but not charged yet.'));
-                    $this->logger->notice('Payment reserved, but not charged yet. Redirecting to success page.');
-
                     return $this->getSuccessRedirect();
                 } elseif ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::CHARGED) {
                     $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
-                    $chargeTxnId       = $paymentDetails->getPayment()->getCharges()[0]->getChargeId();
+                    $chargeTxnId = $paymentDetails->getPayment()->getCharges()[0]->getChargeId();
                     $this->transactionBuilder
                         ->build(
                             $chargeTxnId,
@@ -134,12 +133,11 @@ class ReturnAction implements ActionInterface
                     $this->orderRepository->save($order);
                 }
             }
-        } catch (Exception $e) {
-            $this->logger->error($e->getMessage() . ' - ' . $e->getTraceAsString());
+        } catch (PaymentApiException|Exception $e) {
+            $this->logger->error($e->getMessage(), ['exception_trace' => $e->getTraceAsString()]);
             $this->messageManager->addErrorMessage(
                 __('An error occurred during the payment process. Please try again later.')
             );
-
 
             return $this->getCartRedirect();
         }

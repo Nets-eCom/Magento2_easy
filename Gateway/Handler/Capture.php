@@ -10,8 +10,6 @@ class Capture implements \Magento\Payment\Gateway\Response\HandlerInterface
 {
 
     /**
-     * Constructor
-     *
      * @param SubjectReader $subjectReader
      */
     public function __construct(
@@ -20,12 +18,7 @@ class Capture implements \Magento\Payment\Gateway\Response\HandlerInterface
     }
 
     /**
-     * Handle response
-     *
-     * @param array $handlingSubject
-     * @param array $response
-     *
-     * @return void
+     * @inheritDoc
      */
     public function handle(array $handlingSubject, array $response)
     {
@@ -34,6 +27,10 @@ class Capture implements \Magento\Payment\Gateway\Response\HandlerInterface
 
         /** @var ChargeResult[] $response */
         $chargeResult = reset($response);
+
+        if (!$chargeResult instanceof ChargeResult) {
+            return;
+        }
 
         $chargeId = $chargeResult->getChargeId();
 
