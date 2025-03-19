@@ -35,14 +35,19 @@ class PaymentInformationManagement
                 $result = json_encode(['result' => $result, 'redirect_url' => $redirectUrl]);
             }
         } catch (Exception $e) {
-            $this->logger->error($e->getMessage() . ' PaymentInformationManagement.php' . $e->getTraceAsString());
+            $this->logger->error(
+                $e->getMessage(),
+                [
+                    'trace' => $e->getTraceAsString()
+                ]
+            );
         }
 
         return $result;
     }
 
     /**
-     * @return string[]
+     * Get redirect URL from payment additional information
      */
     private function getRedirectUrl()
     {

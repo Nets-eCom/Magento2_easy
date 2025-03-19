@@ -14,9 +14,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Api\Data\TransactionInterface;
-use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\OrderRepository;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Transaction\Builder;
@@ -71,12 +69,12 @@ class ReturnAction implements ActionInterface
 
         try {
             if ($order->getPayment()->getAdditionalInformation('payment_id') != $this->request->getParam('paymentid')) {
-                throw new LocalizedException(__('Payment ID does not match.'));
+                throw new \Exception(__('Payment ID does not match.'));
             }
 
             if ($order->getState() != Order::STATE_NEW) {
                 $this->messageManager->addNoticeMessage(__('Payment already processed'));
-                throw new LocalizedException(__('Payment already processed'));
+                throw new \Exception(__('Payment already processed'));
             }
 
             $paymentAction = $this->config->getPaymentAction();
@@ -142,9 +140,8 @@ class ReturnAction implements ActionInterface
                 __('An error occurred during the payment process. Please try again later.')
             );
 
-            return $this->resultRedirectFactory->create()->setUrl(
-                $this->url->getUrl('checkout/cart/index', ['_secure' => true])
-            );
+
+            return $this->getCartRedirect();
         }
 
         return $this->getSuccessRedirect();
@@ -172,6 +169,16 @@ class ReturnAction implements ActionInterface
     {
         return $this->resultRedirectFactory->create()->setUrl(
             $this->url->getUrl('checkout/onepage/success', ['_secure' => true])
+        );
+    }
+
+    /**
+     * @return Redirect
+     */
+    public function getCartRedirect(): Redirect
+    {
+        return $this->resultRedirectFactory->create()->setUrl(
+            $this->url->getUrl('checkout/cart/index', ['_secure' => true])
         );
     }
 }

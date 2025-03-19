@@ -69,7 +69,8 @@ class TestConnection extends Action implements HttpPostActionInterface
                 $result['success'] = true;
             } else {
                 $message                = $e->getMessage();
-                $result['errorMessage'] = $this->tagFilter->filter($message) . ' '
+                $filter                 = $this->tagFilter->filter($message);
+                $result['errorMessage'] = $filter . ($filter ? ' ' : '')
                     . __('Please check your API key and environment.');
             }
         }
