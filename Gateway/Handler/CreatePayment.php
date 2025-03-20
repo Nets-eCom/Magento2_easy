@@ -10,6 +10,9 @@ use NexiCheckout\Model\Result\PaymentResult;
 class CreatePayment implements HandlerInterface
 {
 
+    /**
+     * @param SubjectReader $subjectReader
+     */
     public function __construct(
         private readonly SubjectReader $subjectReader
     ) {
@@ -17,6 +20,9 @@ class CreatePayment implements HandlerInterface
 
     /**
      * Handle response
+     *
+     * @param array $handlingSubject
+     * @param array $response
      */
     public function handle(array $handlingSubject, array $response)
     {

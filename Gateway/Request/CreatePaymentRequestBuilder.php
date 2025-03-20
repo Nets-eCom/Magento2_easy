@@ -77,14 +77,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @param Order $order
+     * @param Order $paymentSubject
      *
      * @return Order\Item|array
      */
-    public function buildItems($order): Order\Item|array
+    public function buildItems(Order|Quote $paymentSubject): Order\Item|array
     {
         /** @var Order\Item $items */
-        foreach ($order->getAllVisibleItems() as $item) {
+        foreach ($paymentSubject->getAllVisibleItems() as $item) {
             $items[] = new Item(
                 name            : $item->getName(),
                 quantity        : (int)$item->getQtyOrdered(),
@@ -99,17 +99,23 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             );
         }
 
-        if ($order->getShippingAddress()->getShippingInclTax() ) {
+        if ($paymentSubject instanceof Order) {
+            $shippingInfoHolder = $paymentSubject;
+        } else {
+            $shippingInfoHolder = $paymentSubject->getShippingAddress();
+        }
+
+        if ($shippingInfoHolder->getShippingInclTax() ) {
             $items[] = new Item(
-                name            : $order->getShippingAddress()->getShippingDescription(),
+                name            : $shippingInfoHolder->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : (int)($order->getShippingAddress()->getShippingAmount() * 100),
-                grossTotalAmount: (int)($order->getShippingAddress()->getShippingInclTax() * 100),
-                netTotalAmount  : (int)($order->getShippingAddress()->getShippingAmount() * 100),
-                reference       : $order->getShippingAddress()->getShippingMethod(),
-                taxRate         : (int)($order->getShippingAddress()->getTaxAmount() / $order->getShippingAddress()->getGrandTotal() * 100),
-                taxAmount       : (int)($order->getShippingAddress()->getShippingTaxAmount() * 100),
+                unitPrice       : (int)($shippingInfoHolder->getShippingAmount() * 100),
+                grossTotalAmount: (int)($shippingInfoHolder->getShippingInclTax() * 100),
+                netTotalAmount  : (int)($shippingInfoHolder->getShippingAmount() * 100),
+                reference       : $shippingInfoHolder->getShippingMethod(),
+                taxRate         : (int)($shippingInfoHolder->getTaxAmount() / $shippingInfoHolder->getGrandTotal() * 100),
+                taxAmount       : (int)($shippingInfoHolder->getShippingTaxAmount() * 100),
             );
         }
 
@@ -124,7 +130,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @return Payment
      * @throws NoSuchEntityException
      */
-    private function buildPayment(Order|\Magento\Quote\Model\Quote $order): Payment
+    private function buildPayment(Order|Quote $order): Payment
     {
         return new Payment(
             order       : $this->buildOrder($order),
