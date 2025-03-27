@@ -13,6 +13,13 @@ use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
 class PaymentChargeCreated
 {
+    /**
+     * PaymentChargeCreated constructor.
+     *
+     * @param OrderRepositoryInterface $orderRepository
+     * @param WebhookDataLoader $webhookDataLoader
+     * @param Builder $transactionBuilder
+     */
     public function __construct(
         private OrderRepositoryInterface $orderRepository,
         private WebhookDataLoader        $webhookDataLoader,
@@ -20,16 +27,31 @@ class PaymentChargeCreated
     ) {
     }
 
-    public function processWebhook()
+    /**
+     * ProcessWebhook function for 'payment.charge.created.v2' event.
+     *
+     * @param $responseData
+     * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function processWebhook($responseData)
     {
-        $params = json_decode('{"id":"312ecc6aaa5241a28a890b2e76ef8c93","timestamp":"2025-02-24T13:58:29.1396+00:00","merchantNumber":100065206,"event":"payment.charge.created.v2","data":{"chargeId":"312ecc6aaa5241a28a890b2e76ef8c93","orderItems":[{"grossTotalAmount":5280,"name":"Orestes Yoga Pant ","netTotalAmount":5280,"quantity":1.0,"reference":"MP10-36-Green","taxRate":0,"taxAmount":0,"unit":"pcs","unitPrice":5280},{"grossTotalAmount":0,"name":"Orestes Yoga Pant -36-Green","netTotalAmount":0,"quantity":1.0,"reference":"MP10-36-Green","taxRate":0,"taxAmount":0,"unit":"pcs","unitPrice":0},{"grossTotalAmount":500,"name":"Flat Rate - Fixed","netTotalAmount":500,"quantity":1.0,"reference":"flatrate_flatrate","taxRate":0,"taxAmount":0,"unit":"pcs","unitPrice":500}],"paymentMethod":"Visa","paymentType":"CARD","amount":{"amount":5780,"currency":"EUR"},"paymentId":"f369621ef1b149b5b90b65504506eb75"}}', true);
-        $order = $this->webhookDataLoader->loadOrderByPaymentId($params['data']['paymentId']);
+        $order = $this->webhookDataLoader->loadOrderByPaymentId($responseData['paymentId']);
 
-        $this->processOrder($order, $params['data']['paymentId'], $params['data']['chargeId']);
+        $this->processOrder($order, $responseData['paymentId'], $responseData['chargeId']);
 
         $this->orderRepository->save($order);
     }
 
+    /**
+     * ProcessOrder function.
+     *
+     * @param $order
+     * @param $paymentId
+     * @param $chargeTxnId
+     * @return void
+     * @throws \Magento\Checkout\Exception
+     */
     private function processOrder($order, $paymentId, $chargeTxnId): void
     {
         $transaction = $this->webhookDataLoader->loadTransactionByPaymentId($paymentId);

@@ -3,13 +3,18 @@
 namespace Nexi\Checkout\Model\Webhook;
 
 use Magento\Checkout\Exception;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
 class PaymentReservationCreated
 {
+    /**
+     * PaymentReservationCreated constructor.
+     *
+     * @param OrderRepositoryInterface $orderRepository
+     * @param WebhookDataLoader $webhookDataLoader
+     */
     public function __construct(
         private OrderRepositoryInterface $orderRepository,
         private WebhookDataLoader $webhookDataLoader
@@ -19,24 +24,27 @@ class PaymentReservationCreated
     /**
      * ProcessWebhook function for 'payment.reservation.created.v2' event.
      *
-     * @param $response
+     * @param $responseData
      * @return void
      * @throws Exception
-     * @throws LocalizedException
      */
-    public function processWebhook($response)
+    public function processWebhook($responseData)
     {
-        $params = json_decode('{"id":"d60fd4bbaad6454a8c2a4377601c969c","timestamp":"2025-02-24T13:58:29.1396+00:00","merchantNumber":100065206,"event":"payment.reservation.created.v2","data":{"paymentMethod":"Visa","paymentType":"CARD","amount":{"amount":5780,"currency":"EUR"},"paymentId":"f369621ef1b149b5b90b65504506eb75"}}', true);
-        $order = $this->webhookDataLoader->loadOrderByPaymentId($params['data']['paymentId']);
+        try {
+            $order = $this->webhookDataLoader->loadOrderByPaymentId($responseData['paymentId']);
 
-        $order->getPayment()->setAdditionalInformation('selected_payment_method', $params['data']['paymentMethod']);
+            $order->getPayment()->setAdditionalInformation('selected_payment_method', $responseData['paymentMethod']);
 
-        $this->processOrder($order);
-        $this->orderRepository->save($order);
+            $this->processOrder($order);
+            $this->orderRepository->save($order);
+        } catch (\Exception $e) {
+            throw new Exception(__($e->getMessage()));
+        }
     }
 
     /**
      * ProcessOrder function.
+     *
      * @param $order
      * @return void
      * @throws Exception
