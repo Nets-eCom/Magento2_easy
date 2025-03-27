@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-
 use Magento\Checkout\Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\TransactionInterface;
@@ -15,6 +14,13 @@ use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
 class PaymentCreated
 {
+    /**
+     * PaymentCreated constructor.
+     *
+     * @param Builder $transactionBuilder
+     * @param OrderRepositoryInterface $orderRepository
+     * @param WebhookDataLoader $webhookDataLoader
+     */
     public function __construct(
         private Builder $transactionBuilder,
         private OrderRepositoryInterface $orderRepository,
@@ -25,19 +31,21 @@ class PaymentCreated
     /**
      * PaymentCreated webhook service.
      *
-     * @param $response
+     * @param $responseData
      * @return void
      * @throws Exception
      * @throws LocalizedException
      */
-    public function processWebhook($response): void
+    public function processWebhook($responseData): void
     {
-        $params = json_decode('{"id":"685dc0ca3c034c8d8ac78e88a577870a","merchantId":100065206,"timestamp":"2025-02-24T13:57:49.2851+00:00","event":"payment.created","data":{"order":{"amount":{"amount":5780,"currency":"EUR"},"reference":"000000020","orderItems":[{"grossTotalAmount":5280,"name":"Orestes Yoga Pant ","netTotalAmount":5280,"quantity":1.0,"reference":"MP10-36-Green","taxRate":0,"taxAmount":0,"unit":"pcs","unitPrice":5280},{"grossTotalAmount":0,"name":"Orestes Yoga Pant -36-Green","netTotalAmount":0,"quantity":1.0,"reference":"MP10-36-Green","taxRate":0,"taxAmount":0,"unit":"pcs","unitPrice":0},{"grossTotalAmount":500,"name":"Flat Rate - Fixed","netTotalAmount":500,"quantity":1.0,"reference":"flatrate_flatrate","taxRate":0,"taxAmount":0,"unit":"pcs","unitPrice":500}]},"paymentId":"f369621ef1b149b5b90b65504506eb75"}}', true);
+        try {
+            $order = $this->webhookDataLoader->loadOrderByPaymentId($responseData['paymentId']);
+            $this->processOrder($order, $responseData['paymentId']);
 
-        $order = $this->webhookDataLoader->loadOrderByPaymentId($params['data']['paymentId']);
-        $this->processOrder($order, $params['data']['paymentId']);
-
-        $this->orderRepository->save($order);
+            $this->orderRepository->save($order);
+        } catch (\Exception $e) {
+            throw new LocalizedException(__($e->getMessage()));
+        }
     }
 
     /**
