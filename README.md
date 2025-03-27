@@ -1,106 +1,49 @@
-# NETS A/S - Magento 2 Payment Module
-============================================
 
-| Module              | Nets Easy Payment Module for Magento 2                                                                        |
-|---------------------|---------------------------------------------------------------------------------------------------------------|
-| Author              | `Nets eCom`                                                                                                   |
-| Prefix              | `EASY-M2`                                                                                                     |
-| Shop Version        | `2.4+`                                                                                                        |
-| Version             | `1.7.4`                                                                                                      |
-| Documentation Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/ |
-| Github              | https://github.com/Nets-eCom/Magento2_easy                                                                    |
-| License             | `MIT License`                                                                                                 |
+# Nexi Nets Payment Module for Adobe Commerce
 
-## INSTALLATION
+Enhance your Adobe Commerce store with the Nexi Nets Checkout, a comprehensive solution for seamless payment integration.
 
-### Download / Installation
+---
 
-* Method 1
-1. Download the latest Nets Easy module from GitHub: https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.7.4.zip.
-2. Unzip the file and upload the content to your Magento site via FTP, into the directory /app/code/Dibs/EasyCheckout. Please create the folder /Dibs/EasyCheckout first time you install the plugin.
+## Requirements
 
-* Method 2
+- **Adobe Commerce Version**: Compatible with Adobe Commerce **2.4.x and above**.
 
-Another option is to install the module via composer at your magento site by running the following command:
+---
 
-  
-	$ composer require nexi-checkout/magento2
+## Key Features
 
+### Shop Features
 
-NOTE: It is strongly recommended to have cleanup of Pending Payment orders active in Sales > Orders, Orders Cron Settings > Pending Payment Order Lifetime (minutes)
+- Seamless checkout experience with multiple payment options.
+- Embedded checkout for an optimized user experience. Users are not redirected outside Adobe Commerce.
+- A smart mix of payment methods to suit all preferences.
+- Multiple checkout languages and currencies for selling in your domestic market and abroad.
 
-### Enable the module
+### Administration Features
 
-Enable the Nets Easy module in Magento by running the following commands:
+- Quick setup and flexible configuration.
+- Intuitive order management with synchronized payment status via webhooks.
+- Compatible with discounts, tax (VAT) and shipping variants.
 
-	$ php bin/magento module:enable --clear-static-content Dibs_EasyCheckout
-	$ php bin/magento setup:upgrade
+## Customer Service
 
-### Update
+Nexi provides support for both test and live accounts. For assistance, visit our [Support Page](https://developer.nexigroup.com/nexi-checkout/en-EU/support/).
 
-- Method 1 (FTP):
+---
 
-If you installed plugin via FTP, you can update the module by following these steps:
-1. Download the latest Nets Easy module from GitHub:  https://github.com/Nets-eCom/Magento2_easy/archive/refs/tags/1.7.4.zip.
-2. Remove contents of /app/code/Dibs/EasyCheckout directory.
-3. Unzip the downloaded file and upload the content into the directory /app/code/Dibs/EasyCheckout.
+## For Developers
 
-- Method 2 (VCS):
+### Documentation
+For complete documentation, visit our [Checkout for Adobe Commerce](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/) docs.
 
-If you previously installed plugin by adding GitHub repository to composer, you can update the module by running following commands:
+### Setup & Testing
 
-	$ composer remove nets/easycheckout
-	$ composer require nexi-checkout/magento2
-	$ php bin/magento setup:upgrade
+- [Webshop Plugin](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/use-a-webshop-plugin/)
+- [Create account](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/create-a-checkout-portal-account/)
+- [Test environment](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/test-environment/)
+- [Test card processing](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/test-card-processing/)
 
-- Method 3 (composer):
+### API
 
-If you have installed plugin via composer, you can update the module by running following commands:
-
-	$ composer update nexi-checkout/magento2
-	$ php bin/magento setup:upgrade
-### Configuration
-
-1. To configure and setup the plugin navigate to : Stores > Configuration > Nets > Easy Checkout
-
-* Settings Description
-1. Login to your Nets Easy account. Keys can be found in Company > Integration :
-2. Payment Environment. Select between Test/Live transactions. Live mode requires an approved account. Testcard information can be found here : https://portal.dibspayment.eu/
-3. Checkout Flow. Redirect / Embedded. Select between 2 checkout types. Redirect - Nets Hosted loads a new payment page. Embedded checkout inserts the payment window directly on the checkout page.
-4. Enable auto-capture. This function allows you to instantly charge a payment straight after the order is placed.
-   NOTE. Capturing a payment before shipment of the order might be liable to restrictions based upon legislations set in your country. Misuse can result in your Easy account being forfeit.
-   
-For more details, please find below URL :-
-https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/#build-configuration
-
-### Operations
-
-* Cancel / Capture / Refund
-1. Navigate to admin > Orders > Overview. Press on Order number to access order details.
-2. Choose your desired action.
-3. All transactions by Nets are accessible in our portal : https://portal.dibspayment.eu/login
-
-### Troubleshooting
-
-* Nets payment plugin is not visible as a payment method
-- Temporarily switch to Magento standard template. Custom templates might need addtional changes to ensure correct display. Consult with your webdesigner / developer.
-
-* Nets payment window is blank
-- Ensure your keys in Nets plugin Settings are correct and with no additional blank spaces.
-- Temporarily deactivate third party plugins that might effect the functionality of the Nets plugin.
-- Check if there is any temporary technical inconsistencies : https://nets.eu/Pages/operational-status.aspx
-
-* Payments in live mode don't work
-- Ensure you have an approved Live Easy account for production.
-- Ensure your Live Easy account is approved for payments with selected currency.
-- Ensure payment method data is correct and supported by your Nets Easy agreement.
-
-* Log file
-- Info, debugging, and error messages will be logged in var/log/dibs_easycheckout.log
-
-### Contact
-
-* Nets customer service
-- Nets Easy provides support for both test and live Easy accounts. Contact information can be found here : https://developer.nexigroup.com/nexi-checkout/en-EU/support/
-
-** CREATE YOUR FREE NETS EASY TEST ACCOUNT HERE : https://portal.dibspayment.eu/registration **
+- Access the [Nexi API Reference](https://developer.nexigroup.com/nexi-checkout/en-EU/api/).
