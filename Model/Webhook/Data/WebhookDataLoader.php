@@ -2,7 +2,6 @@
 
 namespace Nexi\Checkout\Model\Webhook\Data;
 
-
 use Magento\Checkout\Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;

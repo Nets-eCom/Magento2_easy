@@ -2,7 +2,7 @@
 /** @var $block \Nexi\Checkout\Block\Info\Nexi */
 ?>
 
-<img src="<?= $block->getNexiLogo() ? $block->getNexiLogo() : ''; ?>">
-<p><?= $block->getPaymentMethodTitle() ? $block->getPaymentMethodTitle() : '' ?></p>
+<img src="<?= $block->escapeHtml($block->getNexiLogo() ? $block->getNexiLogo() : ''); ?>">
+<p><?= $block->escapeHtml($block->getPaymentMethodTitle() ? $block->getPaymentMethodTitle() : '') ?></p>
 <?= $block->getChildHtml()?>
-<p>Payment method: <?= $block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()' ?></p>
+<p>Payment method: <?= $block->escapeHtml($block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()') ?></p>
