@@ -10,6 +10,7 @@ class PaymentMethodCustomerOrderInfo
     /**
      * Around plugin for getPaymentInfoHtml method in Info class.
      *
+     * @param Info $subject
      * @return string
      */
     public function aroundGetPaymentInfoHtml(Info $subject)
