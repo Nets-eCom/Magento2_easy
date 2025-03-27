@@ -1,13 +1,13 @@
 
-# Nexi Nets Payment Module for Magento 2
+# Nexi Nets Payment Module for Adobe Commerce
 
-Enhance your Magento store with the Nexi Nets Checkout, a comprehensive solution for seamless payment integration.
+Enhance your Adobe Commerce store with the Nexi Nets Checkout, a comprehensive solution for seamless payment integration.
 
 ---
 
 ## Requirements
 
-- **Magento Version**: Compatible with Magento **2.4.x and above**.
+- **Adobe Commerce Version**: Compatible with Adobe Commerce **2.4.x and above**.
 
 ---
 
@@ -16,7 +16,7 @@ Enhance your Magento store with the Nexi Nets Checkout, a comprehensive solution
 ### Shop Features
 
 - Seamless checkout experience with multiple payment options.
-- Embedded checkout for an optimized user experience. Users are not redirected outside Magento.
+- Embedded checkout for an optimized user experience. Users are not redirected outside Adobe Commerce.
 - A smart mix of payment methods to suit all preferences.
 - Multiple checkout languages and currencies for selling in your domestic market and abroad.
 
@@ -35,7 +35,7 @@ Nexi provides support for both test and live accounts. For assistance, visit our
 ## For Developers
 
 ### Documentation
-For complete documentation, visit our [Checkout for Magento](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/) docs.
+For complete documentation, visit our [Checkout for Adobe Commerce](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/) docs.
 
 ### Setup & Testing
 
