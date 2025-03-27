@@ -39,11 +39,15 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
                 ->setBody('Unauthorized');
         }
 
-        $this->webhookHandler->handle($this->getRequest()->getParam('event'));
-        // TODO: Implement webhook logic here
-        $this->logger->info('Webhook called: ' . json_encode($this->getRequest()->getContent()));
+        try {
+            $this->webhookHandler->handle(json_decode($this->getRequest()->getContent(), true));
 
-        $this->_response->setHttpResponseCode(200);
+            $this->logger->info('Webhook called: ' . json_encode($this->getRequest()->getContent()));
+            $this->_response->setHttpResponseCode(200);
+        } catch (\Exception $e) {
+            $this->logger->critical($e);
+            throw new Exception(__($e->getMessage()));
+        }
     }
 
 
