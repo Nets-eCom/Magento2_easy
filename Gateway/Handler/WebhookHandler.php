@@ -19,9 +19,16 @@ class WebhookHandler
      *
      * @param $response
      * @return void
+     * @throws \Exception
      */
     public function handle($response)
     {
-        $this->webhookHandlers[$response]->processWebhook($response);
+        try {
+            if (in_array($response['event'], $this->webhookHandlers)) {
+                $this->webhookHandlers[$response['event']]->processWebhook($response['data']);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 }
