@@ -76,6 +76,7 @@ class TestConnection extends Action implements HttpPostActionInterface
 
         /** @var Json $resultJson */
         $resultJson = $this->resultJsonFactory->create();
+
         return $resultJson->setData($result);
     }
 }
