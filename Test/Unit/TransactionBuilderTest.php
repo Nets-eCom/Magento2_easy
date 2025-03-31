@@ -6,7 +6,7 @@ use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Nexi\Checkout\Gateway\Config\Config;
-use Nexi\Checkout\Model\Transaction\TransactionBuilder;
+use Nexi\Checkout\Model\Transaction\Builder;
 use PHPUnit\Framework\TestCase;
 
 class TransactionBuilderTest extends TestCase
@@ -19,7 +19,7 @@ class TransactionBuilderTest extends TestCase
     {
         $this->transactionBuilderMock = $this->createMock(BuilderInterface::class);
         $this->configMock = $this->createMock(Config::class);
-        $this->builder = new TransactionBuilder($this->transactionBuilderMock, $this->configMock);
+        $this->builder = new Builder($this->transactionBuilderMock, $this->configMock);
     }
 
     public function testBuildTransactionSuccessfully()
