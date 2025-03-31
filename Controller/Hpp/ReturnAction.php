@@ -64,9 +64,11 @@ class ReturnAction implements ActionInterface
         $order = $this->checkoutSession->getLastRealOrder();
 
         $this->logger->debug(
-            'ReturnAction request: ' . json_encode($this->request->getParams())
-            . ' - Order ID: ' . $order->getIncrementId()
-            . 'http referrer: ' . $this->request->getServer('HTTP_REFERER')
+            'ReturnAction request',
+            [
+                'params'   => $this->request->getParams(),
+                'order_id' => $order->getIncrementId()
+            ]
         );
 
         try {
