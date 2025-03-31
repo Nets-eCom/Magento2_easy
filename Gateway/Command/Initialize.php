@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\Gateway\Command;
 
+use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
 use Magento\Payment\Gateway\Command\ResultInterface;
@@ -9,11 +10,14 @@ use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Model\InfoInterface;
+use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
 use Psr\Log\LoggerInterface;
 
 class Initialize implements CommandInterface
 {
+    const STATUS_PENDING = 'pending';
+
     /**
      * @param SubjectReader $subjectReader
      * @param CommandManagerPoolInterface $commandManagerPool
@@ -27,7 +31,7 @@ class Initialize implements CommandInterface
     }
 
     /**
-     * Execute function
+     * Implementation of execute method, creating payment in Nexi Gateway when order is placed
      *
      * @param array $commandSubject
      *
@@ -47,7 +51,7 @@ class Initialize implements CommandInterface
         $order->setCanSendNewEmailFlag(false);
 
         $stateObject->setState(Order::STATE_NEW);
-        $stateObject->setStatus('pending');
+        $stateObject->setStatus(self::STATUS_PENDING);
         $stateObject->setIsNotified(false);
 
         $this->cratePayment($paymentData);
@@ -69,8 +73,8 @@ class Initialize implements CommandInterface
                 commandCode: 'create_payment',
                 arguments  : ['payment' => $payment,]
             );
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage(), [$e]);
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 
