@@ -4,10 +4,11 @@ namespace Nexi\Checkout\Gateway\Command;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
+use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
-use Magento\Sales\Model\Order;
+use Magento\Payment\Model\InfoInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use Psr\Log\LoggerInterface;
 
@@ -38,6 +39,7 @@ class Initialize implements CommandInterface
         $paymentData = $this->subjectReader->readPayment($commandSubject);
         $stateObject = $this->subjectReader->readStateObject($commandSubject);
 
+        /** @var InfoInterface $payment */
         $payment = $paymentData->getPayment();
         $payment->setIsTransactionPending(true);
         $payment->setIsTransactionIsClosed(false);
@@ -56,14 +58,22 @@ class Initialize implements CommandInterface
      *
      * @param PaymentDataObjectInterface $payment
      *
+     * @return ResultInterface|null
      * @throws LocalizedException
      */
-    public function cratePayment(PaymentDataObjectInterface $payment)
+    public function cratePayment(PaymentDataObjectInterface $payment): ?ResultInterface
     {
-        $commandPool = $this->commandManagerPool->get(Config::CODE);
-        $commandPool->executeByCode(
-            commandCode: 'create_payment',
-            arguments  : ['payment' => $payment,]
-        );
+        try {
+            $commandPool = $this->commandManagerPool->get(Config::CODE);
+            $result      = $commandPool->executeByCode(
+                commandCode: 'create_payment',
+                arguments  : ['payment' => $payment,]
+            );
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage(), [$e]);
+            throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
+        }
+
+        return $result;
     }
 }
