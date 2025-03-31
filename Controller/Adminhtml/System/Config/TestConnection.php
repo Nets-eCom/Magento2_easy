@@ -54,7 +54,7 @@ class TestConnection extends Action implements HttpPostActionInterface
         ];
         $options = $this->getRequest()->getParams();
 
-        if (!isset($options['api_key']) ) {
+        if (!isset($options['api_key'])) {
             $result['errorMessage'] = __('Please fill the api key.');
             /** @var Json $resultJson */
             $resultJson = $this->resultJsonFactory->create();
