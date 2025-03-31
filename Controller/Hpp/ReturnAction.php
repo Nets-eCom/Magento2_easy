@@ -171,6 +171,8 @@ class ReturnAction implements ActionInterface
     }
 
     /**
+     * Redirect to cart
+     *
      * @return Redirect
      */
     public function getCartRedirect(): Redirect

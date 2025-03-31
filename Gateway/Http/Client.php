@@ -112,6 +112,8 @@ class Client implements ClientInterface
     }
 
     /**
+     * Log request
+     *
      * @param string $nexiMethod
      * @param TransferInterface $transferObject
      *

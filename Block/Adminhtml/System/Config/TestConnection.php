@@ -10,6 +10,12 @@ use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 class TestConnection extends Field
 {
+    /**
+     * @param Context $context
+     * @param Structure $configStructure
+     * @param array $data
+     * @param SecureHtmlRenderer|null $secureRenderer
+     */
     public function __construct(
         Context                    $context,
         private readonly Structure $configStructure,
@@ -35,10 +41,7 @@ class TestConnection extends Field
     }
 
     /**
-     * Set template to itself
-     *
-     * @return $this
-     * @since 100.1.0
+     * @inheritDoc
      */
     protected function _prepareLayout()
     {
@@ -48,9 +51,7 @@ class TestConnection extends Field
     }
 
     /**
-     * @param AbstractElement $element
-     *
-     * @return string
+     * @inheritDoc
      */
     protected function _getElementHtml(AbstractElement $element)
     {

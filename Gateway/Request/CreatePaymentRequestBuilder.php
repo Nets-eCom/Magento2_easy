@@ -39,6 +39,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build request
+     *
      * @param array $buildSubject
      *
      * @return array
@@ -77,7 +79,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @param Order $paymentSubject
+     * @param Order|Quote $paymentSubject
      *
      * @return Order\Item|array
      */
