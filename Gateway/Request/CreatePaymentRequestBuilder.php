@@ -66,7 +66,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         return new Payment\Order(
             items    : $this->buildItems($order),
             currency : $order->getBaseCurrencyCode(),
-            amount   : $order->getGrandTotal() * 100,
+            amount   : (int)$order->getGrandTotal() * 100,
             reference: $order->getIncrementId(),
         );
     }
