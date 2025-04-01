@@ -7,10 +7,10 @@ class WebhookHandler
     /**
      * WebhookHandler constructor.
      *
-     * @param array $webhookHandlers
+     * @param array $webhookProcessors
      */
     public function __construct(
-        private array $webhookHandlers
+        private array $webhookProcessors
     ) {
     }
 
@@ -24,8 +24,9 @@ class WebhookHandler
     public function handle($response)
     {
         try {
-            if (in_array($response['event'], $this->webhookHandlers)) {
-                $this->webhookHandlers[$response['event']]->processWebhook($response['data']);
+            $event = $response['event'];
+            if (array_key_exists($event, $this->webhookProcessors)) {
+                $this->webhookProcessors[$event]->processWebhook($response['data']);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());

@@ -42,7 +42,14 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
         try {
             $this->webhookHandler->handle($this->getRequest()->getParam('event'));
 
-            $this->logger->info('Webhook called: ' . json_encode($this->getRequest()->getContent()));
+            $this->logger->info(
+                'Webhook called:',
+                [
+                    'webhook_data' => json_encode($this->getRequest()->getContent()),
+                    'payment_id'   => $this->getRequest()->getParam('payment_id'),
+                ]
+
+            );
             $this->_response->setHttpResponseCode(200);
         } catch (Exception $e) {
             $this->logger->error('Webhook error: ' . $e->getMessage());
@@ -77,6 +84,10 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
     public function isAuthorized(): bool
     {
         $authString = $this->getRequest()->getHeader('Authorization');
+
+        if (empty($authString)) {
+            return false;
+        }
 
         $hash = $this->encryptor->hash(
             $this->config->getWebhookSecret(),

@@ -159,12 +159,6 @@
         </arguments>
     </type>
 
-    <type name="\Nexi\Checkout\Controller\Hpp\ReturnAction">
-        <arguments>
-            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
-        </arguments>
-    </type>
-
     <type name="\Nexi\Checkout\Controller\Hpp\CancelAction">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
@@ -184,11 +178,6 @@
                 sortOrder="100"/>
     </type>
 
-    <type name="Nexi\Checkout\Controller\Hpp\ReturnAction">
-        <arguments>
-            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
-        </arguments>
-    </type>
     <type name="Nexi\Checkout\Gateway\Command\Initialize">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
@@ -208,7 +197,7 @@
     <!-- Webhooks -->
     <type name="Nexi\Checkout\Gateway\Handler\WebhookHandler">
         <arguments>
-            <argument name="webhookHandlers" xsi:type="array">
+            <argument name="webhookProcessors" xsi:type="array">
                 <item name="payment.checkout.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</item>
                 <item name="payment.cancel.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCancelFailed</item>
                 <item name="payment.cancel.created" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCancelCreated</item>
@@ -226,6 +215,7 @@
     <type name="Nexi\Checkout\Controller\Payment\Webhook">
         <arguments>
             <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Gateway\Handler\WebhookHandler</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </type>
 </config>
