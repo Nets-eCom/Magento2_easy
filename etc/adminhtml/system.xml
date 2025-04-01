@@ -42,11 +42,13 @@
                 <field id="webshop_terms_and_conditions_url" translate="label" type="text" sortOrder="40"
                        showInDefault="1" showInWebsite="1">
                     <label>Webshop Terms and Conditions URL</label>
+                    <validate>required-entry</validate>
                     <comment>add URL to your Webshop Terms and Conditions site.</comment>
                 </field>
                 <field id="payment_terms_and_conditions_url" translate="label" type="text" sortOrder="41"
                        showInDefault="1" showInWebsite="1">
                     <label>Payment Terms and Conditions URL</label>
+                    <validate>required-entry</validate>
                     <comment>add URL to your payment Terms and Conditions site.</comment>
                 </field>
                 <field id="integration_type" translate="label" type="select" sortOrder="50" showInDefault="1"
