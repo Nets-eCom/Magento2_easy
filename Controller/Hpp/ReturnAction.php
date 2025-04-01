@@ -105,7 +105,10 @@ class ReturnAction implements ActionInterface
 
                 if ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::RESERVED) {
                     $this->messageManager->addNoticeMessage(__('Payment reserved, but not charged yet.'));
-                    $this->logger->notice('Payment reserved, but not charged yet. Redirecting to success page.');
+                    $this->logger->notice('Payment reserved, but not charged yet. Redirecting to success page.', [
+                        'payment_id' => $paymentId,
+                        'order_id'   => $order->getIncrementId()
+                    ]);
 
                     return $this->getSuccessRedirect();
                 } elseif ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::CHARGED) {
