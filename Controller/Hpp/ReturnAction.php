@@ -111,7 +111,9 @@ class ReturnAction implements ActionInterface
                     ]);
 
                     return $this->getSuccessRedirect();
-                } elseif ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::CHARGED) {
+                }
+
+                if ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::CHARGED) {
                     $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     $chargeTxnId       = $paymentDetails->getPayment()->getCharges()[0]->getChargeId();
                     $this->transactionBuilder
