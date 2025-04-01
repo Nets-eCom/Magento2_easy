@@ -28,14 +28,14 @@ class WebhookDataLoader
      *
      * @param $paymentId
      * @return TransactionInterface[]
-     * @throws Exception
      */
     public function loadTransactionByPaymentId($paymentId)
     {
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('txn_id', $paymentId, 'eq')
             ->create();
-        $transaction    = $this->transactionRepository->getList($searchCriteria)->getItems();
+
+        $transaction = $this->transactionRepository->getList($searchCriteria)->getItems();
 
         return reset($transaction);
     }
@@ -49,12 +49,8 @@ class WebhookDataLoader
      */
     public function loadOrderByPaymentId($paymentId)
     {
-        try {
-            $transaction = $this->loadTransactionByPaymentId($paymentId);
-            $order = $transaction->getOrder();
-        } catch (\Exception $e) {
-            throw new LocalizedException(__($e->getMessage()));
-        }
+        $transaction = $this->loadTransactionByPaymentId($paymentId);
+        $order       = $transaction->getOrder();
 
         return $order;
     }
