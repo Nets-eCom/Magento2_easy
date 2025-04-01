@@ -208,10 +208,6 @@
     <!-- Webhooks -->
     <type name="Nexi\Checkout\Gateway\Handler\WebhookHandler">
         <arguments>
-            <argument name="paymentCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</argument>
-            <argument name="paymentReservationCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</argument>
-            <argument name="paymentCheckoutCompleted" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</argument>
-            <argument name="paymentChargeCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentChargeCreated</argument>
             <argument name="webhookHandlers" xsi:type="array">
                 <item name="payment.checkout.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</item>
                 <item name="payment.cancel.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCancelFailed</item>
