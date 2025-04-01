@@ -91,7 +91,7 @@ class ReturnAction implements ActionInterface
                 TransactionInterface::TYPE_AUTH
             );
 
-            if (MethodInterface::ACTION_AUTHORIZE) {
+            if (MethodInterface::ACTION_AUTHORIZE == $paymentAction) {
                 $paymentTransaction->setIsClosed(0);
             }
 
