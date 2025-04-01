@@ -11,9 +11,13 @@ use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Filter\StripTags;
+use Magento\Framework\Url;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Config\Source\Environment;
+use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\Item;
+use NexiCheckout\Model\Request\Payment;
 
 class TestConnection extends Action implements HttpPostActionInterface
 {
@@ -23,7 +27,6 @@ class TestConnection extends Action implements HttpPostActionInterface
      * @see _isAllowed()
      */
     public const  ADMIN_RESOURCE      = 'Magento_Catalog::config_catalog';
-    private const NOT_GUID_PAYMENT_ID = 'test';
 
     /**
      * @param Context $context
@@ -31,13 +34,15 @@ class TestConnection extends Action implements HttpPostActionInterface
      * @param StripTags $tagFilter
      * @param PaymentApiFactory $paymentApiFactory
      * @param Config $config
+     * @param Url $url
      */
     public function __construct(
         Context                            $context,
         private readonly JsonFactory       $resultJsonFactory,
         private readonly StripTags         $tagFilter,
         private readonly PaymentApiFactory $paymentApiFactory,
-        private readonly Config            $config
+        private readonly Config            $config,
+        private readonly Url          $url
     ) {
         parent::__construct($context);
     }
@@ -50,7 +55,7 @@ class TestConnection extends Action implements HttpPostActionInterface
     public function execute()
     {
         $result  = [
-            'success'      => false,
+            'success'      => true,
             'errorMessage' => '',
         ];
         $options = $this->getRequest()->getParams();
@@ -63,19 +68,35 @@ class TestConnection extends Action implements HttpPostActionInterface
                 isLiveMode: $options['environment'] == Environment::LIVE
             );
 
-            $result = $api->retrievePayment(self::NOT_GUID_PAYMENT_ID);
-        } catch (\Exception $e) {
-            if (str_contains(mb_strtolower($e->getMessage()), 'should be in guid format')) {
-                $result['success'] = true;
-            } else {
-                $message                = $e->getMessage();
-                $result['errorMessage'] = $this->tagFilter->filter($message) . ' '
-                    . __('Please check your API key and environment.');
+            $payment = $api->createEmbeddedPayment(
+                new Payment(
+                    new Payment\Order(
+                        [
+                            new Item('test', 1, 'pcs', 1, 1, 1, 'test')
+                        ],
+                        'USD',
+                        1
+                    ),
+                    new Payment\EmbeddedCheckout(
+                        $this->url->getUrl('checkout/onepage/success'),
+                        'terms_url'
+                    )
+                )
+            );
+
+            if ($payment->getPaymentId() ) {
+               $api->terminate($payment->getPaymentId());
             }
+
+        } catch (PaymentApiException $e) {
+            $message                = $e->getMessage();
+            $result['success']      = false;
+            $result['errorMessage'] = $this->tagFilter->filter($message) . ' '
+                . __('Please check your API key and environment.');
         }
 
-        /** @var Json $resultJson */
         $resultJson = $this->resultJsonFactory->create();
+
         return $resultJson->setData($result);
     }
 }
