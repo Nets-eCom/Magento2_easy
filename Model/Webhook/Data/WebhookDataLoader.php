@@ -32,14 +32,10 @@ class WebhookDataLoader
      */
     public function loadTransactionByPaymentId($paymentId)
     {
-        try {
-            $searchCriteria = $this->searchCriteriaBuilder
-                ->addFilter('txn_id', $paymentId, 'eq')
-                ->create();
-            $transaction = $this->transactionRepository->getList($searchCriteria)->getItems();
-        } catch (\Exception $e) {
-            throw new Exception(__($e->getMessage()));
-        }
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('txn_id', $paymentId, 'eq')
+            ->create();
+        $transaction    = $this->transactionRepository->getList($searchCriteria)->getItems();
 
         return reset($transaction);
     }
