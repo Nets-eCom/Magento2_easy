@@ -78,7 +78,7 @@ class TestConnection extends Action implements HttpPostActionInterface
                         1
                     ),
                     new Payment\EmbeddedCheckout(
-                        $this->url->getUrl('nexi/checkout/success'),
+                        $this->url->getUrl('checkout/onepage/success'),
                         'terms_url'
                     )
                 )

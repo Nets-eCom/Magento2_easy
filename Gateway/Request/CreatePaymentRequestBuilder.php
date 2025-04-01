@@ -155,7 +155,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         if ($this->config->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout) {
             return new EmbeddedCheckout(
-                url             : $this->url->getUrl('nexi/checkout/success'),
+                url             : $this->url->getUrl('checkout'),
                 termsUrl        : $this->config->getPaymentsTermsAndConditionsUrl(),
                 merchantTermsUrl: $this->config->getWebshopTermsAndConditionsUrl(),
                 consumer        : $this->buildConsumer($order),
@@ -163,7 +163,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         }
 
         return new HostedCheckout(
-            returnUrl                  : $this->url->getUrl('nexi/hpp/returnaction'),
+            returnUrl                  : $this->url->getUrl('checkout/onepage/success'),
             cancelUrl                  : $this->url->getUrl('nexi/hpp/cancelaction'),
             termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
             consumer                   : $this->buildConsumer($order),
