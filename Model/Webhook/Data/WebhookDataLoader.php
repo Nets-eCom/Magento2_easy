@@ -12,13 +12,11 @@ use Magento\Sales\Api\TransactionRepositoryInterface;
 class WebhookDataLoader
 {
     /**
-     * WebhookDataLoader constructor.
-     *
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param TransactionRepositoryInterface $transactionRepository
      */
     public function __construct(
-        private SearchCriteriaBuilder $searchCriteriaBuilder,
+        private SearchCriteriaBuilder          $searchCriteriaBuilder,
         private TransactionRepositoryInterface $transactionRepository
     ) {
     }
