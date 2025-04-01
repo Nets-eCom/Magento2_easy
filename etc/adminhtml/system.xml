@@ -25,9 +25,9 @@
                     <label>API Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="api_identifier" translate="label" type="obscure" sortOrder="31" showInDefault="1"
+                <field id="checkout_key" translate="label" type="obscure" sortOrder="31" showInDefault="1"
                        showInWebsite="1">
-                    <label>API Identifier</label>
+                    <label>Checkout Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
                 <field id="webhook_secret" translate="label" type="obscure" sortOrder="31" showInDefault="1"
@@ -71,14 +71,6 @@
                        showInWebsite="1">
                     <label>Environment</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
-                </field>
-                <field id="merchant_handles_consumer_data" translate="label" type="select" sortOrder="60"
-                       showInDefault="1" showInWebsite="1">
-                    <label>Merchant handles consumer data</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[Allows you to initiate the checkout with customer data so that your customer only need to provide payment details. It is possible to exclude all consumer and company information from the payment (only for certain payment methods) when it is set to true.]]>
-                    </comment>
                 </field>
             </group>
         </section>

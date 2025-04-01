@@ -12,9 +12,6 @@ use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Shared\JsonDeserializeInterface;
 use Psr\Log\LoggerInterface;
 
-/**
- * Class Client
- */
 class Client implements ClientInterface
 {
 
@@ -40,9 +37,8 @@ class Client implements ClientInterface
      * @return array
      * @throws LocalizedException
      */
-    public function placeRequest(TransferInterface $transferObject)
+    public function placeRequest(TransferInterface $transferObject): array
     {
-        $response = [];
         try {
             $paymentApi = $this->getPaymentApi();
             $nexiMethod = $transferObject->getUri();
@@ -60,7 +56,7 @@ class Client implements ClientInterface
                 'Nexi response: ' . $this->getResponseData($response)
             );
         } catch (PaymentApiException|\Exception $e) {
-            $this->logger->error($e->getMessage());
+            $this->logger->error($e->getMessage(), [$e]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 
