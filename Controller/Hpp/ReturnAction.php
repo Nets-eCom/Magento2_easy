@@ -115,7 +115,7 @@ class ReturnAction implements ActionInterface
 
                 if ($paymentDetails->getPayment()->getStatus() == PaymentStatusEnum::CHARGED) {
                     $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
-                    $chargeTxnId       = $paymentDetails->getPayment()->getCharges()[0]->getChargeId();
+                    $chargeTxnId = $paymentDetails->getPayment()->getCharges()[0]->getChargeId();
                     $this->transactionBuilder
                         ->build(
                             $chargeTxnId,
