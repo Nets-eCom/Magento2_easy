@@ -29,16 +29,16 @@ class PaymentReservationCreated implements WebhookProcessorInterface
     /**
      * ProcessWebhook function for 'payment.reservation.created.v2' event.
      *
-     * @param $webhookDada
+     * @param $webhookData
      *
      * @return void
      * @throws Exception
      * @throws LocalizedException
      * @throws \Exception
      */
-    public function processWebhook($webhookDada): void
+    public function processWebhook($webhookData): void
     {
-        $paymentId          = $webhookDada['data']['paymentId'];
+        $paymentId          = $webhookData['data']['paymentId'];
         $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         if (!$paymentTransaction) {
             throw new \Exception('Payment transaction not found.');
@@ -48,7 +48,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
 
         $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
         $reservationTransaction = $this->transactionBuilder->build(
-            $webhookDada['id'],
+            $webhookData['id'],
             $order,
             ['payment_id' => $paymentId],
             TransactionInterface::TYPE_AUTH
