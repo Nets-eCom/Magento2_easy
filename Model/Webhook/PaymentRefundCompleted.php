@@ -28,7 +28,8 @@ class PaymentRefundCompleted
 
     /**
      * ProcessWebhook function for 'payment.refund.completed' event.
-     *
+     * TODO: Implement the logic to handle the refund completed event.
+     * TODO: create credit memo
      * @param $responseData
      * @return void
      * @throws LocalizedException
