@@ -42,7 +42,7 @@ class SalesDocumentItemsBuilder
                 grossTotalAmount: (int)($salesObject->getShippingInclTax() * 100),
                 netTotalAmount  : (int)($salesObject->getShippingAmount() * 100),
                 reference       : $salesObject->getOrder()->getShippingMethod(),
-                taxRate         : (int)($salesObject->getTaxAmount() / $salesObject->getGrandTotal() * 100),
+                taxRate         : $salesObject->getGrandTotal() ? (int)($salesObject->getTaxAmount() / $salesObject->getGrandTotal() * 100) : 0,
                 taxAmount       : (int)($salesObject->getShippingTaxAmount() * 100),
             );
         }
