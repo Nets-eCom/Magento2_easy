@@ -8,6 +8,7 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\TransactionRepositoryInterface;
+use Magento\Sales\Model\Order;
 
 class WebhookDataLoader
 {
@@ -45,7 +46,7 @@ class WebhookDataLoader
      * @return mixed
      * @throws LocalizedException
      */
-    public function loadOrderByPaymentId($paymentId)
+    public function loadOrderByPaymentId($paymentId): Order
     {
         $transaction = $this->loadTransactionByPaymentId($paymentId);
         $order       = $transaction->getOrder();

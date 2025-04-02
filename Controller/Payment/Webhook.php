@@ -10,6 +10,7 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\Encryptor;
+use Magento\Framework\Serialize\SerializerInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Handler\WebhookHandler;
 use Psr\Log\LoggerInterface;
@@ -18,11 +19,12 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
 {
 
     public function __construct(
-        Context                          $context,
-        private readonly LoggerInterface $logger,
-        private readonly Encryptor       $encryptor,
-        private readonly Config          $config,
-        private WebhookHandler $webhookHandler
+        Context                              $context,
+        private readonly LoggerInterface     $logger,
+        private readonly Encryptor           $encryptor,
+        private readonly Config              $config,
+        private readonly WebhookHandler      $webhookHandler,
+        private readonly SerializerInterface $serializer
     ) {
         parent::__construct($context);
     }
@@ -40,7 +42,15 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
         }
 
         try {
-            $this->webhookHandler->handle($this->getRequest()->getParam('event'));
+            $content = $this->serializer->unserialize($this->getRequest()->getContent());
+
+            if (!isset($content['event'])) {
+                return $this->_response
+                    ->setHttpResponseCode(400)
+                    ->setBody('Missing event name');
+            }
+
+            $this->webhookHandler->handle($content);
 
             $this->logger->info(
                 'Webhook called:',
@@ -52,7 +62,13 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
             );
             $this->_response->setHttpResponseCode(200);
         } catch (Exception $e) {
-            $this->logger->error('Webhook error: ' . $e->getMessage());
+            $this->logger->error(
+                'Webhook error:',
+                [
+                    'message' => $e->getMessage(),
+                    'stacktrace' => $e->getTraceAsString(),
+                ]
+            );
             $this->_response->setHttpResponseCode(500);
         }
     }

@@ -6,6 +6,7 @@ namespace Nexi\Checkout\Model\Webhook;
 
 use Magento\Checkout\Exception;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -18,34 +19,40 @@ class PaymentCreated
      * PaymentCreated constructor.
      *
      * @param Builder $transactionBuilder
-     * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
      */
     public function __construct(
-        private Builder $transactionBuilder,
-        private OrderRepositoryInterface $orderRepository,
-        private WebhookDataLoader $webhookDataLoader
+        private readonly Builder                    $transactionBuilder,
+        private readonly CollectionFactory          $orderCollectionFactory,
+        private readonly WebhookDataLoader          $webhookDataLoader,
+        private readonly OrderRepositoryInterface   $orderRepository
     ) {
     }
 
     /**
      * PaymentCreated webhook service.
      *
-     * @param $responseData
+     * @param $webhookData
+     *
      * @return void
      * @throws Exception
      * @throws LocalizedException
      */
-    public function processWebhook($responseData): void
+    public function processWebhook($webhookData): void
     {
-        try {
-            $order = $this->webhookDataLoader->loadOrderByPaymentId($responseData['paymentId']);
-            $this->processOrder($order, $responseData['paymentId']);
-
-            $this->orderRepository->save($order);
-        } catch (\Exception $e) {
-            throw new LocalizedException(__($e->getMessage()));
+        $transaction = $this->webhookDataLoader->loadTransactionByPaymentId($webhookData['data']['paymentId']);
+        if ($transaction) {
+            return;
         }
+
+        $order = $this->orderCollectionFactory->create()->addFieldToFilter(
+            'increment_id',
+            $webhookData['data']['order']['reference']
+        )->getFirstItem();
+
+        $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+
+        $this->orderRepository->save($order);
     }
 
     /**
@@ -56,7 +63,7 @@ class PaymentCreated
      * @return void
      * @throws Exception
      */
-    private function processOrder($order, $paymentId): void
+    private function createPaymentTransaction($order, $paymentId): void
     {
         try {
             if ($order->getState() === Order::STATE_NEW) {
@@ -72,7 +79,10 @@ class PaymentCreated
                     );
             }
 
-            $order->addCommentToStatusHistory('Payment created successfully. Payment ID: %1', $paymentId);
+            $order->getPayment()->addTransactionCommentsToOrder(
+                $chargeTransaction,
+                __('Payment created in Nexi Gateway.')
+            );
         } catch (\Exception $e) {
             throw new Exception(__($e->getMessage()));
         }
