@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Checkout\Exception;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
@@ -69,6 +69,11 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         }
 
         $chargeTxnId       = $webhookData['data']['chargeId'];
+
+        if ($this->webhookDataLoader->getTransactionByPaymentId($chargeTxnId, TransactionInterface::TYPE_CAPTURE)) {
+            throw new AlreadyExistsException(__('Transaction already exists.'));
+        }
+
         $chargeTransaction = $this->transactionBuilder
             ->build(
                 $chargeTxnId,
