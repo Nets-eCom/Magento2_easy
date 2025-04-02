@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexi\Checkout\Gateway\Handler;
+namespace Nexi\Checkout\Model;
 
 class WebhookHandler
 {

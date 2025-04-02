@@ -11,7 +11,7 @@ use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
-class PaymentReservationCreated
+class PaymentReservationCreated implements WebhookProcessorInterface
 {
     /**
      * PaymentReservationCreated constructor.
@@ -39,7 +39,7 @@ class PaymentReservationCreated
     public function processWebhook($webhookDada): void
     {
         $paymentId          = $webhookDada['data']['paymentId'];
-        $paymentTransaction = $this->webhookDataLoader->loadTransactionByPaymentId($paymentId);
+        $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         if (!$paymentTransaction) {
             throw new \Exception('Payment transaction not found.');
         }
@@ -47,18 +47,18 @@ class PaymentReservationCreated
         $order = $paymentTransaction->getOrder();
 
         $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-        $paymentTransaction = $this->transactionBuilder->build(
+        $reservationTransaction = $this->transactionBuilder->build(
             $webhookDada['id'],
             $order,
             ['payment_id' => $paymentId],
             TransactionInterface::TYPE_AUTH
         );
-        $paymentTransaction->setIsClosed(0);
-        $paymentTransaction->setParentTxnId($paymentId);
-        $paymentTransaction->setParentId($paymentTransaction->getTransactionId());
+        $reservationTransaction->setIsClosed(0);
+        $reservationTransaction->setParentTxnId($paymentId);
+        $reservationTransaction->setParentId($paymentTransaction->getTransactionId());
 
         $order->getPayment()->addTransactionCommentsToOrder(
-            $paymentTransaction,
+            $reservationTransaction,
             __('Payment reservation created.')
         );
 

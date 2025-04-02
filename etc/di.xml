@@ -195,7 +195,7 @@
     </type>
 
     <!-- Webhooks -->
-    <type name="Nexi\Checkout\Gateway\Handler\WebhookHandler">
+    <type name="Nexi\Checkout\Model\WebhookHandler">
         <arguments>
             <argument name="webhookProcessors" xsi:type="array">
                 <item name="payment.checkout.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</item>
@@ -214,7 +214,7 @@
     </type>
     <type name="Nexi\Checkout\Controller\Payment\Webhook">
         <arguments>
-            <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Gateway\Handler\WebhookHandler</argument>
+            <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Model\WebhookHandler</argument>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </type>
