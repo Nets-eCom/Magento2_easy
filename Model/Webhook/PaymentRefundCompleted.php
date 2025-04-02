@@ -11,7 +11,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
-class PaymentRefundCompleted
+class PaymentRefundCompleted implements WebhookProcessorInterface
 {
     /**
      * PaymentRefundCompleted constructor.
@@ -31,24 +31,26 @@ class PaymentRefundCompleted
      * ProcessWebhook function for 'payment.refund.completed' event.
      * TODO: Implement the logic to handle the refund completed event.
      * TODO: create credit memo
-     * @param $responseData
+     *
+     * @param $webhookData
+     *
      * @return void
      * @throws LocalizedException
      */
-    public function processWebhook($responseData)
+    public function processWebhook($webhookData): void
     {
         try {
-            $order = $this->webhookDataLoader->loadOrderByPaymentId($responseData['paymentId']);
+            $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['paymentId']);
 
             $chargeRefundTransaction = $this->transactionBuilder
                 ->build(
-                    $responseData['refundId'],
+                    $webhookData['refundId'],
                     $order,
                     [
-                        'payment_id' => $responseData['paymentId']
+                        'payment_id' => $webhookData['paymentId']
                     ],
                     TransactionInterface::TYPE_REFUND
-                )->setParentTxnId($responseData['paymentId']);
+                )->setParentTxnId($webhookData['paymentId']);
 
             $this->orderRepository->save($order);
         } catch (\Exception $e) {
