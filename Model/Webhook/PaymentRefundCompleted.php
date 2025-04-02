@@ -18,10 +18,11 @@ class PaymentRefundCompleted
      *
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
+     * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
-        private WebhookDataLoader $webhookDataLoader,
-        private Builder $transactionBuilder,
+        private readonly WebhookDataLoader $webhookDataLoader,
+        private readonly Builder $transactionBuilder,
         private readonly OrderRepositoryInterface $orderRepository
     ) {
     }
