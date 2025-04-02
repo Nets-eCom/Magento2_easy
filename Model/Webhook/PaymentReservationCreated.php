@@ -4,7 +4,6 @@ namespace Nexi\Checkout\Model\Webhook;
 
 use Magento\Checkout\Exception;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -64,23 +63,5 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         );
 
         $this->orderRepository->save($order);
-    }
-
-    /**
-     * ProcessOrder function.
-     *
-     * @param $order
-     * @return void
-     * @throws Exception
-     */
-    private function processOrder($order): void
-    {
-        try {
-            if ($order->getStatus() === Order::STATE_NEW) {
-                $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-            }
-        } catch (\Exception $e) {
-            throw new Exception(__($e->getMessage()));
-        }
     }
 }
