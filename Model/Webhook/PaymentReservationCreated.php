@@ -18,6 +18,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      *
      * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
+     * @param Builder $transactionBuilder
      */
     public function __construct(
         private OrderRepositoryInterface $orderRepository,
