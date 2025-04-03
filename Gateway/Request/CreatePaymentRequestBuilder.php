@@ -9,6 +9,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\Address;
@@ -101,7 +102,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 unitPrice       : (int)($order->getShippingAmount() * 100),
                 grossTotalAmount: (int)($order->getShippingInclTax() * 100),
                 netTotalAmount  : (int)($order->getShippingAmount() * 100),
-                reference       : $order->getShippingMethod(),
+                reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : (int)($order->getTaxAmount() / $order->getGrandTotal() * 100),
                 taxAmount       : (int)($order->getShippingTaxAmount() * 100),
             );
