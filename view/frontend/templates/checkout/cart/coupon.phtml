@@ -1,5 +1,4 @@
 <?php
-
 // @codingStandardsIgnoreFile
 
 ?>
@@ -9,15 +8,15 @@
               action="<?php /* @escapeNotVerified */ echo $block->getCouponSubmitUrl() ?>"
               method="post"
               >
-            <div class="fieldset coupon<?php strlen($block->getCouponCode()) ? ' applied' : ''?>">
-                <input type="hidden" name="remove" id="remove-coupon" value="<?php echo strlen($block->getCouponCode()) ? 1 : 0;?>" />
+            <div class="fieldset coupon<?php !empty($block->getCouponCode()) ? ' applied' : ''?>">
+                <input type="hidden" name="remove" id="remove-coupon" value="<?php echo !empty($block->getCouponCode()) ? 1 : 0;?>" />
                 <div class="field">
                     <div class="control">
                         <input type="text" class="dibs-easy-checkout-show-on-focus input-text" id="coupon_code" name="coupon_code" value="<?php echo $block->escapeHtml($block->getCouponCode()) ?>" placeholder="<?php echo $block->escapeHtml(__('Enter discount code'));?>" />
                     </div>
                 </div>
                 <div class="actions-toolbar">
-                    <?php if (!strlen($block->getCouponCode())): ?>
+                    <?php if (empty($block->getCouponCode())): ?>
                         <div class="primary">
                             <button class="action apply primary" type="submit" value="<?php /* @escapeNotVerified */ echo __('Apply Discount') ?>">
                                 <span><?php /* @escapeNotVerified */ echo __('Apply Discount') ?></span>
