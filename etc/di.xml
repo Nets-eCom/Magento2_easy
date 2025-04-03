@@ -159,12 +159,6 @@
         </arguments>
     </type>
 
-    <type name="\Nexi\Checkout\Controller\Hpp\ReturnAction">
-        <arguments>
-            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
-        </arguments>
-    </type>
-
     <type name="\Nexi\Checkout\Controller\Hpp\CancelAction">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
@@ -184,11 +178,6 @@
                 sortOrder="100"/>
     </type>
 
-    <type name="Nexi\Checkout\Controller\Hpp\ReturnAction">
-        <arguments>
-            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
-        </arguments>
-    </type>
     <type name="Nexi\Checkout\Gateway\Command\Initialize">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
@@ -202,6 +191,31 @@
     <type name="Nexi\Checkout\Plugin\PaymentInformationManagement">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <!-- Webhooks -->
+    <type name="Nexi\Checkout\Model\WebhookHandler">
+        <arguments>
+            <argument name="webhookProcessors" xsi:type="array">
+                <item name="payment.checkout.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</item>
+                <item name="payment.cancel.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCancelFailed</item>
+                <item name="payment.cancel.created" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCancelCreated</item>
+                <item name="payment.charge.created.v2" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentChargeCreated</item>
+                <item name="payment.charge.failed.v2" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentChargeFailed</item>
+                <item name="payment.created" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</item>
+                <item name="payment.refund.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentRefundCompleted</item>
+                <item name="payment.refund.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentRefundFailed</item>
+                <item name="payment.refund.initiated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentRefundInitiated</item>
+                <item name="payment.reservation.created.v2" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</item>
+                <item name="payment.reservation.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationFailed</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Controller\Payment\Webhook">
+        <arguments>
+            <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Model\WebhookHandler</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </type>
 </config>

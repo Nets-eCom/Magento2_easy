@@ -10,8 +10,10 @@ use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Model\InfoInterface;
+use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Model\Transaction\Builder;
 use Psr\Log\LoggerInterface;
 
 class Initialize implements CommandInterface
@@ -22,11 +24,13 @@ class Initialize implements CommandInterface
      * @param SubjectReader $subjectReader
      * @param CommandManagerPoolInterface $commandManagerPool
      * @param LoggerInterface $logger
+     * @param Builder $transactionBuilder
      */
     public function __construct(
         private readonly SubjectReader $subjectReader,
         private readonly CommandManagerPoolInterface $commandManagerPool,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly Builder $transactionBuilder
     ) {
     }
 
@@ -47,6 +51,7 @@ class Initialize implements CommandInterface
         $payment = $paymentData->getPayment();
         $payment->setIsTransactionPending(true);
         $payment->setIsTransactionIsClosed(false);
+
         $order = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);
 
@@ -55,6 +60,19 @@ class Initialize implements CommandInterface
         $stateObject->setIsNotified(false);
 
         $this->cratePayment($paymentData);
+
+        $transactionId      = $payment->getAdditionalInformation('payment_id');
+        $orderTransaction = $this->transactionBuilder->build(
+            $transactionId,
+            $order,
+            ['payment_id' => $transactionId],
+            TransactionInterface::TYPE_PAYMENT
+        );
+
+        $payment->addTransactionCommentsToOrder(
+            $orderTransaction,
+            __('Payment created in Nexi Gateway.')
+        );
     }
 
     /**
