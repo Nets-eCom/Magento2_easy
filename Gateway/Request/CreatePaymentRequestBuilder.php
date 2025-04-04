@@ -9,6 +9,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\Address;
@@ -38,6 +39,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the request for creating a payment
+     *
      * @param array $buildSubject
      *
      * @return array
@@ -57,11 +60,13 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @param $order
+     * Build the Sdk order object
+     *
+     * @param Order $order
      *
      * @return Payment\Order
      */
-    public function buildOrder($order): Payment\Order
+    public function buildOrder(Order $order): Payment\Order
     {
         return new Payment\Order(
             items    : $this->buildItems($order),
@@ -72,6 +77,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the Sdk items object
+     *
      * @param Order $order
      *
      * @return Order\Item|array
@@ -101,7 +108,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 unitPrice       : (int)($order->getShippingAmount() * 100),
                 grossTotalAmount: (int)($order->getShippingInclTax() * 100),
                 netTotalAmount  : (int)($order->getShippingAmount() * 100),
-                reference       : $order->getShippingMethod(),
+                reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : (int)($order->getTaxAmount() / $order->getGrandTotal() * 100),
                 taxAmount       : (int)($order->getShippingTaxAmount() * 100),
             );
@@ -111,6 +118,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build The Sdk payment object
+     *
      * @param Order $order
      *
      * @return Payment
@@ -126,6 +135,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the webhooks for the payment
+     *
      * @return array<Payment\Webhook>
      *
      * added all for now, we need to check wh
@@ -146,6 +157,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the checkout object
+     *
      * @param Order $order
      *
      * @return HostedCheckout|EmbeddedCheckout
@@ -170,39 +183,46 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
             countryCode                : $this->countryInformationAcquirer->getCountryInfo(
-                                             $this->config->getCountryCode()
-                                         )->getThreeLetterAbbreviation(),
+                $this->config->getCountryCode()
+            )->getThreeLetterAbbreviation(),
         );
     }
 
+    /**
+     * Build the consumer object
+     *
+     * @param Order $order
+     *
+     * @return Consumer
+     * @throws NoSuchEntityException
+     */
     private function buildConsumer(Order $order): Consumer
     {
         return new Consumer(
             email          : $order->getCustomerEmail(),
             reference      : $order->getCustomerId(),
             shippingAddress: new Address(
-                                 addressLine1: $order->getShippingAddress()->getStreetLine(1),
-                                 addressLine2: $order->getShippingAddress()->getStreetLine(2),
-                                 postalCode  : $order->getShippingAddress()->getPostcode(),
-                                 city        : $order->getShippingAddress()->getCity(),
-                                 country     : $this->countryInformationAcquirer->getCountryInfo(
-                                                   $this->config->getCountryCode()
-                                               )->getThreeLetterAbbreviation(),
-                             ),
+                addressLine1: $order->getShippingAddress()->getStreetLine(1),
+                addressLine2: $order->getShippingAddress()->getStreetLine(2),
+                postalCode  : $order->getShippingAddress()->getPostcode(),
+                city        : $order->getShippingAddress()->getCity(),
+                country     : $this->countryInformationAcquirer->getCountryInfo(
+                    $this->config->getCountryCode()
+                )->getThreeLetterAbbreviation(),
+            ),
             billingAddress : new Address(
-                                 addressLine1: $order->getBillingAddress()->getStreetLine(1),
-                                 addressLine2: $order->getBillingAddress()->getStreetLine(2),
-                                 postalCode  : $order->getBillingAddress()->getPostcode(),
-                                 city        : $order->getBillingAddress()->getCity(),
-                                 country     : $this->countryInformationAcquirer->getCountryInfo(
-                                                   $this->config->getCountryCode()
-                                               )->getThreeLetterAbbreviation(),
-                             ),
-
+                addressLine1: $order->getBillingAddress()->getStreetLine(1),
+                addressLine2: $order->getBillingAddress()->getStreetLine(2),
+                postalCode  : $order->getBillingAddress()->getPostcode(),
+                city        : $order->getBillingAddress()->getCity(),
+                country     : $this->countryInformationAcquirer->getCountryInfo(
+                    $this->config->getCountryCode()
+                )->getThreeLetterAbbreviation(),
+            ),
             privatePerson  : new PrivatePerson(
-                                 firstName: $order->getCustomerFirstname(),
-                                 lastName : $order->getCustomerLastname(),
-                             )
+                firstName: $order->getCustomerFirstname(),
+                lastName : $order->getCustomerLastname(),
+            )
         );
     }
 }
