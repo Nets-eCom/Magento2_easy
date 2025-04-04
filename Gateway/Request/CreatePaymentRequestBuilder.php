@@ -186,7 +186,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 $this->config->getCountryCode()
             )->getThreeLetterAbbreviation(),
         );
-
     }
 
     /**

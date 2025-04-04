@@ -72,7 +72,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @return void
      */
-    public function processFullRefund(array $webhookData, Order $order)
+    public function processFullRefund(array $webhookData, Order $order): void
     {
         $creditmemo = $this->creditmemoFactory->createByOrder($order);
         $creditmemo->setTransactionId($webhookData['id']);
@@ -88,7 +88,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @return bool
      */
-    private function isFullRefund(array $webhookData, Order $order)
+    private function isFullRefund(array $webhookData, Order $order): bool
     {
         return $order->getGrandTotal() == $webhookData['data']['amount']['amount']/100;
     }
