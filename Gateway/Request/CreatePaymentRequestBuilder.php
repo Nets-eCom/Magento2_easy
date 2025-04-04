@@ -39,6 +39,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the request for creating a payment
+     *
      * @param array $buildSubject
      *
      * @return array
@@ -58,6 +60,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the Sdk order object
+     *
      * @param $order
      *
      * @return Payment\Order
@@ -73,6 +77,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the Sdk items object
+     *
      * @param Order $order
      *
      * @return Order\Item|array
@@ -112,6 +118,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build The Sdk payment object
+     *
      * @param Order $order
      *
      * @return Payment
@@ -127,6 +135,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the webhooks for the payment
+     *
      * @return array<Payment\Webhook>
      *
      * added all for now, we need to check wh
@@ -147,6 +157,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the checkout object
+     *
      * @param Order $order
      *
      * @return HostedCheckout|EmbeddedCheckout
@@ -176,6 +188,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         );
     }
 
+    /**
+     * Build the consumer object
+     *
+     * @param Order $order
+     *
+     * @return Consumer
+     * @throws NoSuchEntityException
+     */
     private function buildConsumer(Order $order): Consumer
     {
         return new Consumer(
