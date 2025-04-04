@@ -18,6 +18,14 @@ use Psr\Log\LoggerInterface;
 class Webhook extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
 {
 
+    /**
+     * @param Context $context
+     * @param LoggerInterface $logger
+     * @param Encryptor $encryptor
+     * @param Config $config
+     * @param WebhookHandler $webhookHandler
+     * @param SerializerInterface $serializer
+     */
     public function __construct(
         Context                              $context,
         private readonly LoggerInterface     $logger,
@@ -30,6 +38,8 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
     }
 
     /**
+     * Execute the webhook action
+     *
      * @return void
      * @throws Exception
      */
@@ -74,6 +84,13 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
     }
 
 
+    /**
+     * Allow all requests to this action
+     *
+     * @param RequestInterface $request
+     *
+     * @return InvalidRequestException|null
+     */
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
     {
         return null;
@@ -92,10 +109,9 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
     }
 
     /**
-     * @param RequestInterface $request
+     * Check the authorisation header
      *
-     * @return void
-     * @throws Exception
+     * @return bool
      */
     public function isAuthorized(): bool
     {
