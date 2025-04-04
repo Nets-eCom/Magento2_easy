@@ -62,11 +62,11 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Build the Sdk order object
      *
-     * @param $order
+     * @param Order $order
      *
      * @return Payment\Order
      */
-    public function buildOrder($order): Payment\Order
+    public function buildOrder(Order $order): Payment\Order
     {
         return new Payment\Order(
             items    : $this->buildItems($order),
@@ -183,9 +183,10 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
             countryCode                : $this->countryInformationAcquirer->getCountryInfo(
-                                             $this->config->getCountryCode()
-                                         )->getThreeLetterAbbreviation(),
+                $this->config->getCountryCode()
+            )->getThreeLetterAbbreviation(),
         );
+
     }
 
     /**
@@ -202,28 +203,27 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             email          : $order->getCustomerEmail(),
             reference      : $order->getCustomerId(),
             shippingAddress: new Address(
-                                 addressLine1: $order->getShippingAddress()->getStreetLine(1),
-                                 addressLine2: $order->getShippingAddress()->getStreetLine(2),
-                                 postalCode  : $order->getShippingAddress()->getPostcode(),
-                                 city        : $order->getShippingAddress()->getCity(),
-                                 country     : $this->countryInformationAcquirer->getCountryInfo(
-                                                   $this->config->getCountryCode()
-                                               )->getThreeLetterAbbreviation(),
-                             ),
+                addressLine1: $order->getShippingAddress()->getStreetLine(1),
+                addressLine2: $order->getShippingAddress()->getStreetLine(2),
+                postalCode  : $order->getShippingAddress()->getPostcode(),
+                city        : $order->getShippingAddress()->getCity(),
+                country     : $this->countryInformationAcquirer->getCountryInfo(
+                    $this->config->getCountryCode()
+                )->getThreeLetterAbbreviation(),
+            ),
             billingAddress : new Address(
-                                 addressLine1: $order->getBillingAddress()->getStreetLine(1),
-                                 addressLine2: $order->getBillingAddress()->getStreetLine(2),
-                                 postalCode  : $order->getBillingAddress()->getPostcode(),
-                                 city        : $order->getBillingAddress()->getCity(),
-                                 country     : $this->countryInformationAcquirer->getCountryInfo(
-                                                   $this->config->getCountryCode()
-                                               )->getThreeLetterAbbreviation(),
-                             ),
-
+                addressLine1: $order->getBillingAddress()->getStreetLine(1),
+                addressLine2: $order->getBillingAddress()->getStreetLine(2),
+                postalCode  : $order->getBillingAddress()->getPostcode(),
+                city        : $order->getBillingAddress()->getCity(),
+                country     : $this->countryInformationAcquirer->getCountryInfo(
+                    $this->config->getCountryCode()
+                )->getThreeLetterAbbreviation(),
+            ),
             privatePerson  : new PrivatePerson(
-                                 firstName: $order->getCustomerFirstname(),
-                                 lastName : $order->getCustomerLastname(),
-                             )
+                firstName: $order->getCustomerFirstname(),
+                lastName : $order->getCustomerLastname(),
+            )
         );
     }
 }
