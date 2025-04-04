@@ -6,11 +6,15 @@
 | Author       | `Nets eCom`                                |
 | Prefix       | `EASY-M2`                                  |
 | Shop Version | `2.4+`                                     |
-| Version      | `1.7.4`                                   |
+| Version      | `1.7.5`                                    |
 | Guide        | https://tech.nets.eu/magento               |
 | Github       | https://github.com/Nets-eCom/Magento2_easy |
 
 ## CHANGELOG
+
+### Version 1.7.5 - Released - 2025-04-04
+- Fix: Step coupon method treats all falsy values as empty
+- Update: Introduce to new README file
 
 ### Version 1.7.4 - Released - 2025-01-23
 - Update: handle cart revoke gracefully
