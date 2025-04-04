@@ -7,8 +7,6 @@ use Nexi\Checkout\Model\Webhook\WebhookProcessorInterface;
 class WebhookHandler
 {
     /**
-     * WebhookHandler constructor.
-     *
      * @param WebhookProcessorInterface[] $webhookProcessors
      */
     public function __construct(
@@ -19,11 +17,11 @@ class WebhookHandler
     /**
      * Handler passes forward on to the appropriate handler.
      *
-     * @param $webhookData
+     * @param array $webhookData
      *
      * @return void
      */
-    public function handle($webhookData)
+    public function handle(array $webhookData): void
     {
         $event = $webhookData['event'];
         if (array_key_exists($event, $this->webhookProcessors)) {
