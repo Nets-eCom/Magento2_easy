@@ -15,6 +15,13 @@ use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
 class PaymentRefundCompleted implements WebhookProcessorInterface
 {
+    /**
+     * @param WebhookDataLoader $webhookDataLoader
+     * @param Builder $transactionBuilder
+     * @param OrderRepositoryInterface $orderRepository
+     * @param CreditmemoFactory $creditmemoFactory
+     * @param CreditmemoManagementInterface $creditmemoManagement
+     */
     public function __construct(
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly Builder $transactionBuilder,
@@ -27,12 +34,12 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
     /**
      * ProcessWebhook function for 'payment.refund.completed' event.
      *
-     * @param $webhookData
+     * @param array $webhookData
      *
      * @return void
      * @throws LocalizedException
      */
-    public function processWebhook($webhookData): void
+    public function processWebhook(array $webhookData): void
     {
         $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
 
@@ -56,7 +63,6 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
 
         $this->orderRepository->save($order);
     }
-
 
     /**
      * Create creditmemo for whole order
@@ -86,5 +92,4 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
     {
         return $order->getGrandTotal() == $webhookData['data']['amount']['amount']/100;
     }
-
 }
