@@ -2,12 +2,14 @@
 
 namespace Nexi\Checkout\Model;
 
+use Nexi\Checkout\Model\Webhook\WebhookProcessorInterface;
+
 class WebhookHandler
 {
     /**
      * WebhookHandler constructor.
      *
-     * @param array $webhookProcessors
+     * @param WebhookProcessorInterface[] $webhookProcessors
      */
     public function __construct(
         private array $webhookProcessors
@@ -17,9 +19,9 @@ class WebhookHandler
     /**
      * Handler passes forward on to the appropriate handler.
      *
-     * @param $request
+     * @param $webhookData
+     *
      * @return void
-     * @throws \Exception
      */
     public function handle($webhookData)
     {

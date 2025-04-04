@@ -101,8 +101,6 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
     {
         $authString = $this->getRequest()->getHeader('Authorization');
 
-        return true;
-
         if (empty($authString)) {
             return false;
         }
