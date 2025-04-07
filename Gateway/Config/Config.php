@@ -64,7 +64,11 @@ class Config extends MagentoConfig
      */
     public function getApiKey(): ?string
     {
-        return $this->getValue('api_key');
+        if ($this->isLiveMode()) {
+            return $this->getValue('api_key');
+        }
+
+        return $this->getValue('test_api_key');
     }
 
     /**
@@ -74,7 +78,11 @@ class Config extends MagentoConfig
      */
     public function getCheckoutKey()
     {
-        return $this->getValue('checkout_key');
+        if ($this->isLiveMode()) {
+            return $this->getValue('checkout_key');
+        }
+
+        return $this->getValue('test_checkout_key');
     }
 
     /**
