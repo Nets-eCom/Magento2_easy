@@ -59,27 +59,27 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Get api key
+     * Get secret key
      *
      * @return string|null
      */
     public function getApiKey(): ?string
     {
         if ($this->isLiveMode()) {
-            return $this->getValue('api_key');
+            return $this->getValue('secret_key');
         }
 
         return $this->getTestApiKey();
     }
 
     /**
-     * Get test api key
+     * Get test secret key
      *
      * @return mixed|null
      */
     public function getTestApiKey()
     {
-        return $this->getValue('test_api_key');
+        return $this->getValue('test_secret_key');
     }
 
     /**

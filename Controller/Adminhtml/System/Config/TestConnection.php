@@ -64,7 +64,7 @@ class TestConnection extends Action implements HttpPostActionInterface
         $options = $this->getRequest()->getParams();
         $isLiveMode = $options['environment'] == Environment::LIVE;
 
-        $apiKey = $isLiveMode ? $options['api_key'] : $options['test_api_key'];
+        $apiKey = $isLiveMode ? $options['secret_key'] : $options['test_secret_key'];
 
         if ($apiKey == '******') {
             $apiKey = $isLiveMode ? $this->config->getApiKey() : $this->config->getTestApiKey();
