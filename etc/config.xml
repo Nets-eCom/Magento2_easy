@@ -7,6 +7,7 @@
                 <payment_action>authorize_capture</payment_action>
                 <active>0</active>
                 <is_gateway>0</is_gateway>
+                <is_auto_capture>1</is_auto_capture>
                 <can_use_checkout>1</can_use_checkout>
                 <can_authorize>0</can_authorize>
                 <can_initialize>1</can_initialize>
@@ -33,8 +34,10 @@
                 <privateInfoKeys>avsPostalCodeResponseCode,avsStreetAddressResponseCode,cvvResponseCode,processorAuthorizationCode,processorResponseCode,processorResponseText,liabilityShifted,liabilityShiftPossible,riskDataId,riskDataDecision</privateInfoKeys>
                 <paymentInfoKeys>cc_type,cc_number,avsPostalCodeResponseCode,avsStreetAddressResponseCode,cvvResponseCode,processorAuthorizationCode,processorResponseCode,processorResponseText,liabilityShifted,liabilityShiftPossible</paymentInfoKeys>
                 <group>nexi_group</group>
-                <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <secret_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <checkout_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <test_secret_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <test_checkout_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <integration_type>HostedPaymentPage</integration_type>
                 <merchant_handles_consumer_data>1</merchant_handles_consumer_data>

@@ -10,6 +10,7 @@ use Nexi\Checkout\Gateway\Config\Config;
 
 class Builder
 {
+
     /**
      * Constructor
      *
@@ -25,14 +26,14 @@ class Builder
     /**
      * Build transaction
      *
-     * @param $transactionId
+     * @param string $transactionId
      * @param Order $order
      * @param mixed $transactionData
-     * @param null $action
+     * @param string $action
      *
      * @return TransactionInterface
      */
-    public function build($transactionId, Order $order, $transactionData, $action ): TransactionInterface
+    public function build($transactionId, Order $order, $transactionData, $action): TransactionInterface
     {
         return $this->transactionBuilder->setOrder($order)
             ->setPayment($order->getPayment())

@@ -75,12 +75,14 @@ class TestConnection extends Field
      */
     private function getFieldMapping(): array
     {
-        $apiKeyPath      = $this->configStructure->getElementByConfigPath('payment/nexi/api_key');
+        $apiKeyPath      = $this->configStructure->getElementByConfigPath('payment/nexi/secret_key');
+        $testApiKeyPath  = $this->configStructure->getElementByConfigPath('payment/nexi/test_secret_key');
         $environmentPath = $this->configStructure->getElementByConfigPath('payment/nexi/environment');
 
         return [
-            'environment' => str_replace('/', '_', $environmentPath->getPath()),
-            'api_key'     => str_replace('/', '_', $apiKeyPath->getPath())
+            'environment'  => str_replace('/', '_', $environmentPath->getPath()),
+            'secret_key'      => str_replace('/', '_', $apiKeyPath->getPath()),
+            'test_secret_key' => str_replace('/', '_', $testApiKeyPath->getPath())
         ];
     }
 }

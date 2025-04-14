@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
-use Magento\Payment\Model\MethodInterface;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 
 class IntegrationType implements OptionSourceInterface

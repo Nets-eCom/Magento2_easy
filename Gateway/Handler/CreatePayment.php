@@ -19,10 +19,7 @@ class CreatePayment implements HandlerInterface
     }
 
     /**
-     * Handle response
-     *
-     * @param array $handlingSubject
-     * @param array $response
+     * @inheritDoc
      */
     public function handle(array $handlingSubject, array $response)
     {

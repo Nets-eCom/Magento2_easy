@@ -10,6 +10,10 @@ use Psr\Log\LoggerInterface;
 class GuestPaymentInformationManagement
 {
 
+    /**
+     * @param Session $checkoutSession
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         private readonly Session         $checkoutSession,
         private readonly LoggerInterface $logger
@@ -17,6 +21,8 @@ class GuestPaymentInformationManagement
     }
 
     /**
+     * Ads redirect URL to the response after placing an order.
+     *
      * @param Subject $subject
      * @param $result
      *
@@ -41,6 +47,8 @@ class GuestPaymentInformationManagement
     }
 
     /**
+     * Get the redirect URL from the order payment information.
+     *
      * @return string[]
      */
     private function getRedirectUrl()

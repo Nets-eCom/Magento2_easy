@@ -10,6 +10,8 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
+use Nexi\Checkout\Model\WebhookHandler;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\Address;
@@ -18,7 +20,6 @@ use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Request\Payment\PrivatePerson;
-use NexiCheckout\Model\Webhook\EventNameEnum;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
@@ -29,17 +30,19 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Config $config
      * @param CountryInformationAcquirerInterface $countryInformationAcquirer
      * @param EncryptorInterface $encryptor
+     * @param WebhookHandler $webhookHandler
      */
     public function __construct(
         private readonly UrlInterface                        $url,
         private readonly Config                              $config,
         private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
-        private readonly EncryptorInterface                  $encryptor
+        private readonly EncryptorInterface                  $encryptor,
+        private readonly WebhookHandler                      $webhookHandler
     ) {
     }
 
     /**
-     * Build request
+     * Build the request for creating a payment
      *
      * @param array $buildSubject
      *
@@ -64,21 +67,25 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @param $order
+     * Build the Sdk order object
+     *
+     * @param Order $order
      *
      * @return Payment\Order
      */
-    public function buildOrder($order): Payment\Order
+    public function buildOrder(Order $order): Payment\Order
     {
         return new Payment\Order(
             items    : $this->buildItems($order),
             currency : $order->getBaseCurrencyCode(),
-            amount   : $order->getGrandTotal() * 100,
+            amount   : (int)($order->getGrandTotal() * 100),
             reference: $order->getIncrementId(),
         );
     }
 
     /**
+     * Build the Sdk items object
+     *
      * @param Order|Quote $paymentSubject
      *
      * @return Order\Item|array
@@ -93,7 +100,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 unit            : 'pcs',
                 unitPrice       : (int)($item->getPrice() * 100),
                 grossTotalAmount: (int)($item->getRowTotalInclTax() * 100) - (int)($item->getDiscountAmount() * 100), // TODO: calculate discount tax amount based on tax calculation method
-
                 netTotalAmount  : (int)($item->getRowTotal() * 100),
                 reference       : $item->getSku(),
                 taxRate         : (int)($item->getTaxPercent() * 100),
@@ -115,7 +121,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 unitPrice       : (int)($shippingInfoHolder->getShippingAmount() * 100),
                 grossTotalAmount: (int)($shippingInfoHolder->getShippingInclTax() * 100),
                 netTotalAmount  : (int)($shippingInfoHolder->getShippingAmount() * 100),
-                reference       : $shippingInfoHolder->getShippingMethod(),
+                reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : (int)($shippingInfoHolder->getTaxAmount() / $shippingInfoHolder->getGrandTotal() * 100),
                 taxAmount       : (int)($shippingInfoHolder->getShippingTaxAmount() * 100),
             );
@@ -142,17 +148,17 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * TODO: added all for now, we need to check which is actually needed
+     * Build the webhooks for the payment
      *
      * @return array<Payment\Webhook>
      */
     public function buildWebhooks(): array
     {
         $webhooks = [];
-        foreach (EventNameEnum::cases() as $eventName) {
+        foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
             $baseUrl    = $this->url->getBaseUrl();
             $webhooks[] = new Payment\Webhook(
-                eventName    : $eventName->value,
+                eventName    : $eventName,
                 url          : $baseUrl . self::NEXI_PAYMENT_WEBHOOK_PATH,
                 authorization: $this->encryptor->hash($this->config->getWebhookSecret())
             );
@@ -176,34 +182,37 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             $this->buildHostedCheckout($salesObject);
     }
 
+    /**
+     * Build the consumer object
+     *
+     * @param Order $order
+     *
+     * @return Consumer
+     * @throws NoSuchEntityException
+     */
     private function buildConsumer($order): Consumer
     {
         return new Consumer(
-            email          : $order->getBillingAddress()->getEmail(),
+            email          : $order->getCustomerEmail(),
             reference      : $order->getCustomerId(),
             shippingAddress: new Address(
-                                 addressLine1: $order->getBillingAddress()->getStreetLine(1),
-                                 addressLine2: $order->getBillingAddress()->getStreetLine(2),
-                                 postalCode  : $order->getBillingAddress()->getPostcode(),
-                                 city        : $order->getBillingAddress()->getCity(),
-                                 country     : $this->countryInformationAcquirer->getCountryInfo(
-                                                   $this->config->getCountryCode()
-                                               )->getThreeLetterAbbreviation(),
-                             ),
+                addressLine1: $order->getShippingAddress()->getStreetLine(1),
+                addressLine2: $order->getShippingAddress()->getStreetLine(2),
+                postalCode  : $order->getShippingAddress()->getPostcode(),
+                city        : $order->getShippingAddress()->getCity(),
+                country     : $this->getThreeLetterCountryCode(),
+            ),
             billingAddress : new Address(
-                                 addressLine1: $order->getBillingAddress()->getStreetLine(1),
-                                 addressLine2: $order->getBillingAddress()->getStreetLine(2),
-                                 postalCode  : $order->getBillingAddress()->getPostcode(),
-                                 city        : $order->getBillingAddress()->getCity(),
-                                 country     : $this->countryInformationAcquirer->getCountryInfo(
-                                                   $this->config->getCountryCode()
-                                               )->getThreeLetterAbbreviation(),
-                             ),
-
+                addressLine1: $order->getBillingAddress()->getStreetLine(1),
+                addressLine2: $order->getBillingAddress()->getStreetLine(2),
+                postalCode  : $order->getBillingAddress()->getPostcode(),
+                city        : $order->getBillingAddress()->getCity(),
+                country     : $this->getThreeLetterCountryCode(),
+            ),
             privatePerson  : new PrivatePerson(
-                                 firstName: $order->getBillingAddress()->getFirstname(),
-                                 lastName : $order->getBillingAddress()->getLastname(),
-                             )
+                firstName: $order->getCustomerFirstname(),
+                lastName : $order->getCustomerLastname(),
+            )
         );
     }
 
@@ -228,7 +237,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
     {
         return new EmbeddedCheckout(
-            url                        : $this->url->getUrl('nexi/checkout/success'),
+            url                        : $this->url->getUrl('checkout/onepage/success'),
             termsUrl                   : $this->config->getPaymentsTermsAndConditionsUrl(),
 //            consumer                   : $this->buildConsumer($salesObject),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
@@ -237,6 +246,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the checkout for hosted integration type
+     *
      * @param Quote|Order $salesObject
      *
      * @return HostedCheckout
@@ -245,15 +256,26 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     public function buildHostedCheckout(Quote|Order $salesObject): HostedCheckout
     {
         return new HostedCheckout(
-            returnUrl                  : $this->url->getUrl('nexi/hpp/returnaction'),
+            returnUrl                  : $this->url->getUrl('checkout/onepage/success'),
             cancelUrl                  : $this->url->getUrl('nexi/hpp/cancelaction'),
             termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
             consumer                   : $this->buildConsumer($salesObject),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
-            countryCode                : $this->countryInformationAcquirer->getCountryInfo(
-                                             $this->config->getCountryCode()
-                                         )->getThreeLetterAbbreviation(),
+            countryCode                : $this->getThreeLetterCountryCode()
         );
+    }
+
+    /**
+     * Get the three-letter country code
+     *
+     * @return string
+     * @throws NoSuchEntityException
+     */
+    public function getThreeLetterCountryCode(): string
+    {
+        return $this->countryInformationAcquirer->getCountryInfo(
+            $this->config->getCountryCode()
+        )->getThreeLetterAbbreviation();
     }
 }

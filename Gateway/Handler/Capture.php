@@ -3,10 +3,10 @@
 namespace Nexi\Checkout\Gateway\Handler;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Payment\Gateway\Response\HandlerInterface;
 use NexiCheckout\Model\Result\ChargeResult;
-use NexiCheckout\Model\Result\RefundChargeResult;
 
-class Capture implements \Magento\Payment\Gateway\Response\HandlerInterface
+class Capture implements HandlerInterface
 {
 
     /**

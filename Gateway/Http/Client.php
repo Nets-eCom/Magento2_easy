@@ -49,7 +49,7 @@ class Client implements ClientInterface
             }
             $this->logResponse($response);
         } catch (PaymentApiException|\Exception $e) {
-            $this->logger->error($e->getMessage());
+            $this->logger->error($e->getMessage(), [$e]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 

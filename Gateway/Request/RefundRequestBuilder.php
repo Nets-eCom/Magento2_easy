@@ -10,11 +10,21 @@ use NexiCheckout\Model\Request\PartialRefundCharge;
 
 class RefundRequestBuilder implements BuilderInterface
 {
+    /**
+     * @param SalesDocumentItemsBuilder $documentItemsBuilder
+     */
     public function __construct(
         private readonly SalesDocumentItemsBuilder $documentItemsBuilder
     ) {
     }
 
+    /**
+     * Build nexi PartialRefundCharge request
+     *
+     * @param array $buildSubject
+     *
+     * @return array
+     */
     public function build(array $buildSubject): array
     {
         /** @var Order $order */
@@ -32,24 +42,4 @@ class RefundRequestBuilder implements BuilderInterface
             ]
         ];
     }
-
-    /**
-     * @param Order $order
-     *
-     * @return Shipping|null
-     */
-    private function getShipping(Order $order)
-    {
-        if ($order->getShipmentsCollection()->getSize() > 0) {
-            /** @var Order\Shipment $shipping */
-            $shipping = $order->getShipmentsCollection()->getLastItem();
-            return new Shipping(
-                $shipping->getTracksCollection()->getLastItem()->getTrackNumber(),
-                $shipping->getTracksCollection()->getLastItem()->getCarrierCode()
-            );
-        }
-
-        return null;
-    }
-
 }
