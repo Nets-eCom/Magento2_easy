@@ -7,6 +7,7 @@
                 <payment_action>authorize_capture</payment_action>
                 <active>0</active>
                 <is_gateway>0</is_gateway>
+                <is_auto_capture>1</is_auto_capture>
                 <can_use_checkout>1</can_use_checkout>
                 <can_authorize>0</can_authorize>
                 <can_initialize>1</can_initialize>
