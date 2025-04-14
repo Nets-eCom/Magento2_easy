@@ -7,11 +7,12 @@ namespace Nexi\Checkout\Controller\Adminhtml\System\Config;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Filter\StripTags;
 use Magento\Framework\Url;
+use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Config\Source\Environment;
 use NexiCheckout\Api\Exception\PaymentApiException;
@@ -39,10 +40,11 @@ class TestConnection extends Action implements HttpPostActionInterface
     public function __construct(
         Context                            $context,
         private readonly JsonFactory       $resultJsonFactory,
-        private readonly StripTags         $tagFilter,
-        private readonly PaymentApiFactory $paymentApiFactory,
-        private readonly Config            $config,
-        private readonly Url          $url
+        private readonly StripTags            $tagFilter,
+        private readonly PaymentApiFactory    $paymentApiFactory,
+        private readonly Config               $config,
+        private readonly Url                  $url,
+        private readonly ScopeConfigInterface $scopeConfig
     ) {
         parent::__construct($context);
     }
@@ -51,6 +53,7 @@ class TestConnection extends Action implements HttpPostActionInterface
      * Check for connection to server
      *
      * @return Json
+     * @throws \JsonException
      */
     public function execute()
     {
@@ -59,13 +62,22 @@ class TestConnection extends Action implements HttpPostActionInterface
             'errorMessage' => '',
         ];
         $options = $this->getRequest()->getParams();
-        if ($options['api_key'] == '******') {
-            $options['api_key'] = $this->config->getApiKey();
+        $isLiveMode = $options['environment'] == Environment::LIVE;
+
+        $apiKey = $isLiveMode ? $options['api_key'] : $options['test_api_key'];
+
+        if ($apiKey == '******') {
+            $apiKey = $isLiveMode ? $this->config->getApiKey() : $this->config->getTestApiKey();
         }
+
         try {
-            $api = $this->paymentApiFactory->create(
+            $api        = $this->paymentApiFactory->create(
                 secretKey : $options['api_key'],
-                isLiveMode: $options['environment'] == Environment::LIVE
+                isLiveMode: $isLiveMode
+            );
+            $currency   = $this->scopeConfig->getValue(
+                'currency/options/default',
+                ScopeInterface::SCOPE_STORE
             );
 
             $payment = $api->createEmbeddedPayment(
@@ -74,7 +86,7 @@ class TestConnection extends Action implements HttpPostActionInterface
                         [
                             new Item('test', 1, 'pcs', 1, 1, 1, 'test')
                         ],
-                        'USD',
+                        $currency,
                         1
                     ),
                     new Payment\EmbeddedCheckout(
@@ -84,8 +96,8 @@ class TestConnection extends Action implements HttpPostActionInterface
                 )
             );
 
-            if ($payment->getPaymentId() ) {
-               $api->terminate($payment->getPaymentId());
+            if ($payment->getPaymentId()) {
+                $api->terminate($payment->getPaymentId());
             }
 
         } catch (PaymentApiException $e) {

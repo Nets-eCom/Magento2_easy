@@ -4,6 +4,7 @@ namespace Nexi\Checkout\Gateway\Config;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as MagentoConfig;
+use Magento\Payment\Model\MethodInterface;
 use Nexi\Checkout\Model\Config\Source\Environment;
 
 class Config extends MagentoConfig
@@ -132,7 +133,9 @@ class Config extends MagentoConfig
      */
     public function getPaymentAction(): string
     {
-        return $this->getValue('payment_action');
+        return $this->getValue('is_auto_capture') ?
+            MethodInterface::ACTION_AUTHORIZE_CAPTURE :
+            MethodInterface::ACTION_AUTHORIZE;
     }
 
     /**

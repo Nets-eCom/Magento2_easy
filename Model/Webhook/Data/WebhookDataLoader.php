@@ -77,11 +77,11 @@ class WebhookDataLoader
     /**
      * LoadOrderByPaymentId function.
      *
-     * @param $paymentId
+     * @param string $paymentId
+     *
      * @return mixed
-     * @throws LocalizedException
      */
-    public function loadOrderByPaymentId($paymentId): Order
+    public function loadOrderByPaymentId(string $paymentId): Order
     {
         $transaction = $this->getTransactionByPaymentId($paymentId);
         $order       = $transaction->getOrder();

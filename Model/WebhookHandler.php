@@ -28,4 +28,14 @@ class WebhookHandler
             $this->webhookProcessors[$event]->processWebhook($webhookData);
         }
     }
+
+    /**
+     * Get all registered webhook processors.
+     *
+     * @return WebhookProcessorInterface[]
+     */
+    public function getWebhookProcessors(): array
+    {
+        return $this->webhookProcessors;
+    }
 }

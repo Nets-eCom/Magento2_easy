@@ -6,7 +6,6 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
-use NexiCheckout\Model\Request\Charge\Shipping;
 use NexiCheckout\Model\Request\PartialCharge;
 
 class CaptureRequestBuilder implements BuilderInterface
@@ -22,7 +21,7 @@ class CaptureRequestBuilder implements BuilderInterface
     }
 
     /**
-     * Build request
+     * Build nexi PartialCharge request
      *
      * @param array $buildSubject
      *
@@ -44,26 +43,5 @@ class CaptureRequestBuilder implements BuilderInterface
                 )
             ]
         ];
-    }
-
-    /**
-     * Get shipping information
-     *
-     * @param Order $order
-     *
-     * @return Shipping|null
-     */
-    private function getShipping(Order $order)
-    {
-        if ($order->getShipmentsCollection()->getSize() > 0) {
-            /** @var Order\Shipment $shipping */
-            $shipping = $order->getShipmentsCollection()->getLastItem();
-            return new Shipping(
-                $shipping->getTracksCollection()->getLastItem()->getTrackNumber(),
-                $shipping->getTracksCollection()->getLastItem()->getCarrierCode()
-            );
-        }
-
-        return null;
     }
 }

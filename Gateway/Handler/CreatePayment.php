@@ -3,15 +3,22 @@
 namespace Nexi\Checkout\Gateway\Handler;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Payment\Gateway\Response\HandlerInterface;
 
-class CreatePayment implements \Magento\Payment\Gateway\Response\HandlerInterface
+class CreatePayment implements HandlerInterface
 {
 
+    /**
+     * @param SubjectReader $subjectReader
+     */
     public function __construct(
         private readonly SubjectReader $subjectReader
     ) {
     }
 
+    /**
+     * @inheritDoc
+     */
     public function handle(array $handlingSubject, array $response)
     {
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);

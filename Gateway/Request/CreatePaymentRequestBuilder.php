@@ -10,6 +10,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
+use Nexi\Checkout\Model\WebhookHandler;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\Address;
@@ -18,7 +19,6 @@ use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Request\Payment\PrivatePerson;
-use NexiCheckout\Model\Webhook\EventNameEnum;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
@@ -29,12 +29,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Config $config
      * @param CountryInformationAcquirerInterface $countryInformationAcquirer
      * @param EncryptorInterface $encryptor
+     * @param WebhookHandler $webhookHandler
      */
     public function __construct(
         private readonly UrlInterface                        $url,
         private readonly Config                              $config,
         private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
-        private readonly EncryptorInterface                  $encryptor
+        private readonly EncryptorInterface                  $encryptor,
+        private readonly WebhookHandler                      $webhookHandler
     ) {
     }
 
@@ -144,10 +146,10 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     public function buildWebhooks(): array
     {
         $webhooks = [];
-        foreach (EventNameEnum::cases() as $eventName) {
+        foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
             $baseUrl    = $this->url->getBaseUrl();
             $webhooks[] = new Payment\Webhook(
-                eventName    : $eventName->value,
+                eventName    : $eventName,
                 url          : $baseUrl . self::NEXI_PAYMENT_WEBHOOK_PATH,
                 authorization: $this->encryptor->hash($this->config->getWebhookSecret())
             );
@@ -182,9 +184,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             consumer                   : $this->buildConsumer($order),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
-            countryCode                : $this->countryInformationAcquirer->getCountryInfo(
-                $this->config->getCountryCode()
-            )->getThreeLetterAbbreviation(),
+            countryCode                : $this->getThreeLetterCountryCode(),
         );
     }
 
@@ -206,23 +206,32 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 addressLine2: $order->getShippingAddress()->getStreetLine(2),
                 postalCode  : $order->getShippingAddress()->getPostcode(),
                 city        : $order->getShippingAddress()->getCity(),
-                country     : $this->countryInformationAcquirer->getCountryInfo(
-                    $this->config->getCountryCode()
-                )->getThreeLetterAbbreviation(),
+                country     : $this->getThreeLetterCountryCode(),
             ),
             billingAddress : new Address(
                 addressLine1: $order->getBillingAddress()->getStreetLine(1),
                 addressLine2: $order->getBillingAddress()->getStreetLine(2),
                 postalCode  : $order->getBillingAddress()->getPostcode(),
                 city        : $order->getBillingAddress()->getCity(),
-                country     : $this->countryInformationAcquirer->getCountryInfo(
-                    $this->config->getCountryCode()
-                )->getThreeLetterAbbreviation(),
+                country     : $this->getThreeLetterCountryCode(),
             ),
             privatePerson  : new PrivatePerson(
                 firstName: $order->getCustomerFirstname(),
                 lastName : $order->getCustomerLastname(),
             )
         );
+    }
+
+    /**
+     * Get the three-letter country code
+     *
+     * @return string
+     * @throws NoSuchEntityException
+     */
+    public function getThreeLetterCountryCode(): string
+    {
+        return $this->countryInformationAcquirer->getCountryInfo(
+            $this->config->getCountryCode()
+        )->getThreeLetterAbbreviation();
     }
 }

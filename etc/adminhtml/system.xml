@@ -6,7 +6,7 @@
             <group id="nexi" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Nexi Payments</label>
-                <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1">
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
@@ -65,11 +65,11 @@
                     <label>Integration type</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\IntegrationType</source_model>
                 </field>
-                <field id="payment_action" translate="label" type="select" sortOrder="3" showInDefault="1"
+                <field id="is_auto_capture" translate="label" type="select" sortOrder="5" showInDefault="1"
                        showInWebsite="1" canRestore="1">
-                    <label>Payment Action</label>
-                    <source_model>Nexi\Checkout\Model\Config\Source\PaymentAction</source_model>
-                    <comment>If set to "Authorize and Capture", the transaction will be charged automatically after the
+                    <label>Is Auto Capture</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set to "Yes", the transaction will be charged automatically after the
                         reservation has been accepted.
                     </comment>
                 </field>

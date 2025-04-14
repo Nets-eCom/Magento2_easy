@@ -8,7 +8,7 @@ use NexiCheckout\Model\Request\Item;
 
 class SalesDocumentItemsBuilder
 {
-    const SHIPPING_COST_REFERENCE = 'shipping_cost_ref';
+    public const SHIPPING_COST_REFERENCE = 'shipping_cost_ref';
 
     /**
      * Build sales document items for the given sales object
@@ -43,7 +43,9 @@ class SalesDocumentItemsBuilder
                 grossTotalAmount: (int)($salesObject->getShippingInclTax() * 100),
                 netTotalAmount  : (int)($salesObject->getShippingAmount() * 100),
                 reference       : self::SHIPPING_COST_REFERENCE,
-                taxRate         : $salesObject->getGrandTotal() ? (int)($salesObject->getTaxAmount() / $salesObject->getGrandTotal() * 100) : 0,
+                taxRate         : $salesObject->getGrandTotal() ?
+                                      (int)($salesObject->getTaxAmount() / $salesObject->getGrandTotal() * 100) :
+                                      0,
                 taxAmount       : (int)($salesObject->getShippingTaxAmount() * 100),
             );
         }

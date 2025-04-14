@@ -3,10 +3,10 @@
 namespace Nexi\Checkout\Gateway\Handler;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Payment\Gateway\Response\HandlerInterface;
 use NexiCheckout\Model\Result\ChargeResult;
-use NexiCheckout\Model\Result\RefundChargeResult;
 
-class Capture implements \Magento\Payment\Gateway\Response\HandlerInterface
+class Capture implements HandlerInterface
 {
 
     /**
@@ -20,12 +20,7 @@ class Capture implements \Magento\Payment\Gateway\Response\HandlerInterface
     }
 
     /**
-     * Handle response
-     *
-     * @param array $handlingSubject
-     * @param array $response
-     *
-     * @return void
+     * @inheritDoc
      */
     public function handle(array $handlingSubject, array $response)
     {

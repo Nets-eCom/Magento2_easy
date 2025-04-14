@@ -5,13 +5,15 @@ namespace Nexi\Checkout\Plugin;
 use Exception;
 use Magento\Checkout\Model\PaymentInformationManagement as Subject;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Psr\Log\LoggerInterface;
 
 class PaymentInformationManagement
 {
 
+    /**
+     * @param Session $checkoutSession
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         private readonly Session                  $checkoutSession,
         private readonly LoggerInterface $logger
@@ -19,8 +21,10 @@ class PaymentInformationManagement
     }
 
     /**
+     * Add redirect URL to the response after placing an order.
+     *
      * @param Subject $subject
-     * @param $result
+     * @param false|mixed|string $result
      *
      * @return false|mixed|string
      */
@@ -42,6 +46,8 @@ class PaymentInformationManagement
     }
 
     /**
+     * Get the redirect URL from the order payment information.
+     *
      * @return string[]
      */
     private function getRedirectUrl()

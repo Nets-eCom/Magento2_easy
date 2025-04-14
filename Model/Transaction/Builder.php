@@ -25,13 +25,14 @@ class Builder
     /**
      * Build transaction
      *
+     * @param string $transactionId
      * @param Order $order
      * @param mixed $transactionData
-     * @param null $action
+     * @param string $action
      *
      * @return TransactionInterface
      */
-    public function build($transactionId, Order $order, $transactionData, $action ): TransactionInterface
+    public function build($transactionId, Order $order, $transactionData, $action): TransactionInterface
     {
         return $this->transactionBuilder->setOrder($order)
             ->setPayment($order->getPayment())
