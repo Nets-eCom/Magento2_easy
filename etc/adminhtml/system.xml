@@ -39,15 +39,6 @@
                     <label>Test Checkout Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="webhook_secret" translate="label" type="obscure" sortOrder="31" showInDefault="1"
-                       showInWebsite="1">
-                    <label>Webhook Secret</label>
-                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                    <validate>required-entry</validate>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
-                </field>
                 <field id="webshop_terms_and_conditions_url" translate="label" type="text" sortOrder="40"
                        showInDefault="1" showInWebsite="1">
                     <label>Webshop Terms and Conditions URL</label>
