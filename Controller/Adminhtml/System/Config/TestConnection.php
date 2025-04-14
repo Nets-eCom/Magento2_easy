@@ -72,7 +72,7 @@ class TestConnection extends Action implements HttpPostActionInterface
 
         try {
             $api        = $this->paymentApiFactory->create(
-                secretKey : $options['api_key'],
+                secretKey : $apiKey,
                 isLiveMode: $isLiveMode
             );
             $currency   = $this->scopeConfig->getValue(

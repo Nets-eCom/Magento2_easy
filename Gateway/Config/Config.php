@@ -69,6 +69,16 @@ class Config extends MagentoConfig
             return $this->getValue('api_key');
         }
 
+        return $this->getTestApiKey();
+    }
+
+    /**
+     * Get test api key
+     *
+     * @return mixed|null
+     */
+    public function getTestApiKey()
+    {
         return $this->getValue('test_api_key');
     }
 
