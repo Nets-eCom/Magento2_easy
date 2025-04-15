@@ -2,15 +2,16 @@
 
 namespace Nexi\Checkout\Model;
 
-use Composer\Config;
+use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Nexi\Checkout\Gateway\Command\Initialize;
-use Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder;
 use Nexi\Checkout\Api\PaymentInitializeInterface;
+use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
+use Psr\Log\LoggerInterface;
 
 class PaymentInitialize implements PaymentInitializeInterface
 {
@@ -18,13 +19,17 @@ class PaymentInitialize implements PaymentInitializeInterface
      * @param CartRepositoryInterface $quoteRepository
      * @param Initialize $initializeCommand
      * @param PaymentDataObjectFactoryInterface $paymentDataObjectFactory
+     * @param QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param Config $config
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly CartRepositoryInterface           $quoteRepository,
-        private readonly Initialize                              $initializeCommand,
-        private readonly PaymentDataObjectFactoryInterface       $paymentDataObjectFactory,
-        private readonly QuoteIdMaskFactory $quoteIdMaskFactory,
-        private readonly \Nexi\Checkout\Gateway\Config\Config $config,
+        private readonly Initialize                        $initializeCommand,
+        private readonly PaymentDataObjectFactoryInterface $paymentDataObjectFactory,
+        private readonly QuoteIdMaskFactory                $quoteIdMaskFactory,
+        private readonly Config                            $config,
+        private readonly LoggerInterface                   $logger
     ) {
     }
 
@@ -62,10 +67,17 @@ class PaymentInitialize implements PaymentInitializeInterface
                         'checkoutKey' => $this->config->getCheckoutKey()
                     ]
                 ),
-                default => throw new LocalizedException(__('Invalid integration type'))
+                default => throw new InputException(__('Invalid integration type'))
             };
         } catch (\Exception $e) {
-            throw new LocalizedException(__('Could not initialize payment: %1', $e->getMessage()));
+            $this->logger->error(
+                'Error initializing payment:',
+                [
+                    'exception' => $e->getMessage(),
+                    'trace'     => $e->getTraceAsString()
+                ]
+            );
+            throw new LocalizedException(__('Could not initialize payment.'), $e);
         }
     }
 }
