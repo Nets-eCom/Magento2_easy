@@ -69,11 +69,11 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Build the Sdk order object
      *
-     * @param Order $order
+     * @param Quote|Order $order
      *
      * @return Payment\Order
      */
-    public function buildOrder(Order $order): Payment\Order
+    public function buildOrder(Quote|Order $order): Payment\Order
     {
         return new Payment\Order(
             items    : $this->buildItems($order),
