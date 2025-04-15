@@ -69,7 +69,7 @@ define(
                 }
 
                 if (this.isActive()) {
-                    renderEmbeddedCheckout.call(this);
+                    this.renderCheckout();
                 }
             },
             isActive: function () {
@@ -90,17 +90,17 @@ define(
                     }
                 }
             },
-            selectPaymentMethod: function () {
-                this._super();
+            renderCheckout() {
                 renderEmbeddedCheckout.call(this);
                 // Subscribe to changes in quote totals
                 quote.totals.subscribe(function (quote) {
                     // Reload Nexi checkout on quote change
-                    console.log('Quote totals changed...', quote);
-                    if (this.dibsCheckout()) {
-                        this.dibsCheckout().thawCheckout();
-                    }
+                    console.log('Quote totals changed. Reloading the Checkout.', quote);
+                    renderEmbeddedCheckout.call(this);
                 }, this);
+            }, selectPaymentMethod: function () {
+                this._super();
+                this.renderCheckout();
 
                 return true;
             }
