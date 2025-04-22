@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\Model;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface;
@@ -29,7 +30,8 @@ class PaymentInitialize implements PaymentInitializeInterface
         private readonly PaymentDataObjectFactoryInterface $paymentDataObjectFactory,
         private readonly QuoteIdMaskFactory                $quoteIdMaskFactory,
         private readonly Config                            $config,
-        private readonly LoggerInterface                   $logger
+        private readonly LoggerInterface                   $logger,
+        private readonly Session                            $checkoutSession
     ) {
     }
 
@@ -39,21 +41,25 @@ class PaymentInitialize implements PaymentInitializeInterface
     public function initialize(string $cartId, string $integrationType, $paymentMethod): string
     {
         try {
-            $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
 
-            $quote         = $this->quoteRepository->get($quoteIdMask->getQuoteId());
+            if (!is_numeric($cartId)) {
+                $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
+                $cartId = $quoteIdMask->getQuoteId();
+            }
+            $quote         = $this->quoteRepository->get($cartId);
+
+            if (!$quote->getIsActive()) {
+                $this->checkoutSession->restoreQuote();
+            }
             $paymentMethod = $quote->getPayment();
             if (!$paymentMethod) {
                 throw new LocalizedException(__('No payment method found for the quote'));
             }
-            if ($paymentMethod->getAdditionalInformation('payment_id')) {
 
-            } else {
-                $paymentData  = $this->paymentDataObjectFactory->create($paymentMethod);
-                $cratePayment = $this->initializeCommand->cratePayment($paymentData);
-                $quote->setData('no_payment_update_flag', true);
-                $this->quoteRepository->save($quote);
-            }
+            $paymentData  = $this->paymentDataObjectFactory->create($paymentMethod);
+            $cratePayment = $this->initializeCommand->cratePayment($paymentData);
+            $quote->setData('no_payment_update_flag', true);
+            $this->quoteRepository->save($quote);
 
             return match ($integrationType) {
                 IntegrationTypeEnum::HostedPaymentPage->name => json_encode(

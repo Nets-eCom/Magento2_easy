@@ -13,4 +13,16 @@
             <resource ref="self"/>
         </resources>
     </route>
+    <route url="/V1/nexi/guest-carts/:cartId/payment-validate" method="POST">
+        <service class="Nexi\Checkout\Api\PaymentValidateInterface" method="validate"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/nexi/carts/mine/payment-validate" method="POST">
+        <service class="Nexi\Checkout\Api\PaymentValidateInterface" method="validate"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+    </route>
 </routes>

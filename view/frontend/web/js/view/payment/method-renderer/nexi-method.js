@@ -22,7 +22,8 @@ define(
         'Magento_Ui/js/modal/modal',
         'Nexi_Checkout/js/sdk/loader',
         'Nexi_Checkout/js/view/payment/initialize-payment',
-        'Nexi_Checkout/js/view/payment/render-embedded'
+        'Nexi_Checkout/js/view/payment/render-embedded',
+        'Nexi_Checkout/js/view/payment/validate'
     ],
     function (
         ko,
@@ -47,7 +48,8 @@ define(
         modal,
         sdkLoader,
         initializeCartPayment,
-        renderEmbeddedCheckout
+        renderEmbeddedCheckout,
+        validatePayment
     ) {
         'use strict';
 
@@ -58,6 +60,8 @@ define(
             },
             isEmbedded: ko.observable(false),
             dibsCheckout: ko.observable(false),
+            isRendering: ko.observable(false),
+            eventsSubscribed: ko.observable(false),
 
             isHosted: function () {
                 return !this.isEmbedded();
@@ -76,6 +80,7 @@ define(
                 return this.getCode() === this.isChecked();
             },
             placeOrder: function (data, event) {
+                console.log("DEBUG: Place order called");
                 let placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
 
                 return $.when(placeOrder).done(function (response) {
@@ -90,19 +95,71 @@ define(
                     }
                 }
             },
-            renderCheckout() {
-                renderEmbeddedCheckout.call(this);
-                // Subscribe to changes in quote totals
-                quote.totals.subscribe(function (quote) {
-                    // Reload Nexi checkout on quote change
-                    console.log('Quote totals changed. Reloading the Checkout.', quote);
-                    renderEmbeddedCheckout.call(this);
+            async renderCheckout() {
+                await renderEmbeddedCheckout.call(this);
+                this.subscribeToEvents();
+                quote.totals.subscribe(async function (quote) {
+                    await renderEmbeddedCheckout.call(this);
+                    this.subscribeToEvents();
+
                 }, this);
-            }, selectPaymentMethod: function () {
+            },
+            selectPaymentMethod: function () {
                 this._super();
                 this.renderCheckout();
 
                 return true;
+            },
+            subscribeToEvents: function () {
+                if (this.dibsCheckout() && this.eventsSubscribed() === false) {
+                    console.log("DEBUG: Subscribing to events");
+                    this.dibsCheckout().on(
+                        "payment-completed",
+                        async function () {
+                            window.location.href = url.build("checkout/onepage/success");
+                        }.bind(this)
+                    );
+
+                    this.dibsCheckout().on(
+                        "pay-initialized",
+                        async function (paymentId) {
+                            try {
+                                const validationResult = await validatePayment.call(this);
+                                if (!validationResult.success) {
+                                    console.warn("DEBUG: Validation failed, reloading the checkout. Nexi paymentId: ", paymentId);
+
+                                    await renderEmbeddedCheckout.call(this);
+                                    this.subscribeToEvents();
+                                } else {
+                                    console.log("DEBUG: Validation ok, placing the order. Nexi paymentId: ", paymentId);
+                                    await this.placeOrder();
+                                    fullScreenLoader.startLoader();
+                                    document.getElementById("nexi-checkout-container").style.position = "relative";
+                                    document.getElementById("nexi-checkout-container").style.zIndex = "9999";
+                                    this.dibsCheckout().send("payment-order-finalized", true);
+                                    // add some mask to block the screen, only allow to deal with the iframe
+
+                                }
+                            }catch (error) {
+                                console.error("DEBUG: Error in payment initialization:", error);
+                                await renderEmbeddedCheckout.call(this);
+                                this.subscribeToEvents();
+                            }
+                        }.bind(this)
+                    );
+
+                    // TODO: check how to trigger remove mask if payment cancelled in the iframe,
+                    //  as this seems to not work
+                    this.dibsCheckout().on(
+                        "payment-cancelled",
+                        async function (paymentId) {
+                            fullScreenLoader.stopLoader();
+                            console.log("DEBUG: Payment cancelled with ID:", paymentId);
+                        }.bind(this)
+                    );
+
+                    this.eventsSubscribed(true);
+                }
             }
         });
     }

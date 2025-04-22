@@ -85,10 +85,6 @@ class Initialize implements CommandInterface
      */
     public function cratePayment(PaymentDataObjectInterface $payment)
     {
-        if ($this->isPaymentAlreadyCreated($payment)) {
-            return null;
-        }
-
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
             $commandPool->executeByCode(

@@ -1,50 +1,52 @@
-define(
-    [
-        'Nexi_Checkout/js/sdk/loader',
-        'Nexi_Checkout/js/view/payment/initialize-payment',
-        'mage/url'
-    ],
-    function (sdkLoader, initializeCartPayment, url) {
-        'use strict';
+define([
+  "Nexi_Checkout/js/sdk/loader",
+  "Nexi_Checkout/js/view/payment/initialize-payment",
+  "Nexi_Checkout/js/view/payment/validate",
+  "mage/url",
+  'Magento_Checkout/js/model/quote',
+], function (sdkLoader, initializePayment, validatePayment, url, quote) {
+  "use strict";
 
-        return async function () {
-            try {
-                await sdkLoader.loadSdk(this.config.environment === 'test');
+  // Define the rendering function
+  return async function () {
+     if (this.isRendering()) {
+       console.log("Rendering already in progress. Skipping this call.");
+       return;
+     }
 
-                //clear checkout container
-                document.getElementById("nexi-checkout-container").innerHTML = "";
+     // get selected payment method from the quote
+     let selectedPaymentMethod = quote.paymentMethod();
 
-                const response = await initializeCartPayment.call(this);
-                if (response.paymentId) {
-                    let checkoutOptions = {
-                        checkoutKey: response.checkoutKey,
-                        paymentId: response.paymentId,
-                        containerId: "nexi-checkout-container",
-                        language: "en-GB",
-                        theme: {
-                            buttonRadius: "5px"
-                        }
-                    };
-                    this.dibsCheckout(new Dibs.Checkout(checkoutOptions));
+     if (!selectedPaymentMethod || selectedPaymentMethod.method !== "nexi") {
+       console.log("Selected payment method is not Nexi. Skipping rendering.");
+       return;
+     }
 
-                    // add this as a global variable for debugging
-                    window.dibsCheckout = this.dibsCheckout;
-                    console.log('DEBUG: Dibs Checkout initialized as global `window.dibsCheckout` :', this.dibsCheckout());
+     this.isRendering(true);
+     try {
+       await sdkLoader.loadSdk(this.config.environment === "test");
 
-                    this.dibsCheckout().on('payment-completed', async function () {
-                        window.location.href = url.build('checkout/onepage/success');
-                    }.bind(this));
+       // Clear the container before rendering
+       document.getElementById("nexi-checkout-container").innerHTML = "";
 
-                    this.dibsCheckout().on('pay-initialized', async function (paymentId) {
-                        //TODO: validate with backend
-                        await this.placeOrder();
-                        console.log('DEBUG: Payment initialized with ID:', paymentId);
-                        this.dibsCheckout().send('payment-order-finalized', true);
-                    }.bind(this));
-                }
-            } catch (error) {
-                console.error('Error loading Nexi SDK or initializing payment:', error);
-            }
-        };
-    }
-);
+       const response = await initializePayment.call(this)
+       if (response.paymentId) {
+         let checkoutOptions = {
+           checkoutKey: response.checkoutKey,
+           paymentId: response.paymentId,
+           containerId: "nexi-checkout-container",
+           language: "en-GB",
+           theme: {
+             buttonRadius: "5px",
+           },
+         };
+         this.dibsCheckout(new Dibs.Checkout(checkoutOptions));
+         console.log("Nexi Checkout SDK loaded successfully. paymentId: ", response.paymentId);
+       }
+     } catch (error) {
+       console.error("Error loading Nexi SDK or initializing payment:", error);
+     } finally {
+         this.isRendering(false);
+     }
+   }
+});
