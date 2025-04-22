@@ -235,4 +235,9 @@
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
+    <type name="Magento\Quote\Model\Quote\Payment\ToOrderPayment">
+        <plugin name="Nexi_Checkout::quote_to_order_save_last_txn_id"
+                type="Nexi\Checkout\Plugin\QouteToOrder\ProcessTransactionId"
+                sortOrder="100"/>
+    </type>
 </config>

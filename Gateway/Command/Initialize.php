@@ -47,6 +47,11 @@ class Initialize implements CommandInterface
         $paymentData = $this->subjectReader->readPayment($commandSubject);
         $stateObject = $this->subjectReader->readStateObject($commandSubject);
 
+        // For embedded integration, we don't need to create payment here, it was already created for the quote.
+        if ($paymentData->getPayment()->getAdditionalInformation('payment_id')) {
+            return;
+        }
+
         /** @var InfoInterface $payment */
         $payment = $paymentData->getPayment();
         $payment->setIsTransactionPending(true);

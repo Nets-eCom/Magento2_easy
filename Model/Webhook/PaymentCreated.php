@@ -11,6 +11,7 @@ use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory as PaymentCollectionFactory;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
@@ -23,50 +24,80 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param CollectionFactory $orderCollectionFactory
      * @param WebhookDataLoader $webhookDataLoader
      * @param OrderRepositoryInterface $orderRepository
+     * @param PaymentCollectionFactory $paymentCollectionFactory
      */
     public function __construct(
-        private readonly Builder                    $transactionBuilder,
-        private readonly CollectionFactory          $orderCollectionFactory,
-        private readonly WebhookDataLoader          $webhookDataLoader,
-        private readonly OrderRepositoryInterface   $orderRepository
+        private readonly Builder                  $transactionBuilder,
+        private readonly CollectionFactory        $orderCollectionFactory,
+        private readonly WebhookDataLoader        $webhookDataLoader,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly PaymentCollectionFactory $paymentCollectionFactory
     ) {
     }
 
     /**
      * PaymentCreated webhook service.
      *
-     * @param $webhookData
+     * @param array $webhookData
      *
      * @return void
      * @throws Exception
-     * @throws LocalizedException
+     * @throws LocalizedException|NotFound
      */
-    public function processWebhook($webhookData): void
+    public function processWebhook(array $webhookData): void
     {
-        $transaction = $this->webhookDataLoader->getTransactionByPaymentId($webhookData['data']['paymentId']);
+        $paymentId   = $webhookData['data']['paymentId'];
+        $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
+        $order       = null;
 
         if ($transaction) {
             return;
         }
 
-        $order = $this->orderCollectionFactory->create()->addFieldToFilter(
-            'increment_id',
-            $webhookData['data']['order']['reference']
-        )->getFirstItem();
+        $orderReference = $webhookData['data']['order']['reference'] ?? null;
 
-        $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+        if ($orderReference === null) {
+            $order = $this->getOrderByPaymentId($paymentId);
+            $orderReference = $order->getIncrementId();
+        }
+
+        if (!$order) {
+            $order = $this->orderCollectionFactory->create()->addFieldToFilter(
+                'increment_id',
+                $orderReference
+            )->getFirstItem();
+        }
+
+        $this->createPaymentTransaction($order, $paymentId);
 
         $this->orderRepository->save($order);
     }
 
     /**
+     * Get order by payment id.
+     *
+     * @param string $paymentId
+     *
+     * @return Order
+     * @throws NotFound
+     */
+    private function getOrderByPaymentId(string $paymentId)
+    {
+        $payment = $this->paymentCollectionFactory->create()
+            ->addFieldToFilter('last_trans_id', $paymentId)
+            ->getFirstItem();
+        $orderId = $payment->getParentId();
+
+        return $this->orderCollectionFactory->create()->addFieldToFilter('entity_id', $orderId)->getFirstItem();
+    }
+
+    /**
      * ProcessOrder function.
      *
-     * @param $order
-     * @param $paymentId
+     * @param Order $order
+     * @param int $paymentId
      *
      * @return void
-     * @throws Exception
      */
     private function createPaymentTransaction($order, $paymentId): void
     {
