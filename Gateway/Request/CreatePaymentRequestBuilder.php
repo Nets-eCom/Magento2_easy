@@ -20,6 +20,8 @@ use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Request\Payment\PrivatePerson;
+use NexiCheckout\Model\Request\Shared\Notification;
+use NexiCheckout\Model\Request\Shared\Order as NexiRequestOrder;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
@@ -71,11 +73,11 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * @param Quote|Order $order
      *
-     * @return Payment\Order
+     * @return NexiRequestOrder
      */
-    public function buildOrder(Quote|Order $order): Payment\Order
+    public function buildOrder(Quote|Order $order): NexiRequestOrder
     {
-        return new Payment\Order(
+        return new NexiRequestOrder(
             items    : $this->buildItems($order),
             currency : $order->getBaseCurrencyCode(),
             amount   : (int)($order->getGrandTotal() * 100),
@@ -143,7 +145,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         return new Payment(
             order       : $this->buildOrder($order),
             checkout    : $this->buildCheckout($order),
-            notification: new Payment\Notification($this->buildWebhooks()),
+            notification: new Notification($this->buildWebhooks()),
         );
     }
 
@@ -157,7 +159,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
             $baseUrl    = $this->url->getBaseUrl();
-            $webhooks[] = new Payment\Webhook(
+            $webhooks[] = new Notification\Webhook(
                 eventName    : $eventName,
                 url          : $baseUrl . self::NEXI_PAYMENT_WEBHOOK_PATH,
                 authorization: $this->encryptor->hash($this->config->getWebhookSecret())
