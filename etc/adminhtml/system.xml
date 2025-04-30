@@ -87,14 +87,14 @@
                            showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Subscriptions email notification schedule</label>
                         <depends>
-                            <field id="nexi/subscriptions/active_subscriptions">1</field>
+                            <field id="active_subscriptions">1</field>
                         </depends>
                     </field>
                     <field id="bill_cron_schedule" translate="label comment" sortOrder="20" type="text"
                            showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                         <label>Subscriptions email billing schedule</label>
                         <depends>
-                            <field id="nexi/subscriptions/active_subscriptions">1</field>
+                            <field id="active_subscriptions">1</field>
                         </depends>
                     </field>
                     <field id="warning_period" translate="label comment" sortOrder="30" type="text"
@@ -103,7 +103,7 @@
                         <comment>Controls the amount of days between notifying customer about upcoming payment and billing the payment</comment>
                         <validate>validate-digit validate-range range-0-30</validate>
                         <depends>
-                            <field id="nexi/subscriptions/active_subscriptions">1</field>
+                            <field id="active_subscriptions">1</field>
                         </depends>
                     </field>
                     <field id="force_weekdays" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="0"
@@ -111,7 +111,7 @@
                         <label>Force billing date to be on weekday (monday-friday)</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <depends>
-                            <field id="nexi/subscriptions/active_subscriptions">1</field>
+                            <field id="active_subscriptions">1</field>
                         </depends>
                     </field>
                 </group>
