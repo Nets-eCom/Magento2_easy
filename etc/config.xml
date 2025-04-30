@@ -41,6 +41,9 @@
                 <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <integration_type>HostedPaymentPage</integration_type>
                 <merchant_handles_consumer_data>1</merchant_handles_consumer_data>
+                <subscriptions>
+                    <active_subscriptions>0</active_subscriptions>
+                </subscriptions>
             </nexi>
         </payment>
     </default>
