@@ -12,22 +12,23 @@
                 </field>
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
                     <label>Title</label>
+                    <validate>required-entry</validate>
                 </field>
-
                 <field id="nexi_api_test_connect_wizard" translate="button_label" sortOrder="68" showInDefault="1"
                        showInWebsite="0" showInStore="0">
                     <label/>
                     <button_label>Test Connection</button_label>
                     <frontend_model>Nexi\Checkout\Block\Adminhtml\System\Config\TestConnection</frontend_model>
                 </field>
-
                 <field id="secret_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
                     <label>Secret Key</label>
+                    <validate>required-entry</validate>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
                 <field id="checkout_key" translate="label" type="obscure" sortOrder="31" showInDefault="1"
                        showInWebsite="1">
                     <label>Checkout Key</label>
+                    <validate>required-entry</validate>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
                 <field id="test_secret_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
