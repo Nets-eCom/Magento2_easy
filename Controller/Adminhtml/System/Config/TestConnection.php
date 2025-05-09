@@ -19,6 +19,7 @@ use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
+use NexiCheckout\Model\Request\Shared\Order;
 
 class TestConnection extends Action implements HttpPostActionInterface
 {
@@ -82,7 +83,7 @@ class TestConnection extends Action implements HttpPostActionInterface
 
             $payment = $api->createEmbeddedPayment(
                 new Payment(
-                    new Payment\Order(
+                    new Order(
                         [
                             new Item('test', 1, 'pcs', 1, 1, 1, 'test')
                         ],

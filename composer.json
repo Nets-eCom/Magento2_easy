@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": "^8.0",
-        "nexi-checkout/php-payment-sdk": "*",
+        "nexi-checkout/php-payment-sdk": "^0.4.1",
         "magento/framework": ">=102.0.0",
         "ext-curl": "*",
         "nesbot/carbon": "^2.57.0"
