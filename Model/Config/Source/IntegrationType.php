@@ -1,8 +1,5 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
+
 declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Config\Source;
@@ -24,7 +21,7 @@ class IntegrationType implements OptionSourceInterface
             ],
             [
                 'value' => IntegrationTypeEnum::HostedPaymentPage->name,
-                'label' => __('Hosted Payment Page'),
+                'label' => __('Hosted Checkout'),
             ]
         ];
     }

@@ -10,6 +10,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\CreditmemoManagementInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\CreditmemoFactory;
+use Nexi\Checkout\Gateway\AmountConverter;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
@@ -21,13 +22,15 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param CreditmemoFactory $creditmemoFactory
      * @param CreditmemoManagementInterface $creditmemoManagement
+     * @param AmountConverter $amountConverter
      */
     public function __construct(
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly Builder $transactionBuilder,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly CreditmemoFactory $creditmemoFactory,
-        private readonly CreditmemoManagementInterface $creditmemoManagement
+        private readonly CreditmemoManagementInterface $creditmemoManagement,
+        private readonly AmountConverter $amountConverter,
     ) {
     }
 
@@ -90,6 +93,8 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      */
     private function isFullRefund(array $webhookData, Order $order): bool
     {
-        return $order->getGrandTotal() == $webhookData['data']['amount']['amount']/100;
+        $GrandTotal = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+
+        return $GrandTotal == $webhookData['data']['amount']['amount'];
     }
 }

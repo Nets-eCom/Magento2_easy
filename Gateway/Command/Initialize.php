@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Command;
 
 use Exception;
@@ -18,7 +20,7 @@ use Psr\Log\LoggerInterface;
 
 class Initialize implements CommandInterface
 {
-    const STATUS_PENDING = 'pending';
+    public const STATUS_PENDING = 'pending';
 
     /**
      * @param SubjectReader $subjectReader

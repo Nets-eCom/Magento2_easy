@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Handler;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -7,7 +9,6 @@ use Magento\Payment\Gateway\Response\HandlerInterface;
 
 class CreatePayment implements HandlerInterface
 {
-
     /**
      * @param SubjectReader $subjectReader
      */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Controller\Adminhtml\System\Config;
 
+use JsonException;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
@@ -28,7 +29,7 @@ class TestConnection extends Action implements HttpPostActionInterface
      *
      * @see _isAllowed()
      */
-    public const  ADMIN_RESOURCE      = 'Magento_Catalog::config_catalog';
+    public const ADMIN_RESOURCE = 'Magento_Catalog::config_catalog';
 
     /**
      * @param Context $context
@@ -37,14 +38,15 @@ class TestConnection extends Action implements HttpPostActionInterface
      * @param PaymentApiFactory $paymentApiFactory
      * @param Config $config
      * @param Url $url
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        Context                            $context,
-        private readonly JsonFactory       $resultJsonFactory,
-        private readonly StripTags            $tagFilter,
-        private readonly PaymentApiFactory    $paymentApiFactory,
-        private readonly Config               $config,
-        private readonly Url                  $url,
+        Context $context,
+        private readonly JsonFactory $resultJsonFactory,
+        private readonly StripTags $tagFilter,
+        private readonly PaymentApiFactory $paymentApiFactory,
+        private readonly Config $config,
+        private readonly Url $url,
         private readonly ScopeConfigInterface $scopeConfig
     ) {
         parent::__construct($context);
@@ -54,7 +56,7 @@ class TestConnection extends Action implements HttpPostActionInterface
      * Check for connection to server
      *
      * @return Json
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function execute()
     {

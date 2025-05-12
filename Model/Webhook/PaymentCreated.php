@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Braintree\Exception\NotFound;
 use Magento\Checkout\Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
@@ -25,23 +24,21 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
-        private readonly Builder                    $transactionBuilder,
-        private readonly CollectionFactory          $orderCollectionFactory,
-        private readonly WebhookDataLoader          $webhookDataLoader,
-        private readonly OrderRepositoryInterface   $orderRepository
+        private readonly Builder $transactionBuilder,
+        private readonly CollectionFactory $orderCollectionFactory,
+        private readonly WebhookDataLoader $webhookDataLoader,
+        private readonly OrderRepositoryInterface $orderRepository
     ) {
     }
 
     /**
      * PaymentCreated webhook service.
      *
-     * @param $webhookData
+     * @param array $webhookData
      *
      * @return void
-     * @throws Exception
-     * @throws LocalizedException
      */
-    public function processWebhook($webhookData): void
+    public function processWebhook(array $webhookData): void
     {
         $transaction = $this->webhookDataLoader->getTransactionByPaymentId($webhookData['data']['paymentId']);
 
@@ -62,29 +59,29 @@ class PaymentCreated implements WebhookProcessorInterface
     /**
      * ProcessOrder function.
      *
-     * @param $order
-     * @param $paymentId
+     * @param Order $order
+     * @param string $paymentId
      *
      * @return void
-     * @throws Exception
      */
-    private function createPaymentTransaction($order, $paymentId): void
+    private function createPaymentTransaction(Order $order, string $paymentId): void
     {
-        if ($order->getState() === Order::STATE_NEW) {
-            $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-            $paymentTransaction = $this->transactionBuilder
-                ->build(
-                    $paymentId,
-                    $order,
-                    [
-                        'payment_id' => $paymentId
-                    ],
-                    TransactionInterface::TYPE_PAYMENT
-                );
-            $order->getPayment()->addTransactionCommentsToOrder(
-                $paymentTransaction,
-                __('Payment created in Nexi Gateway.')
-            );
+        if ($order->getState() !== Order::STATE_NEW) {
+            return;
         }
+        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+        $paymentTransaction = $this->transactionBuilder
+            ->build(
+                $paymentId,
+                $order,
+                [
+                    'payment_id' => $paymentId
+                ],
+                TransactionInterface::TYPE_PAYMENT
+            );
+        $order->getPayment()->addTransactionCommentsToOrder(
+            $paymentTransaction,
+            __('Payment created in Nexi Gateway.')
+        );
     }
 }
