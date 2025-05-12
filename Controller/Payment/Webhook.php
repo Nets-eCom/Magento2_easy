@@ -46,11 +46,11 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
      */
     public function execute()
     {
-//        if (!$this->isAuthorized()) {
-//            return $this->_response
-//                ->setHttpResponseCode(401)
-//                ->setBody('Unauthorized');
-//        }
+        if (!$this->isAuthorized()) {
+            return $this->_response
+                ->setHttpResponseCode(401)
+                ->setBody('Unauthorized');
+        }
 
         try {
             $content = $this->serializer->unserialize($this->getRequest()->getContent());
