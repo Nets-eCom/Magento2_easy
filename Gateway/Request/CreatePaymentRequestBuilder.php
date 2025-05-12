@@ -194,7 +194,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
             consumer                   : $this->buildConsumer($order),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
-            merchantHandlesConsumerData:(bool)$this->config->getMerchantHandlesConsumerData(),
+            merchantHandlesConsumerData: true,
             countryCode                : $this->getThreeLetterCountryCode(),
         );
     }

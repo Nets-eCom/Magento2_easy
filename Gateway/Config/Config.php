@@ -149,16 +149,6 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Get if the merchant handles consumer data
-     *
-     * @return mixed|null
-     */
-    public function getMerchantHandlesConsumerData()
-    {
-        return $this->getValue('merchant_handles_consumer_data');
-    }
-
-    /**
      * Get the country code
      *
      * @return mixed
