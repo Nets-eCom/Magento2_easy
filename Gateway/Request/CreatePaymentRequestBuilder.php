@@ -39,6 +39,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param EncryptorInterface $encryptor
      * @param WebhookHandler $webhookHandler
      * @param AmountConverter $amountConverter
+     * @param StringSanitizer $stringSanitizer
      */
     public function __construct(
         private readonly UrlInterface $url,
