@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Gateway\Request;
 
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberUtil;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -256,10 +258,11 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order $order
      *
      * @return Payment\PhoneNumber
+     * @throws NumberParseException
      */
     public function getNumber(Order $order): Payment\PhoneNumber
     {
-        $lib = \libphonenumber\PhoneNumberUtil::getInstance();
+        $lib = PhoneNumberUtil::getInstance();
 
         $number = $lib->parse(
             $order->getShippingAddress()->getTelephone(),
