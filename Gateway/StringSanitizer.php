@@ -19,7 +19,6 @@ class StringSanitizer
      */
     public function sanitize(string $string, $maxLength = 128)
     {
-        // replace special chars: The city. Must be between 1 and 128 characters. The following special characters are not supported: <, >, ', ", &, \
         $string = preg_replace('/[<>\'"&\\\\]/', '-', $string);
 
         if (strlen($string) > $maxLength) {
