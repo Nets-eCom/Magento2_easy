@@ -16,12 +16,12 @@ class SalesDocumentItemsBuilder
 
     /**
      * @param AmountConverter $amountConverter
+     * @param StringSanitizer $stringSanitizer
      */
     public function __construct(
         private readonly AmountConverter $amountConverter,
         private readonly StringSanitizer $stringSanitizer,
-    )
-    {
+    ) {
     }
 
     /**
