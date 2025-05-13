@@ -13,6 +13,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
+use Nexi\Checkout\Gateway\StringSanitizer;
 use Nexi\Checkout\Model\WebhookHandler;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
@@ -45,7 +46,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
         private readonly EncryptorInterface $encryptor,
         private readonly WebhookHandler $webhookHandler,
-        private readonly AmountConverter $amountConverter
+        private readonly AmountConverter $amountConverter,
+        private readonly StringSanitizer $stringSanitizer,
     ) {
     }
 
@@ -213,22 +215,22 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             email          : $order->getCustomerEmail(),
             reference      : $order->getCustomerId(),
             shippingAddress: new Address(
-                addressLine1: $order->getShippingAddress()->getStreetLine(1),
-                addressLine2: $order->getShippingAddress()->getStreetLine(2),
+                addressLine1: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(2)),
                 postalCode  : $order->getShippingAddress()->getPostcode(),
-                city        : $order->getShippingAddress()->getCity(),
+                city        : $this->stringSanitizer->sanitize($order->getShippingAddress()->getCity()),
                 country     : $this->getThreeLetterCountryCode(),
             ),
             billingAddress : new Address(
-                addressLine1: $order->getBillingAddress()->getStreetLine(1),
-                addressLine2: $order->getBillingAddress()->getStreetLine(2),
+                addressLine1: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(2)),
                 postalCode  : $order->getBillingAddress()->getPostcode(),
                 city        : $order->getBillingAddress()->getCity(),
                 country     : $this->getThreeLetterCountryCode(),
             ),
             privatePerson  : new PrivatePerson(
-                firstName: $order->getCustomerFirstname(),
-                lastName : $order->getCustomerLastname(),
+                firstName: $this->stringSanitizer->sanitize($order->getCustomerFirstname()),
+                lastName : $this->stringSanitizer->sanitize($order->getCustomerLastname()),
             )
         );
     }
@@ -245,4 +247,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             $this->config->getCountryCode()
         )->getThreeLetterAbbreviation();
     }
+
+
 }

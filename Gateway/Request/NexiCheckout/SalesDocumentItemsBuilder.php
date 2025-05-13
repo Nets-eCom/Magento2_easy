@@ -7,6 +7,7 @@ namespace Nexi\Checkout\Gateway\Request\NexiCheckout;
 use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\InvoiceInterface;
 use Nexi\Checkout\Gateway\AmountConverter;
+use Nexi\Checkout\Gateway\StringSanitizer;
 use NexiCheckout\Model\Request\Item;
 
 class SalesDocumentItemsBuilder
@@ -16,7 +17,10 @@ class SalesDocumentItemsBuilder
     /**
      * @param AmountConverter $amountConverter
      */
-    public function __construct(private readonly AmountConverter $amountConverter)
+    public function __construct(
+        private readonly AmountConverter $amountConverter,
+        private readonly StringSanitizer $stringSanitizer,
+    )
     {
     }
 
@@ -32,13 +36,13 @@ class SalesDocumentItemsBuilder
         $items = [];
         foreach ($salesObject->getAllItems() as $item) {
             $items[] = new Item(
-                name            : $item->getName(),
+                name            : $this->stringSanitizer->sanitize($item->getName()),
                 quantity        : (float)$item->getQty(),
                 unit            : 'pcs',
                 unitPrice       : $this->amountConverter->convertToNexiAmount($item->getPrice()),
                 grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getRowTotalInclTax()),
                 netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getRowTotal()),
-                reference       : $item->getSku(),
+                reference       : $this->stringSanitizer->sanitize($item->getSku()),
                 taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
                 taxAmount       : $this->amountConverter->convertToNexiAmount($item->getTaxAmount()),
             );
@@ -46,7 +50,7 @@ class SalesDocumentItemsBuilder
 
         if ($salesObject->getShippingInclTax()) {
             $items[] = new Item(
-                name            : $salesObject->getOrder()->getShippingDescription(),
+                name            : $this->stringSanitizer->sanitize($salesObject->getOrder()->getShippingDescription()),
                 quantity        : 1,
                 unit            : 'pcs',
                 unitPrice       : $this->amountConverter->convertToNexiAmount($salesObject->getShippingAmount()),
