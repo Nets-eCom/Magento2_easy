@@ -5,7 +5,8 @@
         "php": "^8.0",
         "nexi-checkout/php-payment-sdk": "^0.4.1",
         "magento/framework": ">=102.0.0",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "giggsey/libphonenumber-for-php-lite": "^9.0.5"
     },
     "require-dev": {
         "magento/magento-coding-standard": "*",

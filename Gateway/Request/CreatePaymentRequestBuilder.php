@@ -232,7 +232,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             privatePerson  : new PrivatePerson(
                 firstName: $this->stringSanitizer->sanitize($order->getCustomerFirstname()),
                 lastName : $this->stringSanitizer->sanitize($order->getCustomerLastname()),
-            )
+            ),
+            phoneNumber    : $this->getNumber($order)
         );
     }
 
@@ -249,5 +250,25 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         )->getThreeLetterAbbreviation();
     }
 
+    /**
+     * Build phone number object for the payment
+     *
+     * @param Order $order
+     *
+     * @return Payment\PhoneNumber
+     */
+    public function getNumber(Order $order): Payment\PhoneNumber
+    {
+        $lib = \libphonenumber\PhoneNumberUtil::getInstance();
 
+        $number = $lib->parse(
+            $order->getShippingAddress()->getTelephone(),
+            $order->getShippingAddress()->getCountryId()
+        );
+
+        return new Payment\PhoneNumber(
+            prefix: '+' . $number->getCountryCode(),
+            number: (string)$number->getNationalNumber(),
+        );
+    }
 }
