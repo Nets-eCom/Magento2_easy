@@ -180,13 +180,13 @@
 
     <type name="Magento\Checkout\Model\GuestPaymentInformationManagement">
         <plugin name="Nexy_Checkout::guest_payment_information"
-                type="Nexi\Checkout\Plugin\GuestPaymentInformationManagement"
+                type="Nexi\Checkout\Plugin\PaymentInformationManagementPlugin"
                 sortOrder="100"/>
     </type>
 
     <type name="Magento\Checkout\Model\PaymentInformationManagement">
         <plugin name="Nexy_Checkout::payment_information"
-                type="Nexi\Checkout\Plugin\PaymentInformationManagement"
+                type="Nexi\Checkout\Plugin\PaymentInformationManagementPlugin"
                 sortOrder="100"/>
     </type>
 
@@ -200,7 +200,7 @@
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
-    <type name="Nexi\Checkout\Plugin\PaymentInformationManagement">
+    <type name="Nexi\Checkout\Plugin\PaymentInformationManagementPlugin">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>

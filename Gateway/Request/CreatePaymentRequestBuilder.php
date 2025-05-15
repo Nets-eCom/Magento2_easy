@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Request;
 
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberUtil;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -9,8 +13,10 @@ use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Item as OrderItem;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
+use Nexi\Checkout\Gateway\StringSanitizer;
 use Nexi\Checkout\Model\WebhookHandler;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
@@ -21,11 +27,13 @@ use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Request\Payment\PrivatePerson;
 use NexiCheckout\Model\Request\Shared\Notification;
+use NexiCheckout\Model\Request\Shared\Notification\Webhook;
 use NexiCheckout\Model\Request\Shared\Order as NexiRequestOrder;
+use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
-    public const NEXI_PAYMENT_WEBHOOK_PATH = '/nexi/payment/webhook';
+    public const NEXI_PAYMENT_WEBHOOK_PATH = 'nexi/payment/webhook';
 
     /**
      * @param UrlInterface $url
@@ -33,13 +41,17 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param CountryInformationAcquirerInterface $countryInformationAcquirer
      * @param EncryptorInterface $encryptor
      * @param WebhookHandler $webhookHandler
+     * @param AmountConverter $amountConverter
+     * @param StringSanitizer $stringSanitizer
      */
     public function __construct(
-        private readonly UrlInterface                        $url,
-        private readonly Config                              $config,
+        private readonly UrlInterface $url,
+        private readonly Config $config,
         private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
-        private readonly EncryptorInterface                  $encryptor,
-        private readonly WebhookHandler                      $webhookHandler
+        private readonly EncryptorInterface $encryptor,
+        private readonly WebhookHandler $webhookHandler,
+        private readonly AmountConverter $amountConverter,
+        private readonly StringSanitizer $stringSanitizer,
     ) {
     }
 
@@ -80,8 +92,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         return new NexiRequestOrder(
             items    : $this->buildItems($order),
             currency : $order->getBaseCurrencyCode(),
-            amount   : (int)($order->getGrandTotal() * 100),
-            reference: $order->getIncrementId(),
+            amount   : $this->amountConverter->convertToNexiAmount($order->getBaseGrandTotal()),
+            reference: $order->getIncrementId()
         );
     }
 
@@ -90,22 +102,22 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * @param Order|Quote $paymentSubject
      *
-     * @return Order\Item|array
+     * @return OrderItem|array
      */
-    public function buildItems(Order|Quote $paymentSubject): Order\Item|array
+    public function buildItems(Order|Quote $paymentSubject): OrderItem|array
     {
-        /** @var Order\Item $items */
-        foreach ($paymentSubject->getAllVisibleItems() as $item) {
+        /** @var OrderItem $items */
+        foreach ($order->getAllVisibleItems() as $item) {
             $items[] = new Item(
                 name            : $item->getName(),
-                quantity        : (int)$item->getQtyOrdered(),
+                quantity        : (float)$item->getQtyOrdered(),
                 unit            : 'pcs',
-                unitPrice       : (int)($item->getPrice() * 100),
-                grossTotalAmount: (int)($item->getRowTotalInclTax() * 100) - (int)($item->getDiscountAmount() * 100), // TODO: calculate discount tax amount based on tax calculation method
-                netTotalAmount  : (int)($item->getRowTotal() * 100),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getPrice()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getRowTotalInclTax() - $item->getDiscountAmount()), // TODO: calculate discount tax amount based on tax calculation method
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getRowTotal()),
                 reference       : $item->getSku(),
-                taxRate         : (int)($item->getTaxPercent() * 100),
-                taxAmount       : (int)($item->getTaxAmount() * 100),
+                taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getTaxAmount()),
             );
         }
 
@@ -120,12 +132,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 name            : $shippingInfoHolder->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : (int)($shippingInfoHolder->getShippingAmount() * 100),
-                grossTotalAmount: (int)($shippingInfoHolder->getShippingInclTax() * 100),
-                netTotalAmount  : (int)($shippingInfoHolder->getShippingAmount() * 100),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingAmount()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingAmount()),
                 reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
-                taxRate         : (int)($shippingInfoHolder->getTaxAmount() / $shippingInfoHolder->getGrandTotal() * 100),
-                taxAmount       : (int)($shippingInfoHolder->getShippingTaxAmount() * 100),
+                taxRate         : $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getTaxAmount() / $shippingInfoHolder->getGrandTotal()
+                ),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingTaxAmount()),
             );
         }
 
@@ -152,16 +166,18 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Build the webhooks for the payment
      *
-     * @return array<Payment\Webhook>
+     * @return array<Webhook>
+     *
+     * added all for now, we need to check wh
      */
     public function buildWebhooks(): array
     {
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $baseUrl    = $this->url->getBaseUrl();
-            $webhooks[] = new Notification\Webhook(
+            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
+            $webhooks[] = new Webhook(
                 eventName    : $eventName,
-                url          : $baseUrl . self::NEXI_PAYMENT_WEBHOOK_PATH,
+                url          : $webhookUrl,
                 authorization: $this->encryptor->hash($this->config->getWebhookSecret())
             );
         }
@@ -192,29 +208,30 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @return Consumer
      * @throws NoSuchEntityException
      */
-    private function buildConsumer($order): Consumer
+    private function buildConsumer(Order $order): Consumer
     {
         return new Consumer(
             email          : $order->getCustomerEmail(),
             reference      : $order->getCustomerId(),
             shippingAddress: new Address(
-                addressLine1: $order->getShippingAddress()->getStreetLine(1),
-                addressLine2: $order->getShippingAddress()->getStreetLine(2),
+                addressLine1: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(2)),
                 postalCode  : $order->getShippingAddress()->getPostcode(),
-                city        : $order->getShippingAddress()->getCity(),
+                city        : $this->stringSanitizer->sanitize($order->getShippingAddress()->getCity()),
                 country     : $this->getThreeLetterCountryCode(),
             ),
             billingAddress : new Address(
-                addressLine1: $order->getBillingAddress()->getStreetLine(1),
-                addressLine2: $order->getBillingAddress()->getStreetLine(2),
+                addressLine1: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(2)),
                 postalCode  : $order->getBillingAddress()->getPostcode(),
                 city        : $order->getBillingAddress()->getCity(),
                 country     : $this->getThreeLetterCountryCode(),
             ),
             privatePerson  : new PrivatePerson(
-                firstName: $order->getCustomerFirstname(),
-                lastName : $order->getCustomerLastname(),
-            )
+                firstName: $this->stringSanitizer->sanitize($order->getCustomerFirstname()),
+                lastName : $this->stringSanitizer->sanitize($order->getCustomerLastname()),
+            ),
+            phoneNumber    : $this->getNumber($order)
         );
     }
 
@@ -279,5 +296,28 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         return $this->countryInformationAcquirer->getCountryInfo(
             $this->config->getCountryCode()
         )->getThreeLetterAbbreviation();
+    }
+
+    /**
+     * Build phone number object for the payment
+     *
+     * @param Order $order
+     *
+     * @return Payment\PhoneNumber
+     * @throws NumberParseException
+     */
+    public function getNumber(Order $order): Payment\PhoneNumber
+    {
+        $lib = PhoneNumberUtil::getInstance();
+
+        $number = $lib->parse(
+            $order->getShippingAddress()->getTelephone(),
+            $order->getShippingAddress()->getCountryId()
+        );
+
+        return new Payment\PhoneNumber(
+            prefix: '+' . $number->getCountryCode(),
+            number: (string)$number->getNationalNumber(),
+        );
     }
 }

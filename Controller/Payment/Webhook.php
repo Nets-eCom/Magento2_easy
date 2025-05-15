@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Controller\Payment;
 
 use Exception;
@@ -17,7 +19,6 @@ use Psr\Log\LoggerInterface;
 
 class Webhook extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
 {
-
     /**
      * @param Context $context
      * @param LoggerInterface $logger
@@ -27,11 +28,11 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
      * @param SerializerInterface $serializer
      */
     public function __construct(
-        Context                              $context,
-        private readonly LoggerInterface     $logger,
-        private readonly Encryptor           $encryptor,
-        private readonly Config              $config,
-        private readonly WebhookHandler      $webhookHandler,
+        Context $context,
+        private readonly LoggerInterface $logger,
+        private readonly Encryptor $encryptor,
+        private readonly Config $config,
+        private readonly WebhookHandler $webhookHandler,
         private readonly SerializerInterface $serializer
     ) {
         parent::__construct($context);
@@ -71,13 +72,7 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
             );
             $this->_response->setHttpResponseCode(200);
         } catch (Exception $e) {
-            $this->logger->error(
-                'Webhook error:',
-                [
-                    'message' => $e->getMessage(),
-                    'stacktrace' => $e->getTraceAsString(),
-                ]
-            );
+            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
             $this->_response->setHttpResponseCode(500);
         }
     }

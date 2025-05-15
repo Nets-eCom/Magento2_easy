@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Http;
 
 use Magento\Framework\Exception\LocalizedException;
@@ -9,10 +11,7 @@ use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Model\Shared\JsonDeserializeInterface;
 use Psr\Log\LoggerInterface;
-use ReflectionException;
-use function PHPUnit\Framework\isNull;
 
 class Client implements ClientInterface
 {
@@ -41,44 +40,29 @@ class Client implements ClientInterface
         try {
             $paymentApi = $this->getPaymentApi();
             $nexiMethod = $transferObject->getUri();
-            $this->logRequest($nexiMethod, $transferObject);
+            $this->logger->debug(
+                'Nexi Client request: ',
+                [
+                    'method' => $nexiMethod,
+                    'request' => $transferObject->getBody()
+                ]
+            );
             if (is_array($transferObject->getBody())) {
                 $response = $paymentApi->$nexiMethod(...$transferObject->getBody());
             } else {
                 $response = $paymentApi->$nexiMethod($transferObject->getBody());
             }
-            $this->logResponse($response);
+
+            $this->logger->debug(
+                'Nexi Client response: ',
+                ['response' => var_export($response, true)]
+            );
         } catch (PaymentApiException|\Exception $e) {
             $this->logger->error($e->getMessage(), [$e]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 
         return [$response];
-    }
-
-    /**
-     * Get response data
-     *
-     * @param JsonDeserializeInterface $response
-     *
-     * @return string|false
-     * @throws ReflectionException
-     */
-    public function getResponseData(JsonDeserializeInterface $response): string|false
-    {
-        $responseData = [];
-
-        $responseReflection = new \ReflectionClass($response);
-        $methods            = $responseReflection->getMethods(\ReflectionMethod::IS_PUBLIC);
-
-        foreach ($methods as $method) {
-            if (str_starts_with($method->getName(), 'get')) {
-                $name                = $method->getName();
-                $value               = $method->invoke($response);
-                $responseData[$name] = $value;
-            }
-        }
-        return json_encode($responseData);
     }
 
     /**
@@ -91,39 +75,6 @@ class Client implements ClientInterface
         return $this->paymentApiFactory->create(
             (string)$this->config->getApiKey(),
             $this->config->isLiveMode()
-        );
-    }
-
-    /**
-     * Log response
-     *
-     * @param ?JsonDeserializeInterface $response
-     *
-     * @return void
-     * @throws ReflectionException
-     */
-    public function logResponse(?JsonDeserializeInterface $response): void
-    {
-        if ($response instanceof JsonDeserializeInterface) {
-            $this->logger->debug(
-                'Nexi response: ' . $this->getResponseData($response)
-            );
-        }
-    }
-
-    /**
-     * Log request
-     *
-     * @param string $nexiMethod
-     * @param TransferInterface $transferObject
-     *
-     * @return void
-     */
-    public function logRequest(string $nexiMethod, TransferInterface $transferObject): void
-    {
-        $this->logger->debug(
-            'Nexi method: ' . $nexiMethod . PHP_EOL .
-            'Nexi request: ' . json_encode($transferObject->getBody())
         );
     }
 }

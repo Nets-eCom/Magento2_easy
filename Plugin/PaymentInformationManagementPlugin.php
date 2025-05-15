@@ -1,21 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Plugin;
 
-use Exception;
-use Magento\Checkout\Model\PaymentInformationManagement as Subject;
+use Magento\Checkout\Model\GuestPaymentInformationManagement;
+use Magento\Checkout\Model\PaymentInformationManagement;
 use Magento\Checkout\Model\Session;
 use Psr\Log\LoggerInterface;
 
-class PaymentInformationManagement
+class PaymentInformationManagementPlugin
 {
-
     /**
      * @param Session $checkoutSession
      * @param LoggerInterface $logger
      */
     public function __construct(
-        private readonly Session                  $checkoutSession,
+        private readonly Session $checkoutSession,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -23,28 +24,19 @@ class PaymentInformationManagement
     /**
      * Add redirect URL to the response after placing an order.
      *
-     * @param Subject $subject
+     * @param PaymentInformationManagement|GuestPaymentInformationManagement $subject
      * @param false|mixed|string $result
      *
      * @return false|mixed|string
      */
     public function afterSavePaymentInformationAndPlaceOrder(
-        Subject $subject,
+        $subject,
         $result
     ) {
-        try {
-            $redirectUrl = $this->getRedirectUrl();
+        $redirectUrl = $this->getRedirectUrl();
 
-            if ($redirectUrl) {
-                $result = json_encode(['result' => $result, 'redirect_url' => $redirectUrl]);
-            }
-        } catch (Exception $e) {
-            $this->logger->error(
-                $e->getMessage(),
-                [
-                    'trace' => $e->getTraceAsString()
-                ]
-            );
+        if ($redirectUrl) {
+            $result = json_encode(['result' => $result, 'redirect_url' => $redirectUrl]);
         }
 
         return $result;

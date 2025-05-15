@@ -11,7 +11,6 @@ use Magento\Framework\UrlInterface;
 
 class CancelAction implements ActionInterface
 {
-
     /**
      * @param RedirectFactory $resultRedirectFactory
      * @param UrlInterface $url
@@ -19,10 +18,10 @@ class CancelAction implements ActionInterface
      * @param ManagerInterface $messageManager
      */
     public function __construct(
-        private readonly RedirectFactory   $resultRedirectFactory,
-        private readonly UrlInterface      $url,
-        private readonly Session           $checkoutSession,
-        private readonly ManagerInterface  $messageManager
+        private readonly RedirectFactory $resultRedirectFactory,
+        private readonly UrlInterface $url,
+        private readonly Session $checkoutSession,
+        private readonly ManagerInterface $messageManager
     ) {
     }
 

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Checkout\Exception;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -13,37 +14,34 @@ use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 class PaymentReservationCreated implements WebhookProcessorInterface
 {
     /**
-     * PaymentReservationCreated constructor.
-     *
      * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
      */
     public function __construct(
-        private OrderRepositoryInterface $orderRepository,
-        private WebhookDataLoader $webhookDataLoader,
-        private Builder $transactionBuilder
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly WebhookDataLoader $webhookDataLoader,
+        private readonly Builder $transactionBuilder,
     ) {
     }
 
     /**
      * ProcessWebhook function for 'payment.reservation.created.v2' event.
      *
-     * @param $webhookData
+     * @param array $webhookData
      *
      * @return void
-     * @throws Exception
-     * @throws LocalizedException
-     * @throws \Exception
+     * @throws NotFoundException
      */
-    public function processWebhook($webhookData): void
+    public function processWebhook(array $webhookData): void
     {
         $paymentId          = $webhookData['data']['paymentId'];
         $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         if (!$paymentTransaction) {
-            throw new \Exception('Payment transaction not found.');
+            throw new NotFoundException(__('Payment transaction not found for %1.', $paymentId));
         }
 
+        /** @var \Magento\Sales\Model\Order $order */
         $order = $paymentTransaction->getOrder();
 
         $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);

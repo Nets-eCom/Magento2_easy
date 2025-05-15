@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Block\Adminhtml\System\Config;
 
 use Magento\Backend\Block\Template\Context;
@@ -17,10 +19,10 @@ class TestConnection extends Field
      * @param SecureHtmlRenderer|null $secureRenderer
      */
     public function __construct(
-        Context                    $context,
+        Context $context,
         private readonly Structure $configStructure,
-        array                      $data = [],
-        ?SecureHtmlRenderer        $secureRenderer = null
+        array $data = [],
+        ?SecureHtmlRenderer $secureRenderer = null
     ) {
         parent::__construct($context, $data, $secureRenderer);
     }
@@ -37,21 +39,30 @@ class TestConnection extends Field
     {
         $element = clone $element;
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
+
         return parent::render($element);
     }
 
     /**
-     * @inheritDoc
+     * Set template to itself
+     *
+     * @return $this
+     * @since 100.1.0
      */
     protected function _prepareLayout()
     {
         parent::_prepareLayout();
         $this->setTemplate('Nexi_Checkout::system/config/testconnection.phtml');
+
         return $this;
     }
 
     /**
-     * @inheritDoc
+     * Get HTML for the element
+     *
+     * @param AbstractElement $element
+     *
+     * @return string
      */
     protected function _getElementHtml(AbstractElement $element)
     {
@@ -61,7 +72,7 @@ class TestConnection extends Field
                 'button_label'  => __($originalData['button_label']),
                 'html_id'       => $element->getHtmlId(),
                 'ajax_url'      => $this->_urlBuilder->getUrl('nexi/system_config/testconnection'),
-                'field_mapping' => str_replace('"', '\\"', \Laminas\Json\Json::encode($this->getFieldMapping()))
+                'field_mapping' => str_replace('"', '\\"', json_encode($this->getFieldMapping()))
             ]
         );
 

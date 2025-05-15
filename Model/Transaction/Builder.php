@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Transaction;
 
 use Magento\Sales\Api\Data\TransactionInterface;
@@ -10,10 +12,7 @@ use Nexi\Checkout\Gateway\Config\Config;
 
 class Builder
 {
-
     /**
-     * Constructor
-     *
      * @param BuilderInterface $transactionBuilder
      * @param Config $config
      */

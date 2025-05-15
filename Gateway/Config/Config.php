@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Config;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -18,8 +20,6 @@ class Config extends MagentoConfig
      * @param ScopeConfigInterface $scopeConfig
      * @param string|null $methodCode
      * @param string $pathPattern
-     *
-     * @phpcsSuppress Generic.CodeAnalysis.UselessOverridingMethod.Found
      */
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -40,7 +40,7 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Check if the environment is sandbox
+     * Check if the environment is live
      *
      * @return bool
      */
@@ -160,22 +160,12 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Get if the merchant handles consumer data
-     *
-     * @return mixed|null
-     */
-    public function getMerchantHandlesConsumerData()
-    {
-        return $this->getValue('merchant_handles_consumer_data');
-    }
-
-    /**
      * Get the country code
      *
      * @return mixed
      */
     public function getCountryCode()
     {
-        return $this->scopeConfig->getValue('general/country/default');
+        return $this->scopeConfig->isSetFlag('general/country/default');
     }
 }

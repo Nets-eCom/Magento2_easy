@@ -55,6 +55,8 @@ define(
 
         return Component.extend({
             defaults: {
+                template: window.checkoutConfig.payment.nexi.integrationType ? 'Nexi_Checkout/payment/nexi-hosted' : 'Nexi_Checkout/payment/nexi-embedded.html',
+                config: window.checkoutConfig.payment.nexi
                 template: 'Nexi_Checkout/payment/nexi',
                 config: window.checkoutConfig.payment.nexi,
             },
@@ -80,7 +82,6 @@ define(
                 return this.getCode() === this.isChecked();
             },
             placeOrder: function (data, event) {
-                console.log("DEBUG: Place order called");
                 let placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
 
                 return $.when(placeOrder).done(function (response) {
@@ -88,7 +89,7 @@ define(
                 }.bind(this));
             },
             afterPlaceOrder: function (response) {
-                if (this.config.integrationType === 'HostedPaymentPage') {
+                if (this.isHosted()) {
                     let redirectUrl = JSON.parse(response).redirect_url;
                     if (redirectUrl) {
                         window.location.href = redirectUrl;
@@ -160,7 +161,10 @@ define(
 
                     this.eventsSubscribed(true);
                 }
-            }
+            },
+            isHosted: function () {
+                return this.config.integrationType === 'HostedPaymentPage';
+            },
         });
     }
 );

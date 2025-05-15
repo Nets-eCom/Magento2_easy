@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Braintree\Exception\NotFound;
 use Magento\Checkout\Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
@@ -42,7 +41,7 @@ class PaymentCreated implements WebhookProcessorInterface
      *
      * @return void
      * @throws Exception
-     * @throws LocalizedException|NotFound
+     * @throws LocalizedException
      */
     public function processWebhook(array $webhookData): void
     {
@@ -99,23 +98,24 @@ class PaymentCreated implements WebhookProcessorInterface
      *
      * @return void
      */
-    private function createPaymentTransaction($order, $paymentId): void
+    private function createPaymentTransaction(Order $order, string $paymentId): void
     {
-        if ($order->getState() === Order::STATE_NEW) {
-            $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-            $paymentTransaction = $this->transactionBuilder
-                ->build(
-                    $paymentId,
-                    $order,
-                    [
-                        'payment_id' => $paymentId
-                    ],
-                    TransactionInterface::TYPE_PAYMENT
-                );
-            $order->getPayment()->addTransactionCommentsToOrder(
-                $paymentTransaction,
-                __('Payment created in Nexi Gateway.')
-            );
+        if ($order->getState() !== Order::STATE_NEW) {
+            return;
         }
+        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+        $paymentTransaction = $this->transactionBuilder
+            ->build(
+                $paymentId,
+                $order,
+                [
+                    'payment_id' => $paymentId
+                ],
+                TransactionInterface::TYPE_PAYMENT
+            );
+        $order->getPayment()->addTransactionCommentsToOrder(
+            $paymentTransaction,
+            __('Payment created in Nexi Gateway.')
+        );
     }
 }
