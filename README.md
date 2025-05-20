@@ -7,7 +7,7 @@ Enhance your Adobe Commerce store with the Nexi Nets Checkout, a comprehensive s
 
 ## Requirements
 
-- **Adobe Commerce Version**: Compatible with Adobe Commerce **2.4.x and above**.
+Up-to-date version compatibility can be found in the [changelog](https://github.com/Nets-eCom/Magento2_easy/blob/master/CHANGELOG.md).
 
 ---
 
