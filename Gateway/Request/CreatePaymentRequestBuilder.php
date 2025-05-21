@@ -26,6 +26,7 @@ use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Request\Payment\PrivatePerson;
+use NexiCheckout\Model\Request\Payment\PhoneNumber;
 use NexiCheckout\Model\Request\Shared\Notification;
 use NexiCheckout\Model\Request\Shared\Notification\Webhook;
 use NexiCheckout\Model\Request\Shared\Order as NexiRequestOrder;
@@ -303,10 +304,10 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * @param Order $order
      *
-     * @return Payment\PhoneNumber
+     * @return PhoneNumber
      * @throws NumberParseException
      */
-    public function getNumber(Order $order): Payment\PhoneNumber
+    public function getNumber(Order $order): PhoneNumber
     {
         $lib = PhoneNumberUtil::getInstance();
 
@@ -315,7 +316,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             $order->getShippingAddress()->getCountryId()
         );
 
-        return new Payment\PhoneNumber(
+        return new PhoneNumber(
             prefix: '+' . $number->getCountryCode(),
             number: (string)$number->getNationalNumber(),
         );
