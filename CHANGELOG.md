@@ -3,7 +3,6 @@
 
 | Module         | Nets Easy Payment Module for Magento 2                                                                        |
 |----------------|---------------------------------------------------------------------------------------------------------------|
-| Prefix         | `EASY-M2`                                                                                                     |
 | Shop Version   | `2.4.x`                                                                                                       |
 | Plugin Version | `1.7.5`                                                                                                       |
 | PHP Version    | `7.4 - 8.3`                                                                                                   |
