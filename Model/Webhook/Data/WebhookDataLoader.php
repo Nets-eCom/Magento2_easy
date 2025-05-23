@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Magento\Checkout\Exception;
 namespace Nexi\Checkout\Model\Webhook\Data;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
