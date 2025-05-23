@@ -59,7 +59,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     private function processOrder(Order $order, array $webhookData): void
     {
         $reservationTxn = $this->webhookDataLoader->getTransactionByOrderId(
-            $order->getId(),
+            (int)$order->getId(),
             TransactionInterface::TYPE_AUTH
         );
 
