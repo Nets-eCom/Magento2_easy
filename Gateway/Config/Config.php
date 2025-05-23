@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Config;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as MagentoConfig;
+use Magento\Payment\Model\MethodInterface;
 use Nexi\Checkout\Model\Config\Source\Environment;
 
 class Config extends MagentoConfig
@@ -18,8 +21,6 @@ class Config extends MagentoConfig
      * @param ScopeConfigInterface $scopeConfig
      * @param string|null $methodCode
      * @param string $pathPattern
-     *
-     * @phpcsSuppress Generic.CodeAnalysis.UselessOverridingMethod.Found
      */
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -40,7 +41,7 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Check if the environment is sandbox
+     * Check if the environment is live
      *
      * @return bool
      */
@@ -60,13 +61,27 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Get api key
+     * Get secret key
      *
      * @return string|null
      */
     public function getApiKey(): ?string
     {
-        return $this->getValue('api_key');
+        if ($this->isLiveMode()) {
+            return $this->getValue('secret_key');
+        }
+
+        return $this->getTestApiKey();
+    }
+
+    /**
+     * Get test secret key
+     *
+     * @return mixed|null
+     */
+    public function getTestApiKey()
+    {
+        return $this->getValue('test_secret_key');
     }
 
     /**
@@ -74,9 +89,13 @@ class Config extends MagentoConfig
      *
      * @return mixed|null
      */
-    public function getApiIdentifier()
+    public function getCheckoutKey()
     {
-        return $this->getValue('api_identifier');
+        if ($this->isLiveMode()) {
+            return $this->getValue('checkout_key');
+        }
+
+        return $this->getValue('test_checkout_key');
     }
 
     /**
@@ -126,17 +145,9 @@ class Config extends MagentoConfig
      */
     public function getPaymentAction(): string
     {
-        return $this->getValue('payment_action');
-    }
-
-    /**
-     * Get if the merchant handles consumer data
-     *
-     * @return mixed|null
-     */
-    public function getMerchantHandlesConsumerData()
-    {
-        return $this->getValue('merchant_handles_consumer_data');
+        return $this->getValue('is_auto_capture') ?
+            MethodInterface::ACTION_AUTHORIZE_CAPTURE :
+            MethodInterface::ACTION_AUTHORIZE;
     }
 
     /**
@@ -146,6 +157,6 @@ class Config extends MagentoConfig
      */
     public function getCountryCode()
     {
-        return $this->scopeConfig->getValue('general/country/default');
+        return $this->scopeConfig->isSetFlag('general/country/default');
     }
 }

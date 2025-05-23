@@ -6,47 +6,50 @@
             <group id="nexi" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Nexi Payments</label>
-                <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1">
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
                     <label>Title</label>
+                    <validate>required-entry</validate>
                 </field>
-
                 <field id="nexi_api_test_connect_wizard" translate="button_label" sortOrder="68" showInDefault="1"
                        showInWebsite="0" showInStore="0">
                     <label/>
                     <button_label>Test Connection</button_label>
                     <frontend_model>Nexi\Checkout\Block\Adminhtml\System\Config\TestConnection</frontend_model>
                 </field>
-
-                <field id="api_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
-                    <label>API Key</label>
-                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                </field>
-                <field id="api_identifier" translate="label" type="obscure" sortOrder="31" showInDefault="1"
-                       showInWebsite="1">
-                    <label>API Identifier</label>
-                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                </field>
-                <field id="webhook_secret" translate="label" type="obscure" sortOrder="31" showInDefault="1"
-                       showInWebsite="1">
-                    <label>Webhook Secret</label>
-                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                <field id="secret_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
+                    <label>Secret Key</label>
                     <validate>required-entry</validate>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="checkout_key" translate="label" type="obscure" sortOrder="31" showInDefault="1"
+                       showInWebsite="1">
+                    <label>Checkout Key</label>
+                    <validate>required-entry</validate>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="test_secret_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
+                    <label>Test Secret Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="test_checkout_key" translate="label" type="obscure" sortOrder="31" showInDefault="1"
+                       showInWebsite="1">
+                    <label>Test Checkout Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
                 <field id="webshop_terms_and_conditions_url" translate="label" type="text" sortOrder="40"
                        showInDefault="1" showInWebsite="1">
                     <label>Webshop Terms and Conditions URL</label>
+                    <validate>required-entry</validate>
                     <comment>add URL to your Webshop Terms and Conditions site.</comment>
                 </field>
                 <field id="payment_terms_and_conditions_url" translate="label" type="text" sortOrder="41"
                        showInDefault="1" showInWebsite="1">
                     <label>Payment Terms and Conditions URL</label>
+                    <validate>required-entry</validate>
                     <comment>add URL to your payment Terms and Conditions site.</comment>
                 </field>
                 <field id="integration_type" translate="label" type="select" sortOrder="50" showInDefault="1"
@@ -54,11 +57,11 @@
                     <label>Integration type</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\IntegrationType</source_model>
                 </field>
-                <field id="payment_action" translate="label" type="select" sortOrder="3" showInDefault="1"
+                <field id="is_auto_capture" translate="label" type="select" sortOrder="5" showInDefault="1"
                        showInWebsite="1" canRestore="1">
-                    <label>Payment Action</label>
-                    <source_model>Nexi\Checkout\Model\Config\Source\PaymentAction</source_model>
-                    <comment>If set to "Authorize and Capture", the transaction will be charged automatically after the
+                    <label>Is Auto Capture</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set to "Yes", the transaction will be charged automatically after the
                         reservation has been accepted.
                     </comment>
                 </field>
@@ -71,14 +74,6 @@
                        showInWebsite="1">
                     <label>Environment</label>
                     <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
-                </field>
-                <field id="merchant_handles_consumer_data" translate="label" type="select" sortOrder="60"
-                       showInDefault="1" showInWebsite="1">
-                    <label>Merchant handles consumer data</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[Allows you to initiate the checkout with customer data so that your customer only need to provide payment details. It is possible to exclude all consumer and company information from the payment (only for certain payment methods) when it is set to true.]]>
-                    </comment>
                 </field>
             </group>
         </section>

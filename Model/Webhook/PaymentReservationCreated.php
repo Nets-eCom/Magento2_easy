@@ -1,54 +1,65 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Checkout\Exception;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NotFoundException;
+use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
-class PaymentReservationCreated
+class PaymentReservationCreated implements WebhookProcessorInterface
 {
+    /**
+     * @param OrderRepositoryInterface $orderRepository
+     * @param WebhookDataLoader $webhookDataLoader
+     * @param Builder $transactionBuilder
+     */
     public function __construct(
-        private OrderRepositoryInterface $orderRepository,
-        private WebhookDataLoader $webhookDataLoader
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly WebhookDataLoader $webhookDataLoader,
+        private readonly Builder $transactionBuilder,
     ) {
     }
 
     /**
      * ProcessWebhook function for 'payment.reservation.created.v2' event.
      *
-     * @param $response
+     * @param array $webhookData
+     *
      * @return void
-     * @throws Exception
-     * @throws LocalizedException
+     * @throws NotFoundException
      */
-    public function processWebhook($response)
+    public function processWebhook(array $webhookData): void
     {
-        $params = json_decode('{"id":"d60fd4bbaad6454a8c2a4377601c969c","timestamp":"2025-02-24T13:58:29.1396+00:00","merchantNumber":100065206,"event":"payment.reservation.created.v2","data":{"paymentMethod":"Visa","paymentType":"CARD","amount":{"amount":5780,"currency":"EUR"},"paymentId":"f369621ef1b149b5b90b65504506eb75"}}', true);
-        $order = $this->webhookDataLoader->loadOrderByPaymentId($params['data']['paymentId']);
-
-        $order->getPayment()->setAdditionalInformation('selected_payment_method', $params['data']['paymentMethod']);
-
-        $this->processOrder($order);
-        $this->orderRepository->save($order);
-    }
-
-    /**
-     * ProcessOrder function.
-     * @param $order
-     * @return void
-     * @throws Exception
-     */
-    private function processOrder($order): void
-    {
-        try {
-            if ($order->getStatus() === Order::STATE_NEW) {
-                $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-            }
-        } catch (\Exception $e) {
-            throw new Exception(__($e->getMessage()));
+        $paymentId          = $webhookData['data']['paymentId'];
+        $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
+        if (!$paymentTransaction) {
+            throw new NotFoundException(__('Payment transaction not found for %1.', $paymentId));
         }
+
+        /** @var \Magento\Sales\Model\Order $order */
+        $order = $paymentTransaction->getOrder();
+
+        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+        $reservationTransaction = $this->transactionBuilder->build(
+            $webhookData['id'],
+            $order,
+            ['payment_id' => $paymentId],
+            TransactionInterface::TYPE_AUTH
+        );
+        $reservationTransaction->setIsClosed(0);
+        $reservationTransaction->setParentTxnId($paymentId);
+        $reservationTransaction->setParentId($paymentTransaction->getTransactionId());
+
+        $order->getPayment()->addTransactionCommentsToOrder(
+            $reservationTransaction,
+            __('Payment reservation created.')
+        );
+
+        $this->orderRepository->save($order);
     }
 }

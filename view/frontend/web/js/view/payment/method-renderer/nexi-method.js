@@ -20,12 +20,31 @@ define(
         'mage/translate',
         'Magento_Ui/js/modal/modal'
     ],
-    function (ko, $, _, storage, Component, placeOrderAction, selectPaymentMethodAction, additionalValidators, quote, getTotalsAction, urlBuilder, url, fullScreenLoader, customer, checkoutData, totals, messageList, $t, modal) {
+    function (ko,
+              $,
+              _,
+              storage,
+              Component,
+              placeOrderAction,
+              selectPaymentMethodAction,
+              additionalValidators,
+              quote,
+              getTotalsAction,
+              urlBuilder,
+              url,
+              fullScreenLoader,
+              customer,
+              checkoutData,
+              totals,
+              messageList,
+              $t,
+              modal
+    ) {
         'use strict';
 
         return Component.extend({
             defaults: {
-                template: 'Nexi_Checkout/payment/nexi',
+                template: window.checkoutConfig.payment.nexi.integrationType ? 'Nexi_Checkout/payment/nexi-hosted' : 'Nexi_Checkout/payment/nexi-embedded.html',
                 config: window.checkoutConfig.payment.nexi
             },
             placeOrder: function (data, event) {
@@ -36,13 +55,16 @@ define(
                 }.bind(this));
             },
             afterPlaceOrder: function (response) {
-                if (this.config.integrationType === 'HostedPaymentPage') {
+                if (this.isHosted()) {
                     let redirectUrl = JSON.parse(response).redirect_url;
                     if (redirectUrl) {
                         window.location.href = redirectUrl;
                     }
                 }
-            }
+            },
+            isHosted: function () {
+                return this.config.integrationType === 'HostedPaymentPage';
+            },
         });
     }
 );

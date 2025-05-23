@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
 class Environment implements OptionSourceInterface
 {
-    const TEST = 'test';
-    const LIVE = 'live';
+    public const TEST = 'test';
+    public const LIVE = 'live';
 
     /**
      * Return array of options as value-label pairs

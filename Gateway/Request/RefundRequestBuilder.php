@@ -1,23 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
-use Nexi\Checkout\Gateway\Request\NexiCheckout\RequestFactory;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use NexiCheckout\Model\Request\Charge\Shipping;
-use NexiCheckout\Model\Request\FullCharge;
-use NexiCheckout\Model\Request\FullRefundCharge;
 use NexiCheckout\Model\Request\PartialRefundCharge;
-use NexiCheckout\Model\Request\RefundPayment;
 
 class RefundRequestBuilder implements BuilderInterface
 {
+    /**
+     * @param SalesDocumentItemsBuilder $documentItemsBuilder
+     */
     public function __construct(
-        private readonly RequestFactory $requestFactory
+        private readonly SalesDocumentItemsBuilder $documentItemsBuilder
     ) {
     }
 
+    /**
+     * Build nexi PartialRefundCharge request
+     *
+     * @param array $buildSubject
+     *
+     * @return array
+     */
     public function build(array $buildSubject): array
     {
         /** @var Order $order */
@@ -29,30 +38,10 @@ class RefundRequestBuilder implements BuilderInterface
             'body'        => [
                 'chargeId' => $payment->getRefundTransactionId(),
                 'refund'     => new PartialRefundCharge(
-                    orderItems: $this->requestFactory->getCreditmemoItems($creditmemo),
+                    orderItems: $this->documentItemsBuilder->build($creditmemo),
                     myReference: $creditmemo->getIncrementId(),
                 )
             ]
         ];
     }
-
-    /**
-     * @param Order $order
-     *
-     * @return Shipping|null
-     */
-    private function getShipping(Order $order)
-    {
-        if ($order->getShipmentsCollection()->getSize() > 0) {
-            /** @var Order\Shipment $shipping */
-            $shipping = $order->getShipmentsCollection()->getLastItem();
-            return new Shipping(
-                $shipping->getTracksCollection()->getLastItem()->getTrackNumber(),
-                $shipping->getTracksCollection()->getLastItem()->getCarrierCode()
-            );
-        }
-
-        return null;
-    }
-
 }

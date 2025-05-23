@@ -6,10 +6,13 @@ namespace Nexi\Checkout\Gateway\Handler;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Response\HandlerInterface;
+use NexiCheckout\Model\Result\ChargeResult;
 
-class CreatePayment implements HandlerInterface
+class Capture implements HandlerInterface
 {
     /**
+     * Constructor
+     *
      * @param SubjectReader $subjectReader
      */
     public function __construct(
@@ -25,9 +28,13 @@ class CreatePayment implements HandlerInterface
         $paymentDO = $this->subjectReader->readPayment($handlingSubject);
         $payment   = $paymentDO->getPayment();
 
-        $response = reset($response);
+        /** @var ChargeResult[] $response */
+        $chargeResult = reset($response);
 
-        $payment->setAdditionalInformation('payment_id', $response->getPaymentId());
-        $payment->setAdditionalInformation('redirect_url', $response->getHostedPaymentPageUrl());
+        $chargeId = $chargeResult->getChargeId();
+
+        $payment->setAdditionalInformation('charge_id', $chargeId);
+        $payment->setLastTransId($chargeId);
+        $payment->setTransactionId($chargeId);
     }
 }

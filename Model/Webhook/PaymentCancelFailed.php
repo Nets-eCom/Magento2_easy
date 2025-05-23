@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-
-class PaymentCancelFailed
+class PaymentCancelFailed implements WebhookProcessorInterface
 {
-    public function processWebhook()
+    /**
+     * @inheritdoc
+     */
+    public function processWebhook(array $webhookData): void
     {
         // TODO: Implement webhook processor logic here
     }

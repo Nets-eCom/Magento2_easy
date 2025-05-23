@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Command;
 
+use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
 use Magento\Payment\Gateway\Command\ResultInterface;
@@ -9,33 +12,38 @@ use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Model\InfoInterface;
+use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Model\Transaction\Builder;
 use Psr\Log\LoggerInterface;
 
 class Initialize implements CommandInterface
 {
+    public const STATUS_PENDING = 'pending';
+
     /**
      * @param SubjectReader $subjectReader
      * @param CommandManagerPoolInterface $commandManagerPool
      * @param LoggerInterface $logger
+     * @param Builder $transactionBuilder
      */
     public function __construct(
         private readonly SubjectReader $subjectReader,
         private readonly CommandManagerPoolInterface $commandManagerPool,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly Builder $transactionBuilder
     ) {
     }
 
     /**
-     * Execute function
+     * Implementation of execute method, creating payment in Nexi Gateway when order is placed
      *
      * @param array $commandSubject
      *
-     * @return $this
      * @throws LocalizedException
      */
-    public function execute(array $commandSubject): static
+    public function execute(array $commandSubject)
     {
         /** @var PaymentDataObjectInterface $payment */
         $paymentData = $this->subjectReader->readPayment($commandSubject);
@@ -45,17 +53,28 @@ class Initialize implements CommandInterface
         $payment = $paymentData->getPayment();
         $payment->setIsTransactionPending(true);
         $payment->setIsTransactionIsClosed(false);
+
         $order = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);
 
-        $stateObject->setIsNotified(false);
         $stateObject->setState(Order::STATE_NEW);
-        $stateObject->setStatus('pending');
+        $stateObject->setStatus(self::STATUS_PENDING);
         $stateObject->setIsNotified(false);
 
         $this->cratePayment($paymentData);
 
-        return $this;
+        $transactionId      = $payment->getAdditionalInformation('payment_id');
+        $orderTransaction = $this->transactionBuilder->build(
+            $transactionId,
+            $order,
+            ['payment_id' => $transactionId],
+            TransactionInterface::TYPE_PAYMENT
+        );
+
+        $payment->addTransactionCommentsToOrder(
+            $orderTransaction,
+            __('Payment created in Nexi Gateway.')
+        );
     }
 
     /**
@@ -74,8 +93,8 @@ class Initialize implements CommandInterface
                 commandCode: 'create_payment',
                 arguments  : ['payment' => $payment,]
             );
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
 

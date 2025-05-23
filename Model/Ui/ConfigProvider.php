@@ -1,21 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Nexi\Checkout\Gateway\Config\Config;
 use Magento\Payment\Helper\Data as PaymentHelper;
 
 class ConfigProvider implements ConfigProviderInterface
 {
     /**
-     * ConfigProvider constructor.
-     *
      * @param Config $config
      * @param PaymentHelper $paymentHelper
      */
     public function __construct(
-        private readonly Config        $config,
+        private readonly Config $config,
         private readonly PaymentHelper $paymentHelper,
     ) {
     }
@@ -24,7 +25,7 @@ class ConfigProvider implements ConfigProviderInterface
      * Returns Nexi configuration values.
      *
      * @return array|\array[][]
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function getConfig()
     {

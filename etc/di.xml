@@ -66,14 +66,7 @@
                 <item name="create_payment" xsi:type="string">NexiCommandCreatePayment</item>
                 <item name="initialize" xsi:type="string">Nexi\Checkout\Gateway\Command\Initialize</item>
                 <item name="capture" xsi:type="string">NexiCommandCapture</item>
-<!--                <item name="void" xsi:type="string">NexiCommandVoid</item>-->
                 <item name="refund" xsi:type="string">NexiCommandRefund</item>
-<!--                <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>-->
-<!--                <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>-->
-<!--                <item name="update_my_reference" xsi:type="string">NexiCommandUpdateMyReference</item>-->
-<!--                <item name="terminate_payment" xsi:type="string">NexiCommandTerminatePayment</item>-->
-<!--                <iten name="cancel_payment" xsi:type="string">NexiCommandCancelPayment</iten>-->
-
             </argument>
         </arguments>
     </virtualType>
@@ -110,12 +103,6 @@
             <argument name="config" xsi:type="object">NexiConfig</argument>
         </arguments>
     </type>
-
-    <virtualType name="NexiHandler" type="Nexi\Checkout\Gateway\Response\Handler">
-        <arguments>
-            <argument name="config" xsi:type="object">NexiConfig</argument>
-        </arguments>
-    </virtualType>
 
     <virtualType name="NexiClientFactory" type="NexiCheckout\Factory\HttpClientFactory">
         <arguments>
@@ -159,12 +146,6 @@
         </arguments>
     </type>
 
-    <type name="\Nexi\Checkout\Controller\Hpp\ReturnAction">
-        <arguments>
-            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
-        </arguments>
-    </type>
-
     <type name="\Nexi\Checkout\Controller\Hpp\CancelAction">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
@@ -174,21 +155,16 @@
 
     <type name="Magento\Checkout\Model\GuestPaymentInformationManagement">
         <plugin name="Nexy_Checkout::guest_payment_information"
-                type="Nexi\Checkout\Plugin\GuestPaymentInformationManagement"
+                type="Nexi\Checkout\Plugin\PaymentInformationManagementPlugin"
                 sortOrder="100"/>
     </type>
 
     <type name="Magento\Checkout\Model\PaymentInformationManagement">
         <plugin name="Nexy_Checkout::payment_information"
-                type="Nexi\Checkout\Plugin\PaymentInformationManagement"
+                type="Nexi\Checkout\Plugin\PaymentInformationManagementPlugin"
                 sortOrder="100"/>
     </type>
 
-    <type name="Nexi\Checkout\Controller\Hpp\ReturnAction">
-        <arguments>
-            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
-        </arguments>
-    </type>
     <type name="Nexi\Checkout\Gateway\Command\Initialize">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
@@ -199,21 +175,16 @@
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
-    <type name="Nexi\Checkout\Plugin\PaymentInformationManagement">
+    <type name="Nexi\Checkout\Plugin\PaymentInformationManagementPlugin">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
 
     <!-- Webhooks -->
-    <type name="Nexi\Checkout\Gateway\Handler\WebhookHandler">
+    <type name="Nexi\Checkout\Model\WebhookHandler">
         <arguments>
-            <argument name="paymentCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</argument>
-            <argument name="paymentReservationCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</argument>
-            <argument name="paymentCheckoutCompleted" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</argument>
-            <argument name="paymentChargeCreated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentChargeCreated</argument>
-            <argument name="webhookHandlers" xsi:type="array">
-                <item name="payment.checkout.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCheckoutCompleted</item>
+            <argument name="webhookProcessors" xsi:type="array">
                 <item name="payment.cancel.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCancelFailed</item>
                 <item name="payment.cancel.created" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCancelCreated</item>
                 <item name="payment.charge.created.v2" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentChargeCreated</item>
@@ -221,15 +192,14 @@
                 <item name="payment.created" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentCreated</item>
                 <item name="payment.refund.completed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentRefundCompleted</item>
                 <item name="payment.refund.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentRefundFailed</item>
-                <item name="payment.refund.initiated" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentRefundInitiated</item>
                 <item name="payment.reservation.created.v2" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationCreated</item>
-                <item name="payment.reservation.failed" xsi:type="object">Nexi\Checkout\Model\Webhook\PaymentReservationFailed</item>
             </argument>
         </arguments>
     </type>
     <type name="Nexi\Checkout\Controller\Payment\Webhook">
         <arguments>
-            <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Gateway\Handler\WebhookHandler</argument>
+            <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Model\WebhookHandler</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </type>
 </config>

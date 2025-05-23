@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Controller\Payment;
 
 use Exception;
@@ -10,33 +12,34 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Encryption\Encryptor;
+use Magento\Framework\Serialize\SerializerInterface;
 use Nexi\Checkout\Gateway\Config\Config;
-use Nexi\Checkout\Gateway\Handler\WebhookHandler;
+use Nexi\Checkout\Model\WebhookHandler;
 use Psr\Log\LoggerInterface;
 
 class Webhook extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
 {
     /**
-     * Webhook constructor.
-     *
      * @param Context $context
      * @param LoggerInterface $logger
      * @param Encryptor $encryptor
      * @param Config $config
      * @param WebhookHandler $webhookHandler
+     * @param SerializerInterface $serializer
      */
     public function __construct(
-        Context                          $context,
+        Context $context,
         private readonly LoggerInterface $logger,
-        private readonly Encryptor       $encryptor,
-        private readonly Config          $config,
-        private WebhookHandler $webhookHandler
+        private readonly Encryptor $encryptor,
+        private readonly Config $config,
+        private readonly WebhookHandler $webhookHandler,
+        private readonly SerializerInterface $serializer
     ) {
         parent::__construct($context);
     }
 
     /**
-     * Execute webhooks method.
+     * Execute the webhook action
      *
      * @return void
      * @throws Exception
@@ -49,17 +52,36 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
                 ->setBody('Unauthorized');
         }
 
-        $this->webhookHandler->handle($this->getRequest()->getParam('event'));
-        // TODO: Implement webhook logic here
-        $this->logger->info('Webhook called: ' . json_encode($this->getRequest()->getContent()));
+        try {
+            $content = $this->serializer->unserialize($this->getRequest()->getContent());
 
-        $this->_response->setHttpResponseCode(200);
+            if (!isset($content['event'])) {
+                return $this->_response
+                    ->setHttpResponseCode(400)
+                    ->setBody('Missing event name');
+            }
+
+            $this->webhookHandler->handle($content);
+
+            $this->logger->info(
+                'Webhook called:',
+                [
+                    'webhook_data' => json_encode($this->getRequest()->getContent()),
+                    'payment_id'   => $this->getRequest()->getParam('payment_id'),
+                ]
+            );
+            $this->_response->setHttpResponseCode(200);
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
+            $this->_response->setHttpResponseCode(500);
+        }
     }
 
     /**
-     * Create CSRF validation exception.
+     * Allow all requests to this action
      *
      * @param RequestInterface $request
+     *
      * @return InvalidRequestException|null
      */
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
@@ -68,7 +90,7 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
     }
 
     /**
-     * No form key validation needed.
+     * No form key validation needed
      *
      * @param RequestInterface $request
      *
@@ -80,13 +102,17 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
     }
 
     /**
-     * Returns is request authorized.
+     * Check the authorisation header
      *
      * @return bool
      */
     public function isAuthorized(): bool
     {
         $authString = $this->getRequest()->getHeader('Authorization');
+
+        if (empty($authString)) {
+            return false;
+        }
 
         $hash = $this->encryptor->hash(
             $this->config->getWebhookSecret(),

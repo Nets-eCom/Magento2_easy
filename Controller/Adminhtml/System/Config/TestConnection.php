@@ -4,16 +4,23 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Controller\Adminhtml\System\Config;
 
+use JsonException;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Filter\StripTags;
+use Magento\Framework\Url;
+use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Config\Source\Environment;
+use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\Item;
+use NexiCheckout\Model\Request\Payment;
+use NexiCheckout\Model\Request\Shared\Order;
 
 class TestConnection extends Action implements HttpPostActionInterface
 {
@@ -22,8 +29,7 @@ class TestConnection extends Action implements HttpPostActionInterface
      *
      * @see _isAllowed()
      */
-    public const  ADMIN_RESOURCE      = 'Magento_Catalog::config_catalog';
-    private const NOT_GUID_PAYMENT_ID = 'test';
+    public const ADMIN_RESOURCE = 'Magento_Catalog::config_catalog';
 
     /**
      * @param Context $context
@@ -31,13 +37,17 @@ class TestConnection extends Action implements HttpPostActionInterface
      * @param StripTags $tagFilter
      * @param PaymentApiFactory $paymentApiFactory
      * @param Config $config
+     * @param Url $url
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        Context                            $context,
-        private readonly JsonFactory       $resultJsonFactory,
-        private readonly StripTags         $tagFilter,
+        Context $context,
+        private readonly JsonFactory $resultJsonFactory,
+        private readonly StripTags $tagFilter,
         private readonly PaymentApiFactory $paymentApiFactory,
-        private readonly Config            $config
+        private readonly Config $config,
+        private readonly Url $url,
+        private readonly ScopeConfigInterface $scopeConfig
     ) {
         parent::__construct($context);
     }
@@ -46,36 +56,62 @@ class TestConnection extends Action implements HttpPostActionInterface
      * Check for connection to server
      *
      * @return Json
+     * @throws JsonException
      */
     public function execute()
     {
         $result  = [
-            'success'      => false,
+            'success'      => true,
             'errorMessage' => '',
         ];
         $options = $this->getRequest()->getParams();
-        if ($options['api_key'] == '******') {
-            $options['api_key'] = $this->config->getApiKey();
+        $isLiveMode = $options['environment'] == Environment::LIVE;
+
+        $apiKey = $isLiveMode ? $options['secret_key'] : $options['test_secret_key'];
+
+        if ($apiKey == '******') {
+            $apiKey = $isLiveMode ? $this->config->getApiKey() : $this->config->getTestApiKey();
         }
+
         try {
-            $api = $this->paymentApiFactory->create(
-                secretKey : $options['api_key'],
-                isLiveMode: $options['environment'] == Environment::LIVE
+            $api        = $this->paymentApiFactory->create(
+                secretKey : $apiKey,
+                isLiveMode: $isLiveMode
+            );
+            $currency   = $this->scopeConfig->getValue(
+                'currency/options/default',
+                ScopeInterface::SCOPE_STORE
             );
 
-            $result = $api->retrievePayment(self::NOT_GUID_PAYMENT_ID);
-        } catch (\Exception $e) {
-            if (str_contains(mb_strtolower($e->getMessage()), 'should be in guid format')) {
-                $result['success'] = true;
-            } else {
-                $message                = $e->getMessage();
-                $result['errorMessage'] = $this->tagFilter->filter($message) . ' '
-                    . __('Please check your API key and environment.');
+            $payment = $api->createEmbeddedPayment(
+                new Payment(
+                    new Order(
+                        [
+                            new Item('test', 1, 'pcs', 1, 1, 1, 'test')
+                        ],
+                        $currency,
+                        1
+                    ),
+                    new Payment\EmbeddedCheckout(
+                        $this->url->getUrl('checkout/onepage/success'),
+                        'terms_url'
+                    )
+                )
+            );
+
+            if ($payment->getPaymentId()) {
+                $api->terminate($payment->getPaymentId());
             }
+
+        } catch (PaymentApiException $e) {
+            $message                = $e->getMessage();
+            $result['success']      = false;
+            $result['errorMessage'] = $this->tagFilter->filter($message) . ' '
+                . __('Please check your API key and environment.');
         }
 
-        /** @var Json $resultJson */
         $resultJson = $this->resultJsonFactory->create();
+
         return $resultJson->setData($result);
     }
 }
