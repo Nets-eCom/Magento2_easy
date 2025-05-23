@@ -141,9 +141,6 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     /**
      * Create partial invoice. Add shipping amount if charged
      *
-     * TODO: investigate how to invoice only shipping cost in magento? probably not possible separately - without any
-     * TODO: order item invoiced now its only in order history comments (if charge only for shipping)
-     *
      * @param Order $order
      * @param string $chargeTxnId
      * @param array $webhookItems
@@ -156,6 +153,12 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         if ($order->canInvoice()) {
             $qtys         = [];
             $shippingItem = null;
+
+            // Initialize all items with 0 qty
+            foreach ($order->getAllItems() as $item) {
+                $qtys[$item->getId()] = 0;
+            }
+
             foreach ($webhookItems as $webhookItem) {
 
                 if ($webhookItem['reference'] === SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE) {
