@@ -46,14 +46,6 @@
                                                                         </item>
                                                                     </item>
                                                                 </item>
-                                                                <item name="nexi-payment" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Nexi_Checkout/js/view/payment/nexi-payment</item>
-                                                                    <item name="methods" xsi:type="array">
-                                                                        <item name="nexi" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
-                                                                        </item>
-                                                                    </item>
-                                                                </item>
                                                             </item>
                                                         </item>
                                                     </item>

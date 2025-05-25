@@ -7,7 +7,6 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface as TransactionBuilderInterface;
 use Nexi\Checkout\Exceptions\CheckoutException;
-use Nexi\Checkout\Gateway\Validator\HmacValidator;
 use Nexi\Checkout\Logger\NexiLogger;
 
 class PaymentTransaction
@@ -16,14 +15,12 @@ class PaymentTransaction
      * PaymentTransaction constructor.
      *
      * @param TransactionBuilderInterface $transactionBuilder
-     * @param HmacValidator $hmacValidator
      * @param CancelOrderService $cancelOrderService
      * @param OrderRepositoryInterface $orderRepositoryInterface
      * @param NexiLogger $nexiLogger
      */
     public function __construct(
         private TransactionBuilderInterface $transactionBuilder,
-        private HmacValidator               $hmacValidator,
         private CancelOrderService          $cancelOrderService,
         private OrderRepositoryInterface    $orderRepositoryInterface,
         private NexiLogger              $nexiLogger
@@ -64,29 +61,6 @@ class PaymentTransaction
      */
     public function verifyPaymentData($params, $currentOrder)
     {
-        $status = $params['checkout-status'];
-
-        // skip HMAC validator if signature is 'skip_hmac' for token payment
-        if ($params['signature'] === HmacValidator::SKIP_HMAC_VALIDATION) {
-            $verifiedPayment = true;
-        } else {
-            $verifiedPayment = $this->hmacValidator->validateHmac($params, $params['signature']);
-        }
-
-        if ($verifiedPayment && ($status === 'ok' || $status == 'pending' || $status == 'delayed')) {
-            return $status;
-        } else {
-            $currentOrder->addCommentToStatusHistory(__('Failed to complete the payment.'));
-            $this->orderRepositoryInterface->save($currentOrder);
-            $this->cancelOrderService->cancelOrderById($currentOrder->getId());
-
-            $this->nexiLogger->logData(
-                \Monolog\Logger::ERROR,
-                'Failed to complete the payment. Please try again or contact the customer service.'
-            );
-            throw new CheckoutException(
-                __('Failed to complete the payment. Please try again or contact the customer service.')
-            );
-        }
+        // TODO: Create nexi specific
     }
 }

@@ -12,7 +12,6 @@ use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
 use Nexi\Checkout\Model\ResourceModel\Subscription as SubscriptionResource;
 use Nexi\Checkout\Model\ResourceModel\Subscription\CollectionFactory;
 use Nexi\Checkout\Model\Subscription;
-use Nexi\Checkout\Model\Token\Payment;
 use Psr\Log\LoggerInterface;
 use \Nexi\Checkout\Model\ResourceModel\Subscription\Collection;
 
@@ -22,7 +21,6 @@ class OrderBiller
      * OrderBiller constructor.
      *
      * @param PaymentCount $paymentCount
-     * @param Payment $mitPayment
      * @param CollectionFactory $collectionFactory
      * @param NextDateCalculator $nextDateCalculator
      * @param SubscriptionRepositoryInterface $subscriptionRepository
@@ -34,7 +32,6 @@ class OrderBiller
      */
     public function __construct(
         private PaymentCount                        $paymentCount,
-        private Payment                             $mitPayment,
         private CollectionFactory                   $collectionFactory,
         private NextDateCalculator                  $nextDateCalculator,
         private SubscriptionRepositoryInterface     $subscriptionRepository,
@@ -57,24 +54,7 @@ class OrderBiller
      */
     public function billOrdersById($orderIds)
     {
-        /** @var Collection $subscriptionsToCharge */
-        $subscriptionsToCharge = $this->collectionFactory->create();
-        $subscriptionsToCharge->getBillingCollectionByOrderIds($orderIds);
-
-        /** @var Subscription $subscription */
-        foreach ($subscriptionsToCharge as $subscription) {
-            if (!$this->validateToken($subscription)) {
-                continue;
-            }
-
-            $paymentSuccess = $this->createMitPayment($subscription);
-            if (!$paymentSuccess) {
-                $this->paymentCount->reduceFailureRetryCount($subscription);
-                continue;
-            }
-            $this->sendOrderConfirmationEmail($subscription->getId());
-            $this->updateNextOrderDate($subscription);
-        }
+        // TODO: Create with nexi config
     }
 
     /**
@@ -127,21 +107,7 @@ class OrderBiller
      */
     private function createMitPayment($subscription): bool
     {
-        $paymentSuccess = false;
-        try {
-            $paymentSuccess = $this->mitPayment->makeMitPayment(
-                $subscription->getData('order_id'),
-                $subscription->getData('token')
-            );
-        } catch (LocalizedException $e) {
-            $this->logger->error(
-                \__(
-                    'Recurring Payment: Unable to create a charge to customer token error: %error',
-                    ['error' => $e->getMessage()]
-                )
-            );
-        }
-        return $paymentSuccess;
+        // TODO: Create with nexi config
     }
 
     /**

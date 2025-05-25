@@ -7,7 +7,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Exceptions\CheckoutException;
 use Nexi\Checkout\Gateway\Config\Config;
-use Nexi\Checkout\Model\FinnishReferenceNumber;
 use Nexi\Checkout\Model\Receipt\LoadService;
 use Nexi\Checkout\Model\Receipt\PaymentTransaction;
 use Nexi\Checkout\Model\Receipt\ProcessService;
@@ -52,7 +51,6 @@ class ReceiptDataProvider
      * @param ProcessService $processService
      * @param LoadService $loadService
      * @param PaymentTransaction $paymentTransaction
-     * @param FinnishReferenceNumber $referenceNumber
      */
     public function __construct(
         private Session $session,
@@ -60,7 +58,6 @@ class ReceiptDataProvider
         private ProcessService $processService,
         private LoadService $loadService,
         private PaymentTransaction $paymentTransaction,
-        private FinnishReferenceNumber $referenceNumber
     ) {
     }
 
