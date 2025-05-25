@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">recurring_profile_listing.recurring_profile_listing_data_source
+            </item>
+            <item name="deps" xsi:type="string">recurring_profile_listing.recurring_profile_listing_data_source</item>
+        </item>
+        <item name="spinner" xsi:type="string">recurring_profile_columns</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/edit"/>
+                <class>primary</class>
+                <label translate="true">Add New Profile</label>
+            </button>
+        </buttons>
+    </settings>
+    <dataSource name="recurring_profile_listing_data_source">
+        <argument name="dataProvider" xsi:type="configurableObject">
+            <argument name="class" xsi:type="string">Nexi\Checkout\Ui\DataProvider\RecurringProfile</argument>
+            <argument name="name" xsi:type="string">recurring_profile_listing_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">profile_id</argument>
+            <argument name="requestFieldName" xsi:type="string">profile_id</argument>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="update_url" xsi:type="url" path="mui/index/render"/>
+                    <item name="storageConfig" xsi:type="array">
+                        <item name="indexField" xsi:type="string">profile_id</item>
+                    </item>
+                </item>
+            </argument>
+        </argument>
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/grid/provider</item>
+            </item>
+        </argument>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <massaction name="listing_massaction">
+            <argument name="data" xsi:type="array">
+                <item name="data" xsi:type="array">
+                    <item name="selectProvider" xsi:type="string">
+                        recurring_profile_listing.recurring_profile_listing.recurring_profile_columns.ids
+                    </item>
+                    <item name="displayArea" xsi:type="string">bottom</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/tree-massactions</item>
+                    <item name="indexField" xsi:type="string">profile_id</item>
+                </item>
+            </argument>
+            <action name="delete">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">delete</item>
+                        <item name="label" xsi:type="string" translate="true">Delete</item>
+                        <item name="url" xsi:type="url"
+                              path="*/*/massDelete"/>
+                        <item name="confirm" xsi:type="array">
+                            <item name="title" xsi:type="string" translate="true">Delete items</item>
+                            <item name="message" xsi:type="string" translate="true">Are you sure you want to delete
+                                selected items?
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </action>
+        </massaction>
+        <filters name="listing_filters">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="templates" xsi:type="array">
+                        <item name="filters" xsi:type="array">
+                            <item name="select" xsi:type="array">
+                                <item name="component" xsi:type="string">Magento_Ui/js/form/element/ui-select</item>
+                                <item name="template" xsi:type="string">ui/grid/filters/elements/ui-select</item>
+                            </item>
+                        </item>
+                    </item>
+                </item>
+            </argument>
+        </filters>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="recurring_profile_columns">
+        <settings>
+            <childDefaults>
+                <param name="fieldAction" xsi:type="array">
+                    <item name="provider" xsi:type="string">
+                        recurring_profile_listing.recurring_profile_listing.recurring_profile_columns.actions
+                    </item>
+                    <item name="target" xsi:type="string">applyAction</item>
+                    <item name="params" xsi:type="array">
+                        <item name="0" xsi:type="string">edit</item>
+                        <item name="1" xsi:type="string">${ $.$data.rowIndex }</item>
+                    </item>
+                </param>
+            </childDefaults>
+        </settings>
+        <selectionsColumn name="ids">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="indexField" xsi:type="string">profile_id</item>
+                </item>
+            </argument>
+        </selectionsColumn>
+        <column name="profile_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <resizeDefaultWidth>25</resizeDefaultWidth>
+            </settings>
+        </column>
+        <column name="name">
+            <settings>
+                <filter>text</filter>
+                <bodyTmpl>ui/grid/cells/text</bodyTmpl>
+                <label translate="true">Name</label>
+            </settings>
+        </column>
+        <column name="description">
+            <settings>
+                <filter>text</filter>
+                <bodyTmpl>ui/grid/cells/text</bodyTmpl>
+                <label translate="true">Description</label>
+            </settings>
+        </column>
+        <column name="schedule">
+            <settings>
+                <filter>text</filter>
+                <bodyTmpl>ui/grid/cells/text</bodyTmpl>
+                <label translate="true">Schedule</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Magento\Theme\Ui\Component\Listing\Column\ViewAction" sortOrder="50">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="viewUrlPath" xsi:type="string">recurring_payments/profile/edit</item>
+                    <item name="urlEntityParamName" xsi:type="string">id</item>
+                </item>
+            </argument>
+            <settings>
+                <indexField>profile_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

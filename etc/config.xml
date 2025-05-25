@@ -43,5 +43,15 @@
                 <merchant_handles_consumer_data>1</merchant_handles_consumer_data>
             </nexi>
         </payment>
+        <sales>
+            <recurring_payment>
+                <active_recurring_payment>0</active_recurring_payment>
+                <notify_cron_schedule>0 1 * * *</notify_cron_schedule>
+                <bill_cron_schedule>15 3 * * *</bill_cron_schedule>
+                <email_template>recurring_email_template</email_template>
+                <warning_period>7</warning_period>
+                <force_weekdays>0</force_weekdays>
+            </recurring_payment>
+        </sales>
     </default>
 </config>

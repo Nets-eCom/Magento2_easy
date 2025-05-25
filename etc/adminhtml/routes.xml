@@ -10,5 +10,8 @@
         <route id="nexi" frontName="nexi">
             <module name="Nexi_Checkout" />
         </route>
+        <route id="recurring_payments" frontName="recurring_payments">
+            <module name="Nexi_Checkout" />
+        </route>
     </router>
 </config>

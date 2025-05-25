@@ -202,4 +202,45 @@
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </type>
+
+    <!-- Subscriptions -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="recurring_payment_bill" xsi:type="object">Nexi\Checkout\Console\Command\Bill
+                </item>
+                <item name="recurring_payment_notify" xsi:type="object">Nexi\Checkout\Console\Command\Notify
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <preference for="Nexi\Checkout\Api\SubscriptionRepositoryInterface"
+                type="Nexi\Checkout\Model\SubscriptionRepository"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionInterface"
+                type="Nexi\Checkout\Model\Subscription"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionSearchResultInterface"
+                type="Nexi\Checkout\Model\ResourceModel\Subscription\Collection"/>
+    <preference for="Nexi\Checkout\Api\RecurringProfileRepositoryInterface"
+                type="Nexi\Checkout\Model\Subscription\ProfileRepository"/>
+    <preference for="Nexi\Checkout\Api\Data\RecurringProfileInterface"
+                type="Nexi\Checkout\Model\Subscription\Profile"/>
+    <preference for="Nexi\Checkout\Api\Data\RecurringProfileSearchResultInterface"
+                type="Nexi\Checkout\Model\ResourceModel\Subscription\Profile\Collection"/>
+    <preference for="Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface"
+                type="Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionLinkInterface"
+                type="Nexi\Checkout\Model\Subscription\SubscriptionLink"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionLinkSearchResultInterface"
+                type="Nexi\Checkout\Model\ResourceModel\Subscription\SubscriptionLink\Collection"/>
+    <preference for="Nexi\Checkout\Api\SubscriptionManagementInterface"
+                type="Nexi\Checkout\Model\SubscriptionManagement"/>
+    <preference for="Nexi\Checkout\Api\CardManagementInterface"
+                type="Nexi\Checkout\Model\CardManagement"/>
+
+    <type name="\Nexi\Checkout\Model\Subscription\OrderCloner">
+        <arguments>
+            <argument name="quoteSession" xsi:type="object">Magento\Backend\Model\Session\Quote\Proxy</argument>
+        </arguments>
+    </type>
 </config>

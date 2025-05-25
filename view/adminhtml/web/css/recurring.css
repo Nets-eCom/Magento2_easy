@@ -1,0 +1,8 @@
+.recurring-order-link {
+    display: inline-block;
+    padding-top: 8px;
+}
+
+.form-inline .admin__fieldset > .admin__field {
+    margin-bottom: 22px;
+}

@@ -10,5 +10,11 @@
             </argument>
         </arguments>
     </type>
-
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="recurring_schedule_config_provider" xsi:type="object">Nexi\Checkout\Model\Recurring\TotalConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

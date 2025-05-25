@@ -1,0 +1,51 @@
+{
+    "nexi_subscriptions": {
+        "column": {
+            "entity_id": true,
+            "status": true,
+            "next_order_date": true,
+            "recurring_profile_id": true,
+            "updated_at": true,
+            "end_date": true,
+            "repeat_count_left": true,
+            "retry_count": true,
+            "selected_token": true,
+            "customer_id": true
+        },
+        "index": {
+            "NEXI_SUBSCRIPTIONS_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_8D8B31C8FA705FDDF495326B9267594D": true,
+            "NEXI_SUBSCRIPTIONS_SELECTED_TOKEN_VAULT_PAYMENT_TOKEN_ENTITY_ID": true,
+            "FK_C52FB2CF53BB599FD4BAF601615C36C6": true,
+            "NEXI_SUBSCRIPTIONS_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
+            "FK_A3A41A8A2917DB96EB7845EE6B4A46B6": true
+        }
+    },
+    "recurring_payment_profiles": {
+        "column": {
+            "profile_id": true,
+            "name": true,
+            "description": true,
+            "schedule": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "nexi_subscription_link": {
+        "column": {
+            "link_id": true,
+            "order_id": true,
+            "subscription_id": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "NEXI_SUBSCRIPTION_LINK_ORDER_ID_SALES_ORDER_ENTITY_ID": true,
+            "FK_86F57A98A67516BAAF65D6F8B80F2C0D": true,
+            "NEXI_SUBSCRIPTION_LINK_ORDER_ID_SUBSCRIPTION_ID": true
+        }
+    }
+}

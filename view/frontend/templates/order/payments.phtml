@@ -1,0 +1,140 @@
+<?php
+
+/** @var \Paytrail\PaymentService\Block\Order\Payments $block */
+?>
+<?php $recurringPayments = $block->getRecurringPayments() ?>
+<?php $closedSubscriptions = $block->getClosedSubscriptions() ?>
+<?php if ($block->isSubscriptionsEnabled()): ?>
+    <?php if ($recurringPayments && count($recurringPayments)): ?>
+        <div class="table-wrapper subscriptions-history">
+            <table class="data table table-order-items history" id="my-subscriptions-table">
+                <caption class="table-caption"><?= $block->escapeHtml(__('Subscriptions')) ?></caption>
+                <thead>
+                <tr>
+                    <th scope="col" class="col id"><?= $block->escapeHtml(__('Next order date')) ?></th>
+                    <th scope="col" class="col date"><?= $block->escapeHtml(__('Status')) ?></th>
+                    <th scope="col" class="col total"><?= $block->escapeHtml(__('Recurring payment profile')) ?></th>
+                    <th scope="col" class="col actions"><?= $block->escapeHtml(__('Grand total')) ?></th>
+                    <th scope="col" class="col actions"><?= $block->escapeHtml(__('Card number')) ?></th>
+                    <th scope="col" class="col actions"><?= $block->escapeHtml(__('Action')) ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($recurringPayments as $recurringPayment): ?>
+                    <tr>
+                        <td data-th="<?= $block->escapeHtml(__('Next Order Date')) ?>"
+                            class="col id"><?= $block->escapeHtml($block->validateDate($recurringPayment->getNextOrderDate())) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Status')) ?>" class="col date"><?= /* @noEscape */
+                            $block->escapeHtml($block->getRecurringPaymentStatusName($recurringPayment->getStatus())) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Recurring Payment Profile')) ?>"
+                            class="col total"><?= /* @noEscape */
+                            $block->escapeHtml($recurringPayment->getName()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Grand total')) ?>"
+                            class="col status"><?= $block->escapeHtml($block->getCurrentCurrency()) . $block->escapeHtml($recurringPayment->getBaseGrandTotal()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Card number')) ?>"
+                            class="col status"><?= $block->escapeHtml($block->getCardNumber($recurringPayment)) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Actions')) ?>" class="col actions">
+                            <div class="customer-subscription-action">
+                                <button
+                                        data-mage-init='{"dropdown":{}}'
+                                        data-toggle="dropdown"
+                                        data-action="customer-menu-toggle">
+                                    <span><?= $block->escapeHtml(__('Action')) ?> &#8744;</span>
+                                </button>
+                                <ul data-target="dropdown" class="dropdown-options">
+                                    <li>
+                                        <a href="<?= $block->escapeUrl($block->getViewUrl($recurringPayment)) ?>"
+                                           class="action view">
+                                            <span><?= $block->escapeHtml(__('View Order')) ?></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="<?= $block->escapeHtml($block->getStopPaymentUrl($recurringPayment)) ?>"
+                                           class="action order stop-payment-confirmation">
+                                            <span><?= $block->escapeHtml(__('Stop subscription')) ?></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="action show-payment-methods" data-id="<?= $recurringPayment->getId() ?>">
+                                            <span><?= $block->escapeHtml(__('Change card')) ?></span
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php if ($block->getPagerHtml()) : ?>
+            <div class="order-products-toolbar toolbar bottom"><?= $block->getPagerHtml() ?></div>
+        <?php endif ?>
+    <?php else : ?>
+        <div class="message info empty"><span><?= $block->escapeHtml($block->getEmptyRecurringPaymentsMessage()) ?></span>
+        </div>
+    <?php endif ?>
+
+    <?php if ($closedSubscriptions && count($closedSubscriptions)) : ?>
+        <h2><?= $block->escapeHtml(__('Canceled subscriptions')) ?></h2>
+        <div class="table-wrapper subscription-canceled">
+            <table class="data table table-order-items history" id="my-closed-subscriptions-table">
+                <caption class="table-caption"><?= $block->escapeHtml(__('Canceled subscriptions')) ?></caption>
+                <thead>
+                <tr>
+                    <th scope="col" class="col id"><?= $block->escapeHtml(__('Next order date')) ?></th>
+                    <th scope="col" class="col date"><?= $block->escapeHtml(__('Status')) ?></th>
+                    <th scope="col" class="col total"><?= $block->escapeHtml(__('Recurring payment profile')) ?></th>
+                    <th scope="col" class="col actions"><?= $block->escapeHtml(__('Grand total')) ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($closedSubscriptions as $closedSubscription) : ?>
+                    <tr>
+                        <td data-th="<?= $block->escapeHtml(__('Next Order Date')) ?>"
+                            class="col id"><?= $block->escapeHtml($block->validateDate($closedSubscription->getNextOrderDate())) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Status')) ?>" class="col date"><?= /* @noEscape */
+                            $block->escapeHtml($block->getRecurringPaymentStatusName($closedSubscription->getStatus())) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Recurring Payment Profile')) ?>"
+                            class="col total"><?= /* @noEscape */
+                            $block->escapeHtml($closedSubscription->getName()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Grand total')) ?>"
+                            class="col status"><?= $block->escapeHtml($closedSubscription->getBaseGrandTotal()) ?></td>
+                        <td data-th="<?= $block->escapeHtml(__('Actions')) ?>" class="col actions">
+                            <a href="<?= $block->escapeUrl($block->getViewUrl($closedSubscription)) ?>" class="action view">
+                                <span><?= $block->escapeHtml(__('View Order')) ?></span>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+
+    <div id="payment-methods-modal">
+        <form method="post" action="<?= $block->getUrl('nexi/card/change') ?>">
+            <input type="hidden" name="subscription_id" id="payment-change-card-subscription-input">
+            <?= $block->getChildHtml('vault.cards.list') ?>
+
+            <button type="button" id="add-new-payment-card">
+                <span><?= $block->escapeHtml(__('Add Card')) ?></span>
+            </button>
+
+            <button type="submit">
+                <span><?= $block->escapeHtml(__('Change Card')) ?></span>
+            </button>
+        </form>
+    </div>
+<?php endif; ?>
+
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Nexi_Checkout/js/payments": {
+                "previousError": "<?= /* @noEscape */ $block->getPreviousError() ?>",
+                "addCardRedirectUrl": "<?= /* @noEscape */ $block->getAddCardRedirectUrl() ?>"
+            }
+        }
+    }
+</script>
