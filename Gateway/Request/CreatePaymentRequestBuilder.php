@@ -282,22 +282,17 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * @param Order $order
      *
-     * @return int|void
+     * @return float
      */
     private function getShippingTaxRate(Order $order)
     {
-        if (!$order->getExtensionAttributes()?->getItemAppliedTaxes()) {
-            return 0;
-        }
-        $shippingTax = 0;
-        foreach ($order->getExtensionAttributes()->getItemAppliedTaxes() as $tax) {
+        foreach ($order->getExtensionAttributes()?->getItemAppliedTaxes() as $tax) {
             if ($tax->getType() == CommonTaxCollector::ITEM_TYPE_SHIPPING) {
                 $appliedTaxes = $tax->getAppliedTaxes();
-
-                $shippingTax = reset($appliedTaxes)->getPercent();
+                return reset($appliedTaxes)->getPercent();
             }
         }
 
-        return $shippingTax;
+        return 0.0;
     }
 }
