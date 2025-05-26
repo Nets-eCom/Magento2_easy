@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Checkout\Exception;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
@@ -27,7 +26,8 @@ class PaymentCreated implements WebhookProcessorInterface
         private readonly Builder $transactionBuilder,
         private readonly CollectionFactory $orderCollectionFactory,
         private readonly WebhookDataLoader $webhookDataLoader,
-        private readonly OrderRepositoryInterface $orderRepository
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly Comment $comment
     ) {
     }
 
@@ -42,18 +42,20 @@ class PaymentCreated implements WebhookProcessorInterface
     {
         $transaction = $this->webhookDataLoader->getTransactionByPaymentId($webhookData['data']['paymentId']);
 
-        if ($transaction) {
-            return;
-        }
-
         $order = $this->orderCollectionFactory->create()->addFieldToFilter(
             'increment_id',
             $webhookData['data']['order']['reference']
         )->getFirstItem();
 
-        $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+        $this->comment->saveComment(
+            __('Webhook Received. Payment created for payment ID: %1', $webhookData['data']['paymentId']),
+            $order
+        );
 
-        $this->orderRepository->save($order);
+        if (!$transaction) {
+            $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+            $this->orderRepository->save($order);
+        }
     }
 
     /**
