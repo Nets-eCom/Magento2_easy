@@ -13,6 +13,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Gateway\StringSanitizer;
@@ -127,7 +128,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 netTotalAmount  : $this->amountConverter->convertToNexiAmount($order->getShippingAmount()),
                 reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : $this->amountConverter->convertToNexiAmount(
-                    $order->getTaxAmount() / $order->getGrandTotal()
+                    $this->getShippingTaxRate($order)
                 ),
                 taxAmount       : $this->amountConverter->convertToNexiAmount($order->getShippingTaxAmount()),
             );
@@ -274,5 +275,29 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             prefix: '+' . $number->getCountryCode(),
             number: (string)$number->getNationalNumber(),
         );
+    }
+
+    /**
+     * Get shipping tax rate from the order
+     *
+     * @param Order $order
+     *
+     * @return int|void
+     */
+    private function getShippingTaxRate(Order $order)
+    {
+        if (!$order->getExtensionAttributes()?->getItemAppliedTaxes()) {
+            return 0;
+        }
+        $shippingTax = 0;
+        foreach ($order->getExtensionAttributes()->getItemAppliedTaxes() as $tax) {
+            if ($tax->getType() == CommonTaxCollector::ITEM_TYPE_SHIPPING) {
+                $appliedTaxes = $tax->getAppliedTaxes();
+
+                $shippingTax = reset($appliedTaxes)->getPercent();
+            }
+        }
+
+        return $shippingTax;
     }
 }
