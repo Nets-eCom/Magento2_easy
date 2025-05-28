@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -21,6 +22,7 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param CollectionFactory $orderCollectionFactory
      * @param WebhookDataLoader $webhookDataLoader
      * @param OrderRepositoryInterface $orderRepository
+     * @param Comment $comment
      */
     public function __construct(
         private readonly Builder $transactionBuilder,
@@ -37,6 +39,7 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param array $webhookData
      *
      * @return void
+     * @throws CouldNotSaveException
      */
     public function processWebhook(array $webhookData): void
     {
