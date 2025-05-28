@@ -165,7 +165,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $webhookUrl = "https://5b1b-193-65-70-194.ngrok-free.app";
+            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
             $webhooks[] = new Webhook(
                 eventName    : $eventName,
                 url          : $webhookUrl,
