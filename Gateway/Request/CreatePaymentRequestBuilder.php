@@ -109,12 +109,12 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 name            : $item->getName(),
                 quantity        : (float)$item->getQtyOrdered(),
                 unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getPrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getRowTotalInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getRowTotal()),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getBaseRowTotalInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
                 reference       : $item->getSku(),
                 taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getTaxAmount()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
             );
         }
 
@@ -123,14 +123,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 name            : $order->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($order->getShippingAmount()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($order->getShippingInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($order->getShippingAmount()),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($order->getBaseShippingAmount()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($order->getBaseShippingInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($order->getBaseShippingAmount()),
                 reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : $this->amountConverter->convertToNexiAmount(
                     $this->getShippingTaxRate($order)
                 ),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($order->getShippingTaxAmount()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($order->getBaseShippingTaxAmount()),
             );
         }
 
@@ -165,7 +165,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
+            $webhookUrl = "https://5b1b-193-65-70-194.ngrok-free.app";
             $webhooks[] = new Webhook(
                 eventName    : $eventName,
                 url          : $webhookUrl,
