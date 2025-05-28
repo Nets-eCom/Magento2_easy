@@ -22,13 +22,13 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
+     * @param Comment $comment
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly Builder $transactionBuilder,
-        private readonly Comment $comment,
-
+        private readonly Comment $comment
     ) {
     }
 
