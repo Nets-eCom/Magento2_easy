@@ -33,7 +33,7 @@ class PaymentChargeFailed implements WebhookProcessorInterface
         $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
 
         $this->comment->saveComment(
-            __('Webhook Received. Payment cancel created for payment ID: %1', $webhookData['data']['paymentId']),
+            __('Webhook Received. Payment charge failed for payment ID: %1', $webhookData['data']['paymentId']),
             $order
         );
     }
