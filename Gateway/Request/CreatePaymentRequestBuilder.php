@@ -13,6 +13,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Gateway\StringSanitizer;
@@ -108,12 +109,12 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 name            : $item->getName(),
                 quantity        : (float)$item->getQtyOrdered(),
                 unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getPrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getRowTotalInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getRowTotal()),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getBaseRowTotalInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
                 reference       : $item->getSku(),
                 taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getTaxAmount()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
             );
         }
 
@@ -122,14 +123,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 name            : $order->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($order->getShippingAmount()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($order->getShippingInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($order->getShippingAmount()),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($order->getBaseShippingAmount()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($order->getBaseShippingInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($order->getBaseShippingAmount()),
                 reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : $this->amountConverter->convertToNexiAmount(
-                    $order->getTaxAmount() / $order->getGrandTotal()
+                    $this->getShippingTaxRate($order)
                 ),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($order->getShippingTaxAmount()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($order->getBaseShippingTaxAmount()),
             );
         }
 
@@ -274,5 +275,24 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             prefix: '+' . $number->getCountryCode(),
             number: (string)$number->getNationalNumber(),
         );
+    }
+
+    /**
+     * Get shipping tax rate from the order
+     *
+     * @param Order $order
+     *
+     * @return float
+     */
+    private function getShippingTaxRate(Order $order)
+    {
+        foreach ($order->getExtensionAttributes()?->getItemAppliedTaxes() as $tax) {
+            if ($tax->getType() == CommonTaxCollector::ITEM_TYPE_SHIPPING) {
+                $appliedTaxes = $tax->getAppliedTaxes();
+                return reset($appliedTaxes)->getPercent();
+            }
+        }
+
+        return 0.0;
     }
 }
