@@ -60,28 +60,22 @@ class PaymentCreated implements WebhookProcessorInterface
         if ($orderReference === null) {
             $order = $this->getOrderByPaymentId($paymentId);
             $orderReference = $order->getIncrementId();
-        }
-        $this->comment->saveComment(
-            __('Webhook Received. Payment created for payment ID: %1', $webhookData['data']['paymentId']),
-            $order
-        );
-
-        if (!$order) {
+        } else {
             $order = $this->orderCollectionFactory->create()->addFieldToFilter(
                 'increment_id',
                 $orderReference
             )->getFirstItem();
         }
 
-
+        $this->comment->saveComment(
+            __('Webhook Received. Payment created for payment ID: %1', $webhookData['data']['paymentId']),
+            $order
+        );
 
         if (!$transaction) {
             $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
             $this->orderRepository->save($order);
         }
-        $this->createPaymentTransaction($order, $paymentId);
-
-        $this->orderRepository->save($order);
     }
 
     /**
