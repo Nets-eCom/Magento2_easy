@@ -109,13 +109,15 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     public function buildItems(Order|Quote $paymentSubject): OrderItem|array
     {
         /** @var OrderItem $items */
-        foreach ($order->getAllVisibleItems() as $item) {
+        foreach ($paymentSubject->getAllVisibleItems() as $item) {
             $items[] = new Item(
                 name            : $item->getName(),
                 quantity        : (float)$item->getQtyOrdered(),
                 unit            : 'pcs',
                 unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()), // TODO: calculate discount tax amount based on tax calculation method
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount(
+                    $item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()
+                ), // TODO: calculate discount tax amount based on tax calculation method
                 netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
                 reference       : $item->getSku(),
                 taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
@@ -129,19 +131,27 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             $shippingInfoHolder = $paymentSubject->getShippingAddress();
         }
 
-        if ($shippingInfoHolder->getShippingInclTax() ) {
+        if ($shippingInfoHolder->getShippingInclTax()) {
             $items[] = new Item(
                 name            : $shippingInfoHolder->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getBaseShippingAmount()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getBaseShippingInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getBaseShippingAmount()),
+                unitPrice       : $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingAmount()
+                ),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingInclTax()
+                ),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingAmount()
+                ),
                 reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : $this->amountConverter->convertToNexiAmount(
-                    $this->getShippingTaxRate($order)
+                    $this->getShippingTaxRate($paymentSubject)
                 ),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($order->getBaseShippingTaxAmount()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingTaxAmount()
+                ),
             );
         }
 
@@ -176,7 +186,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
+            $webhookUrl = "https://992d-193-65-70-194.ngrok-free.app";
             $webhooks[] = new Webhook(
                 eventName    : $eventName,
                 url          : $webhookUrl,
@@ -329,16 +339,25 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Get shipping tax rate from the order
      *
-     * @param Order $order
+     * @param Order|Quote $paymentSubject
      *
      * @return float
      */
-    private function getShippingTaxRate(Order $order)
+    private function getShippingTaxRate(Order|Quote $paymentSubject)
     {
-        foreach ($order->getExtensionAttributes()?->getItemAppliedTaxes() as $tax) {
-            if ($tax->getType() == CommonTaxCollector::ITEM_TYPE_SHIPPING) {
-                $appliedTaxes = $tax->getAppliedTaxes();
-                return reset($appliedTaxes)->getPercent();
+        if ($paymentSubject instanceof Order) {
+            foreach ($paymentSubject->getExtensionAttributes()?->getItemAppliedTaxes() as $tax) {
+                if ($tax->getType() == CommonTaxCollector::ITEM_TYPE_SHIPPING) {
+                    $appliedTaxes = $tax->getAppliedTaxes();
+                    return reset($appliedTaxes)->getPercent();
+                }
+            }
+        }
+        if ($paymentSubject instanceof Quote) {
+            $shippingTaxRate = $paymentSubject->getShippingAddress()->getBaseShippingTaxAmount(
+                ) / $paymentSubject->getShippingAddress()->getBaseShippingAmount() * 100;
+            if ($shippingTaxRate) {
+                return $shippingTaxRate;
             }
         }
 

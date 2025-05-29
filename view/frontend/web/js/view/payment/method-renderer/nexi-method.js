@@ -57,8 +57,6 @@ define(
             defaults: {
                 template: window.checkoutConfig.payment.nexi.integrationType ? 'Nexi_Checkout/payment/nexi-hosted' : 'Nexi_Checkout/payment/nexi-embedded.html',
                 config: window.checkoutConfig.payment.nexi
-                template: 'Nexi_Checkout/payment/nexi',
-                config: window.checkoutConfig.payment.nexi,
             },
             isEmbedded: ko.observable(false),
             dibsCheckout: ko.observable(false),
