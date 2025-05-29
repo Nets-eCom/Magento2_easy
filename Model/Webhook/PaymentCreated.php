@@ -50,11 +50,6 @@ class PaymentCreated implements WebhookProcessorInterface
         $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         $order       = null;
 
-        $order = $this->orderCollectionFactory->create()->addFieldToFilter(
-            'increment_id',
-            $webhookData['data']['order']['reference']
-        )->getFirstItem();
-
         $orderReference = $webhookData['data']['order']['reference'] ?? null;
 
         if ($orderReference === null) {

@@ -240,4 +240,9 @@
                 type="Nexi\Checkout\Plugin\QouteToOrder\ProcessTransactionId"
                 sortOrder="100"/>
     </type>
+    <type name="Magento\Quote\Observer\SubmitObserver">
+        <plugin name="Nexi_Checkout::set_can_send_email_flag"
+                type="Nexi\Checkout\Plugin\SendEmailPlugin"
+                sortOrder="100"/>
+    </type>
 </config>
