@@ -12,6 +12,7 @@ use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
+use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
@@ -21,11 +22,13 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
+     * @param Comment $comment
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly WebhookDataLoader $webhookDataLoader,
-        private readonly Builder $transactionBuilder
+        private readonly Builder $transactionBuilder,
+        private readonly Comment $comment
     ) {
     }
 
@@ -40,6 +43,10 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     public function processWebhook(array $webhookData): void
     {
         $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
+        $this->comment->saveComment(
+            __('Webhook Received. Payment charge created for payment ID: %1', $webhookData['data']['paymentId']),
+            $order
+        );
         $this->processOrder($order, $webhookData);
 
         $this->orderRepository->save($order);
@@ -59,7 +66,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     private function processOrder(Order $order, array $webhookData): void
     {
         $reservationTxn = $this->webhookDataLoader->getTransactionByOrderId(
-            $order->getId(),
+            (int)$order->getId(),
             TransactionInterface::TYPE_AUTH
         );
 
@@ -141,9 +148,6 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     /**
      * Create partial invoice. Add shipping amount if charged
      *
-     * TODO: investigate how to invoice only shipping cost in magento? probably not possible separately - without any
-     * TODO: order item invoiced now its only in order history comments (if charge only for shipping)
-     *
      * @param Order $order
      * @param string $chargeTxnId
      * @param array $webhookItems
@@ -156,6 +160,12 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         if ($order->canInvoice()) {
             $qtys         = [];
             $shippingItem = null;
+
+            // Initialize all items with 0 qty
+            foreach ($order->getAllItems() as $item) {
+                $qtys[$item->getId()] = 0;
+            }
+
             foreach ($webhookItems as $webhookItem) {
 
                 if ($webhookItem['reference'] === SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE) {

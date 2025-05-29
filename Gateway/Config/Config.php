@@ -7,6 +7,7 @@ namespace Nexi\Checkout\Gateway\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as MagentoConfig;
 use Magento\Payment\Model\MethodInterface;
+use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Model\Config\Source\Environment;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 
@@ -166,6 +167,6 @@ class Config extends MagentoConfig
      */
     public function getCountryCode()
     {
-        return $this->scopeConfig->isSetFlag('general/country/default');
+        return $this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
     }
 }

@@ -14,6 +14,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Gateway\StringSanitizer;
@@ -113,12 +114,12 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 name            : $item->getName(),
                 quantity        : (float)$item->getQtyOrdered(),
                 unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getPrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getRowTotalInclTax() - $item->getDiscountAmount()), // TODO: calculate discount tax amount based on tax calculation method
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getRowTotal()),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()), // TODO: calculate discount tax amount based on tax calculation method
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
                 reference       : $item->getSku(),
                 taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getTaxAmount()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
             );
         }
 
@@ -133,14 +134,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 name            : $shippingInfoHolder->getShippingDescription(),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingAmount()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingAmount()),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getBaseShippingAmount()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getBaseShippingInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getBaseShippingAmount()),
                 reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
                 taxRate         : $this->amountConverter->convertToNexiAmount(
-                    $shippingInfoHolder->getTaxAmount() / $shippingInfoHolder->getGrandTotal()
+                    $this->getShippingTaxRate($order)
                 ),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($shippingInfoHolder->getShippingTaxAmount()),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($order->getBaseShippingTaxAmount()),
             );
         }
 
@@ -219,14 +220,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 addressLine2: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(2)),
                 postalCode  : $order->getShippingAddress()->getPostcode(),
                 city        : $this->stringSanitizer->sanitize($order->getShippingAddress()->getCity()),
-                country     : $this->getThreeLetterCountryCode(),
+                country     : $this->getThreeLetterCountryCode($order->getShippingAddress()->getCountryId()),
             ),
             billingAddress : new Address(
                 addressLine1: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(1)),
                 addressLine2: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(2)),
                 postalCode  : $order->getBillingAddress()->getPostcode(),
                 city        : $order->getBillingAddress()->getCity(),
-                country     : $this->getThreeLetterCountryCode(),
+                country     : $this->getThreeLetterCountryCode($order->getBillingAddress()->getCountryId()),
             ),
             privatePerson  : new PrivatePerson(
                 firstName: $this->stringSanitizer->sanitize($order->getCustomerFirstname()),
@@ -261,7 +262,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             termsUrl                   : $this->config->getPaymentsTermsAndConditionsUrl(),
 //            consumer                   : $this->buildConsumer($salesObject),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
-            merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
+            merchantHandlesConsumerData: true,
+            countryCode                : $this->getThreeLetterCountryCode($this->config->getCountryCode()),
         );
     }
 
@@ -281,21 +283,23 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
             consumer                   : $this->buildConsumer($salesObject),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
-            merchantHandlesConsumerData: $this->config->getMerchantHandlesConsumerData(),
-            countryCode                : $this->getThreeLetterCountryCode()
+            merchantHandlesConsumerData: true,
+            countryCode                : $this->getThreeLetterCountryCode($this->config->getCountryCode()),
         );
     }
 
     /**
      * Get the three-letter country code
      *
+     * @param string $countryCode
+     *
      * @return string
      * @throws NoSuchEntityException
      */
-    public function getThreeLetterCountryCode(): string
+    public function getThreeLetterCountryCode(string $countryCode): string
     {
         return $this->countryInformationAcquirer->getCountryInfo(
-            $this->config->getCountryCode()
+            $countryCode
         )->getThreeLetterAbbreviation();
     }
 
@@ -320,5 +324,24 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             prefix: '+' . $number->getCountryCode(),
             number: (string)$number->getNationalNumber(),
         );
+    }
+
+    /**
+     * Get shipping tax rate from the order
+     *
+     * @param Order $order
+     *
+     * @return float
+     */
+    private function getShippingTaxRate(Order $order)
+    {
+        foreach ($order->getExtensionAttributes()?->getItemAppliedTaxes() as $tax) {
+            if ($tax->getType() == CommonTaxCollector::ITEM_TYPE_SHIPPING) {
+                $appliedTaxes = $tax->getAppliedTaxes();
+                return reset($appliedTaxes)->getPercent();
+            }
+        }
+
+        return 0.0;
     }
 }

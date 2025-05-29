@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Checkout\Exception;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Model\Order\Comment;
 use Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory as PaymentCollectionFactory;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
@@ -24,13 +24,15 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param WebhookDataLoader $webhookDataLoader
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentCollectionFactory $paymentCollectionFactory
+     * @param Comment $comment
      */
     public function __construct(
-        private readonly Builder                  $transactionBuilder,
-        private readonly CollectionFactory        $orderCollectionFactory,
-        private readonly WebhookDataLoader        $webhookDataLoader,
+        private readonly Builder $transactionBuilder,
+        private readonly CollectionFactory $orderCollectionFactory,
+        private readonly WebhookDataLoader $webhookDataLoader,
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly PaymentCollectionFactory $paymentCollectionFactory
+        private readonly PaymentCollectionFactory $paymentCollectionFactory,
+        private readonly Comment $comment,
     ) {
     }
 
@@ -40,8 +42,7 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param array $webhookData
      *
      * @return void
-     * @throws Exception
-     * @throws LocalizedException
+     * @throws CouldNotSaveException
      */
     public function processWebhook(array $webhookData): void
     {
@@ -49,9 +50,10 @@ class PaymentCreated implements WebhookProcessorInterface
         $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         $order       = null;
 
-        if ($transaction) {
-            return;
-        }
+        $order = $this->orderCollectionFactory->create()->addFieldToFilter(
+            'increment_id',
+            $webhookData['data']['order']['reference']
+        )->getFirstItem();
 
         $orderReference = $webhookData['data']['order']['reference'] ?? null;
 
@@ -59,6 +61,10 @@ class PaymentCreated implements WebhookProcessorInterface
             $order = $this->getOrderByPaymentId($paymentId);
             $orderReference = $order->getIncrementId();
         }
+        $this->comment->saveComment(
+            __('Webhook Received. Payment created for payment ID: %1', $webhookData['data']['paymentId']),
+            $order
+        );
 
         if (!$order) {
             $order = $this->orderCollectionFactory->create()->addFieldToFilter(
@@ -67,6 +73,12 @@ class PaymentCreated implements WebhookProcessorInterface
             )->getFirstItem();
         }
 
+
+
+        if (!$transaction) {
+            $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+            $this->orderRepository->save($order);
+        }
         $this->createPaymentTransaction($order, $paymentId);
 
         $this->orderRepository->save($order);
@@ -94,7 +106,7 @@ class PaymentCreated implements WebhookProcessorInterface
      * ProcessOrder function.
      *
      * @param Order $order
-     * @param int $paymentId
+     * @param string $paymentId
      *
      * @return void
      */
