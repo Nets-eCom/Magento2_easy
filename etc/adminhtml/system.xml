@@ -15,7 +15,7 @@
                     <validate>required-entry</validate>
                 </field>
                 <field id="nexi_api_test_connect_wizard" translate="button_label" sortOrder="68" showInDefault="1"
-                       showInWebsite="1" showInStore="0">
+                       showInWebsite="1" showInStore="1">
                     <label/>
                     <button_label>Test Connection</button_label>
                     <frontend_model>Nexi\Checkout\Block\Adminhtml\System\Config\TestConnection</frontend_model>
