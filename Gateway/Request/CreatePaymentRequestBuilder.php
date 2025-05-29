@@ -192,6 +192,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 termsUrl        : $this->config->getPaymentsTermsAndConditionsUrl(),
                 merchantTermsUrl: $this->config->getWebshopTermsAndConditionsUrl(),
                 consumer        : $this->buildConsumer($order),
+                countryCode                : $this->getThreeLetterCountryCode($this->config->getCountryCode()),
             );
         }
 
@@ -202,7 +203,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             consumer                   : $this->buildConsumer($order),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: true,
-            countryCode                : $this->getThreeLetterCountryCode(),
+            countryCode                : $this->getThreeLetterCountryCode($this->config->getCountryCode()),
         );
     }
 
@@ -224,14 +225,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                 addressLine2: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(2)),
                 postalCode  : $order->getShippingAddress()->getPostcode(),
                 city        : $this->stringSanitizer->sanitize($order->getShippingAddress()->getCity()),
-                country     : $this->getThreeLetterCountryCode(),
+                country     : $this->getThreeLetterCountryCode($order->getShippingAddress()->getCountryId()),
             ),
             billingAddress : new Address(
                 addressLine1: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(1)),
                 addressLine2: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(2)),
                 postalCode  : $order->getBillingAddress()->getPostcode(),
                 city        : $order->getBillingAddress()->getCity(),
-                country     : $this->getThreeLetterCountryCode(),
+                country     : $this->getThreeLetterCountryCode($order->getBillingAddress()->getCountryId()),
             ),
             privatePerson  : new PrivatePerson(
                 firstName: $this->stringSanitizer->sanitize($order->getCustomerFirstname()),
@@ -244,13 +245,15 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Get the three-letter country code
      *
+     * @param string $countryCode
+     *
      * @return string
      * @throws NoSuchEntityException
      */
-    public function getThreeLetterCountryCode(): string
+    public function getThreeLetterCountryCode(string $countryCode): string
     {
         return $this->countryInformationAcquirer->getCountryInfo(
-            $this->config->getCountryCode()
+            $countryCode
         )->getThreeLetterAbbreviation();
     }
 
