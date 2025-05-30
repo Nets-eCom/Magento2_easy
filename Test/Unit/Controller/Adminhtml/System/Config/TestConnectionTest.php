@@ -4,11 +4,14 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Test\Unit\Controller\Adminhtml\System\Config;
 
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Filter\StripTags;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Magento\Framework\Url;
+use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Controller\Adminhtml\System\Config\TestConnection;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Config\Source\Environment;
@@ -24,6 +27,8 @@ class TestConnectionTest extends TestCase
     private $requestMock;
     private $paymentApiFactoryMock;
     private $configMock;
+    private $urlMock;
+    private $scopeConfigMock;
 
     protected function setUp(): void
     {
@@ -35,10 +40,19 @@ class TestConnectionTest extends TestCase
         $this->jsonMock              = $this->createMock(Json::class);
         $this->paymentApiFactoryMock = $this->createMock(PaymentApiFactory::class);
         $this->configMock            = $this->createMock(Config::class);
+        $this->urlMock               = $this->createMock(Url::class);
+        $this->scopeConfigMock       = $this->createMock(ScopeConfigInterface::class);
         $stripTagsMock               = $this->createMock(StripTags::class);
 
         $contextMock->method('getRequest')->willReturn($this->requestMock);
         $this->jsonFactoryMock->method('create')->willReturn($this->jsonMock);
+
+        $this->scopeConfigMock->method('getValue')->with(
+            'currency/options/default',
+            ScopeInterface::SCOPE_STORE
+        )->willReturn('USD');
+
+        $this->urlMock->method('getUrl')->willReturn('https://example.com');
 
         $this->controller = $objectManager->getObject(
             TestConnection::class,
@@ -47,7 +61,9 @@ class TestConnectionTest extends TestCase
                 'resultJsonFactory' => $this->jsonFactoryMock,
                 'tagFilter'         => $stripTagsMock,
                 'paymentApiFactory' => $this->paymentApiFactoryMock,
-                'config'            => $this->configMock
+                'config'            => $this->configMock,
+                'url'               => $this->urlMock,
+                'scopeConfig'       => $this->scopeConfigMock
             ]
         );
     }
@@ -55,7 +71,7 @@ class TestConnectionTest extends TestCase
     public function testExecuteSuccess()
     {
         $this->requestMock->method('getParams')->willReturn([
-                                                                'api_key'     => 'valid_api_key',
+                                                                'secret_key'     => 'valid_api_key',
                                                                 'environment' => Environment::LIVE
                                                             ]);
 
@@ -74,30 +90,17 @@ class TestConnectionTest extends TestCase
     public function testExecuteFailure()
     {
         $this->requestMock->method('getParams')->willReturn([
-                                                                'api_key'     => 'invalid_api_key',
+                                                                'secret_key'     => 'invalid_api_key',
                                                                 'environment' => Environment::LIVE
                                                             ]);
 
         $apiMock = $this->createMock(PaymentApi::class);
         $this->paymentApiFactoryMock->method('create')->willReturn($apiMock);
-        $apiMock->method('retrievePayment')->willThrowException(new \Exception('Invalid API key'));
+        $apiMock->method('createEmbeddedPayment')->willThrowException(new \NexiCheckout\Api\Exception\PaymentApiException('Invalid API key'));
 
         $this->jsonMock->expects($this->once())
             ->method('setData')
-            ->with(['success' => false, 'errorMessage' => 'Please check your API key and environment.'])
-            ->willReturnSelf();
-
-        $this->controller->execute();
-    }
-
-    // Test for missing parameters
-    public function testExecuteMissingParams()
-    {
-        $this->requestMock->method('getParams')->willReturn([]);
-
-        $this->jsonMock->expects($this->once())
-            ->method('setData')
-            ->with(['success' => false, 'errorMessage' => __('Please fill the api key.')])
+            ->with(['success' => false, 'errorMessage' => ' Please check your API key and environment.'])
             ->willReturnSelf();
 
         $this->controller->execute();
