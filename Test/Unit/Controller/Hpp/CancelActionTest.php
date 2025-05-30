@@ -9,19 +9,51 @@ use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
+use Magento\Quote\Model\Quote;
 use Nexi\Checkout\Controller\Hpp\CancelAction;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class CancelActionTest extends TestCase
 {
+    /**
+     * @var CancelAction
+     */
     private $controller;
+
+    /**
+     * @var RedirectFactory
+     */
     private $redirectFactoryMock;
+
+    /**
+     * @var Redirect
+     */
     private $redirectMock;
+
+    /**
+     * @var UrlInterface
+     */
     private $urlMock;
+
+    /**
+     * @var LoggerInterface
+     */
     private $loggerMock;
+
+    /**
+     * @var Session
+     */
     private $checkoutSessionMock;
+
+    /**
+     * @var ManagerInterface
+     */
     private $messageManagerMock;
+
+    /**
+     * @var Quote
+     */
     private $quoteMock;
 
     protected function setUp(): void
@@ -33,7 +65,7 @@ class CancelActionTest extends TestCase
         $this->urlMock = $this->createMock(UrlInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
         $this->checkoutSessionMock = $this->createMock(Session::class);
-        $this->quoteMock = $this->createMock(\Magento\Quote\Model\Quote::class);
+        $this->quoteMock = $this->createMock(Quote::class);
         $this->checkoutSessionMock->method('getQuote')
             ->willReturn($this->quoteMock);
         $this->quoteMock->method('getPayment')

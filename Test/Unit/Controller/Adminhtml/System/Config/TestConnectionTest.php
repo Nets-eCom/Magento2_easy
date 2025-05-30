@@ -15,6 +15,7 @@ use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Controller\Adminhtml\System\Config\TestConnection;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Config\Source\Environment;
+use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
 use PHPUnit\Framework\TestCase;
@@ -127,7 +128,8 @@ class TestConnectionTest extends TestCase
 
         $apiMock = $this->createMock(PaymentApi::class);
         $this->paymentApiFactoryMock->method('create')->willReturn($apiMock);
-        $apiMock->method('createEmbeddedPayment')->willThrowException(new \NexiCheckout\Api\Exception\PaymentApiException('Invalid API key'));
+        $apiMock->method('createEmbeddedPayment')
+            ->willThrowException(new PaymentApiException('Invalid API key'));
 
         $this->jsonMock->expects($this->once())
             ->method('setData')
