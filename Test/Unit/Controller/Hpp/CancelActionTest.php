@@ -43,7 +43,6 @@ class CancelActionTest extends TestCase
         $this->controller = new CancelAction(
             $this->redirectFactoryMock,
             $this->urlMock,
-            $this->loggerMock,
             $this->checkoutSessionMock,
             $this->messageManagerMock
         );
@@ -56,31 +55,6 @@ class CancelActionTest extends TestCase
         $this->messageManagerMock->expects($this->once())
             ->method('addNoticeMessage')
             ->with(__('The payment has been canceled.'));
-        $this->urlMock->method('getUrl')
-            ->willReturn('checkout/cart/index');
-        $this->redirectMock->expects($this->once())
-            ->method('setUrl')
-            ->with('checkout/cart/index')
-            ->willReturnSelf();
-
-        $result = $this->controller->execute();
-        $this->assertSame($this->redirectMock, $result);
-    }
-
-    public function testExecuteException()
-    {
-        $this->checkoutSessionMock->method('restoreQuote')
-            ->willThrowException(new \Exception('Error restoring quote'));
-        $this->messageManagerMock->expects($this->once())
-            ->method('addErrorMessage')
-            ->with($this->callback(function ($message) {
-                return str_contains(
-                    (string) $message,
-                    'An error occurred during the payment process. Please try again later.'
-                );
-            }));
-        $this->loggerMock->expects($this->once())
-            ->method('critical');
         $this->urlMock->method('getUrl')
             ->willReturn('checkout/cart/index');
         $this->redirectMock->expects($this->once())
