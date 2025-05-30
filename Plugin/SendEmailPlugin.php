@@ -9,6 +9,9 @@ use Nexi\Checkout\Gateway\Config\Config;
 
 class SendEmailPlugin
 {
+    /**
+     * @param Config $config
+     */
     public function __construct(private readonly Config $config)
     {
     }

@@ -6,7 +6,8 @@ use Magento\Quote\Model\Quote\Payment;
 use Magento\Quote\Model\Quote\Payment\ToOrderPayment;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 
-class ProcessTransactionId {
+class ProcessTransactionId
+{
     /**
      * After converting the payment, set the last transaction ID
      *

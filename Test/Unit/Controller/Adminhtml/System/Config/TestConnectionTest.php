@@ -21,13 +21,44 @@ use PHPUnit\Framework\TestCase;
 
 class TestConnectionTest extends TestCase
 {
+    /**
+     * @var TestConnection
+     */
     private $controller;
+
+    /**
+     * @var JsonFactory
+     */
     private $jsonFactoryMock;
+
+    /**
+     * @var Json
+     */
     private $jsonMock;
+
+    /**
+     * @var RequestInterface
+     */
     private $requestMock;
+
+    /**
+     * @var PaymentApiFactory
+     */
     private $paymentApiFactoryMock;
+
+    /**
+     * @var Config
+     */
     private $configMock;
+
+    /**
+     * @var Url
+     */
     private $urlMock;
+
+    /**
+     * @var ScopeConfigInterface
+     */
     private $scopeConfigMock;
 
     protected function setUp(): void
