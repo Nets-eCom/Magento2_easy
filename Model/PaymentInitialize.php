@@ -23,6 +23,7 @@ class PaymentInitialize implements PaymentInitializeInterface
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param Config $config
      * @param LoggerInterface $logger
+     * @param Session $checkoutSession
      */
     public function __construct(
         private readonly CartRepositoryInterface           $quoteRepository,

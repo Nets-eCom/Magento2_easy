@@ -19,6 +19,8 @@ class UpdateOrderRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Build the request for updating the payment order.
+     *
      * @param array $buildSubject
      *
      * @return array
