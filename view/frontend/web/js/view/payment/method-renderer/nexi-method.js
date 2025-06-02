@@ -55,7 +55,9 @@ define(
 
         return Component.extend({
             defaults: {
-                template: window.checkoutConfig.payment.nexi.integrationType ? 'Nexi_Checkout/payment/nexi-hosted.html' : 'Nexi_Checkout/payment/nexi-embedded.html',
+                template: window.checkoutConfig.payment.nexi.integrationType == 'HostedPaymentPage'
+                    ? 'Nexi_Checkout/payment/nexi-hosted.html'
+                    : 'Nexi_Checkout/payment/nexi-embedded.html',
                 config: window.checkoutConfig.payment.nexi
             },
             isEmbedded: ko.observable(false),

@@ -13,15 +13,13 @@
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
 
-        <div id="nexi-checkout-container" data-bind="visible: isEmbedded"></div>
-
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
         </div>
         <div class="actions-toolbar">
-            <div class="primary" data-bind="visible: isHosted()">
+            <div class="primary">
                 <button class="action primary checkout"
                         type="submit"
                         data-bind="
