@@ -1,8 +1,9 @@
 <?php
 /** @var $block \Nexi\Checkout\Block\Info\Nexi */
+/** @var $escaper \Magento\Framework\Escaper */
 ?>
 
-<img src="<?= $block->escapeHtml($block->getNexiLogo() ? $block->getNexiLogo() : ''); ?>">
-<p><?= $block->escapeHtml($block->getPaymentMethodTitle() ? $block->getPaymentMethodTitle() : '') ?></p>
+<img src="<?= $escaper->escapeHtml($block->getNexiLogo() ? $block->getNexiLogo() : ''); ?>">
+<p><?= $escaper->escapeHtml($block->getPaymentMethodTitle() ? $block->getPaymentMethodTitle() : '') ?></p>
 <?= $block->getChildHtml()?>
-<p>Payment method: <?= $block->escapeHtml($block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()') ?></p>
+<!--<p>Payment method: --><?php //= $block->escapeHtml($block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()') ?><!--</p>-->
