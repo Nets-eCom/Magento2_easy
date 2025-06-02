@@ -55,7 +55,7 @@ define(
 
         return Component.extend({
             defaults: {
-                template: window.checkoutConfig.payment.nexi.integrationType ? 'Nexi_Checkout/payment/nexi-hosted' : 'Nexi_Checkout/payment/nexi-embedded.html',
+                template: window.checkoutConfig.payment.nexi.integrationType ? 'Nexi_Checkout/payment/nexi-hosted.html' : 'Nexi_Checkout/payment/nexi-embedded.html',
                 config: window.checkoutConfig.payment.nexi
             },
             isEmbedded: ko.observable(false),
@@ -63,9 +63,6 @@ define(
             isRendering: ko.observable(false),
             eventsSubscribed: ko.observable(false),
 
-            isHosted: function () {
-                return !this.isEmbedded();
-            },
             initialize: function () {
                 this._super();
                 if (this.config.integrationType === 'EmbeddedCheckout') {
@@ -79,8 +76,8 @@ define(
             isActive: function () {
                 return this.getCode() === this.isChecked();
             },
-            placeOrder: function (data, event) {
-                let placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
+            async placeOrder(data, event) {
+                let placeOrder = await placeOrderAction(this.getData(), false, this.messageContainer);
 
                 return $.when(placeOrder).done(function (response) {
                     this.afterPlaceOrder(response);
@@ -111,7 +108,6 @@ define(
             },
             subscribeToEvents: function () {
                 if (this.dibsCheckout() && this.eventsSubscribed() === false) {
-                    console.log("DEBUG: Subscribing to events");
                     this.dibsCheckout().on(
                         "payment-completed",
                         async function () {
@@ -126,11 +122,9 @@ define(
                                 const validationResult = await validatePayment.call(this);
                                 if (!validationResult.success) {
                                     console.warn("DEBUG: Validation failed, reloading the checkout. Nexi paymentId: ", paymentId);
-
                                     await renderEmbeddedCheckout.call(this);
                                     this.subscribeToEvents();
                                 } else {
-                                    console.log("DEBUG: Validation ok, placing the order. Nexi paymentId: ", paymentId);
                                     await this.placeOrder();
                                     fullScreenLoader.startLoader();
                                     document.getElementById("nexi-checkout-container").style.position = "relative";
@@ -147,8 +141,6 @@ define(
                         }.bind(this)
                     );
 
-                    // TODO: check how to trigger remove mask if payment cancelled in the iframe,
-                    //  as this seems to not work
                     this.dibsCheckout().on(
                         "payment-cancelled",
                         async function (paymentId) {
