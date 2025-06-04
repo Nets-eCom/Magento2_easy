@@ -57,10 +57,16 @@ class PaymentCreatedTest extends TestCase
     protected function setUp(): void
     {
         $this->transactionBuilderMock = $this->createMock(Builder::class);
-        $this->orderCollectionFactoryMock = $this->getMockForNonExistingClass('Magento\Reports\Model\ResourceModel\Order\CollectionFactory', ['create']);
+        $this->orderCollectionFactoryMock = $this->getMockForNonExistingClass(
+            'Magento\Reports\Model\ResourceModel\Order\CollectionFactory',
+            ['create']
+        );
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $this->paymentCollectionFactoryMock = $this->getMockForNonExistingClass('Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory', ['create']);
+        $this->paymentCollectionFactoryMock = $this->getMockForNonExistingClass(
+            'Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory',
+            ['create']
+        );
         $this->commentMock = $this->createMock(Comment::class);
 
         $this->paymentCreated = new PaymentCreated(
