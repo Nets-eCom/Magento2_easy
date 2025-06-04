@@ -79,11 +79,8 @@ define(
                 return this.getCode() === this.isChecked();
             },
             async placeOrder(data, event) {
-                let placeOrder = await placeOrderAction(this.getData(), false, this.messageContainer);
-
-                return $.when(placeOrder).done(function (response) {
+                    const response = await placeOrderAction(this.getData(), false, this.messageContainer);
                     this.afterPlaceOrder(response);
-                }.bind(this));
             },
             afterPlaceOrder: function (response) {
                 if (this.isHosted()) {
@@ -109,41 +106,54 @@ define(
                 return true;
             },
             subscribeToEvents: function () {
-                if (this.dibsCheckout() && this.eventsSubscribed() === false) {
-                    this.dibsCheckout().on(
+                if (this.dibsCheckout()) {
+                    // If events are already subscribed to this instance, don't subscribe again
+                    if (this.eventsSubscribed() === true) {
+                        console.log("DEBUG: Events already subscribed, skipping subscription");
+                        return;
+                    }
+
+                    // Store a reference to the current dibsCheckout instance to ensure we're subscribing to the right one
+                    const currentDibsCheckout = this.dibsCheckout();
+                    console.log("DEBUG: Subscribing events to dibsCheckout instance", currentDibsCheckout);
+
+                    currentDibsCheckout.on(
                         "payment-completed",
                         async function () {
                             window.location.href = url.build("checkout/onepage/success");
                         }.bind(this)
                     );
 
-                    this.dibsCheckout().on(
+                    currentDibsCheckout.on(
                         "pay-initialized",
                         async function (paymentId) {
+                            fullScreenLoader.startLoader();
+                            console.log("DEBUG: Pay initialized event triggered for paymentId:", paymentId);
+
                             try {
                                 const validationResult = await validatePayment.call(this);
                                 if (!validationResult.success) {
                                     console.warn("DEBUG: Validation failed, reloading the checkout. Nexi paymentId: ", paymentId);
                                     await renderEmbeddedCheckout.call(this);
-                                    this.subscribeToEvents();
-                                } else {
-                                    await this.placeOrder();
-                                    fullScreenLoader.startLoader();
-                                    document.getElementById("nexi-checkout-container").style.position = "relative";
-                                    document.getElementById("nexi-checkout-container").style.zIndex = "9999";
-                                    this.dibsCheckout().send("payment-order-finalized", true);
-                                    // add some mask to block the screen, only allow to deal with the iframe
-
+                                    return;
                                 }
-                            }catch (error) {
+
+                                await this.placeOrder(); // Ensure the order is placed before proceeding
+                                document.getElementById("nexi-checkout-container").style.position = "relative";
+                                document.getElementById("nexi-checkout-container").style.zIndex = "9999";
+
+                                // Trigger Dibs processing only after the order is placed
+                                // Use the same instance reference to send the event
+                                currentDibsCheckout.send("payment-order-finalized", true);
+                                console.log("DEBUG: Sent payment-order-finalized to dibsCheckout instance", currentDibsCheckout);
+                            } catch (error) {
                                 console.error("DEBUG: Error in payment initialization:", error);
                                 await renderEmbeddedCheckout.call(this);
-                                this.subscribeToEvents();
                             }
                         }.bind(this)
                     );
 
-                    this.dibsCheckout().on(
+                    currentDibsCheckout.on(
                         "payment-cancelled",
                         async function (paymentId) {
                             fullScreenLoader.stopLoader();
@@ -152,6 +162,7 @@ define(
                     );
 
                     this.eventsSubscribed(true);
+                    console.log("DEBUG: Events successfully subscribed to dibsCheckout instance", currentDibsCheckout);
                 }
             },
             isHosted: function () {
