@@ -13,7 +13,7 @@ define([
                 }
 
                 const sdkUrl = isTestMode
-                    ? 'https://app.nexi2.test/static/frontend/Magento/luma/en_US/Nexi_Checkout/js/dobs.js' //'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1'
+                    ? 'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1'
                     : 'https://checkout.dibspayment.eu/v1/checkout.js?v=1';
 
                 fullScreenLoader.startLoader();
