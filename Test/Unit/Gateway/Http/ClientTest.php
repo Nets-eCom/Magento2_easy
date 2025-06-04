@@ -9,9 +9,6 @@ use Nexi\Checkout\Gateway\Http\Client;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Model\Result\ChargeResult;
-use NexiCheckout\Model\Result\RetrievePayment\Payment;
-use NexiCheckout\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -85,7 +82,6 @@ class ClientTest extends TestCase
         $result = $this->client->getPaymentApi();
         $this->assertSame($this->paymentApiMock, $result);
     }
-
 
     /**
      * Test placeRequest method with exception
