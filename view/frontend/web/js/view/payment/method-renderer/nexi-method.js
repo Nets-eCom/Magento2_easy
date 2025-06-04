@@ -74,6 +74,14 @@ define(
                 if (this.isActive()) {
                     this.renderCheckout();
                 }
+
+                // Check current payment method and hide iframe if needed
+                this.hideIframeIfNeeded();
+
+                // Subscribe to payment method changes to hide iframe when another payment method is selected
+                quote.paymentMethod.subscribe(function(method) {
+                    this.hideIframeIfNeeded();
+                }, this);
             },
             isActive: function () {
                 return this.getCode() === this.isChecked();
@@ -167,6 +175,21 @@ define(
             },
             isHosted: function () {
                 return this.config.integrationType === 'HostedPaymentPage';
+            },
+            hideIframeIfNeeded: function() {
+                const method = quote.paymentMethod();
+                const container = document.getElementById("nexi-checkout-container");
+                if (!container) {
+                    return;
+                }
+
+                if (!method || method.method !== this.getCode()) {
+                    // Hide the iframe container if another payment method is selected
+                    container.style.display = "none";
+                } else {
+                    // Show the iframe container if Nexi payment method is selected
+                    container.style.display = "block";
+                }
             },
         });
     }
