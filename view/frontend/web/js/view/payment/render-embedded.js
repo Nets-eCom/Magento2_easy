@@ -28,7 +28,6 @@ define([
 
        // Clean up previous checkout instance if it exists
         if (this.dibsCheckout()) {
-          console.log("DEBUG: Cleaning up previous dibsCheckout instance");
           this.dibsCheckout().cleanup();
         }
 
@@ -49,7 +48,6 @@ define([
            },
          };
          const newDibsCheckout = new Dibs.Checkout(checkoutOptions);
-         console.log("DEBUG: Created new Dibs.Checkout instance:", newDibsCheckout, "with paymentId:", response.paymentId);
          this.dibsCheckout(newDibsCheckout);
 
          // Reset eventsSubscribed flag to ensure events are subscribed to the new instance

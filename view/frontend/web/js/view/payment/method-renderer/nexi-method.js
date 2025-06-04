@@ -75,9 +75,6 @@ define(
                     this.renderCheckout();
                 }
 
-                // Check current payment method and hide iframe if needed
-                this.hideIframeIfNeeded();
-
                 // Subscribe to payment method changes to hide iframe when another payment method is selected
                 quote.paymentMethod.subscribe(function(method) {
                     this.hideIframeIfNeeded();
@@ -117,13 +114,11 @@ define(
                 if (this.dibsCheckout()) {
                     // If events are already subscribed to this instance, don't subscribe again
                     if (this.eventsSubscribed() === true) {
-                        console.log("DEBUG: Events already subscribed, skipping subscription");
                         return;
                     }
 
                     // Store a reference to the current dibsCheckout instance to ensure we're subscribing to the right one
                     const currentDibsCheckout = this.dibsCheckout();
-                    console.log("DEBUG: Subscribing events to dibsCheckout instance", currentDibsCheckout);
 
                     currentDibsCheckout.on(
                         "payment-completed",
@@ -136,12 +131,10 @@ define(
                         "pay-initialized",
                         async function (paymentId) {
                             fullScreenLoader.startLoader();
-                            console.log("DEBUG: Pay initialized event triggered for paymentId:", paymentId);
 
                             try {
                                 const validationResult = await validatePayment.call(this);
                                 if (!validationResult.success) {
-                                    console.warn("DEBUG: Validation failed, reloading the checkout. Nexi paymentId: ", paymentId);
                                     await renderEmbeddedCheckout.call(this);
                                     return;
                                 }
@@ -153,9 +146,7 @@ define(
                                 // Trigger Dibs processing only after the order is placed
                                 // Use the same instance reference to send the event
                                 currentDibsCheckout.send("payment-order-finalized", true);
-                                console.log("DEBUG: Sent payment-order-finalized to dibsCheckout instance", currentDibsCheckout);
                             } catch (error) {
-                                console.error("DEBUG: Error in payment initialization:", error);
                                 await renderEmbeddedCheckout.call(this);
                             }
                         }.bind(this)
@@ -165,12 +156,10 @@ define(
                         "payment-cancelled",
                         async function (paymentId) {
                             fullScreenLoader.stopLoader();
-                            console.log("DEBUG: Payment cancelled with ID:", paymentId);
                         }.bind(this)
                     );
 
                     this.eventsSubscribed(true);
-                    console.log("DEBUG: Events successfully subscribed to dibsCheckout instance", currentDibsCheckout);
                 }
             },
             isHosted: function () {
