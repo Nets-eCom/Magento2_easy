@@ -57,10 +57,10 @@ class PaymentCreatedTest extends TestCase
     protected function setUp(): void
     {
         $this->transactionBuilderMock = $this->createMock(Builder::class);
-        $this->orderCollectionFactoryMock = $this->createMock(OrderCollectionFactory::class);
+        $this->orderCollectionFactoryMock = $this->getMockForNonExistingClass('Magento\Reports\Model\ResourceModel\Order\CollectionFactory', ['create']);
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
-        $this->paymentCollectionFactoryMock = $this->createMock(PaymentCollectionFactory::class);
+        $this->paymentCollectionFactoryMock = $this->getMockForNonExistingClass('Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory', ['create']);
         $this->commentMock = $this->createMock(Comment::class);
 
         $this->paymentCreated = new PaymentCreated(
@@ -71,6 +71,28 @@ class PaymentCreatedTest extends TestCase
             $this->paymentCollectionFactoryMock,
             $this->commentMock
         );
+    }
+
+    /**
+     * Create a mock for a non-existing class
+     *
+     * @param string $className The name of the class to mock
+     * @param array|null $methods The methods to mock (optional)
+     * @return \PHPUnit\Framework\MockObject\MockObject The mock object
+     */
+    private function getMockForNonExistingClass(string $className, array $methods = null)
+    {
+        $builder = $this->getMockBuilder($className)
+            ->disableOriginalConstructor()
+            ->disableOriginalClone()
+            ->disableArgumentCloning()
+            ->allowMockingUnknownTypes();
+
+        if ($methods !== null) {
+            $builder->setMethods($methods);
+        }
+
+        return $builder->getMock();
     }
 
     public function testProcessWebhookWithOrderReferenceAndExistingTransaction(): void
