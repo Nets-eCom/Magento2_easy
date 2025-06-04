@@ -354,6 +354,9 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             }
         }
         if ($paymentSubject instanceof Quote) {
+            if (!(float)$paymentSubject->getShippingAddress()->getBaseShippingAmount()) {
+                return 0.0;
+            }
             $shippingTaxRate = $paymentSubject->getShippingAddress()->getBaseShippingTaxAmount() /
                 $paymentSubject->getShippingAddress()->getBaseShippingAmount() * 100;
             if ($shippingTaxRate) {
