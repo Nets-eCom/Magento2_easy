@@ -1,14 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Request\NexiCheckout;
 
 use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\InvoiceInterface;
+use Nexi\Checkout\Gateway\AmountConverter;
+use Nexi\Checkout\Gateway\StringSanitizer;
 use NexiCheckout\Model\Request\Item;
 
 class SalesDocumentItemsBuilder
 {
     public const SHIPPING_COST_REFERENCE = 'shipping_cost_ref';
+
+    /**
+     * @param AmountConverter $amountConverter
+     * @param StringSanitizer $stringSanitizer
+     */
+    public function __construct(
+        private readonly AmountConverter $amountConverter,
+        private readonly StringSanitizer $stringSanitizer,
+    ) {
+    }
 
     /**
      * Build sales document items for the given sales object
@@ -22,34 +36,59 @@ class SalesDocumentItemsBuilder
         $items = [];
         foreach ($salesObject->getAllItems() as $item) {
             $items[] = new Item(
-                name            : $item->getName(),
-                quantity        : (int)$item->getQty(),
+                name            : $this->stringSanitizer->sanitize($item->getName()),
+                quantity        : (float)$item->getQty(),
                 unit            : 'pcs',
-                unitPrice       : (int)($item->getPrice() * 100),
-                grossTotalAmount: (int)($item->getRowTotalInclTax() * 100),
-                netTotalAmount  : (int)($item->getRowTotal() * 100),
-                reference       : $item->getSku(),
-                taxRate         : (int)($item->getTaxPercent() * 100),
-                taxAmount       : (int)($item->getTaxAmount() * 100),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getBaseRowTotalInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
+                reference       : $this->stringSanitizer->sanitize($item->getSku()),
+                taxRate         : $this->amountConverter->convertToNexiAmount($this->calculateTaxRate($item)),
+                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
             );
         }
 
         if ($salesObject->getShippingInclTax()) {
             $items[] = new Item(
-                name            : $salesObject->getOrder()->getShippingDescription(),
+                name            : $this->stringSanitizer->sanitize($salesObject->getOrder()->getShippingDescription()),
                 quantity        : 1,
                 unit            : 'pcs',
-                unitPrice       : (int)($salesObject->getShippingAmount() * 100),
-                grossTotalAmount: (int)($salesObject->getShippingInclTax() * 100),
-                netTotalAmount  : (int)($salesObject->getShippingAmount() * 100),
+                unitPrice       : $this->amountConverter->convertToNexiAmount($salesObject->getBaseShippingAmount()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount($salesObject->getBaseShippingInclTax()),
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount($salesObject->getBaseShippingAmount()),
                 reference       : self::SHIPPING_COST_REFERENCE,
                 taxRate         : $salesObject->getGrandTotal() ?
-                                      (int)($salesObject->getTaxAmount() / $salesObject->getGrandTotal() * 100) :
-                                      0,
-                taxAmount       : (int)($salesObject->getShippingTaxAmount() * 100),
+                    $this->amountConverter->convertToNexiAmount(
+                        $this->calculateShippingTaxRate($salesObject)
+                    ) : 0,
+                taxAmount       : $this->amountConverter->convertToNexiAmount($salesObject->getBaseShippingTaxAmount()),
             );
         }
 
         return $items;
+    }
+
+    /**
+     * Calculate the tax rate for a given item.
+     *
+     * @param mixed $item
+     *
+     * @return mixed
+     */
+    public function calculateTaxRate(mixed $item): mixed
+    {
+        return $item->getTaxAmount() / $item->getRowTotal() * 100;
+    }
+
+    /**
+     * Calculate the shipping tax rate for a given sales object.
+     *
+     * @param InvoiceInterface|CreditmemoInterface $salesObject
+     *
+     * @return float|int
+     */
+    public function calculateShippingTaxRate(InvoiceInterface|CreditmemoInterface $salesObject): int|float
+    {
+        return $salesObject->getShippingTaxAmount() / $salesObject->getShippingAmount() * 100;
     }
 }

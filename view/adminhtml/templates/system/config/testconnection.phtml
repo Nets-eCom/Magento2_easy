@@ -1,13 +1,14 @@
 <?php
 /**
  * @var $block \Nexi\Checkout\Block\Adminhtml\System\Config\TestConnection
- */
+ * @var $escaper \Magento\Framework\Escaper
+*/
 ?>
 <button class="scalable" type="button" id="<?= $block->getHtmlId() ?>" data-mage-init='{"testNexiConnection":{
-    "url": "<?= $block->escapeUrl($block->getAjaxUrl()) ?>",
+    "url": "<?= $escaper->escapeUrl($block->getAjaxUrl()) ?>",
     "elementId": "<?= $block->getHtmlId() ?>",
-    "successText": "<?= $block->escapeHtmlAttr(__('Successful! Test again?')) ?>",
-    "failedText": "<?= $block->escapeHtmlAttr(__('Connection failed! Test again?')) ?>",
+    "successText": "<?= $escaper->escapeHtmlAttr(__('Successful! Test again?')) ?>",
+    "failedText": "<?= $escaper->escapeHtmlAttr(__('Connection failed! Test again?')) ?>",
     "fieldMapping": "<?= /* @noEscape */ $block->getFieldMapping() ?>"}, "validation": {}}'>
-    <span id="<?= $block->getHtmlId() ?>_result"><?= $block->escapeHtml($block->getButtonLabel()) ?></span>
+    <span id="<?= $block->getHtmlId() ?>_result"><?= $escaper->escapeHtml($block->getButtonLabel()) ?></span>
 </button>

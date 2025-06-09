@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Block\Adminhtml\System\Config;
 
 use Magento\Backend\Block\Template\Context;
@@ -10,11 +12,17 @@ use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 class TestConnection extends Field
 {
+    /**
+     * @param Context $context
+     * @param Structure $configStructure
+     * @param array $data
+     * @param SecureHtmlRenderer|null $secureRenderer
+     */
     public function __construct(
-        Context                    $context,
+        Context $context,
         private readonly Structure $configStructure,
-        array                      $data = [],
-        ?SecureHtmlRenderer        $secureRenderer = null
+        array $data = [],
+        ?SecureHtmlRenderer $secureRenderer = null
     ) {
         parent::__construct($context, $data, $secureRenderer);
     }
@@ -31,6 +39,7 @@ class TestConnection extends Field
     {
         $element = clone $element;
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
+
         return parent::render($element);
     }
 
@@ -44,10 +53,13 @@ class TestConnection extends Field
     {
         parent::_prepareLayout();
         $this->setTemplate('Nexi_Checkout::system/config/testconnection.phtml');
+
         return $this;
     }
 
     /**
+     * Get HTML for the element
+     *
      * @param AbstractElement $element
      *
      * @return string

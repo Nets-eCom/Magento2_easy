@@ -1,32 +1,12 @@
 {
-    "name": "nexi/module-checkout",
+    "name": "nexi-checkout/adobe-commerce-checkout",
     "description": "Nets Easy Checkout",
-    "authors": [
-        {
-            "name": "Solteq Oyj",
-            "email": "magentoservices@solteq.com",
-            "homepage": "https://github.com/Solteq",
-            "role": "Developer"
-        },
-        {
-            "name": "Konrad Konieczny",
-            "email": "konrad.konieczny@solteq.com",
-            "homepage": "https://github.com/bartoszkaluzny-solteq",
-            "role": "Lead Developer"
-        },
-        {
-            "name": "Bartosz Kałużny",
-            "email": "bartosz.kaluzny@solteq.com",
-            "homepage": "https://github.com/bartoszkaluzny-solteq",
-            "role": "Developer"
-        }
-    ],
     "require": {
         "php": "^8.0",
-        "nexi-checkout/php-payment-sdk": "*",
+        "nexi-checkout/php-payment-sdk": "^0.4.1",
         "magento/framework": ">=102.0.0",
         "ext-curl": "*",
-        "nesbot/carbon": "^2.57.0"
+        "giggsey/libphonenumber-for-php-lite": "^9.0.5"
     },
     "require-dev": {
         "magento/magento-coding-standard": "*",
