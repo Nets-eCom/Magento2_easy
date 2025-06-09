@@ -58,7 +58,7 @@ class Stop implements Action\HttpGetActionInterface
 
         if ($this->preventAdminActions->isAdminAsCustomer()) {
             $this->messageManager->addErrorMessage(__('Admin user is not authorized for this operation'));
-            $resultRedirect->setPath('paytrail/order/payments');
+            $resultRedirect->setPath('nexi/order/payments');
 
             return $resultRedirect;
         }
@@ -82,12 +82,12 @@ class Stop implements Action\HttpGetActionInterface
             }
 
             $this->subscriptionRepositoryInterface->save($subscription);
-            $resultRedirect->setPath('paytrail/order/payments');
+            $resultRedirect->setPath('nexi/order/payments');
             $this->messageManager->addSuccessMessage('Subscription stopped successfully');
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             $this->messageManager->addErrorMessage(__('Unable to stop payment'));
-            $resultRedirect->setPath('paytrail/order/payments');
+            $resultRedirect->setPath('nexi/order/payments');
         }
 
         return $resultRedirect;

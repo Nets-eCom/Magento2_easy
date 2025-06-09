@@ -189,7 +189,7 @@ class Token implements HttpPostActionInterface
      */
     private function getTokenResponseData($order, $tokenId, $customer)
     {
-        $commandExecutor = $this->commandManagerPool->get('paytrail');
+        $commandExecutor = $this->commandManagerPool->get('nexi');
         $response = $commandExecutor->executeByCode(
             'token_payment',
             null,
@@ -221,7 +221,7 @@ class Token implements HttpPostActionInterface
      */
     private function getPaymentData($transactionId)
     {
-        $commandExecutor = $this->commandManagerPool->get('paytrail');
+        $commandExecutor = $this->commandManagerPool->get('nexi');
         $response = $commandExecutor->executeByCode(
             'get_payment_data',
             null,
