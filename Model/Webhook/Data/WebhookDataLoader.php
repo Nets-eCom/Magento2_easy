@@ -41,7 +41,7 @@ class WebhookDataLoader
 
         $transactions = $this->transactionRepository->getList($searchCriteria)->getItems();
 
-        if (count($transactions) !== 1) {
+        if ($transactions === null || count($transactions) !== 1) {
             return null;
         }
 
@@ -68,7 +68,7 @@ class WebhookDataLoader
 
         $transactions = $this->transactionRepository->getList($searchCriteria)->getItems();
 
-        if (count($transactions) !== 1) {
+        if ($transactions === null || count($transactions) !== 1) {
             throw new NotFoundException(__('Transaction not found or multiple transactions found for payment ID.'));
         }
 
@@ -80,12 +80,16 @@ class WebhookDataLoader
      *
      * @param string $paymentId
      *
-     * @return mixed
+     * @return Order
+     * @throws NotFoundException
      */
     public function loadOrderByPaymentId(string $paymentId): Order
     {
         $transaction = $this->getTransactionByPaymentId($paymentId);
-        $order       = $transaction->getOrder();
+        if ($transaction === null) {
+            throw new NotFoundException(__('Transaction not found for payment ID: %1', $paymentId));
+        }
+        $order = $transaction->getOrder();
 
         return $order;
     }

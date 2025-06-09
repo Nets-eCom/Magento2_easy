@@ -34,7 +34,7 @@ class CancelAction implements ActionInterface
     {
         $this->checkoutSession->restoreQuote();
         $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
-        
+
         return $this->resultRedirectFactory->create()->setUrl(
             $this->url->getUrl('checkout/cart/index', ['_secure' => true])
         );

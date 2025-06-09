@@ -10,6 +10,7 @@ use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Order\Comment;
+use Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory as PaymentCollectionFactory;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
@@ -22,6 +23,7 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param CollectionFactory $orderCollectionFactory
      * @param WebhookDataLoader $webhookDataLoader
      * @param OrderRepositoryInterface $orderRepository
+     * @param PaymentCollectionFactory $paymentCollectionFactory
      * @param Comment $comment
      */
     public function __construct(
@@ -29,7 +31,8 @@ class PaymentCreated implements WebhookProcessorInterface
         private readonly CollectionFactory $orderCollectionFactory,
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly Comment $comment
+        private readonly PaymentCollectionFactory $paymentCollectionFactory,
+        private readonly Comment $comment,
     ) {
     }
 
@@ -43,12 +46,21 @@ class PaymentCreated implements WebhookProcessorInterface
      */
     public function processWebhook(array $webhookData): void
     {
-        $transaction = $this->webhookDataLoader->getTransactionByPaymentId($webhookData['data']['paymentId']);
+        $paymentId   = $webhookData['data']['paymentId'];
+        $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
+        $order       = null;
 
-        $order = $this->orderCollectionFactory->create()->addFieldToFilter(
-            'increment_id',
-            $webhookData['data']['order']['reference']
-        )->getFirstItem();
+        $orderReference = $webhookData['data']['order']['reference'] ?? null;
+
+        if ($orderReference === null) {
+            $order = $this->getOrderByPaymentId($paymentId);
+            $orderReference = $order->getIncrementId();
+        } else {
+            $order = $this->orderCollectionFactory->create()->addFieldToFilter(
+                'increment_id',
+                $orderReference
+            )->getFirstItem();
+        }
 
         $this->comment->saveComment(
             __('Webhook Received. Payment created for payment ID: %1', $webhookData['data']['paymentId']),
@@ -59,6 +71,24 @@ class PaymentCreated implements WebhookProcessorInterface
             $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
             $this->orderRepository->save($order);
         }
+    }
+
+    /**
+     * Get order by payment id.
+     *
+     * @param string $paymentId
+     *
+     * @return Order
+     * @throws NotFound
+     */
+    private function getOrderByPaymentId(string $paymentId)
+    {
+        $payment = $this->paymentCollectionFactory->create()
+            ->addFieldToFilter('last_trans_id', $paymentId)
+            ->getFirstItem();
+        $orderId = $payment->getParentId();
+
+        return $this->orderCollectionFactory->create()->addFieldToFilter('entity_id', $orderId)->getFirstItem();
     }
 
     /**
