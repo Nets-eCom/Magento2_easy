@@ -65,8 +65,10 @@
             <argument name="commands" xsi:type="array">
                 <item name="create_payment" xsi:type="string">NexiCommandCreatePayment</item>
                 <item name="initialize" xsi:type="string">Nexi\Checkout\Gateway\Command\Initialize</item>
+                <item name="retrieve" xsi:type="string">NexiCommandRetrieve</item>
                 <item name="capture" xsi:type="string">NexiCommandCapture</item>
                 <item name="refund" xsi:type="string">NexiCommandRefund</item>
+                <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>
             </argument>
         </arguments>
     </virtualType>
@@ -77,6 +79,27 @@
             <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\CreatePayment</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandRetrieve" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\RetrieveRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\Retrieve
+            </argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandUpdateOrder" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\UpdateOrderRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </virtualType>
 
@@ -86,6 +109,7 @@
             <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\Capture</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </virtualType>
 
@@ -95,6 +119,7 @@
             <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\RefundCharge</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </virtualType>
 
@@ -181,6 +206,9 @@
         </arguments>
     </type>
 
+    <preference for="Nexi\Checkout\Api\PaymentInitializeInterface" type="Nexi\Checkout\Model\PaymentInitialize"/>
+    <preference for="Nexi\Checkout\Api\PaymentValidateInterface" type="Nexi\Checkout\Model\PaymentValidate"/>
+
     <!-- Webhooks -->
     <type name="Nexi\Checkout\Model\WebhookHandler">
         <arguments>
@@ -201,6 +229,21 @@
             <argument name="webhookHandler" xsi:type="object">Nexi\Checkout\Model\WebhookHandler</argument>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
+    </type>
+    <type name="Nexi\Checkout\Model\PaymentInitialize">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Quote\Model\Quote\Payment\ToOrderPayment">
+        <plugin name="Nexi_Checkout::quote_to_order_save_last_txn_id"
+                type="Nexi\Checkout\Plugin\QouteToOrder\ProcessTransactionId"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Quote\Observer\SubmitObserver">
+        <plugin name="Nexi_Checkout::set_can_send_email_flag"
+                type="Nexi\Checkout\Plugin\SendEmailPlugin"
+                sortOrder="100"/>
     </type>
 
     <!-- Subscriptions -->
