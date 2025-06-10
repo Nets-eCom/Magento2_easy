@@ -2,6 +2,6 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="controller_action_predispatch_checkout_cart_index">
-        <observer name="Nexi_Checkout::restore_qoute_for_pending_order" instance="Nexi\Checkout\Observer\CartRevokeObserver"/>
+        <observer name="Nexi_Checkout::restore_quote_for_pending_order" instance="Nexi\Checkout\Observer\CartRevokeObserver"/>
     </event>
 </config>
