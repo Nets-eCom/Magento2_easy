@@ -44,7 +44,7 @@ class AddPaymentAuthorizedOrderStatus implements DataPatchInterface
 
         $data = [
             'status'           => self::PAYMENT_AUTHORIZED,
-            'state'            => 'pending_payment',
+            'state'            => Order::STATE_PENDING_PAYMENT,
             'is_default'       => 0,
             'visible_on_front' => 1
         ];
