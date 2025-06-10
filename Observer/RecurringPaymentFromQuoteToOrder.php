@@ -16,7 +16,7 @@ class RecurringPaymentFromQuoteToOrder implements ObserverInterface
     private $quoteConverter;
 
     public function __construct(
-        QuoteToOrder $quoteConverter
+        QuoteToOrder $quoteConverter,
     ) {
         $this->quoteConverter = $quoteConverter;
     }

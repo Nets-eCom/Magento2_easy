@@ -286,4 +286,12 @@
             <argument name="quoteSession" xsi:type="object">Magento\Backend\Model\Session\Quote\Proxy</argument>
         </arguments>
     </type>
+    <type name="\Magento\Quote\Model\Quote">
+        <plugin name="prevent_different_scheduled_cart"
+                type="Nexi\Checkout\Plugin\PreventDifferentScheduledCart"/>
+    </type>
+    <type name="Magento\Sales\Api\OrderRepositoryInterface">
+        <plugin name="store_subscription"
+                type="Nexi\Checkout\Plugin\Api\OrderRepository" />
+    </type>
 </config>

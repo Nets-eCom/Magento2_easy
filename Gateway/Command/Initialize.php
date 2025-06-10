@@ -69,6 +69,7 @@ class Initialize implements CommandInterface
         $this->cratePayment($paymentData);
 
         $transactionId      = $payment->getAdditionalInformation('payment_id');
+
         $orderTransaction = $this->transactionBuilder->build(
             $transactionId,
             $order,

@@ -7,17 +7,14 @@ namespace Nexi\Checkout\Plugin;
 use Magento\Checkout\Model\GuestPaymentInformationManagement;
 use Magento\Checkout\Model\PaymentInformationManagement;
 use Magento\Checkout\Model\Session;
-use Psr\Log\LoggerInterface;
 
 class PaymentInformationManagementPlugin
 {
     /**
      * @param Session $checkoutSession
-     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly Session $checkoutSession,
-        private readonly LoggerInterface $logger
     ) {
     }
 

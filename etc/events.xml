@@ -5,4 +5,7 @@
         <observer name="recurring_payment_quote_to_order"
                   instance="Nexi\Checkout\Observer\RecurringPaymentFromQuoteToOrder"/>
     </event>
+    <event name="sales_order_place_before">
+        <observer name="validate_cart_before_order_place" instance="Nexi\Checkout\Observer\ScheduledCartValidation"/>
+    </event>
 </config>

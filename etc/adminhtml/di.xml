@@ -15,4 +15,8 @@
             </argument>
         </arguments>
     </virtualType>
+
+    <type name="Magento\Sales\Model\ResourceModel\Order\Grid\Collection">
+        <plugin name="RecurringToOrderGrid" type="Nexi\Checkout\Plugin\RecurringToOrderGrid" />
+    </type>
 </config>

@@ -3,6 +3,8 @@ namespace Nexi\Checkout\Plugin\Api;
 
 use Magento\Framework\Exception\NoSuchEntityException;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
+use NexiCheckout\Api\Exception\PaymentApiException;
+use Psr\Log\LoggerInterface;
 
 class OrderRepository
 {
@@ -15,19 +17,31 @@ class OrderRepository
     /** @var \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository */
     private $subscriptionLinkRepository;
 
+    /** @var LoggerInterface $logger */
+    private $logger;
+
+    /** @var PaymentApiFactory $paymentApiFactory */
+    private $paymentApiFactory;
+
+    /** @var Config $gatewayConfig */
+    private $gatewayConfig;
+
     /**
      * @param \Nexi\Checkout\Api\SubscriptionRepositoryInterface $subscriptionRepository
      * @param \Magento\Sales\Api\Data\OrderExtensionFactory $extensionFactory
      * @param \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository $subscriptionLinkRepository
+     * @param LoggerInterface $logger
      */
     public function __construct(
         \Nexi\Checkout\Api\SubscriptionRepositoryInterface               $subscriptionRepository,
         \Magento\Sales\Api\Data\OrderExtensionFactory                  $extensionFactory,
-        \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository $subscriptionLinkRepository
+        \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository $subscriptionLinkRepository,
+        LoggerInterface $logger
     ) {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->orderExtensionFactory = $extensionFactory;
         $this->subscriptionLinkRepository = $subscriptionLinkRepository;
+        $this->logger = $logger;
     }
 
     /**
@@ -38,13 +52,15 @@ class OrderRepository
      */
     public function afterSave(
         \Magento\Sales\Api\OrderRepositoryInterface $subject,
-        $order
+        \Magento\Sales\Api\Data\OrderInterface $order
     ) {
-        $extensionAttributes = $order->getExtensionAttributes();
-        if ($extensionAttributes && $extensionAttributes->getRecurringPayment()) {
-            $extensionAttributes->getRecurringPayment()->setOrderId($order->getId());
-            $this->subscriptionRepository->save($extensionAttributes->getRecurringPayment());
+        $paymentId = $order->getPayment()->getAdditionalInformation('payment_id');
+
+        if (empty($paymentId)) {
+            return $order;
         }
+
+        $this->logger->debug('KUKKUU!' . $paymentId);
 
         return $order;
     }

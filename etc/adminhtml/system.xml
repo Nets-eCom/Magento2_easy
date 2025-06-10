@@ -78,7 +78,7 @@
             </group>
         </section>
         <section id="sales">
-            <group id="recurring_payment" translate="label" sortOrder="800" showInDefault="1" showInStore="0" showInWebsite="0">
+            <group id="recurring_payment" translate="label" sortOrder="800" showInDefault="1" showInStore="1" showInWebsite="1">
                 <label>Nexi: Recurring Payment</label>
                 <field id="active_recurring_payment" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                        showInStore="0" canRestore="1">

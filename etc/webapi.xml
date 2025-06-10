@@ -1,33 +1,7 @@
 <?xml version="1.0"?>
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
-    <!-- Subscriptions Service -->
-    <route url="/V1/nexi/subscription/cancel/:subscription_id" method="PUT">
-        <service class="Nexi\Checkout\Api\SubscriptionManagementInterface" method="cancelSubscription" />
-        <resources>
-            <resource ref="self"/>
-        </resources>
-    </route>
-    <route url="/V1/nexi/subscription/list" method="GET">
-        <service class="Nexi\Checkout\Api\SubscriptionManagementInterface" method="showSubscriptions" />
-        <resources>
-            <resource ref="self"/>
-        </resources>
-    </route>
 
-    <route url="/V1/nexi/payment/list" method="GET">
-        <service class="Nexi\Checkout\Api\CustomerTokensManagementInterface" method="showCustomerPaymentMethods" />
-        <resources>
-            <resource ref="self"/>
-        </resources>
-    </route>
-
-    <route url="/V1/nexi/subscription/change/:subscription_id/:card_id" method="PUT">
-        <service class="Nexi\Checkout\Api\SubscriptionManagementInterface" method="changeSubscription"/>
-        <resources>
-            <resource ref="self"/>
-        </resources>
-    </route>
     <route url="/V1/nexi/guest-carts/:cartId/payment-initialize" method="POST">
         <service class="Nexi\Checkout\Api\PaymentInitializeInterface" method="initialize"/>
         <resources>

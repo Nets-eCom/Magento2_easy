@@ -13,6 +13,7 @@ use Nexi\Checkout\Model\Order\Comment;
 use Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory as PaymentCollectionFactory;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
+use Psr\Log\LoggerInterface;
 
 class PaymentCreated implements WebhookProcessorInterface
 {
@@ -25,6 +26,7 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param PaymentCollectionFactory $paymentCollectionFactory
      * @param Comment $comment
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly Builder $transactionBuilder,
@@ -33,6 +35,7 @@ class PaymentCreated implements WebhookProcessorInterface
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly PaymentCollectionFactory $paymentCollectionFactory,
         private readonly Comment $comment,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -46,6 +49,7 @@ class PaymentCreated implements WebhookProcessorInterface
      */
     public function processWebhook(array $webhookData): void
     {
+        $this->logger->debug('Processing webhook', ['webhookData' => $webhookData]);
         $paymentId   = $webhookData['data']['paymentId'];
         $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         $order       = null;
@@ -71,6 +75,8 @@ class PaymentCreated implements WebhookProcessorInterface
             $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
             $this->orderRepository->save($order);
         }
+
+        $this->createSubscription($paymentId);
     }
 
     /**

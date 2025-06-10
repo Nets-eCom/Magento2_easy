@@ -23,6 +23,7 @@ use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\Address;
 use NexiCheckout\Model\Request\Payment\Consumer;
+use NexiCheckout\Model\Request\Payment\UnscheduledSubscription;
 use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
@@ -32,6 +33,7 @@ use NexiCheckout\Model\Request\Shared\Notification;
 use NexiCheckout\Model\Request\Shared\Notification\Webhook;
 use NexiCheckout\Model\Request\Shared\Order as NexiRequestOrder;
 use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
+use Psr\Log\LoggerInterface;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
@@ -45,6 +47,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param WebhookHandler $webhookHandler
      * @param AmountConverter $amountConverter
      * @param StringSanitizer $stringSanitizer
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly UrlInterface $url,
@@ -54,6 +57,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         private readonly WebhookHandler $webhookHandler,
         private readonly AmountConverter $amountConverter,
         private readonly StringSanitizer $stringSanitizer,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -95,7 +99,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             items    : $this->buildItems($order),
             currency : $order->getBaseCurrencyCode(),
             amount   : $this->amountConverter->convertToNexiAmount($order->getBaseGrandTotal()),
-            reference: $order->getIncrementId()
+            reference: $order->getIncrementId(),
         );
     }
 
@@ -172,6 +176,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             order       : $this->buildOrder($order),
             checkout    : $this->buildCheckout($order),
             notification: new Notification($this->buildWebhooks()),
+            subscription: $this->getSubscriptionSetup(),
         );
     }
 
@@ -222,6 +227,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     private function buildConsumer(Order $order): Consumer
     {
+
         return new Consumer(
             email          : $order->getCustomerEmail(),
             reference      : $order->getCustomerId(),
@@ -365,5 +371,19 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         }
 
         return 0.0;
+    }
+
+    private function getSubscriptionSetup(): ?Payment\Subscription {
+        $sub = true;
+
+        if (!$sub) {
+            return null;
+        }
+
+        return new Payment\Subscription(
+            subscriptionId: null,
+            endDate: new \DateTime((int)date('Y') + 100 . '-01-01'),
+            interval: 30,
+        );
     }
 }

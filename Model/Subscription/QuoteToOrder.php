@@ -41,7 +41,6 @@ class QuoteToOrder
         if (!$oldPayment) {
             return;
         }
-
         $extensionAttributes = $order->getExtensionAttributes();
         if (!$extensionAttributes) {
             $extensionAttributes = $this->orderExtensionFactory->create();

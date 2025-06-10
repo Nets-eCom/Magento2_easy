@@ -11,6 +11,7 @@ use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Api\SubscriptionApi;
 use Psr\Log\LoggerInterface;
 
 class Client implements ClientInterface
@@ -23,7 +24,7 @@ class Client implements ClientInterface
     public function __construct(
         private readonly PaymentApiFactory $paymentApiFactory,
         private readonly Config            $config,
-        private readonly LoggerInterface   $logger
+        private readonly LoggerInterface   $logger,
     ) {
     }
 
@@ -47,6 +48,7 @@ class Client implements ClientInterface
                     'request' => $transferObject->getBody()
                 ]
             );
+
             if (is_array($transferObject->getBody())) {
                 $response = $paymentApi->$nexiMethod(...$transferObject->getBody());
             } else {
@@ -57,6 +59,7 @@ class Client implements ClientInterface
                 'Nexi Client response: ',
                 ['response' => var_export($response, true)]
             );
+
         } catch (PaymentApiException|\Exception $e) {
             $this->logger->error($e->getMessage(), [$e]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
