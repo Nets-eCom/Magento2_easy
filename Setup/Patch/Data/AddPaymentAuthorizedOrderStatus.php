@@ -15,7 +15,7 @@ use Magento\Sales\Model\Order;
  */
 class AddPaymentAuthorizedOrderStatus implements DataPatchInterface
 {
-    public const PAYMENT_AUTHORIZED = 'payment_authorized';
+    public const STATUS_NEXI_AUTHORIZED = 'nexi_payment_authorized';
 
     /**
      * @param ModuleDataSetupInterface $moduleDataSetup
@@ -33,7 +33,7 @@ class AddPaymentAuthorizedOrderStatus implements DataPatchInterface
         $this->moduleDataSetup->startSetup();
 
         $data = [
-            'status' => self::PAYMENT_AUTHORIZED,
+            'status' => self::STATUS_NEXI_AUTHORIZED,
             'label'  => __('Payment Authorized')
         ];
 
@@ -44,7 +44,7 @@ class AddPaymentAuthorizedOrderStatus implements DataPatchInterface
         );
 
         $data = [
-            'status'           => self::PAYMENT_AUTHORIZED,
+            'status'           => self::STATUS_NEXI_AUTHORIZED,
             'state'            => Order::STATE_PENDING_PAYMENT,
             'is_default'       => 0,
             'visible_on_front' => 1

@@ -45,7 +45,9 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         /** @var \Magento\Sales\Model\Order $order */
         $order = $paymentTransaction->getOrder();
 
-        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(AddPaymentAuthorizedOrderStatus::PAYMENT_AUTHORIZED);
+        $order->setState(Order::STATE_PENDING_PAYMENT)
+            ->setStatus(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
+
         $reservationTransaction = $this->transactionBuilder->build(
             $webhookData['id'],
             $order,

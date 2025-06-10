@@ -15,6 +15,7 @@ use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
+use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
 
 class PaymentChargeCreated implements WebhookProcessorInterface
 {
@@ -70,8 +71,8 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             TransactionInterface::TYPE_AUTH
         );
 
-        if ($order->getState() !== Order::STATE_PENDING_PAYMENT) {
-            throw new Exception('Order state is not pending payment.');
+        if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
+            throw new Exception('Order status is not authorized.');
         }
 
         $chargeTxnId = $webhookData['data']['chargeId'];
