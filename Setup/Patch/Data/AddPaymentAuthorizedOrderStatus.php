@@ -26,7 +26,7 @@ class AddPaymentAuthorizedOrderStatus implements DataPatchInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function apply()
     {
