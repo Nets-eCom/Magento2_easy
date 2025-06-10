@@ -36,7 +36,7 @@ class CartRevokeObserver implements ObserverInterface
             return;
         }
 
-        if ($lastOrder->getStatus() === Order::STATE_PENDING_PAYMENT) {
+        if ($lastOrder->getStatus() === Order::STATE_PENDING_PAYMENT || $lastOrder->getState() === Order::STATE_NEW) {
             $this->session->restoreQuote();
         }
     }
