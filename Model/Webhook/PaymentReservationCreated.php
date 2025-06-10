@@ -10,6 +10,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
+use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
 
 class PaymentReservationCreated implements WebhookProcessorInterface
 {
@@ -44,7 +45,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         /** @var \Magento\Sales\Model\Order $order */
         $order = $paymentTransaction->getOrder();
 
-        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(AddPaymentAuthorizedOrderStatus::PAYMENT_AUTHORIZED);
         $reservationTransaction = $this->transactionBuilder->build(
             $webhookData['id'],
             $order,
