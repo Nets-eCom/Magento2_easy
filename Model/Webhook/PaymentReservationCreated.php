@@ -10,7 +10,6 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
-use Psr\Log\LoggerInterface;
 
 class PaymentReservationCreated implements WebhookProcessorInterface
 {
@@ -18,13 +17,11 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
-     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly WebhookDataLoader $webhookDataLoader,
-        private readonly Builder $transactionBuilder,
-        private readonly LoggerInterface $logger
+        private readonly Builder $transactionBuilder
     ) {
     }
 

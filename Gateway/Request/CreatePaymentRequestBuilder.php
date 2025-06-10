@@ -33,7 +33,6 @@ use NexiCheckout\Model\Request\Shared\Notification;
 use NexiCheckout\Model\Request\Shared\Notification\Webhook;
 use NexiCheckout\Model\Request\Shared\Order as NexiRequestOrder;
 use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
-use Psr\Log\LoggerInterface;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
@@ -47,7 +46,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param WebhookHandler $webhookHandler
      * @param AmountConverter $amountConverter
      * @param StringSanitizer $stringSanitizer
-     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly UrlInterface $url,
@@ -57,7 +55,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         private readonly WebhookHandler $webhookHandler,
         private readonly AmountConverter $amountConverter,
         private readonly StringSanitizer $stringSanitizer,
-        private readonly LoggerInterface $logger,
     ) {
     }
 

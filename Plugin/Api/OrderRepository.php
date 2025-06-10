@@ -4,7 +4,6 @@ namespace Nexi\Checkout\Plugin\Api;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use NexiCheckout\Api\Exception\PaymentApiException;
-use Psr\Log\LoggerInterface;
 
 class OrderRepository
 {
@@ -17,9 +16,6 @@ class OrderRepository
     /** @var \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository */
     private $subscriptionLinkRepository;
 
-    /** @var LoggerInterface $logger */
-    private $logger;
-
     /** @var PaymentApiFactory $paymentApiFactory */
     private $paymentApiFactory;
 
@@ -30,18 +26,15 @@ class OrderRepository
      * @param \Nexi\Checkout\Api\SubscriptionRepositoryInterface $subscriptionRepository
      * @param \Magento\Sales\Api\Data\OrderExtensionFactory $extensionFactory
      * @param \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository $subscriptionLinkRepository
-     * @param LoggerInterface $logger
      */
     public function __construct(
         \Nexi\Checkout\Api\SubscriptionRepositoryInterface               $subscriptionRepository,
         \Magento\Sales\Api\Data\OrderExtensionFactory                  $extensionFactory,
-        \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository $subscriptionLinkRepository,
-        LoggerInterface $logger
+        \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository $subscriptionLinkRepository
     ) {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->orderExtensionFactory = $extensionFactory;
         $this->subscriptionLinkRepository = $subscriptionLinkRepository;
-        $this->logger = $logger;
     }
 
     /**
@@ -60,7 +53,7 @@ class OrderRepository
             return $order;
         }
 
-        $this->logger->debug('KUKKUU!' . $paymentId);
+        // TODO: Fetch and store subscription in magento
 
         return $order;
     }

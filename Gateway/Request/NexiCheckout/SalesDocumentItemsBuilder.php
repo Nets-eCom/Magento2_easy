@@ -9,7 +9,6 @@ use Magento\Sales\Api\Data\InvoiceInterface;
 use Nexi\Checkout\Gateway\AmountConverter;
 use Nexi\Checkout\Gateway\StringSanitizer;
 use NexiCheckout\Model\Request\Item;
-use Psr\Log\LoggerInterface;
 
 class SalesDocumentItemsBuilder
 {
@@ -19,12 +18,10 @@ class SalesDocumentItemsBuilder
     /**
      * @param AmountConverter $amountConverter
      * @param StringSanitizer $stringSanitizer
-     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly AmountConverter $amountConverter,
         private readonly StringSanitizer $stringSanitizer,
-        private readonly LoggerInterface $logger
     ) {
     }
 
