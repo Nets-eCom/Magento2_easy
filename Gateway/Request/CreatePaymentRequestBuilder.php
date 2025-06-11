@@ -369,7 +369,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * Create the nexi sdkitem from a magento order item
+     * Create the nexi SDK item from a magento order item
      *
      * @param mixed $orderItem
      *
