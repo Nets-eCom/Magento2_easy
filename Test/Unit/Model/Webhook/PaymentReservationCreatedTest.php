@@ -10,6 +10,7 @@ use Magento\Sales\Model\Order\Payment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentReservationCreated;
+use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
 use PHPUnit\Framework\TestCase;
 
 class PaymentReservationCreatedTest extends TestCase
@@ -88,7 +89,7 @@ class PaymentReservationCreatedTest extends TestCase
 
         $orderMock->expects($this->once())
             ->method('setStatus')
-            ->with(Order::STATE_PENDING_PAYMENT)
+            ->with(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED)
             ->willReturnSelf();
 
         $orderMock->expects($this->atLeastOnce())

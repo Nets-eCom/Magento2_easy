@@ -245,4 +245,9 @@
                 type="Nexi\Checkout\Plugin\SendEmailPlugin"
                 sortOrder="100"/>
     </type>
+    <type name="Nexi\Checkout\Observer\CartRevokeObserver">
+        <arguments>
+            <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
 </config>
