@@ -110,19 +110,20 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         /** @var OrderItem $items */
         foreach ($paymentSubject->getAllVisibleItems() as $item) {
-            $items[] = new Item(
-                name            : $item->getName(),
-                quantity        : (float)$item->getQtyOrdered(),
-                unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount(
-                    $item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()
-                ), // TODO: calculate discount tax amount based on tax calculation method
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
-                reference       : $item->getSku(),
-                taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
-            );
+
+            if ($item->getParentItem()) {
+                continue; // Skip child items for composite products
+            }
+
+            // Skip bundle products, but add their children
+            if ($item->getProductType() === 'bundle') {
+                foreach ($item->getChildrenItems() as $childItem) {
+                    $items[] = $this->createItem($childItem);
+                }
+                continue; // Skip the grouped product itself
+            }
+
+            $items[] = $this->createItem($item);
         }
 
         if ($paymentSubject instanceof Order) {
@@ -365,5 +366,29 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         }
 
         return 0.0;
+    }
+
+    /**
+     * Create the nexi sdkitem from a magento order item
+     *
+     * @param mixed $orderItem
+     *
+     * @return Item
+     */
+    public function createItem(mixed $orderItem): Item
+    {
+        return new Item(
+            name            : $orderItem->getName(),
+            quantity        : (float)$orderItem->getQtyOrdered(),
+            unit            : 'pcs',
+            unitPrice       : $this->amountConverter->convertToNexiAmount($orderItem->getBasePrice()),
+            grossTotalAmount: $this->amountConverter->convertToNexiAmount(
+                $orderItem->getBaseRowTotalInclTax() - $orderItem->getBaseDiscountAmount()
+            ),
+            netTotalAmount  : $this->amountConverter->convertToNexiAmount($orderItem->getBaseRowTotal()),
+            reference       : $orderItem->getSku(),
+            taxRate         : $this->amountConverter->convertToNexiAmount($orderItem->getTaxPercent()),
+            taxAmount       : $this->amountConverter->convertToNexiAmount($orderItem->getBaseTaxAmount()),
+        );
     }
 }

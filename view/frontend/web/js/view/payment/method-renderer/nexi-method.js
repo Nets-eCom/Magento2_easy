@@ -71,14 +71,13 @@ define(
                     this.isEmbedded(true);
                 }
 
-                if (this.isActive()) {
+                if (this.isActive() && this.isEmbedded()) {
                     this.renderCheckout();
-                }
 
-                // Subscribe to payment method changes to hide iframe when another payment method is selected
-                quote.paymentMethod.subscribe(function(method) {
-                    this.hideIframeIfNeeded();
-                }, this);
+                    quote.paymentMethod.subscribe(function(method) {
+                        this.hideIframeIfNeeded();
+                    }, this);
+                }
             },
             isActive: function () {
                 return this.getCode() === this.isChecked();
@@ -106,7 +105,10 @@ define(
             },
             selectPaymentMethod: function () {
                 this._super();
-                this.renderCheckout();
+
+                if (this.isEmbedded()) {
+                    this.renderCheckout();
+                }
 
                 return true;
             },
