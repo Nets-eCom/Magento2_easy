@@ -180,8 +180,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * Build the webhooks for the payment
      *
      * @return array<Webhook>
-     *
-     * added all for now, we need to check wh
      */
     public function buildWebhooks(): array
     {
@@ -219,7 +217,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order $order
      *
      * @return Consumer
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|NumberParseException
      */
     private function buildConsumer(Order $order): Consumer
     {
@@ -260,18 +258,20 @@ class CreatePaymentRequestBuilder implements BuilderInterface
 
     /**
      * Build Embedded Checkout request object
+     *
      * TODO: add consumer data (save email on saving shipping address)
      *
      * @param Quote|Order $salesObject
      *
      * @return EmbeddedCheckout
+     * @throws NoSuchEntityException
      */
     public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
     {
         return new EmbeddedCheckout(
             url                        : $this->url->getUrl('checkout/onepage/success'),
             termsUrl                   : $this->config->getPaymentsTermsAndConditionsUrl(),
-//            consumer                   : $this->buildConsumer($salesObject),
+            //consumer                   : $this->buildConsumer($salesObject),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: true,
             countryCode                : $this->getThreeLetterCountryCode($this->config->getCountryCode()),
@@ -284,7 +284,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Quote|Order $salesObject
      *
      * @return HostedCheckout
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|NumberParseException
      */
     public function buildHostedCheckout(Quote|Order $salesObject): HostedCheckout
     {
