@@ -108,19 +108,19 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     public function buildItems(Order|Quote $paymentSubject): OrderItem|array
     {
-        /** @var OrderItem $items */
+        /** @var OrderItem|Quote\Item $item */
         foreach ($paymentSubject->getAllVisibleItems() as $item) {
 
             if ($item->getParentItem()) {
-                continue; // Skip child items for composite products
+                continue;
             }
 
-            // Skip bundle products, but add their children
             if ($item->getProductType() === 'bundle') {
-                foreach ($item->getChildrenItems() as $childItem) {
+                $children = $this->getChildren($item);
+                foreach ($children as $childItem) {
                     $items[] = $this->createItem($childItem);
                 }
-                continue; // Skip the grouped product itself
+                continue;
             }
 
             $items[] = $this->createItem($item);
@@ -390,5 +390,19 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             taxRate         : $this->amountConverter->convertToNexiAmount($orderItem->getTaxPercent()),
             taxAmount       : $this->amountConverter->convertToNexiAmount($orderItem->getBaseTaxAmount()),
         );
+    }
+
+    /**
+     * Get children items of a given order item or quote item.
+     *
+     * @param OrderItem|Quote\Item $item
+     *
+     * @return array|Quote\Item\AbstractItem[]
+     */
+    public function getChildren(OrderItem|Quote\Item $item): array
+    {
+        $children = $item instanceof OrderItem ? $item->getChildrenItems() : $item->getChildren();
+
+        return $children;
     }
 }
