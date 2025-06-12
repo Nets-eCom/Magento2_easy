@@ -12,8 +12,6 @@ use Nexi\Checkout\Model\Config\Source\Environment;
 class Config extends MagentoConfig
 {
     public const CODE = 'nexi';
-    public const NEXI_LOGO = 'payment/nexi/logo';
-    public const NEXI_TITLE = 'payment/nexi/title';
 
     /**
      * Config constructor.

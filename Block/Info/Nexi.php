@@ -13,7 +13,6 @@ class Nexi extends Info
      * @var string
      */
     protected $_template = 'Nexi_Checkout::info/checkout.phtml';
-
     public const SELECTED_PATMENT_METHOD = 'selected_payment_method';
 
     /**
@@ -39,7 +38,7 @@ class Nexi extends Info
     public function getNexiLogo()
     {
         return $this->_scopeConfig->getValue(
-            Config::NEXI_LOGO,
+            'payment/nexi/logo',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
     }
@@ -52,7 +51,7 @@ class Nexi extends Info
     public function getPaymentMethodTitle()
     {
         return $this->_scopeConfig->getValue(
-            Config::NEXI_TITLE,
+            'payment/nexi/title',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
     }
