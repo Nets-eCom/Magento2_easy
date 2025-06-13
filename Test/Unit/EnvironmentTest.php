@@ -11,8 +11,8 @@ class EnvironmentTest extends TestCase
     {
         $environment = new Environment();
         $this->assertEquals([
-                                ['value' => 'test', 'label' => __('Test')],
-                                ['value' => 'live', 'label' => __('Live')]
-                            ], $environment->toOptionArray());
+            ['value' => 'test', 'label' => __('Test')],
+            ['value' => 'live', 'label' => __('Live')]
+        ], $environment->toOptionArray());
     }
 }

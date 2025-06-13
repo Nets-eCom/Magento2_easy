@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
@@ -10,13 +12,11 @@ use Magento\Payment\Helper\Data as PaymentHelper;
 class ConfigProvider implements ConfigProviderInterface
 {
     /**
-     * ConfigProvider constructor.
-     *
      * @param Config $config
      * @param PaymentHelper $paymentHelper
      */
     public function __construct(
-        private readonly Config        $config,
+        private readonly Config $config,
         private readonly PaymentHelper $paymentHelper,
     ) {
     }
@@ -33,7 +33,7 @@ class ConfigProvider implements ConfigProviderInterface
             return [];
         }
 
-        return [
+        $config = [
             'payment' => [
                 Config::CODE => [
                     'isActive'    => $this->config->isActive(),
@@ -43,5 +43,11 @@ class ConfigProvider implements ConfigProviderInterface
                 ]
             ]
         ];
+
+        if ($this->config->isEmbedded()) {
+            $config['payment'][Config::CODE]['checkoutKey'] = $this->config->getCheckoutKey();
+        }
+
+        return $config;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Handler;
 
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -8,10 +10,7 @@ use NexiCheckout\Model\Result\ChargeResult;
 
 class Capture implements HandlerInterface
 {
-
     /**
-     * Constructor
-     *
      * @param SubjectReader $subjectReader
      */
     public function __construct(
@@ -29,6 +28,10 @@ class Capture implements HandlerInterface
 
         /** @var ChargeResult[] $response */
         $chargeResult = reset($response);
+
+        if (!$chargeResult instanceof ChargeResult) {
+            return;
+        }
 
         $chargeId = $chargeResult->getChargeId();
 

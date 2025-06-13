@@ -1,11 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Webhook\Data;
 
-
-use Magento\Checkout\Exception;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\TransactionRepositoryInterface;
@@ -18,7 +17,7 @@ class WebhookDataLoader
      * @param TransactionRepositoryInterface $transactionRepository
      */
     public function __construct(
-        private SearchCriteriaBuilder          $searchCriteriaBuilder,
+        private SearchCriteriaBuilder $searchCriteriaBuilder,
         private TransactionRepositoryInterface $transactionRepository
     ) {
     }
@@ -42,7 +41,7 @@ class WebhookDataLoader
 
         $transactions = $this->transactionRepository->getList($searchCriteria)->getItems();
 
-        if (count($transactions) !== 1) {
+        if ($transactions === null || count($transactions) !== 1) {
             return null;
         }
 
@@ -52,14 +51,16 @@ class WebhookDataLoader
     /**
      * LoadTransactionOrderId function
      *
-     * @param $orderId
+     * @param int $orderId
      * @param string $txnType
      *
      * @return TransactionInterface
      * @throws NotFoundException
      */
-    public function getTransactionByOrderId($orderId, $txnType = TransactionInterface::TYPE_PAYMENT): TransactionInterface
-    {
+    public function getTransactionByOrderId(
+        int $orderId,
+        string $txnType = TransactionInterface::TYPE_PAYMENT
+    ): TransactionInterface {
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('order_id', $orderId, 'eq')
             ->addFilter('txn_type', $txnType, 'eq')
@@ -67,7 +68,7 @@ class WebhookDataLoader
 
         $transactions = $this->transactionRepository->getList($searchCriteria)->getItems();
 
-        if (count($transactions) !== 1) {
+        if ($transactions === null || count($transactions) !== 1) {
             throw new NotFoundException(__('Transaction not found or multiple transactions found for payment ID.'));
         }
 
@@ -79,12 +80,16 @@ class WebhookDataLoader
      *
      * @param string $paymentId
      *
-     * @return mixed
+     * @return Order
+     * @throws NotFoundException
      */
     public function loadOrderByPaymentId(string $paymentId): Order
     {
         $transaction = $this->getTransactionByPaymentId($paymentId);
-        $order       = $transaction->getOrder();
+        if ($transaction === null) {
+            throw new NotFoundException(__('Transaction not found for payment ID: %1', $paymentId));
+        }
+        $order = $transaction->getOrder();
 
         return $order;
     }

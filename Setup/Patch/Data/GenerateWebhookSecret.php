@@ -1,10 +1,10 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace Nexi\Checkout\Setup\Patch\Data;
 
+use Exception;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -18,7 +18,7 @@ class GenerateWebhookSecret implements DataPatchInterface
      * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        private readonly WriterInterface    $configWriter,
+        private readonly WriterInterface $configWriter,
         private readonly EncryptorInterface $encryptor
     ) {
     }
@@ -27,6 +27,7 @@ class GenerateWebhookSecret implements DataPatchInterface
      * Generate secret key for webhook verification
      *
      * @return void
+     * @throws Exception
      */
     public function apply(): void
     {

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Braintree\Exception\NotFound;
-use Magento\Checkout\Exception;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Model\Order\Comment;
+use Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory as PaymentCollectionFactory;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
@@ -23,68 +24,103 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param CollectionFactory $orderCollectionFactory
      * @param WebhookDataLoader $webhookDataLoader
      * @param OrderRepositoryInterface $orderRepository
+     * @param PaymentCollectionFactory $paymentCollectionFactory
+     * @param Comment $comment
      */
     public function __construct(
-        private readonly Builder                    $transactionBuilder,
-        private readonly CollectionFactory          $orderCollectionFactory,
-        private readonly WebhookDataLoader          $webhookDataLoader,
-        private readonly OrderRepositoryInterface   $orderRepository
+        private readonly Builder $transactionBuilder,
+        private readonly CollectionFactory $orderCollectionFactory,
+        private readonly WebhookDataLoader $webhookDataLoader,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly PaymentCollectionFactory $paymentCollectionFactory,
+        private readonly Comment $comment,
     ) {
     }
 
     /**
      * PaymentCreated webhook service.
      *
-     * @param $webhookData
+     * @param array $webhookData
      *
      * @return void
-     * @throws Exception
-     * @throws LocalizedException
+     * @throws CouldNotSaveException|NotFoundException
      */
-    public function processWebhook($webhookData): void
+    public function processWebhook(array $webhookData): void
     {
-        $transaction = $this->webhookDataLoader->getTransactionByPaymentId($webhookData['data']['paymentId']);
+        $paymentId   = $webhookData['data']['paymentId'];
+        $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
+        $order       = null;
 
-        if ($transaction) {
-            return;
+        $orderReference = $webhookData['data']['order']['reference'] ?? null;
+
+        if ($orderReference === null) {
+            $order = $this->getOrderByPaymentId($paymentId);
+            if (!$order->getId()) {
+                throw new NotFoundException(__('Order not found for payment ID: %1', $paymentId));
+            }
+            $orderReference = $order->getIncrementId();
+        } else {
+            $order = $this->orderCollectionFactory->create()->addFieldToFilter(
+                'increment_id',
+                $orderReference
+            )->getFirstItem();
         }
 
-        $order = $this->orderCollectionFactory->create()->addFieldToFilter(
-            'increment_id',
-            $webhookData['data']['order']['reference']
-        )->getFirstItem();
+        $this->comment->saveComment(
+            __('Webhook Received. Payment created for payment ID: %1', $webhookData['data']['paymentId']),
+            $order
+        );
 
-        $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+        if (!$transaction) {
+            $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+            $this->orderRepository->save($order);
+        }
+    }
 
-        $this->orderRepository->save($order);
+    /**
+     * Get order by payment id.
+     *
+     * @param string $paymentId
+     *
+     * @return Order
+     * @throws NotFound
+     */
+    private function getOrderByPaymentId(string $paymentId)
+    {
+        $payment = $this->paymentCollectionFactory->create()
+            ->addFieldToFilter('last_trans_id', $paymentId)
+            ->getFirstItem();
+        $orderId = $payment->getParentId();
+
+        return $this->orderCollectionFactory->create()->addFieldToFilter('entity_id', $orderId)->getFirstItem();
     }
 
     /**
      * ProcessOrder function.
      *
-     * @param $order
-     * @param $paymentId
+     * @param Order $order
+     * @param string $paymentId
      *
      * @return void
-     * @throws Exception
      */
-    private function createPaymentTransaction($order, $paymentId): void
+    private function createPaymentTransaction(Order $order, string $paymentId): void
     {
-        if ($order->getState() === Order::STATE_NEW) {
-            $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-            $paymentTransaction = $this->transactionBuilder
-                ->build(
-                    $paymentId,
-                    $order,
-                    [
-                        'payment_id' => $paymentId
-                    ],
-                    TransactionInterface::TYPE_PAYMENT
-                );
-            $order->getPayment()->addTransactionCommentsToOrder(
-                $paymentTransaction,
-                __('Payment created in Nexi Gateway.')
-            );
+        if ($order->getState() !== Order::STATE_NEW) {
+            return;
         }
+        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+        $paymentTransaction = $this->transactionBuilder
+            ->build(
+                $paymentId,
+                $order,
+                [
+                    'payment_id' => $paymentId
+                ],
+                TransactionInterface::TYPE_PAYMENT
+            );
+        $order->getPayment()->addTransactionCommentsToOrder(
+            $paymentTransaction,
+            __('Payment created in Nexi Gateway.')
+        );
     }
 }

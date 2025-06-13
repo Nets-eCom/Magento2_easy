@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Gateway\Config;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Payment\Gateway\Config\Config as MagentoConfig;
 use Magento\Payment\Model\MethodInterface;
+use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Model\Config\Source\Environment;
+use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 
 class Config extends MagentoConfig
 {
@@ -17,8 +21,6 @@ class Config extends MagentoConfig
      * @param ScopeConfigInterface $scopeConfig
      * @param string|null $methodCode
      * @param string $pathPattern
-     *
-     * @phpcsSuppress Generic.CodeAnalysis.UselessOverridingMethod.Found
      */
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -39,7 +41,7 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Check if the environment is sandbox
+     * Check if the environment is live
      *
      * @return bool
      */
@@ -127,6 +129,16 @@ class Config extends MagentoConfig
     }
 
     /**
+     * Check integration type
+     *
+     * @return bool
+     */
+    public function isEmbedded(): bool
+    {
+        return $this->getIntegrationType() === IntegrationTypeEnum::EmbeddedCheckout->name;
+    }
+
+    /**
      * Get webhook secret
      *
      * @return string
@@ -149,22 +161,12 @@ class Config extends MagentoConfig
     }
 
     /**
-     * Get if the merchant handles consumer data
-     *
-     * @return mixed|null
-     */
-    public function getMerchantHandlesConsumerData()
-    {
-        return $this->getValue('merchant_handles_consumer_data');
-    }
-
-    /**
      * Get the country code
      *
      * @return mixed
      */
     public function getCountryCode()
     {
-        return $this->scopeConfig->getValue('general/country/default');
+        return $this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
     }
 }
