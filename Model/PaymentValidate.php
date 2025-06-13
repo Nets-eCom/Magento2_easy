@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\Model;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
@@ -32,7 +33,8 @@ class PaymentValidate implements PaymentValidateInterface
         private readonly LoggerInterface $logger,
         private readonly Json $json,
         private readonly CommandManagerPoolInterface $commandManagerPool,
-        private readonly AmountConverter $amountConverter
+        private readonly AmountConverter $amountConverter,
+        private readonly Session $session,
     ) {
     }
 
@@ -46,16 +48,20 @@ class PaymentValidate implements PaymentValidateInterface
                 $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
                 $cartId      = $quoteIdMask->getQuoteId();
             }
-            $quote         = $this->quoteRepository->get($cartId);
+            $quote = $this->quoteRepository->get($cartId);
+
+            // check quote is active and restore it if needed
+            if (!$quote->getIsActive()) {
+                $this->session->restoreQuote();
+            }
+
             $paymentMethod = $quote->getPayment();
             if (!$paymentMethod) {
                 throw new LocalizedException(__('No payment method found for the quote'));
             }
 
-            $paymentData = $this->paymentDataObjectFactory->create($paymentMethod);
-
-            $paymentId = $paymentMethod->getAdditionalInformation('payment_id');
-
+            $paymentData     = $this->paymentDataObjectFactory->create($paymentMethod);
+            $paymentId       = $paymentMethod->getAdditionalInformation('payment_id');
             $paymentDeteaild = $this->commandManagerPool->get(Config::CODE)->executeByCode(
                 'retrieve',
                 $paymentMethod,
