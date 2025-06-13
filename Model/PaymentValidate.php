@@ -25,6 +25,7 @@ class PaymentValidate implements PaymentValidateInterface
      * @param Json $json
      * @param CommandManagerPoolInterface $commandManagerPool
      * @param AmountConverter $amountConverter
+     * @param Session $session
      */
     public function __construct(
         private readonly CartRepositoryInterface $quoteRepository,
