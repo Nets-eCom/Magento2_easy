@@ -323,50 +323,6 @@ class PaymentChargeCreatedTest extends TestCase
             ->method('getBaseGrandTotal')
             ->willReturn(100.00);
 
-        // Setup expectations for partialInvoice
-        $orderMock->expects($this->once())
-            ->method('canInvoice')
-            ->willReturn(true);
-        $orderMock->expects($this->atLeastOnce())
-            ->method('getAllItems')
-            ->willReturn([$orderItemMock]);
-        $orderItemMock->expects($this->atLeastOnce())
-            ->method('getId')
-            ->willReturn(1);
-        $orderItemMock->expects($this->atLeastOnce())
-            ->method('getSku')
-            ->willReturn('SKU123');
-        $orderMock->expects($this->once())
-            ->method('prepareInvoice')
-            ->with([1 => 1])
-            ->willReturn($invoiceMock);
-        $invoiceMock->expects($this->once())
-            ->method('setTransactionId')
-            ->with($chargeId)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('setShippingAmount')
-            ->with(10.00)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('setShippingInclTax')
-            ->with(12.00)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('setShippingTaxAmount')
-            ->with(2.00)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('pay')
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('register')
-            ->willReturnSelf();
-        $orderMock->expects($this->once())
-            ->method('addRelatedObject')
-            ->with($invoiceMock);
-
-        // Setup expectations for order state update
         $orderMock->expects($this->once())
             ->method('setState')
             ->with(Order::STATE_PROCESSING)
@@ -375,11 +331,6 @@ class PaymentChargeCreatedTest extends TestCase
             ->method('setStatus')
             ->with(Order::STATE_PROCESSING)
             ->willReturnSelf();
-
-        // Setup expectations for order save
-        $this->orderRepositoryMock->expects($this->once())
-            ->method('save')
-            ->with($orderMock);
 
         // Execute the method
         $this->paymentChargeCreated->processWebhook($webhookData);

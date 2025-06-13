@@ -212,6 +212,8 @@ class PaymentCreatedTest extends TestCase
             ->method('getIncrementId')
             ->willReturn($orderReference);
 
+        $orderMock->method('getId')->willReturn(1);
+
         // Setup expectations for saveComment
         $this->commentMock->expects($this->once())
             ->method('saveComment')

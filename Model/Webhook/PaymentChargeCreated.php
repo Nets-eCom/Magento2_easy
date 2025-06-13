@@ -31,7 +31,6 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly Builder $transactionBuilder,
         private readonly Comment $comment,
-        private readonly Manager $eventManager
     ) {
     }
 

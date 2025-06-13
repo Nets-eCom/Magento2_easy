@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Framework\DataObject;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
@@ -56,6 +55,9 @@ class PaymentCreated implements WebhookProcessorInterface
 
         if ($orderReference === null) {
             $order = $this->getOrderByPaymentId($paymentId);
+            if (!$order->getId()) {
+                throw new NotFoundException(__('Order not found for payment ID: %1', $paymentId));
+            }
             $orderReference = $order->getIncrementId();
         } else {
             $order = $this->orderCollectionFactory->create()->addFieldToFilter(
@@ -80,8 +82,8 @@ class PaymentCreated implements WebhookProcessorInterface
      *
      * @param string $paymentId
      *
-     * @return DataObject
-     * @throws NotFoundException
+     * @return Order
+     * @throws NotFound
      */
     private function getOrderByPaymentId(string $paymentId)
     {
@@ -90,13 +92,7 @@ class PaymentCreated implements WebhookProcessorInterface
             ->getFirstItem();
         $orderId = $payment->getParentId();
 
-        $order = $this->orderCollectionFactory->create()->addFieldToFilter('entity_id', $orderId)->getFirstItem();
-
-        if (!$order->getId()) {
-            throw new NotFoundException(__('Order not found for payment ID: %1', $paymentId));
-        }
-
-        return $order;
+        return $this->orderCollectionFactory->create()->addFieldToFilter('entity_id', $orderId)->getFirstItem();
     }
 
     /**
