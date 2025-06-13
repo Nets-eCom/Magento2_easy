@@ -20,40 +20,36 @@ class Nexi extends Info
      *
      * @param Template\Context $context
      * @param OrderRepositoryInterface $orderRepository
+     * @param Config $gatewayConfig
      * @param array $data
      */
     public function __construct(
         Template\Context                 $context,
         private OrderRepositoryInterface $orderRepository,
+        private Config $gatewayConfig,
         array                            $data = []
     ) {
         parent::__construct($context, $data);
     }
 
     /**
-     * Get Nexi logo.
+     * Get logo to be displayed in the payment method block.
      *
-     * @return mixed
+     * @return mixed|null
      */
-    public function getNexiLogo()
+    public function getLogo()
     {
-        return $this->_scopeConfig->getValue(
-            'payment/nexi/logo',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-        );
+        return $this->gatewayConfig->getNexiLogo();
     }
 
     /**
-     * Get payment method title.
+     * Get the title to be displayed in the payment method block.
      *
-     * @return mixed
+     * @return mixed|null
      */
-    public function getPaymentMethodTitle()
+    public function getTitle()
     {
-        return $this->_scopeConfig->getValue(
-            'payment/nexi/title',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-        );
+        return $this->gatewayConfig->getNexiTitle();
     }
 
     /**

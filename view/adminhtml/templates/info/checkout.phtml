@@ -3,7 +3,7 @@
 /** @var $escaper \Magento\Framework\Escaper */
 ?>
 
-<img src="<?= $escaper->escapeHtml($block->getNexiLogo() ? $block->getNexiLogo() : ''); ?>">
-<p><?= $escaper->escapeHtml($block->getPaymentMethodTitle() ? $block->getPaymentMethodTitle() : '') ?></p>
+<img src="<?= $escaper->escapeHtml($block->getLogo() ? $block->getLogo() : ''); ?>">
+<p><?= $escaper->escapeHtml($block->getTitle() ? $block->getTitle() : '') ?></p>
 <?= $block->getChildHtml()?>
 <!--<p>Payment method: --><?php //= $block->escapeHtml($block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()') ?><!--</p>-->
