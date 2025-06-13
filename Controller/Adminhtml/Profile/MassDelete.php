@@ -10,16 +10,18 @@ use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Ui\Component\MassAction\Filter;
-//use Nexi\Checkout\Model\ResourceModel\Subscription\Profile;
-//use Nexi\Checkout\Model\ResourceModel\Subscription\Profile\CollectionFactory;
 
 class MassDelete implements HttpPostActionInterface
 {
+    /**
+     * MassDelete constructor.
+     *
+     * @param Context $context
+     * @param Filter $filter
+     */
     public function __construct(
         private Context           $context,
-        private Filter            $filter,
-//        private CollectionFactory $factory,
-//        private Profile           $profileResource
+        private Filter            $filter
     ) {
     }
 
@@ -31,17 +33,6 @@ class MassDelete implements HttpPostActionInterface
     {
         /** @var Redirect $resultRedirect */
         $resultRedirect = $this->context->getResultFactory()->create(ResultFactory::TYPE_REDIRECT);
-
-//        $collection     = $this->filter->getCollection($this->factory->create());
-//        $collectionSize = $collection->getSize();
-//
-//        foreach ($collection as $item) {
-//            $this->profileResource->delete($item);
-//        }
-//
-//        $this->context->getMessageManager()->addSuccessMessage(
-//            __('A total of %1 record(s) have been deleted.', $collectionSize)
-//        );
 
         return $resultRedirect->setPath('*/*/');
     }
