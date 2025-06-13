@@ -57,6 +57,12 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
 
         if ($this->isFullRefund($webhookData, $order)) {
             $this->processFullRefund($webhookData, $order);
+        } else {
+            $order->addCommentToStatusHistory(
+                'Partial refund created for order. ' .
+                'Automatic credit memo processing is not supported for partial refunds. ' .
+                'You can create a credit memo manually wit offline refund if needed.',
+            );
         }
 
         $order->getPayment()->addTransactionCommentsToOrder(

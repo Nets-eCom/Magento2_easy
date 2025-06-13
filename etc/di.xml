@@ -250,4 +250,9 @@
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
+    <type name="Nexi\Checkout\Model\PaymentValidate">
+        <arguments>
+            <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
 </config>
