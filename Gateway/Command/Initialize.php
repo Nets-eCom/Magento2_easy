@@ -66,7 +66,7 @@ class Initialize implements CommandInterface
         $stateObject->setStatus(self::STATUS_PENDING);
         $stateObject->setIsNotified(false);
 
-        $this->cratePayment($paymentData);
+        $this->createPayment($paymentData);
 
         $transactionId      = $payment->getAdditionalInformation('payment_id');
         $orderTransaction = $this->transactionBuilder->build(
@@ -90,7 +90,7 @@ class Initialize implements CommandInterface
      * @return void
      * @throws LocalizedException
      */
-    public function cratePayment(PaymentDataObjectInterface $payment)
+    public function createPayment(PaymentDataObjectInterface $payment)
     {
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
