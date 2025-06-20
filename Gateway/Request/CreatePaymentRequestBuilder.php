@@ -332,14 +332,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     {
         $lib = PhoneNumberUtil::getInstance();
 
-        if ($salesObject instanceof Order) {
-            $telephone = $salesObject->getShippingAddress()->getTelephone();
-            $countryId = $salesObject->getShippingAddress()->getCountryId();
-        } else {
-            // Quote object
-            $telephone = $salesObject->getShippingAddress()->getTelephone();
-            $countryId = $salesObject->getShippingAddress()->getCountryId();
-        }
+        $telephone = $salesObject->getShippingAddress()->getTelephone();
+        $countryId = $salesObject->getShippingAddress()->getCountryId();
 
         $number = $lib->parse(
             $telephone,
