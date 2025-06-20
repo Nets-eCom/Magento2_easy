@@ -386,24 +386,24 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Create the nexi SDK item from a magento order item
      *
-     * @param mixed $orderItem
+     * @param OrderItem|Quote\Item $item
      *
      * @return Item
      */
-    public function createItem(mixed $orderItem): Item
+    public function createItem(mixed $item): Item
     {
         return new Item(
-            name            : $orderItem->getName(),
-            quantity        : (float)$orderItem->getQtyOrdered(),
+            name            : $item->getName(),
+            quantity        : $this->getQuantity($item),
             unit            : 'pcs',
-            unitPrice       : $this->amountConverter->convertToNexiAmount($orderItem->getBasePrice()),
+            unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
             grossTotalAmount: $this->amountConverter->convertToNexiAmount(
-                $orderItem->getBaseRowTotalInclTax() - $orderItem->getBaseDiscountAmount()
+                $item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()
             ),
-            netTotalAmount  : $this->amountConverter->convertToNexiAmount($orderItem->getBaseRowTotal()),
-            reference       : $orderItem->getSku(),
-            taxRate         : $this->amountConverter->convertToNexiAmount($orderItem->getTaxPercent()),
-            taxAmount       : $this->amountConverter->convertToNexiAmount($orderItem->getBaseTaxAmount()),
+            netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
+            reference       : $item->getSku(),
+            taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
+            taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
         );
     }
 
@@ -419,5 +419,19 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         $children = $item instanceof OrderItem ? $item->getChildrenItems() : $item->getChildren();
 
         return $children;
+    }
+
+    /**
+     * Returns the quantity of the item.
+     *
+     * @param mixed $item
+     *
+     * @return float
+     */
+    public function getQuantity(mixed $item): float
+    {
+        $qtyOrdered = $item instanceof OrderItem ? $item->getQtyOrdered() : $item->getQty();
+
+        return (float)$qtyOrdered;
     }
 }

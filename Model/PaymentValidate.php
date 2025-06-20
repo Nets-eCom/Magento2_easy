@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\Model;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
@@ -9,6 +10,7 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Nexi\Checkout\Api\PaymentValidateInterface;
+use Nexi\Checkout\Gateway\AmountConverter;
 use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Model\Result\RetrievePaymentResult;
 use Psr\Log\LoggerInterface;
@@ -22,6 +24,8 @@ class PaymentValidate implements PaymentValidateInterface
      * @param LoggerInterface $logger
      * @param Json $json
      * @param CommandManagerPoolInterface $commandManagerPool
+     * @param AmountConverter $amountConverter
+     * @param Session $session
      */
     public function __construct(
         private readonly CartRepositoryInterface $quoteRepository,
@@ -30,6 +34,8 @@ class PaymentValidate implements PaymentValidateInterface
         private readonly LoggerInterface $logger,
         private readonly Json $json,
         private readonly CommandManagerPoolInterface $commandManagerPool,
+        private readonly AmountConverter $amountConverter,
+        private readonly Session $session,
     ) {
     }
 
@@ -43,16 +49,20 @@ class PaymentValidate implements PaymentValidateInterface
                 $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
                 $cartId      = $quoteIdMask->getQuoteId();
             }
-            $quote         = $this->quoteRepository->get($cartId);
+            $quote = $this->quoteRepository->get($cartId);
+
+            // check quote is active and restore it if needed
+            if (!$quote->getIsActive()) {
+                $this->session->restoreQuote();
+            }
+
             $paymentMethod = $quote->getPayment();
             if (!$paymentMethod) {
                 throw new LocalizedException(__('No payment method found for the quote'));
             }
 
-            $paymentData = $this->paymentDataObjectFactory->create($paymentMethod);
-
-            $paymentId = $paymentMethod->getAdditionalInformation('payment_id');
-
+            $paymentData     = $this->paymentDataObjectFactory->create($paymentMethod);
+            $paymentId       = $paymentMethod->getAdditionalInformation('payment_id');
             $paymentDeteaild = $this->commandManagerPool->get(Config::CODE)->executeByCode(
                 'retrieve',
                 $paymentMethod,
@@ -91,10 +101,10 @@ class PaymentValidate implements PaymentValidateInterface
      */
     private function compareAmounts(RetrievePaymentResult $retrievedPayment, \Magento\Quote\Model\Quote $quote): void
     {
-        $quoteTotal     = $quote->getGrandTotal() * 100;
+        $quoteTotal     = $this->amountConverter->convertToNexiAmount($quote->getGrandTotal());
         $retrievedTotal = $retrievedPayment->getPayment()->getOrderDetails()->getAmount();
 
-        if ((float)$quoteTotal !== (float)$retrievedTotal) {
+        if ($quoteTotal !== $retrievedTotal) {
             throw new LocalizedException(__('The payment amount does not match the quote total.'));
         }
     }

@@ -64,9 +64,9 @@ class InitializeTest extends TestCase
     }
 
     /**
-     * Test cratePayment method with successful execution
+     * Test createPayment method with successful execution
      */
-    public function testCratePaymentSuccess(): void
+    public function testcreatePaymentSuccess(): void
     {
         // Mock payment data object
         $paymentDataMock = $this->createMock(PaymentDataObjectInterface::class);
@@ -86,13 +86,13 @@ class InitializeTest extends TestCase
             );
 
         // Execute the method
-        $this->initialize->cratePayment($paymentDataMock);
+        $this->initialize->createPayment($paymentDataMock);
     }
 
     /**
-     * Test cratePayment method with exception
+     * Test createPayment method with exception
      */
-    public function testCratePaymentException(): void
+    public function testcreatePaymentException(): void
     {
         // Mock payment data object
         $paymentDataMock = $this->createMock(PaymentDataObjectInterface::class);
@@ -120,7 +120,7 @@ class InitializeTest extends TestCase
         // Execute the method and expect exception
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('An error occurred during the payment process. Please try again later.');
-        $this->initialize->cratePayment($paymentDataMock);
+        $this->initialize->createPayment($paymentDataMock);
     }
 
     /**
