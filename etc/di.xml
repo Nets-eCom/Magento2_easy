@@ -250,4 +250,15 @@
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
+    <type name="Nexi\Checkout\Model\PaymentValidate">
+        <arguments>
+            <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Checkout\Model\GuestShippingInformationManagement">
+        <plugin name="Nexi_Checkout::guest_shipping_information"
+                type="Nexi\Checkout\Plugin\GuestShippingInformationManagementPlugin"
+                sortOrder="100"/>
+    </type>
 </config>
