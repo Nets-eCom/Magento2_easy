@@ -214,35 +214,43 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Build the consumer object
      *
-     * @param Order $order
+     * @param Order|Quote $salesObject
      *
      * @return Consumer
      * @throws NoSuchEntityException|NumberParseException
      */
-    private function buildConsumer(Order $order): Consumer
+    private function buildConsumer(Order|Quote $salesObject): Consumer
     {
+
+        $customerId      = $salesObject->getCustomerId();
+        $shippingAddress = $salesObject->getShippingAddress();
+        $billingAddress  = $salesObject->getBillingAddress();
+        $lastName        = $salesObject->getCustomerLastname() ?: $shippingAddress->getLastname();
+        $firstName       = $salesObject->getCustomerFirstname() ?: $shippingAddress->getFirstname();
+        $email           = $salesObject->getCustomerEmail() ?: $shippingAddress->getEmail();
+
         return new Consumer(
-            email          : $order->getCustomerEmail(),
-            reference      : $order->getCustomerId(),
+            email          : $email,
+            reference      : $customerId,
             shippingAddress: new Address(
-                addressLine1: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(1)),
-                addressLine2: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(2)),
-                postalCode  : $order->getShippingAddress()->getPostcode(),
-                city        : $this->stringSanitizer->sanitize($order->getShippingAddress()->getCity()),
-                country     : $this->getThreeLetterCountryCode($order->getShippingAddress()->getCountryId()),
+                addressLine1: $this->stringSanitizer->sanitize($shippingAddress->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($shippingAddress->getStreetLine(2)),
+                postalCode  : $shippingAddress->getPostcode(),
+                city        : $this->stringSanitizer->sanitize($shippingAddress->getCity()),
+                country     : $this->getThreeLetterCountryCode($shippingAddress->getCountryId()),
             ),
             billingAddress : new Address(
-                addressLine1: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(1)),
-                addressLine2: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(2)),
-                postalCode  : $order->getBillingAddress()->getPostcode(),
-                city        : $order->getBillingAddress()->getCity(),
-                country     : $this->getThreeLetterCountryCode($order->getBillingAddress()->getCountryId()),
+                addressLine1: $this->stringSanitizer->sanitize($billingAddress->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($billingAddress->getStreetLine(2)),
+                postalCode  : $billingAddress->getPostcode(),
+                city        : $this->stringSanitizer->sanitize($billingAddress->getCity()),
+                country     : $this->getThreeLetterCountryCode($billingAddress->getCountryId()),
             ),
             privatePerson  : new PrivatePerson(
-                firstName: $this->stringSanitizer->sanitize($order->getCustomerFirstname()),
-                lastName : $this->stringSanitizer->sanitize($order->getCustomerLastname()),
+                firstName: $this->stringSanitizer->sanitize($firstName),
+                lastName : $this->stringSanitizer->sanitize($lastName),
             ),
-            phoneNumber    : $this->getNumber($order)
+            phoneNumber    : $this->getNumber($salesObject)
         );
     }
 
@@ -259,8 +267,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Build Embedded Checkout request object
      *
-     * TODO: add consumer data (save email on saving shipping address)
-     *
      * @param Quote|Order $salesObject
      *
      * @return EmbeddedCheckout
@@ -271,7 +277,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         return new EmbeddedCheckout(
             url                        : $this->url->getUrl('checkout/onepage/success'),
             termsUrl                   : $this->config->getPaymentsTermsAndConditionsUrl(),
-            //consumer                   : $this->buildConsumer($salesObject),
+            consumer                   : $this->buildConsumer($salesObject),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: true,
             countryCode                : $this->getThreeLetterCountryCode($this->config->getCountryCode()),
@@ -317,18 +323,21 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Build phone number object for the payment
      *
-     * @param Order $order
+     * @param Order|Quote $salesObject
      *
      * @return PhoneNumber
      * @throws NumberParseException
      */
-    public function getNumber(Order $order): PhoneNumber
+    public function getNumber(Order|Quote $salesObject): PhoneNumber
     {
         $lib = PhoneNumberUtil::getInstance();
 
+        $telephone = $salesObject->getShippingAddress()->getTelephone();
+        $countryId = $salesObject->getShippingAddress()->getCountryId();
+
         $number = $lib->parse(
-            $order->getShippingAddress()->getTelephone(),
-            $order->getShippingAddress()->getCountryId()
+            $telephone,
+            $countryId
         );
 
         return new PhoneNumber(
