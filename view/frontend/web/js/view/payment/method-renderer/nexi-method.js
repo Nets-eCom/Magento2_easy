@@ -73,11 +73,11 @@ define(
 
                 if (this.isActive() && this.isEmbedded()) {
                     this.renderCheckout();
-
-                    quote.paymentMethod.subscribe(function(method) {
-                        this.hideIframeIfNeeded();
-                    }, this);
                 }
+
+                quote.paymentMethod.subscribe(function(method) {
+                    this.hideIframeIfNeeded();
+                }, this);
             },
             isActive: function () {
                 return this.getCode() === this.isChecked();
