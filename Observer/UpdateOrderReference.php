@@ -5,7 +5,6 @@ namespace Nexi\Checkout\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use Psr\Log\LoggerInterface;
@@ -29,7 +28,6 @@ class UpdateOrderReference implements ObserverInterface
      *
      * @param Observer $observer
      * @return void
-     * @throws LocalizedException
      */
     public function execute(Observer $observer): void
     {
@@ -45,7 +43,6 @@ class UpdateOrderReference implements ObserverInterface
             );
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
-            throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
     }
 }
