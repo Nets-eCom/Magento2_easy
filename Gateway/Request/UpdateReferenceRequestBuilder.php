@@ -31,8 +31,8 @@ class UpdateReferenceRequestBuilder implements BuilderInterface
 
         return [
             'nexi_method' => 'updateReferenceInformation',
-            'body'        => [
-                'paymentId'    =>$payment->getAdditionalInformation('payment_id'),
+            'body' => [
+                'paymentId' => $payment->getAdditionalInformation('payment_id'),
                 'referenceInformation' => new ReferenceInformation(
                     checkoutUrl: $this->url->getUrl('checkout/onepage/success'),
                     reference: $incrementId,
