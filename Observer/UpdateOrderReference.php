@@ -41,7 +41,7 @@ class UpdateOrderReference implements ObserverInterface
             $commandPool = $this->commandManagerPool->get(Config::CODE);
             $commandPool->executeByCode(
                 commandCode: 'update_reference',
-                arguments  : ['order' => $order]
+                arguments: ['order' => $order]
             );
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);

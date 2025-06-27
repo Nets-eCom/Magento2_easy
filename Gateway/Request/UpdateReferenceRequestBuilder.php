@@ -10,6 +10,9 @@ use NexiCheckout\Model\Request\ReferenceInformation;
 
 class UpdateReferenceRequestBuilder implements BuilderInterface
 {
+    /**
+     * @param UrlInterface $url
+     */
     public function __construct(
         private readonly UrlInterface $url
     ) {
