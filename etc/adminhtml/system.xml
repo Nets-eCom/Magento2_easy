@@ -17,11 +17,10 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="nexi_api_test_connect_wizard" translate="button_label" sortOrder="68" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label/>
-                    <button_label>Test Connection</button_label>
-                    <frontend_model>Nexi\Checkout\Block\Adminhtml\System\Config\TestConnection</frontend_model>
+                <field id="environment" translate="label" type="select" sortOrder="29" showInDefault="1"
+                       showInWebsite="1">
+                    <label>Environment</label>
+                    <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
                     <depends>
                         <field id="active">1</field>
                     </depends>
@@ -32,6 +31,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="active">1</field>
+                        <field id="environment">live</field>
                     </depends>
                 </field>
                 <field id="checkout_key" translate="label" type="obscure" sortOrder="31" showInDefault="1"
@@ -41,21 +41,26 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="active">1</field>
+                        <field id="environment">live</field>
                     </depends>
                 </field>
                 <field id="test_secret_key" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
                     <label>Test Secret Key</label>
+                    <validate>required-entry</validate>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="active">1</field>
+                        <field id="environment">test</field>
                     </depends>
                 </field>
                 <field id="test_checkout_key" translate="label" type="obscure" sortOrder="31" showInDefault="1"
                        showInWebsite="1">
                     <label>Test Checkout Key</label>
+                    <validate>required-entry</validate>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="active">1</field>
+                        <field id="environment">test</field>
                     </depends>
                 </field>
                 <field id="webshop_terms_and_conditions_url" translate="label" type="text" sortOrder="40"
@@ -103,10 +108,11 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="environment" translate="label" type="select" sortOrder="33" showInDefault="1"
-                       showInWebsite="1">
-                    <label>Environment</label>
-                    <source_model>Nexi\Checkout\Model\Config\Source\Environment</source_model>
+                <field id="nexi_api_test_connect_wizard" translate="button_label" sortOrder="68" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label/>
+                    <button_label>Test Connection</button_label>
+                    <frontend_model>Nexi\Checkout\Block\Adminhtml\System\Config\TestConnection</frontend_model>
                     <depends>
                         <field id="active">1</field>
                     </depends>
