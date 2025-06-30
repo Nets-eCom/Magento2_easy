@@ -95,7 +95,6 @@ define(
                 }
             },
             async renderCheckout() {
-                await renderEmbeddedCheckout.call(this);
                 this.subscribeToEvents();
                 quote.totals.subscribe(async function (quote) {
                     await renderEmbeddedCheckout.call(this);
