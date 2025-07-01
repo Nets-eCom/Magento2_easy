@@ -4,4 +4,8 @@
     <event name="controller_action_predispatch_checkout_cart_index">
         <observer name="Nexi_Checkout::restore_quote_for_pending_order" instance="Nexi\Checkout\Observer\CartRevokeObserver"/>
     </event>
+    <event name="sales_order_place_after">
+        <!-- Add Reference Number - increment id - to the Nexi payment after order is placed - Embedded only -->
+        <observer name="Nexi_Checkout::update_order_reference" instance="Nexi\Checkout\Observer\UpdateOrderReference"/>
+    </event>
 </config>
