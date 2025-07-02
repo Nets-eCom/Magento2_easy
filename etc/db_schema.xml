@@ -10,6 +10,7 @@
     <table name="sales_order" resource="default" engine="innodb">
         <column xsi:type="varchar" name="dibs_payment_id" length="255" nullable="true" comment="dibs_payment_id"/>
         <column xsi:type="decimal" name="dibs_invoice_fee" default="0.00" nullable="true" comment="Dibs Invoice Fee"/>
+        <column xsi:type="varchar" name="dibs_payment_method" length="255" nullable="true" comment="dibs_payment_method"/>
     </table>
 
     <table name="quote_address" resource="default" engine="innodb">

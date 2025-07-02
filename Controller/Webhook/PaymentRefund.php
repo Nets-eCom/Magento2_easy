@@ -19,11 +19,11 @@ class PaymentRefund extends Webhook {
             } else if($data['event'] == 'payment.refund.completed') {
                 $dibs_order_status_id = 11;
             }
-            
+
             if ($data['event'] == 'payment.refund.initiated' || $data['event'] == 'payment.refund.initiated.v2') {
                 if($dibs_order_status_id > $additionalInformation['dibs_order_status_id']) {
                     $additionalInformation['dibs_payment_status'] = "Pending Refund";
-                    $additionalInformation['dibs_order_status_id'] = $dibs_order_status_id;     
+                    $additionalInformation['dibs_order_status_id'] = $dibs_order_status_id;
                 }
             } else if ($data['event'] == 'payment.refund.completed') {
                 if($dibs_order_status_id > $additionalInformation['dibs_order_status_id']) {
@@ -32,7 +32,8 @@ class PaymentRefund extends Webhook {
                     $this->order->setStatus('closed');
                 }
             }
-	    $additionalInformation['dibs_payment_method'] = $paymentMethod;
+	        $additionalInformation['dibs_payment_method'] = $paymentMethod;
+            $this->order->setData('dibs_payment_method', $paymentMethod);
             $this->order->getPayment()->setAdditionalInformation($additionalInformation);
         }
     }
