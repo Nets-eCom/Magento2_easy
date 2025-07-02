@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dibs\EasyCheckout\Model\Quote;
 
@@ -10,15 +12,14 @@ use Dibs\EasyCheckout\Model\Client\DTO\Payment\ConsumerAddress;
 use Magento\Quote\Model\Quote;
 use Dibs\EasyCheckout\Model\Dibs\LocaleFactory;
 use Dibs\EasyCheckout\Helper\Data;
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberUtil;
 
 class ConsumerDataProvider
 {
-    private \Dibs\EasyCheckout\Model\Dibs\LocaleFactory $localeFactory;
+    private LocaleFactory $localeFactory;
 
-    /**
-     * @var \Dibs\EasyCheckout\Helper\Data $helper
-     */
-    protected $helper;
+    private Data $helper;
 
     public function __construct(
         LocaleFactory $localeFactory,
@@ -29,155 +30,114 @@ class ConsumerDataProvider
         $this->helper = $helper;
     }
 
-    private ?\Magento\Quote\Model\Quote $quote = null;
-
-    /**
-     * @var string[]
-     */
-    protected $prefixes = [
-        'SE' => '+46',
-        'DK' => '+45',
-        'FI' => '+358',
-        'NO' => '+47',
-        'AT' => '+43',
-        'US' => '+1',
-        'UK' => '+44',
-        'DE' => '+49',
-        'ES' => '+34',
-        'FR' => '+33',
-        'BR' => '+55',
-        'UA' => '+380',
-        'NL' => '+31',
-        'PL' => '+48',
-        'IT' => '+39',
-        'GB' => '+44',
-		'CH' => '+41',
-    ];
-
     /**
      * @param Quote $quote
      *
      * @return Consumer
      * @throws \Exception
      */
-    public function getFromQuote(Quote $quote) : Consumer
+    public function getFromQuote(Quote $quote): Consumer
     {
-        $this->quote = $quote;
+        if (!$quote->isVirtual()) {
+            $consumer = new Consumer();
+            $consumer->setReference($quote->getCustomerId());
 
-        if(!$quote->isVirtual()){
+            $consumer->setShippingAddress($this->getAddressData($quote));
+            //If phone number is not empty
+            if ($quote->getShippingAddress()->getTelephone()) {
+                $consumer->setPhoneNumber($this->getPhoneNumber($quote));
+            }
+            $consumer->setEmail($quote->getBillingAddress()->getEmail());
+            $weHandleConsumer = $this->helper->doesHandleCustomerData();
+            if ($weHandleConsumer && !empty($quote->getShippingAddress()->getCompany())) {
+                $consumer->setCompany($this->getCompanyData($quote));
+            } else {
+                $consumer->setPrivatePerson($this->getPrivatePersonData($quote));
+            }
 
-          $consumer = new Consumer();
-          $consumer->setReference($quote->getCustomerId());
+            if ($this->helper->getSplitAddresses() && !$quote->getShippingAddress()->getSameAsBilling()) {
+                $consumer->setBillingAddress($this->getBillingAddressData($quote));
+            }
+        } else {
+            $consumer = new Consumer();
+            $consumer->setReference($quote->getCustomerId());
 
-          $consumer->setShippingAddress($this->getAddressData());
-  	      //If phone number is not empty
-          if($quote->getShippingAddress()->getTelephone()) {
-              $consumer->setPhoneNumber($this->getPhoneNumber());
-          }
-  	      //$consumer->setPhoneNumber($this->getPhoneNumber());
-          $consumer->setEmail($quote->getBillingAddress()->getEmail());
-          $weHandleConsumer = $this->helper->doesHandleCustomerData();
-          if ($weHandleConsumer && !empty($quote->getShippingAddress()->getCompany())) {
-              $consumer->setCompany($this->getCompanyData());
-          } else {
-              $consumer->setPrivatePerson($this->getPrivatePersonData());
-          }
-
-          if ($this->helper->getSplitAddresses() && !$quote->getShippingAddress()->getSameAsBilling()) {
-              $consumer->setBillingAddress($this->getBillingAddressData());
-          }
-        } else{
-          $consumer = new Consumer();
-          $consumer->setReference($quote->getCustomerId());
-
-          $consumer->setShippingAddress($this->getBillingAddressData());
-  	      //If phone number is not empty
-          if($quote->getBillingAddress()->getTelephone()) {
-              $consumer->setPhoneNumber($this->getPhoneNumber());
-          }
-  	      //$consumer->setPhoneNumber($this->getPhoneNumber());
-          $consumer->setEmail($quote->getBillingAddress()->getEmail());
-          $weHandleConsumer = $this->helper->doesHandleCustomerData();
-          if ($weHandleConsumer && !empty($quote->getBillingAddress()->getCompany())) {
-              $consumer->setCompany($this->getCompanyData());
-          } else {
-              $consumer->setPrivatePerson($this->getPrivatePersonData());
-          }
+            $consumer->setShippingAddress($this->getBillingAddressData($quote));
+            //If phone number is not empty
+            if ($quote->getBillingAddress()->getTelephone()) {
+                $consumer->setPhoneNumber($this->getPhoneNumber($quote));
+            }
+            $consumer->setEmail($quote->getBillingAddress()->getEmail());
+            $weHandleConsumer = $this->helper->doesHandleCustomerData();
+            if ($weHandleConsumer && !empty($quote->getBillingAddress()->getCompany())) {
+                $consumer->setCompany($this->getCompanyData($quote));
+            } else {
+                $consumer->setPrivatePerson($this->getPrivatePersonData($quote));
+            }
         }
 
         return $consumer;
     }
 
-    /**
-     * @return ConsumerPhoneNumber
-     * @throws \Exception
-     */
-    private function getPhoneNumber() : ConsumerPhoneNumber
+    private function getPhoneNumber(Quote $quote): ConsumerPhoneNumber
     {
         $number = new ConsumerPhoneNumber();
-        if(!$this->quote->isVirtual()){
-          $address = $this->quote->getShippingAddress();
-          $phone = $this->quote->getShippingAddress()->getTelephone();
+        if(!$quote->isVirtual()){
+          $address = $quote->getShippingAddress();
+          $phone = $quote->getShippingAddress()->getTelephone();
         } else{
-          $address = $this->quote->getBillingAddress();
-          $phone = $this->quote->getBillingAddress()->getTelephone();
-        }
-        $string = str_replace([' ', '-', '(', ')'], '', $phone);
-
-        $matches = [];
-        preg_match_all('/^(\+)?(45|46|358|47|43|1|44|49|34|33|55|380|31|48|39|41)?(\d{8,12})$/', $string, $matches);
-        $prefix = $this->prefixes[$address->getCountryId()] ?? null;
-        if (empty($matches[3][0]) || !$prefix) {
-            throw new \Exception('Missing phone data');
+          $address = $quote->getBillingAddress();
+          $phone = $quote->getBillingAddress()->getTelephone();
         }
 
-        $number->setPrefix($prefix);
-        $number->setNumber($matches[3][0]);
+        $phoneUtil = PhoneNumberUtil::getInstance();
+        try {
+            $phoneNumberObject = $phoneUtil->parse(
+                $phone,
+                $address->getCountryId()
+            );
+        } catch (NumberParseException) {
+            // @TODO log error to investigate issue
+            return $number;
+        }
+            
+        $number->setPrefix('+' . $phoneNumberObject->getCountryCode());
+        $number->setNumber($phoneNumberObject->getNationalNumber());
 
         return $number;
     }
 
-    /**
-     * @return ConsumerPrivatePerson
-     */
-    private function getPrivatePersonData() : ConsumerPrivatePerson
+    private function getPrivatePersonData(Quote $quote): ConsumerPrivatePerson
     {
         $person = new ConsumerPrivatePerson();
-        if(!$this->quote->isVirtual()){
-          $person->setFirstName($this->quote->getShippingAddress()->getFirstname());
-          $person->setLastName($this->quote->getShippingAddress()->getLastname());
-        } else{
-          $person->setFirstName($this->quote->getBillingAddress()->getFirstname());
-          $person->setLastName($this->quote->getBillingAddress()->getLastname());
+        if (!$quote->isVirtual()) {
+            $person->setFirstName($quote->getShippingAddress()->getFirstname());
+            $person->setLastName($quote->getShippingAddress()->getLastname());
+        } else {
+            $person->setFirstName($quote->getBillingAddress()->getFirstname());
+            $person->setLastName($quote->getBillingAddress()->getLastname());
         }
 
         return $person;
     }
 
-    /**
-     * @return ConsumerCompany
-     */
-    private function getCompanyData() : ConsumerCompany
+    private function getCompanyData(Quote $quote): ConsumerCompany
     {
         $company = new ConsumerCompany();
-        if(!$this->quote->isVirtual()){
-          $company->setName($this->quote->getShippingAddress()->getCompany());
-          $company->setContact($this->quote->getShippingAddress()->getFirstname(), $this->quote->getShippingAddress()->getLastname());
-        } else{
-          $company->setName($this->quote->getBillingAddress()->getCompany());
-          $company->setContact($this->quote->getBillingAddress()->getFirstname(), $this->quote->getBillingAddress()->getLastname());
+        if (!$quote->isVirtual()) {
+            $company->setName($quote->getShippingAddress()->getCompany());
+            $company->setContact($quote->getShippingAddress()->getFirstname(), $quote->getShippingAddress()->getLastname());
+        } else {
+            $company->setName($quote->getBillingAddress()->getCompany());
+            $company->setContact($quote->getBillingAddress()->getFirstname(), $quote->getBillingAddress()->getLastname());
         }
-        //$company->setContact($this->quote->getShippingAddress()->getLastname());
 
         return $company;
     }
 
-    /**
-     * @return ConsumerAddress
-     */
-    private function getAddressData()
+    private function getAddressData(Quote $quote): ConsumerAddress
     {
-        $shippingAddress = $this->quote->getShippingAddress();
+        $shippingAddress = $quote->getShippingAddress();
 
         $city = $shippingAddress->getCity();
         $address1 = $shippingAddress->getStreetLine(1);
@@ -212,9 +172,9 @@ class ConsumerDataProvider
         return $paymentShippingAddress;
     }
 
-    private function getBillingAddressData()
+    private function getBillingAddressData(Quote $quote): ConsumerAddress
     {
-        $shippingAddress = $this->quote->getBillingAddress();
+        $shippingAddress = $quote->getBillingAddress();
 
         $city = $shippingAddress->getCity();
         $address1 = $shippingAddress->getStreetLine(1);
