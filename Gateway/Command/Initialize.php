@@ -69,6 +69,9 @@ class Initialize implements CommandInterface
         $this->createPayment($paymentData);
 
         $transactionId      = $payment->getAdditionalInformation('payment_id');
+        if ($transactionId) {
+            $stateObject->setState(Order::STATE_PAYMENT_REVIEW);
+        }
         $orderTransaction = $this->transactionBuilder->build(
             $transactionId,
             $order,
