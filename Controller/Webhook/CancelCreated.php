@@ -18,6 +18,8 @@ class CancelCreated extends Webhook
                 $additionalInformation['dibs_payment_status'] = "Canceled";
                 $additionalInformation['dibs_payment_method'] = $paymentMethod;
                 $additionalInformation['dibs_order_status_id'] = $dibs_order_status_id;
+
+                $this->order->setData('dibs_payment_method', $paymentMethod);
             }
             $this->order->getPayment()->setAdditionalInformation($additionalInformation);
             // $this->order->setStatus('Canceled');
