@@ -7,7 +7,6 @@ namespace Nexi\Checkout\Gateway\Command;
 use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
-use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -68,8 +67,15 @@ class Initialize implements CommandInterface
 
         $this->createPayment($paymentData);
 
-        $transactionId      = $payment->getAdditionalInformation('payment_id');
+        $transactionId = $payment->getAdditionalInformation('payment_id');
         if ($transactionId) {
+            /**
+             * A transaction ID exists, which means the payment might have been captured,
+             * but final confirmation has not been received yet.
+             *
+             * Set the order state to "payment_review" to prevent invoicing
+             * until the payment is verified. Manual review may be required if confirmation fails.
+             */
             $stateObject->setState(Order::STATE_PAYMENT_REVIEW);
         }
         $orderTransaction = $this->transactionBuilder->build(
@@ -99,7 +105,7 @@ class Initialize implements CommandInterface
             $commandPool = $this->commandManagerPool->get(Config::CODE);
             $commandPool->executeByCode(
                 commandCode: 'create_payment',
-                arguments  : ['payment' => $payment,]
+                arguments  : ['payment' => $payment]
             );
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
