@@ -73,4 +73,13 @@
     <type name="Magento\Quote\Observer\SubmitObserver">
         <plugin name="set_can_send_email_flag" type="Dibs\EasyCheckout\Plugin\Quote\SubmitObserverPlugin" />
     </type>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <plugin
+            name="dibscheckout_payment_method_orders_grid"
+            type="Dibs\EasyCheckout\Plugin\AddPaymentMethodToOrderGrid"
+            sortOrder="10"
+            disabled="false"
+        />
+    </type>
 </config>

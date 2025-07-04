@@ -20,8 +20,10 @@ class PaymentCharged extends Webhook {
 
             if($dibs_order_status_id > $additionalInformation['dibs_order_status_id']) {
                 $additionalInformation['dibs_payment_status'] = "Charged";
-		            $additionalInformation['dibs_payment_method'] = $paymentMethod;
+                $additionalInformation['dibs_payment_method'] = $paymentMethod;
                 $additionalInformation['dibs_order_status_id'] = $dibs_order_status_id;
+
+                $this->order->setData('dibs_payment_method', $paymentMethod);
             }
             $this->order->getPayment()->setAdditionalInformation($additionalInformation);
 

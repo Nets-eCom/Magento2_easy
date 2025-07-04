@@ -16,6 +16,7 @@ class ReservationCreated extends Webhook
         $additionalInformation = $this->order->getPayment()->getAdditionalInformation();
         if(isset($data['event'])) {
             $additionalInformation['dibs_payment_method'] = $paymentMethod;
+            $this->order->setData('dibs_payment_method', $paymentMethod);
             if($dibs_order_status_id > $additionalInformation['dibs_order_status_id']) {
                 $additionalInformation['dibs_payment_status'] = "Reserved";
                 $additionalInformation['dibs_order_status_id'] = $dibs_order_status_id;
