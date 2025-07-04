@@ -6,6 +6,7 @@ namespace Nexi\Checkout\Gateway\Request;
 
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberUtil;
+use Magento\Bundle\Model\Product\Price;
 use Magento\Bundle\Model\Product\Type as BundleType;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
@@ -146,10 +147,12 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * @param $paymentSubject
+     * Build payload with order items data based on product type
+     *
+     * @param Order|Quote $paymentSubject
      * @return array
      */
-    public function getProductsData($paymentSubject): array
+    public function getProductsData(Order|Quote $paymentSubject): array
     {
         $items = [];
         /** @var OrderItem|Quote\Item $item */
@@ -169,7 +172,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                     }
                     break;
                 case BundleType::TYPE_CODE:
-                    $isDynamicPrice = $item->getProduct()->getPriceType() == \Magento\Bundle\Model\Product\Price::PRICE_TYPE_DYNAMIC;
+                    $isDynamicPrice = $item->getProduct()->getPriceType() == Price::PRICE_TYPE_DYNAMIC;
                     $children = $this->getChildren($item);
                     if ($isDynamicPrice) {
                         foreach ($children as $childItem) {
@@ -188,13 +191,14 @@ class CreatePaymentRequestBuilder implements BuilderInterface
                     $enriched = $this->appendPriceData($base, $item);
                     $items[] = $this->createFinalItem($enriched);
             }
-
         }
 
         return $items;
     }
 
     /**
+     * Creates base data array for an item including name, SKU, quantity, and unit.
+     *
      * @param mixed $item
      * @return array
      */
@@ -209,6 +213,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Appends pricing and tax data to the given item data array.
+     *
      * @param array $data
      * @param mixed $item
      * @return array
