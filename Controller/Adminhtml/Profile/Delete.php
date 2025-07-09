@@ -32,11 +32,11 @@ class Delete implements HttpPostActionInterface
         try {
             $profile = $this->profileRepo->get($id);
             $this->profileRepo->delete($profile);
-            $resultRedirect->setPath('subscriptions/profile');
+            $resultRedirect->setPath('subscription/profile');
             $this->context->getMessageManager()->addSuccessMessage('Subscription profile deleted');
         } catch (\Throwable $e) {
             $this->context->getMessageManager()->addErrorMessage($e->getMessage());
-            $resultRedirect->setPath('subscriptions/profile/edit', ['id' => $id]);
+            $resultRedirect->setPath('subscription/profile/edit', ['id' => $id]);
         }
 
         return $resultRedirect;
