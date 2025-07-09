@@ -14,7 +14,7 @@ class Edit implements HttpGetActionInterface
      * @param Context $context
      */
     public function __construct(
-        private Context $context,
+        private Context $context
     ) {
     }
 
@@ -22,7 +22,6 @@ class Edit implements HttpGetActionInterface
     {
         $page  = $this->initialize();
         $title = $this->context->getRequest()->getParam('id')
-            ? __('Edit Recurring Payment profile')
             ? __('Edit Subscription profile')
             : __('Add new profile');
         $page->getConfig()->getTitle()->prepend($title);
