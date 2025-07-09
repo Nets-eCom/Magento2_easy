@@ -40,6 +40,9 @@
                 <test_checkout_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <integration_type>HostedPaymentPage</integration_type>
+                <subscriptions>
+                    <active_subscriptions>0</active_subscriptions>
+                </subscriptions>
             </nexi>
         </payment>
         <sales>

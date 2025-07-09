@@ -23,6 +23,7 @@ class Edit implements HttpGetActionInterface
         $page  = $this->initialize();
         $title = $this->context->getRequest()->getParam('id')
             ? __('Edit Recurring Payment profile')
+            ? __('Edit Subscription profile')
             : __('Add new profile');
         $page->getConfig()->getTitle()->prepend($title);
 

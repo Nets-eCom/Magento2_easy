@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Webhook;
 
 use Exception;
+use Magento\Framework\Event\Manager;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
@@ -15,6 +16,7 @@ use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
+use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
 
 class PaymentChargeCreated implements WebhookProcessorInterface
 {
@@ -28,7 +30,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly Builder $transactionBuilder,
-        private readonly Comment $comment
+        private readonly Comment $comment,
     ) {
     }
 
@@ -70,8 +72,8 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             TransactionInterface::TYPE_AUTH
         );
 
-        if ($order->getState() !== Order::STATE_PENDING_PAYMENT) {
-            throw new Exception('Order state is not pending payment.');
+        if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
+            throw new Exception('Order status is not authorized.');
         }
 
         $chargeTxnId = $webhookData['data']['chargeId'];
@@ -104,8 +106,12 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         if ($this->isFullCharge($webhookData, $order)) {
             $this->fullInvoice($order, $chargeTxnId);
         } else {
-            $this->partialInvoice($order, $chargeTxnId, $webhookData['data']['orderItems']);
+            $order->addCommentToStatusHistory(
+                'Partial charge received from the Dibs Portal gateway. ' .
+                'The order processing could not be completed automatically. '
+            );
         }
+
         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
     }
 
@@ -143,54 +149,5 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         $invoice->pay();
 
         $order->addRelatedObject($invoice);
-    }
-
-    /**
-     * Create partial invoice. Add shipping amount if charged
-     *
-     * @param Order $order
-     * @param string $chargeTxnId
-     * @param array $webhookItems
-     *
-     * @return void
-     * @throws LocalizedException
-     */
-    private function partialInvoice(Order $order, string $chargeTxnId, array $webhookItems): void
-    {
-        if ($order->canInvoice()) {
-            $qtys         = [];
-            $shippingItem = null;
-
-            // Initialize all items with 0 qty
-            foreach ($order->getAllItems() as $item) {
-                $qtys[$item->getId()] = 0;
-            }
-
-            foreach ($webhookItems as $webhookItem) {
-
-                if ($webhookItem['reference'] === SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE) {
-                    $shippingItem = $webhookItem;
-                    continue;
-                }
-
-                foreach ($order->getAllItems() as $item) {
-                    if ($item->getSku() === $webhookItem['reference']) {
-                        $qtys[$item->getId()] = (int)$webhookItem['quantity'];
-                    }
-                }
-            }
-            $invoice = $order->prepareInvoice($qtys);
-            $invoice->setTransactionId($chargeTxnId);
-            if ($shippingItem) {
-                $invoice->setShippingAmount($shippingItem['netTotalAmount'] / 100);
-                $invoice->setShippingInclTax($shippingItem['grossTotalAmount'] / 100);
-                $invoice->setShippingTaxAmount($shippingItem['taxAmount'] / 100);
-            }
-
-            $invoice->pay();
-
-            $invoice->register();
-            $order->addRelatedObject($invoice);
-        }
     }
 }

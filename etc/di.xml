@@ -294,4 +294,14 @@
         <plugin name="store_subscription"
                 type="Nexi\Checkout\Plugin\Api\OrderRepository" />
     </type>
+    <type name="Nexi\Checkout\Observer\CartRevokeObserver">
+        <arguments>
+            <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Model\PaymentValidate">
+        <arguments>
+            <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
 </config>

@@ -10,18 +10,17 @@ use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
-use Nexi\Checkout\Api\Data\RecurringProfileInterfaceFactory;
-use Nexi\Checkout\Api\RecurringProfileRepositoryInterface;
+use Nexi\Checkout\Api\Data\SubscriptionProfileInterfaceFactory;
+use Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface;
 
 class Save implements HttpPostActionInterface
 {
     const DELETE_QUOTE_AFTER = 'checkout/cart/delete_quote_after';
 
-
     public function __construct(
         private Context                             $context,
-        private RecurringProfileRepositoryInterface $profileRepo,
-        private RecurringProfileInterfaceFactory    $factory,
+        private SubscriptionProfileRepositoryInterface $profileRepo,
+        private SubscriptionProfileInterfaceFactory    $factory,
         private SerializerInterface                 $serializer,
         private ScopeConfigInterface                $scopeConfig
     ) {
@@ -49,17 +48,17 @@ class Save implements HttpPostActionInterface
                 Please make sure the quote lifetime is longer than your profile's payment schedule in days.
                 See Stores->Configuration->Sales->Checkout->Shopping Cart->Quote Lifetime (days)"
             );
-            $resultRedirect->setPath('recurring_payments/profile/edit', ['id' => $id]);
+            $resultRedirect->setPath('subscriptions/profile/edit', ['id' => $id]);
             return $resultRedirect;
         }
 
         $profile->setData($data);
         try {
             $this->profileRepo->save($profile);
-            $resultRedirect->setPath('recurring_payments/profile');
+            $resultRedirect->setPath('subscriptions/profile');
         } catch (CouldNotSaveException $e) {
             $this->context->getMessageManager()->addErrorMessage($e->getMessage());
-            $resultRedirect->setPath('recurring_payments/profile/edit', ['id' => $id]);
+            $resultRedirect->setPath('subscriptions/profile/edit', ['id' => $id]);
         }
 
         return $resultRedirect;

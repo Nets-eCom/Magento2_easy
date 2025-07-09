@@ -6,6 +6,7 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Nexi\Checkout\Api\RecurringProfileRepositoryInterface;
+use Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 
@@ -14,10 +15,12 @@ class Delete implements HttpPostActionInterface
     /**
      * @param Context $context
      * @param RecurringProfileRepositoryInterface $profileRepo
+     * @param SubscriptionProfileRepositoryInterface $profileRepo
      */
     public function __construct(
         private Context                             $context,
-        private RecurringProfileRepositoryInterface $profileRepo
+        private RecurringProfileRepositoryInterface $profileRepo,
+        private SubscriptionProfileRepositoryInterface $profileRepo
     ) {
     }
 
@@ -32,10 +35,13 @@ class Delete implements HttpPostActionInterface
         try {
             $profile = $this->profileRepo->get($id);
             $this->profileRepo->delete($profile);
+            $resultRedirect->setPath('subscriptions/profile');
+            $this->context->getMessageManager()->addSuccessMessage('Subscription profile deleted');
             $resultRedirect->setPath('recurring_payments/profile');
             $this->context->getMessageManager()->addSuccessMessage('Recurring profile deleted');
         } catch (\Throwable $e) {
             $this->context->getMessageManager()->addErrorMessage($e->getMessage());
+            $resultRedirect->setPath('subscriptions/profile/edit', ['id' => $id]);
             $resultRedirect->setPath('recurring_payments/profile/edit', ['id' => $id]);
         }
 

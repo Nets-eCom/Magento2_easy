@@ -21,7 +21,7 @@ class Index implements HttpGetActionInterface
     public function execute()
     {
         $page = $this->initialize();
-        $page->getConfig()->getTitle()->prepend(__('Recurring Payment Profiles'));
+        $page->getConfig()->getTitle()->prepend(__('Subscription Profiles'));
 
         return $page;
     }

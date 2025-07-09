@@ -15,6 +15,7 @@ use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentChargeCreated;
+use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
 use PHPUnit\Framework\TestCase;
 
 class PaymentChargeCreatedTest extends TestCase
@@ -109,10 +110,10 @@ class PaymentChargeCreatedTest extends TestCase
             ->with($this->anything(), TransactionInterface::TYPE_AUTH)
             ->willReturn($reservationTransactionMock);
 
-        // Setup expectations for order state
+        // Setup expectations for order status
         $orderMock->expects($this->once())
-            ->method('getState')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
+            ->method('getStatus')
+            ->willReturn(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
 
         // Setup expectations for getTransactionByPaymentId
         $this->webhookDataLoaderMock->expects($this->once())
@@ -268,10 +269,10 @@ class PaymentChargeCreatedTest extends TestCase
             ->with($this->anything(), TransactionInterface::TYPE_AUTH)
             ->willReturn($reservationTransactionMock);
 
-        // Setup expectations for order state
+        // Setup expectations for order status
         $orderMock->expects($this->once())
-            ->method('getState')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
+            ->method('getStatus')
+            ->willReturn(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
 
         // Setup expectations for getTransactionByPaymentId
         $this->webhookDataLoaderMock->expects($this->once())
@@ -322,50 +323,6 @@ class PaymentChargeCreatedTest extends TestCase
             ->method('getBaseGrandTotal')
             ->willReturn(100.00);
 
-        // Setup expectations for partialInvoice
-        $orderMock->expects($this->once())
-            ->method('canInvoice')
-            ->willReturn(true);
-        $orderMock->expects($this->atLeastOnce())
-            ->method('getAllItems')
-            ->willReturn([$orderItemMock]);
-        $orderItemMock->expects($this->atLeastOnce())
-            ->method('getId')
-            ->willReturn(1);
-        $orderItemMock->expects($this->atLeastOnce())
-            ->method('getSku')
-            ->willReturn('SKU123');
-        $orderMock->expects($this->once())
-            ->method('prepareInvoice')
-            ->with([1 => 1])
-            ->willReturn($invoiceMock);
-        $invoiceMock->expects($this->once())
-            ->method('setTransactionId')
-            ->with($chargeId)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('setShippingAmount')
-            ->with(10.00)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('setShippingInclTax')
-            ->with(12.00)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('setShippingTaxAmount')
-            ->with(2.00)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('pay')
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('register')
-            ->willReturnSelf();
-        $orderMock->expects($this->once())
-            ->method('addRelatedObject')
-            ->with($invoiceMock);
-
-        // Setup expectations for order state update
         $orderMock->expects($this->once())
             ->method('setState')
             ->with(Order::STATE_PROCESSING)
@@ -375,16 +332,11 @@ class PaymentChargeCreatedTest extends TestCase
             ->with(Order::STATE_PROCESSING)
             ->willReturnSelf();
 
-        // Setup expectations for order save
-        $this->orderRepositoryMock->expects($this->once())
-            ->method('save')
-            ->with($orderMock);
-
         // Execute the method
         $this->paymentChargeCreated->processWebhook($webhookData);
     }
 
-    public function testProcessWebhookThrowsExceptionWhenOrderStateIsNotPendingPayment(): void
+    public function testProcessWebhookThrowsExceptionWhenOrderStatusIsNotAuthorized(): void
     {
         $webhookData = [
             'id' => 'webhook-123',
@@ -419,13 +371,13 @@ class PaymentChargeCreatedTest extends TestCase
             ->with($this->anything(), TransactionInterface::TYPE_AUTH)
             ->willReturn($this->createMock(TransactionInterface::class));
 
-        // Setup expectations for order state
+        // Setup expectations for order status
         $orderMock->expects($this->once())
-            ->method('getState')
+            ->method('getStatus')
             ->willReturn(Order::STATE_PROCESSING);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Order state is not pending payment.');
+        $this->expectExceptionMessage('Order status is not authorized.');
 
         // Execute the method
         $this->paymentChargeCreated->processWebhook($webhookData);
@@ -467,10 +419,10 @@ class PaymentChargeCreatedTest extends TestCase
             ->with($this->anything(), TransactionInterface::TYPE_AUTH)
             ->willReturn($this->createMock(TransactionInterface::class));
 
-        // Setup expectations for order state
+        // Setup expectations for order status
         $orderMock->expects($this->once())
-            ->method('getState')
-            ->willReturn(Order::STATE_PENDING_PAYMENT);
+            ->method('getStatus')
+            ->willReturn(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
 
         // Setup expectations for getTransactionByPaymentId
         $this->webhookDataLoaderMock->expects($this->once())

@@ -1,0 +1,37 @@
+<?php
+
+namespace Nexi\Checkout\Model\ResourceModel\Subscriptions;
+
+use Magento\Framework\Exception\CouldNotDeleteException;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+
+class Profile extends AbstractDb
+{
+    protected function _construct()
+    {
+        $this->_init('subscriptions_profiles', 'profile_id');
+    }
+
+    protected function _beforeDelete(\Magento\Framework\Model\AbstractModel $object)
+    {
+        if (!$this->canDelete($object)) {
+            throw new CouldNotDeleteException(__('Profiles that are in use by subscriptions cannot be deleted'));
+        }
+
+        return parent::_beforeDelete($object);
+    }
+
+    /**
+     * @param \Magento\Framework\Model\AbstractModel $object
+     * @return bool
+     */
+    private function canDelete(\Magento\Framework\Model\AbstractModel $object): bool
+    {
+        $connection = $this->getConnection();
+        $select = $connection->select()
+            ->from('nexi_subscriptions', ['entity_id', 'subscription_profile_id'])
+            ->where('subscription_profile_id = ?', $object->getData('profile_id'));
+
+        return empty($connection->fetchPairs($select));
+    }
+}

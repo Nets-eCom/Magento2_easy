@@ -15,6 +15,12 @@ use Nexi\Checkout\Model\ResourceModel\Subscription\Profile\CollectionFactory;
 
 class MassDelete implements HttpPostActionInterface
 {
+    /**
+     * MassDelete constructor.
+     *
+     * @param Context $context
+     * @param Filter $filter
+     */
     public function __construct(
         private Context           $context,
         private Filter            $filter,

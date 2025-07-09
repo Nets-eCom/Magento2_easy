@@ -58,14 +58,14 @@ class PaymentInitialize implements PaymentInitializeInterface
             }
 
             $paymentData  = $this->paymentDataObjectFactory->create($paymentMethod);
-            $cratePayment = $this->initializeCommand->cratePayment($paymentData);
+            $createPayment = $this->initializeCommand->createPayment($paymentData);
             $quote->setData('no_payment_update_flag', true);
             $this->quoteRepository->save($quote);
 
             return match ($integrationType) {
                 IntegrationTypeEnum::HostedPaymentPage->name => json_encode(
                     [
-                        'redirect_url' => $cratePayment['body']['payment']['checkout']['url']
+                        'redirect_url' => $createPayment['body']['payment']['checkout']['url']
                     ]
                 ),
                 IntegrationTypeEnum::EmbeddedCheckout->name => json_encode(

@@ -96,7 +96,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             items    : $this->buildItems($order),
             currency : $order->getBaseCurrencyCode(),
             amount   : $this->amountConverter->convertToNexiAmount($order->getBaseGrandTotal()),
-            reference: $order->getIncrementId(),
+            reference: $order->getIncrementId()
         );
     }
 
@@ -109,21 +109,22 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     public function buildItems(Order|Quote $paymentSubject): OrderItem|array
     {
-        /** @var OrderItem $items */
+        /** @var OrderItem|Quote\Item $item */
         foreach ($paymentSubject->getAllVisibleItems() as $item) {
-            $items[] = new Item(
-                name            : $item->getName(),
-                quantity        : (float)$item->getQtyOrdered(),
-                unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount(
-                    $item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()
-                ), // TODO: calculate discount tax amount based on tax calculation method
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
-                reference       : $item->getSku(),
-                taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
-            );
+
+            if ($item->getParentItem()) {
+                continue;
+            }
+
+            if ($item->getProductType() === 'bundle') {
+                $children = $this->getChildren($item);
+                foreach ($children as $childItem) {
+                    $items[] = $this->createItem($childItem);
+                }
+                continue;
+            }
+
+            $items[] = $this->createItem($item);
         }
 
         if ($paymentSubject instanceof Order) {
@@ -181,14 +182,12 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * Build the webhooks for the payment
      *
      * @return array<Webhook>
-     *
-     * added all for now, we need to check wh
      */
     public function buildWebhooks(): array
     {
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $webhookUrl = "https://992d-193-65-70-194.ngrok-free.app";
+            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
             $webhooks[] = new Webhook(
                 eventName    : $eventName,
                 url          : $webhookUrl,
@@ -220,11 +219,10 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order $order
      *
      * @return Consumer
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|NumberParseException
      */
     private function buildConsumer(Order $order): Consumer
     {
-
         return new Consumer(
             email          : $order->getCustomerEmail(),
             reference      : $order->getCustomerId(),
@@ -262,18 +260,20 @@ class CreatePaymentRequestBuilder implements BuilderInterface
 
     /**
      * Build Embedded Checkout request object
+     *
      * TODO: add consumer data (save email on saving shipping address)
      *
      * @param Quote|Order $salesObject
      *
      * @return EmbeddedCheckout
+     * @throws NoSuchEntityException
      */
     public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
     {
         return new EmbeddedCheckout(
             url                        : $this->url->getUrl('checkout/onepage/success'),
             termsUrl                   : $this->config->getPaymentsTermsAndConditionsUrl(),
-//            consumer                   : $this->buildConsumer($salesObject),
+            //consumer                   : $this->buildConsumer($salesObject),
             isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
             merchantHandlesConsumerData: true,
             countryCode                : $this->getThreeLetterCountryCode($this->config->getCountryCode()),
@@ -286,7 +286,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Quote|Order $salesObject
      *
      * @return HostedCheckout
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|NumberParseException
      */
     public function buildHostedCheckout(Quote|Order $salesObject): HostedCheckout
     {
@@ -382,5 +382,57 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             endDate: new \DateTime((int)date('Y') + 100 . '-01-01'),
             interval: 30,
         );
+    }
+
+    /**
+     * Create the nexi SDK item from a magento order item
+     *
+     * @param OrderItem|Quote\Item $item
+     *
+     * @return Item
+     */
+    public function createItem(mixed $item): Item
+    {
+        return new Item(
+            name            : $item->getName(),
+            quantity        : $this->getQuantity($item),
+            unit            : 'pcs',
+            unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
+            grossTotalAmount: $this->amountConverter->convertToNexiAmount(
+                $item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()
+            ),
+            netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
+            reference       : $item->getSku(),
+            taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
+            taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
+        );
+    }
+
+    /**
+     * Get children items of a given order item or quote item.
+     *
+     * @param OrderItem|Quote\Item $item
+     *
+     * @return array|Quote\Item\AbstractItem[]
+     */
+    public function getChildren(OrderItem|Quote\Item $item): array
+    {
+        $children = $item instanceof OrderItem ? $item->getChildrenItems() : $item->getChildren();
+
+        return $children;
+    }
+
+    /**
+     * Returns the quantity of the item.
+     *
+     * @param mixed $item
+     *
+     * @return float
+     */
+    public function getQuantity(mixed $item): float
+    {
+        $qtyOrdered = $item instanceof OrderItem ? $item->getQtyOrdered() : $item->getQty();
+
+        return (float)$qtyOrdered;
     }
 }

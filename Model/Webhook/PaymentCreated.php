@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Webhook;
 
 use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -42,7 +43,7 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param array $webhookData
      *
      * @return void
-     * @throws CouldNotSaveException
+     * @throws CouldNotSaveException|NotFoundException
      */
     public function processWebhook(array $webhookData): void
     {
@@ -54,6 +55,9 @@ class PaymentCreated implements WebhookProcessorInterface
 
         if ($orderReference === null) {
             $order = $this->getOrderByPaymentId($paymentId);
+            if (!$order->getId()) {
+                throw new NotFoundException(__('Order not found for payment ID: %1', $paymentId));
+            }
             $orderReference = $order->getIncrementId();
         } else {
             $order = $this->orderCollectionFactory->create()->addFieldToFilter(
