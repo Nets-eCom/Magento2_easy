@@ -6,8 +6,11 @@
                   instance="Nexi\Checkout\Observer\RecurringPaymentFromQuoteToOrder"/>
     </event>
     <event name="sales_order_place_before">
-        <observer name="validate_cart_before_order_place" instance="Nexi\Checkout\Observer\ScheduledCartValidation"/>
+        <observer name="validate_cart_before_order_place"
+                  instance="Nexi\Checkout\Observer\ScheduledCartValidation"/>
+    </event>
     <event name="controller_action_predispatch_checkout_cart_index">
-        <observer name="Nexi_Checkout::restore_quote_for_pending_order" instance="Nexi\Checkout\Observer\CartRevokeObserver"/>
+        <observer name="Nexi_Checkout::restore_quote_for_pending_order"
+                  instance="Nexi\Checkout\Observer\CartRevokeObserver"/>
     </event>
 </config>
