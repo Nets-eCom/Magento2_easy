@@ -44,7 +44,7 @@ class TotalConfigProvider implements ConfigProviderInterface
      *
      * @return bool
      */
-    public function isRecurringPaymentEnabled(): bool
+    public function isSubscriptionsEnabled(): bool
     {
         return (bool)$this->scopeConfig->getValue(
             self::IS_RECURRING_PAYMENT_ENABLED,

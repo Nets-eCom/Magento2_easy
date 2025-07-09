@@ -264,11 +264,11 @@
                 type="Nexi\Checkout\Model\Subscription"/>
     <preference for="Nexi\Checkout\Api\Data\SubscriptionSearchResultInterface"
                 type="Nexi\Checkout\Model\ResourceModel\Subscription\Collection"/>
-    <preference for="Nexi\Checkout\Api\RecurringProfileRepositoryInterface"
+    <preference for="Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface"
                 type="Nexi\Checkout\Model\Subscription\ProfileRepository"/>
-    <preference for="Nexi\Checkout\Api\Data\RecurringProfileInterface"
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionProfileInterface"
                 type="Nexi\Checkout\Model\Subscription\Profile"/>
-    <preference for="Nexi\Checkout\Api\Data\RecurringProfileSearchResultInterface"
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionProfileSearchResultInterface"
                 type="Nexi\Checkout\Model\ResourceModel\Subscription\Profile\Collection"/>
     <preference for="Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface"
                 type="Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository"/>
@@ -278,8 +278,6 @@
                 type="Nexi\Checkout\Model\ResourceModel\Subscription\SubscriptionLink\Collection"/>
     <preference for="Nexi\Checkout\Api\SubscriptionManagementInterface"
                 type="Nexi\Checkout\Model\SubscriptionManagement"/>
-    <preference for="Nexi\Checkout\Api\CardManagementInterface"
-                type="Nexi\Checkout\Model\CardManagement"/>
 
     <type name="\Nexi\Checkout\Model\Subscription\OrderCloner">
         <arguments>
