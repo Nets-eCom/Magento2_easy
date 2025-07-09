@@ -4,12 +4,15 @@
 | Module         | Nets Easy Payment Module for Magento 2                                                                        |
 |----------------|---------------------------------------------------------------------------------------------------------------|
 | Shop Version   | `2.4.x`                                                                                                       |
-| Plugin Version | `1.7.5`                                                                                                       |
+| Plugin Version | `1.8.1`                                                                                                       |
 | PHP Version    | `7.4 - 8.3`                                                                                                   |
 | Guide          | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/ |
 | Github         | https://github.com/Nets-eCom/Magento2_easy                                                                    |
 
 ## CHANGELOG
+
+### Version 1.8.1 - Released - 2025-07-09
+- Fix: update typehint collection
 
 ### Version 1.8.0 - Released - 2025-07-03
 - Update: handle phone numbers using libphonenumber lib
