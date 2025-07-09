@@ -31,10 +31,11 @@ class UpdateOrderReference implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
-        if (!$this->config->isEmbedded()) {
+        $order = $observer->getEvent()->getOrder();
+        $payment = $order->getPayment();
+        if ($payment->getMethod() !== Config::CODE || !$this->config->isEmbedded()) {
             return;
         }
-        $order = $observer->getEvent()->getOrder();
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
             $commandPool->executeByCode(
