@@ -16,7 +16,7 @@ use Magento\Theme\Block\Html\Pager;
 use Magento\Vault\Model\PaymentTokenRepository;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Gateway\Config\Config;
-use Nexi\Checkout\Model\Recurring\TotalConfigProvider;
+use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Collection as SubscriptionCollection;
 use Nexi\Checkout\Model\ResourceModel\Subscription\CollectionFactory;
 
@@ -74,7 +74,7 @@ class Payments extends Template
      */
     public function isSubscriptionsEnabled(): bool
     {
-        return $this->totalConfigProvider->isRecurringPaymentEnabled();
+        return $this->totalConfigProvider->isSubscriptionsEnabled();
     }
 
     /**

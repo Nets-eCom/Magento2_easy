@@ -8,7 +8,7 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Api\CartRepositoryInterface;
-use Nexi\Checkout\Model\Recurring\TotalConfigProvider;
+use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 use Nexi\Checkout\Plugin\PreventDifferentScheduledCart;
 
 class ScheduledCartValidation implements ObserverInterface
@@ -40,7 +40,7 @@ class ScheduledCartValidation implements ObserverInterface
         $cartId = $observer->getEvent()->getOrder()->getQuoteId();
         $cart = $this->cartRepository->get($cartId);
 
-        if ($cart->getItems() && $this->totalConfigProvider->isRecurringPaymentEnabled()) {
+        if ($cart->getItems() && $this->totalConfigProvider->isSubscriptionsEnabled()) {
             foreach ($cart->getItems() as $cartItem) {
                 $cartItemSchedule = $cartItem
                     ->getProduct()

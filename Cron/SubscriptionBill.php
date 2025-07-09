@@ -2,13 +2,13 @@
 
 namespace Nexi\Checkout\Cron;
 
-use Nexi\Checkout\Model\Recurring\Bill;
-use Nexi\Checkout\Model\Recurring\TotalConfigProvider;
+use Nexi\Checkout\Model\Subscription\Bill;
+use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 
-class RecurringPaymentBill
+class SubscriptionBill
 {
     /**
-     * RecurringPaymentBill constructor.
+     * SubscriptionBill constructor.
      *
      * @param Bill $bill
      * @param TotalConfigProvider $totalConfigProvider config provider
@@ -27,7 +27,7 @@ class RecurringPaymentBill
      */
     public function execute()
     {
-        if ($this->totalConfigProvider->isRecurringPaymentEnabled()) {
+        if ($this->totalConfigProvider->isSubscriptionsEnabled()) {
             $this->bill->process();
         }
     }

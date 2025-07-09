@@ -2,10 +2,10 @@
 
 <config>
     <group id="checkout_finland">
-        <job name="subscriptions_bill" instance="Nexi\Checkout\Cron\RecurringPaymentBill" method="execute">
+        <job name="subscriptions_bill" instance="Nexi\Checkout\Cron\SubscriptionBill" method="execute">
             <config_path>sales/subscriptions/bill_cron_schedule</config_path>
         </job>
-        <job name="subscriptions_notify" instance="Nexi\Checkout\Cron\RecurringPaymentNotify" method="execute">
+        <job name="subscriptions_notify" instance="Nexi\Checkout\Cron\SubscriptionNotify" method="execute">
             <config_path>sales/subscriptions/notify_cron_schedule</config_path>
         </job>
     </group>

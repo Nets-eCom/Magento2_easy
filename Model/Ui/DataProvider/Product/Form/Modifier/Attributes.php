@@ -4,7 +4,7 @@ namespace Nexi\Checkout\Model\Ui\DataProvider\Product\Form\Modifier;
 
 use Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\AbstractModifier;
 use Magento\Framework\Stdlib\ArrayManager;
-use Nexi\Checkout\Model\Recurring\TotalConfigProvider;
+use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 
 class Attributes extends AbstractModifier
 {
@@ -45,11 +45,11 @@ class Attributes extends AbstractModifier
      */
     public function modifyMeta(array $meta)
     {
-        if (isset($meta['product-details']['children']['container_recurring_payment_schedule'])) {
-            $attribute = 'recurring_payment_schedule';
+        if (isset($meta['product-details']['children']['container_subscription_schedule'])) {
+            $attribute = 'subscription_schedule';
             $path = $this->arrayManager->findPath($attribute, $meta, null, 'children');
 
-            if (!$this->totalConfigProvider->isRecurringPaymentEnabled()) {
+            if (!$this->totalConfigProvider->isSubscriptionsEnabled()) {
                 $meta = $this->arrayManager->set(
                     "{$path}/arguments/data/config/visible",
                     $meta,
