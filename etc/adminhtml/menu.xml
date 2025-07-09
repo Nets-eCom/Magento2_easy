@@ -18,8 +18,8 @@
              parent="Nexi_Checkout::subscriptions_section"
              sortOrder="251"
              dependsOnModule="Nexi_Checkout"
-             action="subscriptions/recurring"
-             resource="Nexi_Checkout::subscription"
+             action="subscriptions/subscription"
+             resource="Nexi_Checkout::subscriptions"
         />
         <add id="Nexi_Checkout::subscription_profile"
              title="Profiles"
@@ -29,7 +29,7 @@
              sortOrder="252"
              dependsOnModule="Nexi_Checkout"
              action="subscriptions/profile"
-             resource="Nexi_Checkout::subscription"
+             resource="Nexi_Checkout::subscriptions"
         />
     </menu>
 </config>

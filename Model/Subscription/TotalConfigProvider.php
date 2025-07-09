@@ -13,7 +13,7 @@ use Magento\Store\Model\ScopeInterface;
 class TotalConfigProvider implements ConfigProviderInterface
 {
     private const NO_SCHEDULE_VALUE = null;
-    private const IS_SUBSCRIPTIONS_ENABLED = 'sales/subscriptions/active_subscriptions';
+    private const IS_SUBSCRIPTIONS_ENABLED = 'nexi/subscriptions/active_subscriptions';
 
     /**
      * @var Session

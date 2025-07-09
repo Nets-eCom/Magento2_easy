@@ -4,7 +4,7 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="customer_account_navigation">
-            <block class="Magento\Customer\Block\Account\SortLinkInterface" name="customer-account-navigation-subscriptions-link" ifconfig='sales/subscriptions/active_subscriptions'>
+            <block class="Magento\Customer\Block\Account\SortLinkInterface" name="customer-account-navigation-subscriptions-link" ifconfig='nexi/subscriptions/active_subscriptions'>
                 <arguments>
                     <argument name="path" xsi:type="string">nexi/order/payments</argument>
                     <argument name="label" xsi:type="string" translate="true">My Subscriptions</argument>

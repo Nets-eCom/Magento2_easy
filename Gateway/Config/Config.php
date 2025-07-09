@@ -14,6 +14,7 @@ use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 class Config extends MagentoConfig
 {
     public const CODE = 'nexi';
+    public const VAULT_CODE = 'nexi_cc_vault';
 
     /**
      * Config constructor.
