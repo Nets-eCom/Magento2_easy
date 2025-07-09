@@ -3,11 +3,11 @@
          xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
     <argument name="data" xsi:type="array">
         <item name="js_config" xsi:type="array">
-            <item name="provider" xsi:type="string">recurring_profile_listing.recurring_profile_listing_data_source
+            <item name="provider" xsi:type="string">subscription_profile_listing.subscription_profile_listing_data_source
             </item>
-            <item name="deps" xsi:type="string">recurring_profile_listing.recurring_profile_listing_data_source</item>
+            <item name="deps" xsi:type="string">subscription_profile_listing.subscription_profile_listing_data_source</item>
         </item>
-        <item name="spinner" xsi:type="string">recurring_profile_columns</item>
+        <item name="spinner" xsi:type="string">subscription_profile_columns</item>
     </argument>
     <settings>
         <buttons>
@@ -18,10 +18,10 @@
             </button>
         </buttons>
     </settings>
-    <dataSource name="recurring_profile_listing_data_source">
+    <dataSource name="subscription_profile_listing_data_source">
         <argument name="dataProvider" xsi:type="configurableObject">
             <argument name="class" xsi:type="string">Nexi\Checkout\Ui\DataProvider\SubscriptionProfile</argument>
-            <argument name="name" xsi:type="string">recurring_profile_listing_data_source</argument>
+            <argument name="name" xsi:type="string">subscription_profile_listing_data_source</argument>
             <argument name="primaryFieldName" xsi:type="string">profile_id</argument>
             <argument name="requestFieldName" xsi:type="string">profile_id</argument>
             <argument name="data" xsi:type="array">
@@ -46,7 +46,7 @@
             <argument name="data" xsi:type="array">
                 <item name="data" xsi:type="array">
                     <item name="selectProvider" xsi:type="string">
-                        recurring_profile_listing.recurring_profile_listing.recurring_profile_columns.ids
+                        subscription_profile_listing.subscription_profile_listing.subscription_profile_columns.ids
                     </item>
                     <item name="displayArea" xsi:type="string">bottom</item>
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/tree-massactions</item>
@@ -86,12 +86,12 @@
         </filters>
         <paging name="listing_paging"/>
     </listingToolbar>
-    <columns name="recurring_profile_columns">
+    <columns name="subscription_profile_columns">
         <settings>
             <childDefaults>
                 <param name="fieldAction" xsi:type="array">
                     <item name="provider" xsi:type="string">
-                        recurring_profile_listing.recurring_profile_listing.recurring_profile_columns.actions
+                        subscription_profile_listing.subscription_profile_listing.subscription_profile_columns.actions
                     </item>
                     <item name="target" xsi:type="string">applyAction</item>
                     <item name="params" xsi:type="array">
@@ -139,7 +139,7 @@
         <actionsColumn name="actions" class="Magento\Theme\Ui\Component\Listing\Column\ViewAction" sortOrder="50">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="viewUrlPath" xsi:type="string">recurring_payments/profile/edit</item>
+                    <item name="viewUrlPath" xsi:type="string">subscription_payments/profile/edit</item>
                     <item name="urlEntityParamName" xsi:type="string">id</item>
                 </item>
             </argument>

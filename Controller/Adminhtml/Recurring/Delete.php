@@ -23,11 +23,11 @@ class Delete implements HttpPostActionInterface
         try {
             $payment = $this->subscriptionRepository->get($id);
             $this->subscriptionRepository->delete($payment);
-            $resultRedirect->setPath('recurring_payments/recurring');
-            $this->context->getMessageManager()->addSuccessMessage('Recurring payment deleted');
+            $resultRedirect->setPath('subscription/listing');
+            $this->context->getMessageManager()->addSuccessMessage('Subscription deleted');
         } catch (\Throwable $e) {
             $this->context->getMessageManager()->addErrorMessage($e->getMessage());
-            $resultRedirect->setPath('recurring_payments/recurring/edit', ['id' => $id]);
+            $resultRedirect->setPath('subscription/listing/edit', ['id' => $id]);
         }
 
         return $resultRedirect;

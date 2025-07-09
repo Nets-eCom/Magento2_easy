@@ -2,15 +2,15 @@
 <listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
     <argument name="data" xsi:type="array">
         <item name="js_config" xsi:type="array">
-            <item name="provider" xsi:type="string">recurring_payments_listing.recurring_payments_listing_data_source</item>
-            <item name="deps" xsi:type="string">recurring_payments_listing.recurring_payments_listing_data_source</item>
+            <item name="provider" xsi:type="string">subscription_listing.subscription_listing_data_source</item>
+            <item name="deps" xsi:type="string">subscription_listing.subscription_listing_data_source</item>
         </item>
-        <item name="spinner" xsi:type="string">recurring_payments_columns</item>
+        <item name="spinner" xsi:type="string">subscription_columns</item>
     </argument>
-    <dataSource name="recurring_payments_listing_data_source">
+    <dataSource name="subscription_listing_data_source">
         <argument name="dataProvider" xsi:type="configurableObject">
             <argument name="class" xsi:type="string">Nexi\Checkout\Ui\DataProvider\SubscriptionDataProvider</argument>
-            <argument name="name" xsi:type="string">recurring_payments_listing_data_source</argument>
+            <argument name="name" xsi:type="string">subscription_listing_data_source</argument>
             <argument name="primaryFieldName" xsi:type="string">entity_id</argument>
             <argument name="requestFieldName" xsi:type="string">entity_id</argument>
             <argument name="data" xsi:type="array">
@@ -34,7 +34,7 @@
         <massaction name="listing_massaction">
             <argument name="data" xsi:type="array">
                 <item name="data" xsi:type="array">
-                    <item name="selectProvider" xsi:type="string">recurring_payments_listing.recurring_payments_listing.recurring_payments_columns.ids</item>
+                    <item name="selectProvider" xsi:type="string">subscription_listing.subscription_listing.subscription_columns.ids</item>
                     <item name="displayArea" xsi:type="string">bottom</item>
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/tree-massactions</item>
                     <item name="indexField" xsi:type="string">entity_id</item>
@@ -70,11 +70,11 @@
         </filters>
         <paging name="listing_paging"/>
     </listingToolbar>
-    <columns name="recurring_payments_columns">
+    <columns name="subscription_columns">
         <settings>
             <childDefaults>
                 <param name="fieldAction" xsi:type="array">
-                    <item name="provider" xsi:type="string">recurring_payments_listing.recurring_payments_listing.recurring_payments_columns.actions</item>
+                    <item name="provider" xsi:type="string">subscription_listing.subscription_listing.subscription_columns.actions</item>
                     <item name="target" xsi:type="string">applyAction</item>
                     <item name="params" xsi:type="array">
                         <item name="0" xsi:type="string">view</item>
@@ -111,7 +111,7 @@
                 <label translate="true">Next order date</label>
             </settings>
         </column>
-        <column name="recurring_profile_id">
+        <column name="subscription_profile_id">
             <settings>
                 <filter>text</filter>
                 <bodyTmpl>ui/grid/cells/text</bodyTmpl>
@@ -172,10 +172,10 @@
                 <label translate="true">Customer Email</label>
             </settings>
         </column>
-        <actionsColumn name="actions" class="Nexi\Checkout\Ui\Component\Listing\Column\RecurringAction" sortOrder="50">
+        <actionsColumn name="actions" class="Nexi\Checkout\Ui\Component\Listing\Column\SubscriptionAction" sortOrder="50">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="viewUrlPath" xsi:type="string">recurring_payments/recurring/view</item>
+                    <item name="viewUrlPath" xsi:type="string">subscription/listing/view</item>
                     <item name="urlEntityParamName" xsi:type="string">id</item>
                 </item>
             </argument>
