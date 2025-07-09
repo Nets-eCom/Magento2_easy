@@ -9,7 +9,7 @@ use Nexi\Checkout\Model\ResourceModel\Subscription\Collection;
 use Nexi\Checkout\Model\ResourceModel\Subscription\CollectionFactory;
 use Nexi\Checkout\Model\Subscription;
 
-class RecurringPaymentForm extends AbstractDataProvider
+class SubscriptionForm extends AbstractDataProvider
 {
     /**
      * @var array

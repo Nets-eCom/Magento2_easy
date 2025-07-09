@@ -20,7 +20,7 @@
     </settings>
     <dataSource name="recurring_profile_listing_data_source">
         <argument name="dataProvider" xsi:type="configurableObject">
-            <argument name="class" xsi:type="string">Nexi\Checkout\Ui\DataProvider\RecurringProfile</argument>
+            <argument name="class" xsi:type="string">Nexi\Checkout\Ui\DataProvider\SubscriptionProfile</argument>
             <argument name="name" xsi:type="string">recurring_profile_listing_data_source</argument>
             <argument name="primaryFieldName" xsi:type="string">profile_id</argument>
             <argument name="requestFieldName" xsi:type="string">profile_id</argument>

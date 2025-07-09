@@ -30,7 +30,7 @@
         <settings>
             <submitUrl path="*/*/save" />
         </settings>
-        <dataProvider class="Nexi\Checkout\Ui\DataProvider\RecurringPaymentForm" name="recurring_payment_data_source">
+        <dataProvider class="Nexi\Checkout\Ui\DataProvider\SubscriptionForm" name="recurring_payment_data_source">
             <settings>
                 <requestFieldName>id</requestFieldName>
                 <primaryFieldName>entity_id</primaryFieldName>

@@ -7,7 +7,7 @@ use Magento\Ui\DataProvider\AbstractDataProvider;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Profile\Collection;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Profile\CollectionFactory;
 
-class RecurringProfile extends AbstractDataProvider
+class SubscriptionProfile extends AbstractDataProvider
 {
     /**
      * @var CollectionFactory

@@ -13,7 +13,7 @@
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
-                <item name="recurring_schedule_config_provider" xsi:type="object">Nexi\Checkout\Model\Recurring\TotalConfigProvider</item>
+                <item name="subscription_schedule_config_provider" xsi:type="object">Nexi\Checkout\Model\Subscription\TotalConfigProvider</item>
             </argument>
         </arguments>
     </type>

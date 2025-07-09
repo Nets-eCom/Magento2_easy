@@ -8,7 +8,7 @@ use Magento\Ui\DataProvider\AbstractDataProvider;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Collection;
 use Nexi\Checkout\Model\ResourceModel\Subscription\CollectionFactory;
 
-class RecurringPayment extends AbstractDataProvider
+class SubscriptionDataProvider extends AbstractDataProvider
 {
     /** @var CollectionFactory */
     private $collectionFactory;

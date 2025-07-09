@@ -8,10 +8,11 @@ use Magento\Ui\DataProvider\AbstractDataProvider;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Profile\Collection;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Profile\CollectionFactory;
 
-class RecurringProfileForm extends AbstractDataProvider
+class SubscriptionProfileForm extends AbstractDataProvider
 {
     /** @var array */
     private $loadedData;
+
 
     /**
      * @var CollectionFactory

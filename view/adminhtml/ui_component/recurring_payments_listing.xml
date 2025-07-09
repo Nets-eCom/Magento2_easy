@@ -9,7 +9,7 @@
     </argument>
     <dataSource name="recurring_payments_listing_data_source">
         <argument name="dataProvider" xsi:type="configurableObject">
-            <argument name="class" xsi:type="string">Nexi\Checkout\Ui\DataProvider\RecurringPayment</argument>
+            <argument name="class" xsi:type="string">Nexi\Checkout\Ui\DataProvider\SubscriptionDataProvider</argument>
             <argument name="name" xsi:type="string">recurring_payments_listing_data_source</argument>
             <argument name="primaryFieldName" xsi:type="string">entity_id</argument>
             <argument name="requestFieldName" xsi:type="string">entity_id</argument>

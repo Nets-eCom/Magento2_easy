@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Nexi\Checkout\Model\Recurring;
+namespace Nexi\Checkout\Model\Subscription;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session;
@@ -13,7 +13,7 @@ use Magento\Store\Model\ScopeInterface;
 class TotalConfigProvider implements ConfigProviderInterface
 {
     private const NO_SCHEDULE_VALUE = null;
-    private const IS_RECURRING_PAYMENT_ENABLED = 'sales/recurring_payment/active_recurring_payment';
+    private const IS_SUBSCRIPTIONS_ENABLED = 'sales/subscriptions/active_subscriptions';
 
     /**
      * @var Session
@@ -47,13 +47,13 @@ class TotalConfigProvider implements ConfigProviderInterface
     public function isSubscriptionsEnabled(): bool
     {
         return (bool)$this->scopeConfig->getValue(
-            self::IS_RECURRING_PAYMENT_ENABLED,
+            self::IS_SUBSCRIPTIONS_ENABLED,
             ScopeInterface::SCOPE_STORE
         );
     }
 
     /**
-     * Get recurring payment values to config.
+     * Get subscription values to config.
      *
      * @return array
      * @throws LocalizedException
@@ -62,19 +62,19 @@ class TotalConfigProvider implements ConfigProviderInterface
     public function getConfig(): array
     {
         return [
-            'isRecurringScheduled' => $this->isRecurringScheduled(),
-            'recurringSubtotal' => $this->getRecurringSubtotal()
+            'isRecurringScheduled' => $this->isSubscriptionScheduled(),
+            'recurringSubtotal' => $this->getSubscriptionSubtotal()
             ];
     }
 
     /**
-     * Is cart has recurring payment schedule products.
+     * Is cart has subscription schedule products.
      *
      * @return bool
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    private function isRecurringScheduled(): bool
+    private function isSubscriptionScheduled(): bool
     {
         $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
         if ($quoteItems) {
@@ -89,17 +89,17 @@ class TotalConfigProvider implements ConfigProviderInterface
     }
 
     /**
-     * Get recurring-payment cart subtotal value.
+     * Get subscription cart subtotal value.
      *
      * @return float
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    private function getRecurringSubtotal(): float
+    private function getSubscriptionSubtotal(): float
     {
-        if ($this->isRecurringPaymentEnabled()) {
+        if ($this->isSubscriptionsEnabled()) {
             $recurringSubtotal = 0.00;
-            if ($this->isRecurringScheduled()) {
+            if ($this->isSubscriptionScheduled()) {
                 $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
                 foreach ($quoteItems as $item) {
                     if ($item->getProduct()
