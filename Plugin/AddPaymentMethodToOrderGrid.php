@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Dibs\EasyCheckout\Plugin;
 
 use Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory;
-use Magento\Sales\Model\ResourceModel\Order\Grid\Collection;
+use Magento\Framework\Data\Collection;
 
 class AddPaymentMethodToOrderGrid
 {
