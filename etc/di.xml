@@ -250,9 +250,9 @@
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="recurring_payment_bill" xsi:type="object">Nexi\Checkout\Console\Command\Bill
+                <item name="subscription_bill" xsi:type="object">Nexi\Checkout\Console\Command\Bill
                 </item>
-                <item name="recurring_payment_notify" xsi:type="object">Nexi\Checkout\Console\Command\Notify
+                <item name="subscription_notify" xsi:type="object">Nexi\Checkout\Console\Command\Notify
                 </item>
             </argument>
         </arguments>

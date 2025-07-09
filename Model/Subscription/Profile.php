@@ -2,9 +2,10 @@
 
 namespace Nexi\Checkout\Model\Subscription;
 
-use Nexi\Checkout\Api\Data\RecurringProfileInterface;
+use Magento\Framework\Model\AbstractModel;
+use Nexi\Checkout\Api\Data\SubscriptionProfileInterface;
 
-class Profile extends \Magento\Framework\Model\AbstractModel implements RecurringProfileInterface
+class Profile extends AbstractModel implements SubscriptionProfileInterface
 {
     protected function _construct()
     {

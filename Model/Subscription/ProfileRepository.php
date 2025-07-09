@@ -2,24 +2,22 @@
 
 namespace Nexi\Checkout\Model\Subscription;
 
-use Magento\CatalogImportExport\Model\Import\Proxy\Product\ResourceModel;
-use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Nexi\Checkout\Api\Data;
-use Nexi\Checkout\Api\Data\SubscriptionSearchResultInterface;
-use Nexi\Checkout\Api\RecurringProfileRepositoryInterface;
+use Nexi\Checkout\Api\Data\SubscriptionProfileSearchResultInterface;
+use Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface;
 use Nexi\Checkout\Model\Subscription;
 
-class ProfileRepository implements RecurringProfileRepositoryInterface
+class ProfileRepository implements SubscriptionProfileRepositoryInterface
 {
     /**
      * @var \Nexi\Checkout\Model\ResourceModel\Subscription\Profile
      */
     private $profileResource;
     /**
-     * @var Data\RecurringProfileInterfaceFactory
+     * @var Data\SubscriptionProfileInterfaceFactory
      */
     private $profileFactory;
     /**
@@ -33,8 +31,8 @@ class ProfileRepository implements RecurringProfileRepositoryInterface
 
     public function __construct(
         \Nexi\Checkout\Model\ResourceModel\Subscription\Profile              $profileResource,
-        \Nexi\Checkout\Api\Data\RecurringProfileInterfaceFactory             $profileFactory,
-        \Nexi\Checkout\Api\Data\RecurringProfileSearchResultInterfaceFactory $profileResultFactory,
+        \Nexi\Checkout\Api\Data\SubscriptionProfileInterfaceFactory            $profileFactory,
+        \Nexi\Checkout\Api\Data\SubscriptionProfileSearchResultInterfaceFactory $profileResultFactory,
         \Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface $collectionProcessor
     ) {
         $this->profileResource = $profileResource;
@@ -67,7 +65,7 @@ class ProfileRepository implements RecurringProfileRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function save(Data\RecurringProfileInterface $profile)
+    public function save(Data\SubscriptionProfileInterface $profile)
     {
         try {
             $this->profileResource->save($profile);
@@ -84,7 +82,7 @@ class ProfileRepository implements RecurringProfileRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function delete(Data\RecurringProfileInterface $profile)
+    public function delete(Data\SubscriptionProfileInterface $profile)
     {
         try {
             $this->profileResource->delete($profile);
@@ -101,7 +99,7 @@ class ProfileRepository implements RecurringProfileRepositoryInterface
      */
     public function getList(
         \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
-    ) : Data\RecurringProfileSearchResultInterface {
+    ) : SubscriptionProfileSearchResultInterface {
         /** @var Data\RecurringProfileSearchResultInterface $searchResult */
         $searchResult = $this->profileResultFactory->create();
         $this->collectionProcessor->process($searchCriteria, $searchResult);

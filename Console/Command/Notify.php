@@ -4,7 +4,7 @@ namespace Nexi\Checkout\Console\Command;
 
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
-use Nexi\Checkout\Model\Recurring\Notify as RecurringNotify;
+use Nexi\Checkout\Model\Subscription\Notify as SubscriptionNotify;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,11 +14,11 @@ class Notify extends Command
     /**
      * Constructor
      *
-     * @param RecurringNotify $notify
+     * @param SubscriptionNotify $notify
      * @param State $state
      */
     public function __construct(
-        private RecurringNotify $notify,
+        private SubscriptionNotify $notify,
         private State           $state
     ) {
         parent::__construct();
@@ -31,8 +31,8 @@ class Notify extends Command
      */
     protected function configure()
     {
-        $this->setName('nexi:recurring:notify');
-        $this->setDescription('Send recurring payment notification emails.');
+        $this->setName('nexi:subscription:notify');
+        $this->setDescription('Send subscription notification emails.');
     }
 
     /**

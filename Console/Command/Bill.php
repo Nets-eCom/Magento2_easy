@@ -6,7 +6,7 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
-use Nexi\Checkout\Model\Recurring\Bill as RecurringBill;
+use Nexi\Checkout\Model\Subscription\Bill as SubscriptionBill;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,11 +16,11 @@ class Bill extends Command
     /**
      * Constructor
      *
-     * @param RecurringBill $bill
+     * @param SubscriptionBill $bill
      * @param State $state
      */
     public function __construct(
-        private RecurringBill $bill,
+        private SubscriptionBill $bill,
         private State         $state
     ) {
         parent::__construct();
@@ -33,8 +33,8 @@ class Bill extends Command
      */
     protected function configure()
     {
-        $this->setName('nexi:recurring:bill');
-        $this->setDescription('Invoice customers of recurring orders');
+        $this->setName('nexi:subscription:bill');
+        $this->setDescription('Invoice customers of subscription orders');
     }
 
     /**

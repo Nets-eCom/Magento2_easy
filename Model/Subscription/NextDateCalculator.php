@@ -8,13 +8,13 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
-use Nexi\Checkout\Api\Data\RecurringProfileInterface;
-use Nexi\Checkout\Api\RecurringProfileRepositoryInterface;
+use Nexi\Checkout\Api\Data\SubscriptionProfileInterface;
+use Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface;
 
 class NextDateCalculator
 {
     /**
-     * @var RecurringProfileRepositoryInterface $profileRepo
+     * @var SubscriptionProfileRepositoryInterface $profileRepo
      */
     private $profileRepo;
     /**
@@ -23,7 +23,7 @@ class NextDateCalculator
     private $serializer;
 
     /**
-     * @var RecurringProfileInterface[]
+     * @var SubscriptionProfileInterface[]
      */
     private $profiles = [];
 
@@ -38,14 +38,14 @@ class NextDateCalculator
     private bool $forceWeekdays;
 
     /**
-     * @param RecurringProfileRepositoryInterface $profileRepository
+     * @param SubscriptionProfileRepositoryInterface $profileRepository
      * @param SerializerInterface $serializer
      * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        RecurringProfileRepositoryInterface $profileRepository,
-        SerializerInterface                 $serializer,
-        ScopeConfigInterface                $scopeConfig
+        SubscriptionProfileRepositoryInterface $profileRepository,
+        SerializerInterface                    $serializer,
+        ScopeConfigInterface                   $scopeConfig
     ) {
         $this->profileRepo = $profileRepository;
         $this->serializer  = $serializer;
@@ -112,10 +112,10 @@ class NextDateCalculator
      *
      * @param int $profileId
      *
-     * @return RecurringProfileInterface
+     * @return SubscriptionProfileInterface
      * @throws NoSuchEntityException
      */
-    private function getProfileById($profileId): RecurringProfileInterface
+    private function getProfileById($profileId): SubscriptionProfileInterface
     {
         if (!isset($this->profiles[$profileId])) {
             $this->profiles[$profileId] = $this->profileRepo->get($profileId);

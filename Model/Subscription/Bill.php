@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexi\Checkout\Model\Recurring;
+namespace Nexi\Checkout\Model\Subscription;
 
 use Nexi\Checkout\Model\Subscription\ActiveOrderProvider;
 use Nexi\Checkout\Model\Subscription\OrderBiller;

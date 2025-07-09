@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexi\Checkout\Model\Recurring;
+namespace Nexi\Checkout\Model\Subscription;
 
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;

@@ -3,11 +3,11 @@
 namespace Nexi\Checkout\Model\ResourceModel\Subscription\Profile;
 
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
-use Nexi\Checkout\Api\Data\RecurringProfileSearchResultInterface;
+use Nexi\Checkout\Api\Data\SubscriptionProfileSearchResultInterface;
 use Nexi\Checkout\Model\Subscription\Profile;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Profile as ProfileResource;
 
-class Collection extends AbstractCollection implements RecurringProfileSearchResultInterface
+class Collection extends AbstractCollection implements SubscriptionProfileSearchResultInterface
 {
     /** @var \Magento\Framework\Api\SearchCriteriaInterface */
     private $searchCriteria;
