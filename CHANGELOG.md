@@ -11,6 +11,11 @@
 
 ## CHANGELOG
 
+### Version 1.8.0 - Released - 2025-07-03
+- Update: handle phone numbers using libphonenumber lib
+- Update: render internal payment method in sales order grid
+- Update: add support for php 8.3
+
 ### Version 1.7.5 - Released - 2025-04-04
 - Fix: Step coupon method treats all falsy values as empty
 - Update: Introduce to new README file
