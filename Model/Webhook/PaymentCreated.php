@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
+use Braintree\Exception\NotFound;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
