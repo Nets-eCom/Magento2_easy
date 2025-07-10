@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
@@ -18,11 +20,13 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
+     * @param Comment $comment
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly Builder $transactionBuilder,
+        private readonly Comment $comment,
     ) {
     }
 
@@ -33,6 +37,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      *
      * @return void
      * @throws NotFoundException
+     * @throws CouldNotSaveException
      */
     public function processWebhook(array $webhookData): void
     {
@@ -42,12 +47,16 @@ class PaymentReservationCreated implements WebhookProcessorInterface
             throw new NotFoundException(__('Payment transaction not found for %1.', $paymentId));
         }
 
+        /** @var Order $order */
+        $order = $paymentTransaction->getOrder();
+        $this->comment->saveComment(
+            __('Webhook Received. payment.reservation.created.v2 with ID: %1', $webhookData['id']),
+            $order
+        );
+
         if ($this->authorizationAlreadyExists($webhookData['id'])) {
             return;
         }
-
-        /** @var Order $order */
-        $order = $paymentTransaction->getOrder();
 
         $order->setState(Order::STATE_PENDING_PAYMENT)
             ->setStatus(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
