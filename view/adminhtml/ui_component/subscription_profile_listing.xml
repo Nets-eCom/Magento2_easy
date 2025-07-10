@@ -139,7 +139,7 @@
         <actionsColumn name="actions" class="Magento\Theme\Ui\Component\Listing\Column\ViewAction" sortOrder="50">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="viewUrlPath" xsi:type="string">subscription_payments/profile/edit</item>
+                    <item name="viewUrlPath" xsi:type="string">subscriptions/profile/edit</item>
                     <item name="urlEntityParamName" xsi:type="string">id</item>
                 </item>
             </argument>
