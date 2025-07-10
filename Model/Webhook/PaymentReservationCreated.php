@@ -42,7 +42,11 @@ class PaymentReservationCreated implements WebhookProcessorInterface
             throw new NotFoundException(__('Payment transaction not found for %1.', $paymentId));
         }
 
-        /** @var \Magento\Sales\Model\Order $order */
+        if ($this->authorizationAlreadyExists($webhookData['id'])) {
+            return;
+        }
+
+        /** @var Order $order */
         $order = $paymentTransaction->getOrder();
 
         $order->setState(Order::STATE_PENDING_PAYMENT)
@@ -64,5 +68,17 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         );
 
         $this->orderRepository->save($order);
+    }
+
+    /**
+     * Checks if an authorization already exists for the given ID.
+     *
+     * @param mixed $id
+     *
+     * @return bool
+     */
+    private function authorizationAlreadyExists(mixed $id)
+    {
+        return $this->webhookDataLoader->getTransactionByPaymentId($id, TransactionInterface::TYPE_AUTH) !== null;
     }
 }
