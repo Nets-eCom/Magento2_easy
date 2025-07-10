@@ -75,15 +75,10 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             TransactionInterface::TYPE_AUTH
         );
 
-
         $chargeTxnId = $webhookData['data']['chargeId'];
 
         if ($this->webhookDataLoader->getTransactionByPaymentId($chargeTxnId, TransactionInterface::TYPE_CAPTURE)) {
             return;
-        }
-
-        if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
-            throw new Exception('Order status is not authorized.');
         }
 
         $chargeTransaction = $this->transactionBuilder
@@ -108,6 +103,9 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         );
 
         if ($this->isFullCharge($webhookData, $order)) {
+            if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
+                throw new Exception('Order status is not authorized.');
+            }
             $this->fullInvoice($order, $chargeTxnId);
         } else {
             $order->addCommentToStatusHistory(
