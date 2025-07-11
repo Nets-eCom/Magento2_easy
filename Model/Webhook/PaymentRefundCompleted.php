@@ -34,7 +34,6 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
         private readonly CreditmemoManagementInterface $creditmemoManagement,
         private readonly AmountConverter $amountConverter,
         private readonly Comment $comment,
-
     ) {
     }
 
@@ -78,7 +77,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
             $order->addCommentToStatusHistory(
                 'Partial refund created for order. ' .
                 'Automatic credit memo processing is not supported for partial refunds. ' .
-                'You can create a credit memo manually wit offline refund if needed.',
+                'You can create a credit memo manually with offline refund if needed.',
             );
         }
 
