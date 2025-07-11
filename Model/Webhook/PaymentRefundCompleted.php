@@ -71,6 +71,8 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
             )->setParentTxnId($webhookData['data']['paymentId'])
             ->setAdditionalInformation('details', json_encode($webhookData));
 
+        $order->getPayment()->addTransaction($refund);
+
         if ($this->isFullRefund($webhookData, $order)) {
             $this->processFullRefund($webhookData, $order);
         } else {
@@ -97,10 +99,10 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @return void
      */
-    public function processFullRefund(array $webhookData, Order $order): void
+    private function processFullRefund(array $webhookData, Order $order): void
     {
         $creditmemo = $this->creditmemoFactory->createByOrder($order);
-        $creditmemo->setTransactionId($webhookData['id']);
+        $creditmemo->setTransactionId($webhookData['data']['refundId']);
 
         $this->creditmemoManagement->refund($creditmemo);
     }
@@ -115,9 +117,9 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      */
     private function isFullRefund(array $webhookData, Order $order): bool
     {
-        $GrandTotal = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+        $grandTotal = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
 
-        return $GrandTotal == $webhookData['data']['amount']['amount'];
+        return $grandTotal === $webhookData['data']['amount']['amount'];
     }
 
     /**
@@ -127,7 +129,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @return TransactionInterface|null
      */
-    public function findRefundTransaction(string $id): ?TransactionInterface
+    private function findRefundTransaction(string $id): ?TransactionInterface
     {
         return $this->webhookDataLoader->getTransactionByPaymentId($id, TransactionInterface::TYPE_REFUND);
     }
