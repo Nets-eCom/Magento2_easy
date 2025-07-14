@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexi\Checkout\Controller\Adminhtml\Recurring;
+namespace Nexi\Checkout\Controller\Adminhtml\Subscription;
 
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ActionInterface;
@@ -16,7 +16,7 @@ class View implements ActionInterface
     public function execute()
     {
         $page = $this->initialize();
-        $page->getConfig()->getTitle()->prepend(__('View Recurring Payment'));
+        $page->getConfig()->getTitle()->prepend(__('View Subscription'));
 
         return $page;
     }
