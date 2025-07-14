@@ -35,6 +35,9 @@ class SalesDocumentItemsBuilder
     {
         $items = [];
         foreach ($salesObject->getAllItems() as $item) {
+            if ((double)$item->getBasePrice() === 0.0) {
+                continue;
+            }
             $items[] = new Item(
                 name            : $this->stringSanitizer->sanitize($item->getName()),
                 quantity        : (float)$item->getQty(),
