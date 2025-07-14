@@ -100,7 +100,11 @@ class PaymentChargeCreatedTest extends TestCase
         $this->commentMock->expects($this->once())
             ->method('saveComment')
             ->with(
-                __('Webhook Received. Payment charge created for payment ID: %1,<br />Charge ID: %2', $paymentId, $chargeId),
+                __(
+                    'Webhook Received. Payment charge created for payment ID: %1,<br />Charge ID: %2',
+                    $paymentId,
+                    $chargeId
+                ),
                 $orderMock
             );
 

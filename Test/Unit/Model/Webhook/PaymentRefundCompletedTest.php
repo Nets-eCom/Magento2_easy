@@ -68,7 +68,6 @@ class PaymentRefundCompletedTest extends TestCase
         $this->amountConverterMock      = $this->createMock(AmountConverter::class);
         $this->commentMock              = $this->createMock(Comment::class);
 
-
         $this->paymentRefundCompleted = new PaymentRefundCompleted(
             $this->webhookDataLoaderMock,
             $this->transactionBuilderMock,
