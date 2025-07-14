@@ -18,6 +18,8 @@ use Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Gateway\StringSanitizer;
+use Nexi\Checkout\Model\Subscription\SubscriptionCreate;
+use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 use Nexi\Checkout\Model\WebhookHandler;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
@@ -55,6 +57,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         private readonly WebhookHandler $webhookHandler,
         private readonly AmountConverter $amountConverter,
         private readonly StringSanitizer $stringSanitizer,
+        private readonly TotalConfigProvider $totalConfigProvider,
+        private readonly SubscriptionCreate $subscriptionCreate
     ) {
     }
 
@@ -174,7 +178,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             order       : $this->buildOrder($order),
             checkout    : $this->buildCheckout($order),
             notification: new Notification($this->buildWebhooks()),
-            subscription: $this->getSubscriptionSetup(),
+            subscription: $this->getSubscriptionSetup($order),
         );
     }
 
@@ -370,18 +374,25 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         return 0.0;
     }
 
-    private function getSubscriptionSetup(): ?Payment\Subscription {
-        $sub = true;
+    /**
+     * Set subscription setup for the payment.
+     *
+     * @param Quote|Order $order
+     * @return Payment\Subscription|null
+     * @throws \DateMalformedStringException
+     */
+    private function getSubscriptionSetup(Quote|Order $order): ?Payment\Subscription {
+        if ($this->totalConfigProvider->isSubscriptionsEnabled()) {
+            $this->subscriptionCreate->createSubscription($order);
 
-        if (!$sub) {
-            return null;
+            return new Payment\Subscription(
+                subscriptionId: null,
+                endDate: new \DateTime((int)date('Y') + 100 . '-01-01'),
+                interval: 30,
+            );
         }
 
-        return new Payment\Subscription(
-            subscriptionId: null,
-            endDate: new \DateTime((int)date('Y') + 100 . '-01-01'),
-            interval: 30,
-        );
+        return null;
     }
 
     /**

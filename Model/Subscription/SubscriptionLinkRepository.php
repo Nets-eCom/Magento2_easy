@@ -23,7 +23,7 @@ class SubscriptionLinkRepository implements SubscriptionLinkRepositoryInterface
     /**
      * @var SubscriptionLink
      */
-    private $subscriptionLinkResource;
+    private SubscriptionLink $subscriptionLinkResource;
 
     /**
      * @var SubscriptionLinkInterfaceFactory

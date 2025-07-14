@@ -72,28 +72,27 @@ class SubscriptionCreate
     }
 
     /**
-     * @param $orderSchedule
-     * @param $selectedToken
-     * @param $customerId
-     * @return void
+     * @param $order
+     * @return SubscriptionInterface
      * @throws CouldNotSaveException
      */
-    public function createSubscription($orderSchedule, $selectedToken, $customerId, $orderId)
+    public function createSubscription($order): SubscriptionInterface
     {
         try {
             $subscription = $this->subscriptionInterfaceFactory->create();
-            $subscription->setStatus(SubscriptionInterface::STATUS_ACTIVE);
-            $subscription->setCustomerId($customerId);
-            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(reset($orderSchedule)));
-            $subscription->setRecurringProfileId((int)reset($orderSchedule));
+            $subscription->setStatus(SubscriptionInterface::STATUS_PENDING_PAYMENT);
+            $subscription->setCustomerId($order->getCustomerId());
+            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(1));
+            $subscription->setRecurringProfileId(1);
             $subscription->setRepeatCountLeft(self::REPEAT_COUNT_STATIC_VALUE);
             $subscription->setRetryCount(self::REPEAT_COUNT_STATIC_VALUE);
-            $subscription->setSelectedToken(
-                (int)$this->paymentToken->getByPublicHash($selectedToken,$customerId)[SubscriptionInterface::FIELD_ENTITY_ID]);
+            $subscription->setSelectedToken(1);
 
             $this->subscriptionRepository->save($subscription);
 
-            $this->subscriptionLinkRepository->linkOrderToSubscription($orderId, $subscription->getId());
+            $this->subscriptionLinkRepository->linkOrderToSubscription($order->getId(), $subscription->getId());
+
+            return $subscription;
         } catch (\Exception $exception) {
             throw new CouldNotSaveException(__($exception->getMessage()));
         }
