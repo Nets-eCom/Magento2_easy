@@ -86,6 +86,7 @@ class PaymentRefundCompletedTest extends TestCase
             'id' => 'webhook-123',
             'data' => [
                 'paymentId' => 'payment-123',
+                'refundId' => 'refund-123',
                 'amount' => [
                     'amount' => 10000, // 100.00 in cents
                     'currency' => 'USD'
@@ -181,6 +182,7 @@ class PaymentRefundCompletedTest extends TestCase
             'id' => 'webhook-123',
             'data' => [
                 'paymentId' => 'payment-123',
+                'refundId' => 'refund-123',
                 'amount' => [
                     'amount' => 5000, // 50.00 in cents
                     'currency' => 'USD'
