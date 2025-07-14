@@ -44,7 +44,8 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     {
         $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
         $this->comment->saveComment(
-            __('Webhook Received. Payment charge created for payment ID: %1,<br />Charge ID: %2',
+            __(
+                'Webhook Received. Payment charge created for payment ID: %1,<br />Charge ID: %2',
                 $webhookData['data']['paymentId'],
                 $webhookData['data']['chargeId']
             ),
