@@ -10,6 +10,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\CreditmemoFactory;
 use Nexi\Checkout\Gateway\AmountConverter;
+use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentRefundCompleted;
@@ -48,6 +49,11 @@ class PaymentRefundCompletedTest extends TestCase
     private $amountConverterMock;
 
     /**
+     * @var Comment|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $commentMock;
+
+    /**
      * @var PaymentRefundCompleted
      */
     private $paymentRefundCompleted;
@@ -60,6 +66,8 @@ class PaymentRefundCompletedTest extends TestCase
         $this->creditmemoFactoryMock = $this->createMock(CreditmemoFactory::class);
         $this->creditmemoManagementMock = $this->createMock(CreditmemoManagementInterface::class);
         $this->amountConverterMock = $this->createMock(AmountConverter::class);
+        $this->commentMock = $this->createMock(Comment::class);
+
 
         $this->paymentRefundCompleted = new PaymentRefundCompleted(
             $this->webhookDataLoaderMock,
@@ -67,7 +75,8 @@ class PaymentRefundCompletedTest extends TestCase
             $this->orderRepositoryMock,
             $this->creditmemoFactoryMock,
             $this->creditmemoManagementMock,
-            $this->amountConverterMock
+            $this->amountConverterMock,
+            $this->commentMock
         );
     }
 
