@@ -70,11 +70,31 @@ jobs:
             }
       - name: Validate Composer Files
         run: composer validate
+        env:
+          COMPOSER_AUTH: |
+            {
+              "http-basic": {
+                "repo.magento.com": {
+                  "username": "${{ secrets.REPO_MAGENTO_USER }}",
+                  "password": "${{ secrets.REPO_MAGENTO_PASSWORD }}"
+                }
+              }
+            }
       - name: Run Composer install
         uses: "ramsey/composer-install@v1"
         with:
           dependency-versions: "${{ matrix.dependencies }}"
           composer-options: "${{ matrix.composer-options }}"
+        env:
+          COMPOSER_AUTH: |
+            {
+              "http-basic": {
+                "repo.magento.com": {
+                  "username": "${{ secrets.REPO_MAGENTO_USER }}",
+                  "password": "${{ secrets.REPO_MAGENTO_PASSWORD }}"
+                }
+              }
+            }
       - name: Detect PhpCs violations
         run: |
           vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/,../../phpcompatibility/php-compatibility,../../magento/php-compatibility-fork
