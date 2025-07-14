@@ -12,7 +12,7 @@ use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Validator\ValidateException;
 use Nexi\Checkout\Model\Attribute\SelectData;
 
-class AddRecurringPaymentScheduleAttribute implements DataPatchInterface
+class AddSubscriptionScheduleAttribute implements DataPatchInterface
 {
     /**
      * @var ModuleDataSetupInterface
@@ -46,11 +46,11 @@ class AddRecurringPaymentScheduleAttribute implements DataPatchInterface
         /** @var EavSetup $eavSetup */
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 
-        $eavSetup->addAttribute(\Magento\Catalog\Model\Product::ENTITY, 'recurring_payment_schedule', [
+        $eavSetup->addAttribute(\Magento\Catalog\Model\Product::ENTITY, 'subscription_schedule', [
             'type' => 'int',
             'backend' => '',
             'frontend' => '',
-            'label' => 'Recurring Payment Schedule',
+            'label' => 'Subscription Schedule',
             'input' => 'select',
             'class' => '',
             'source' => 'Nexi\Checkout\Model\Attribute\SelectData',
@@ -58,7 +58,7 @@ class AddRecurringPaymentScheduleAttribute implements DataPatchInterface
             'visible' => true,
             'required' => false,
             'user_defined' => false,
-            'default' => SelectData::NO_RECURRING_PAYMENT_VALUE,
+            'default' => SelectData::NO_SUBSCRIPTION_VALUE,
             'searchable' => true,
             'filterable' => true,
             'comparable' => false,

@@ -8,7 +8,7 @@ use Nexi\Checkout\Model\ResourceModel\Subscription\Profile\CollectionFactory;
 
 class SelectData extends AbstractSource
 {
-    public const NO_RECURRING_PAYMENT_VALUE = null;
+    public const NO_SUBSCRIPTION_VALUE = null;
 
     /**
      * @var CollectionFactory
@@ -39,7 +39,7 @@ class SelectData extends AbstractSource
                     $this->_options[] = ['label' => $data['name'], 'value' => $data['profile_id']];
                 }
             }
-            $this->_options[] = ['label' => __('No recurring payment'), 'value' => self::NO_RECURRING_PAYMENT_VALUE];
+            $this->_options[] = ['label' => __('No recurring payment'), 'value' => self::NO_SUBSCRIPTION_VALUE];
         }
 
         return $this->_options;
