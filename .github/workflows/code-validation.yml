@@ -59,7 +59,7 @@ jobs:
           ini-file: development
           tools: composer:2.2, cs2pr
         env:
-          COMPOSER_AUTH_JSON: |
+          COMPOSER_AUTH: |
             {
               "http-basic": {
                 "repo.magento.com": {
