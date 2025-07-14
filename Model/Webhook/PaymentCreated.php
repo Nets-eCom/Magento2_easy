@@ -83,7 +83,6 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param string $paymentId
      *
      * @return Order
-     * @throws NotFound
      */
     private function getOrderByPaymentId(string $paymentId)
     {
