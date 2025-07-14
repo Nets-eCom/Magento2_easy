@@ -11,7 +11,7 @@ use Magento\Quote\Model\Quote;
 
 class PreventDifferentScheduledCart
 {
-    public const SCHEDULE_CODE = 'recurring_payment_schedule';
+    public const SCHEDULE_CODE = 'subscription_schedule';
 
     /**
      * BeforeAddProduct plugin.

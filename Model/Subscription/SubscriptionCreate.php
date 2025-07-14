@@ -14,7 +14,7 @@ use Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository;
 
 class SubscriptionCreate
 {
-    private const SCHEDULED_ATTRIBUTE_CODE = 'recurring_payment_schedule';
+    private const SCHEDULED_ATTRIBUTE_CODE = 'subscription_schedule';
     private const REPEAT_COUNT_STATIC_VALUE = 5;
 
     /**

@@ -79,7 +79,7 @@ class TotalConfigProvider implements ConfigProviderInterface
         $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
         if ($quoteItems) {
             foreach ($quoteItems as $item) {
-                if ($item->getProduct()->getCustomAttribute('recurring_payment_schedule') != self::NO_SCHEDULE_VALUE) {
+                if ($item->getProduct()->getCustomAttribute('subscription_schedule') != self::NO_SCHEDULE_VALUE) {
                     return true;
                 }
             }
@@ -103,7 +103,7 @@ class TotalConfigProvider implements ConfigProviderInterface
                 $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
                 foreach ($quoteItems as $item) {
                     if ($item->getProduct()
-                            ->getCustomAttribute('recurring_payment_schedule') != self::NO_SCHEDULE_VALUE) {
+                            ->getCustomAttribute('subscription_schedule') != self::NO_SCHEDULE_VALUE) {
                         $recurringSubtotal = $recurringSubtotal + ($item->getPrice() * $item->getQty());
                     }
                 }
