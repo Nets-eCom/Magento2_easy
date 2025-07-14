@@ -67,26 +67,25 @@ class PaymentReservationCreatedTest extends TestCase
 
         $paymentId = 'payment-123';
 
-        // Mock transaction
-        $transactionMock = $this->getMockBuilder(TransactionInterface::class)
-            ->disableOriginalConstructor()
-            ->addMethods(['getOrder'])
-            ->getMockForAbstractClass();
-
         // Mock order and payment
         $orderMock = $this->createMock(Order::class);
         $paymentMock = $this->createMock(Payment::class);
 
         // Mock reservation transaction
-        $reservationTransactionMock = $this->createMock(TransactionInterface::class);
+        $reservationTransactionMock =  $this->getMockBuilder(TransactionInterface::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['getOrder'])
+            ->getMockForAbstractClass();
 
         // Setup expectations
-        $this->webhookDataLoaderMock->expects($this->once())
+        $this->webhookDataLoaderMock
             ->method('getTransactionByPaymentId')
-            ->with($paymentId)
-            ->willReturn($transactionMock);
+            ->willReturnMap([
+                [$webhookData['id'], TransactionInterface::TYPE_AUTH, null],
+                [$paymentId, TransactionInterface::TYPE_PAYMENT, $reservationTransactionMock]
+            ]);
 
-        $transactionMock->expects($this->once())
+        $reservationTransactionMock->expects($this->once())
             ->method('getOrder')
             ->willReturn($orderMock);
 
@@ -150,12 +149,9 @@ class PaymentReservationCreatedTest extends TestCase
             ]
         ];
 
-        $paymentId = 'payment-123';
-
-        // Setup expectations
-        $this->webhookDataLoaderMock->expects($this->once())
+        $this->webhookDataLoaderMock
             ->method('getTransactionByPaymentId')
-            ->with($paymentId)
+            ->with($webhookData['data']['paymentId'], TransactionInterface::TYPE_PAYMENT)
             ->willReturn(null);
 
         $this->expectException(NotFoundException::class);
