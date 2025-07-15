@@ -5,7 +5,6 @@ namespace Nexi\Checkout\Model\Subscription;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Vault\Model\ResourceModel\PaymentToken;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory;
 use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
@@ -36,11 +35,6 @@ class SubscriptionCreate
     private $dateCalculator;
 
     /**
-     * @var PaymentToken
-     */
-    private $paymentToken;
-
-    /**
      * @var SubscriptionLinkRepository
      */
     private $subscriptionLinkRepository;
@@ -50,7 +44,6 @@ class SubscriptionCreate
      * @param SubscriptionInterfaceFactory $subscriptionInterfaceFactory
      * @param ProductRepositoryInterface $productRepositoryInterface
      * @param \Nexi\Checkout\Model\Subscription\NextDateCalculator $dateCalculator
-     * @param PaymentToken $paymentToken
      * @param SubscriptionLinkRepository $subscriptionLinkRepository
      */
     public function __construct(
@@ -58,14 +51,12 @@ class SubscriptionCreate
         SubscriptionInterfaceFactory    $subscriptionInterfaceFactory,
         ProductRepositoryInterface      $productRepositoryInterface,
         NextDateCalculator              $dateCalculator,
-        PaymentToken                    $paymentToken,
         SubscriptionLinkRepository      $subscriptionLinkRepository
     ) {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->subscriptionInterfaceFactory = $subscriptionInterfaceFactory;
         $this->productRepositoryInterface = $productRepositoryInterface;
         $this->dateCalculator = $dateCalculator;
-        $this->paymentToken = $paymentToken;
         $this->subscriptionLinkRepository = $subscriptionLinkRepository;
     }
 
