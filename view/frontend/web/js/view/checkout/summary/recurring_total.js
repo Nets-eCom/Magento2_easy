@@ -11,11 +11,9 @@ define([
         'mage/translate'],
     function($, ko, Component, quote, checkoutData, customerData, totals, abstractTotal, priceUtils, $t){
 
-        var displayMode = window.checkoutConfig.reviewShippingDisplayMode;
-
         return Component.extend({
             defaults: {
-                displayMode: displayMode,
+                displayMode: window.checkoutConfig.reviewShippingDisplayMode,
                 template: 'Nexi_Checkout/checkout/summary/recurring_total'
             },
 

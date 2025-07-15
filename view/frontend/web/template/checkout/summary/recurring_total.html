@@ -2,9 +2,9 @@
 <tr class="totals recurring">
     <th class="mark" scope="row">
         <span class="label" data-bind="text: getRecurringTotalsText()"></span>
-        <span class="value">Subtotal</span>
-        <span class="value">Shipping</span>
-        <span class="value">Recurring Total</span>
+        <span class="value" data-bind="text: $t('Subtotal')"></span>
+        <span class="value" data-bind="text: $t('Shipping')"></span>
+        <span class="value" data-bind="text: $t('Subscription Total')"></span>
     </th>
     <td class="amount recurring-amount">
         <p class="price recurring-price" data-bind="text: getRecurringSubtotal()"></p>
