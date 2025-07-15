@@ -230,6 +230,16 @@
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </type>
+    <type name="Nexi\Checkout\Model\Receipt\ProcessService">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Model\Receipt\LoadService">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
     <type name="Nexi\Checkout\Model\PaymentInitialize">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>

@@ -11,7 +11,6 @@ use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Api\SubscriptionApi;
 use Psr\Log\LoggerInterface;
 
 class Client implements ClientInterface

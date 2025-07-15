@@ -7,7 +7,6 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction\Repository;
 use Magento\Sales\Model\OrderFactory;
 use Nexi\Checkout\Exceptions\CheckoutException;
-use Nexi\Checkout\Logger\NexiLogger;
 
 class LoadService
 {
@@ -16,12 +15,10 @@ class LoadService
      *
      * @param Repository $transactionRepository
      * @param OrderFactory $orderFactory
-     * @param NexiLogger $nexiLogger
      */
     public function __construct(
         private Repository     $transactionRepository,
-        private OrderFactory   $orderFactory,
-        private NexiLogger $nexiLogger
+        private OrderFactory   $orderFactory
     ) {
     }
 
@@ -44,7 +41,7 @@ class LoadService
                 $orderId
             );
         } catch (InputException $e) {
-            $this->nexiLogger->logData(\Monolog\Logger::ERROR, $e->getMessage());
+            $this->nexiVirtualLogger->logData(\Monolog\Logger::ERROR, $e->getMessage());
             throw new CheckoutException(__($e->getMessage()));
         }
 
@@ -63,7 +60,7 @@ class LoadService
     {
         $order = $this->orderFactory->create()->loadByIncrementId($orderIncrementalId);
         if (!$order->getId()) {
-            $this->nexiLogger->logData(\Monolog\Logger::ERROR, 'Order not found');
+            $this->nexiVirtualLogger->logData(\Monolog\Logger::ERROR, 'Order not found');
             throw new CheckoutException(__('Order not found'));
         }
         return $order;

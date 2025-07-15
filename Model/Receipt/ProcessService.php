@@ -15,7 +15,6 @@ use Magento\Sales\Model\Service\InvoiceService;
 use Nexi\Checkout\Exceptions\CheckoutException;
 use Nexi\Checkout\Exceptions\TransactionSuccessException;
 use Nexi\Checkout\Gateway\Config\Config;
-use Nexi\Checkout\Logger\NexiLogger;
 use Nexi\Checkout\Setup\Patch\Data\InstallNexi;
 use Psr\Log\LoggerInterface;
 
@@ -39,7 +38,6 @@ class ProcessService
      * @param LoadService $loadService
      * @param PaymentTransaction $paymentTransaction
      * @param CancelOrderService $cancelOrderService
-     * @param NexiLogger $nexiLogger
      * @param TransactionRepositoryInterface $transactionRepository
      */
     public function __construct(
@@ -53,7 +51,6 @@ class ProcessService
         private LoadService $loadService,
         private PaymentTransaction $paymentTransaction,
         private CancelOrderService $cancelOrderService,
-        private NexiLogger $nexiLogger,
         private TransactionRepositoryInterface $transactionRepository
     ) {
     }
@@ -258,7 +255,7 @@ class ProcessService
      */
     public function processError($errorMessage)
     {
-        $this->nexiLogger->logData(\Monolog\Logger::ERROR, $errorMessage);
+        $this->nexiVirtualLogger->logData(\Monolog\Logger::ERROR, $errorMessage);
         throw new CheckoutException(__($errorMessage));
     }
 

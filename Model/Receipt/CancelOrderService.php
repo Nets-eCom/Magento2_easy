@@ -9,7 +9,6 @@ use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Exceptions\CheckoutException;
 use Nexi\Checkout\Gateway\Config\Config;
-use Nexi\Checkout\Logger\NexiLogger;
 
 class CancelOrderService
 {
@@ -19,15 +18,13 @@ class CancelOrderService
      * @param ScopeConfigInterface $scopeConfig
      * @param TransportBuilder $transportBuilder
      * @param OrderManagementInterface $orderManagementInterface
-     * @param NexiLogger $logger
      */
     public function __construct(
         private Config $gatewayConfig,
         private UrlInterface $backendUrl,
         private ScopeConfigInterface $scopeConfig,
         private TransportBuilder $transportBuilder,
-        private OrderManagementInterface $orderManagementInterface,
-        private NexiLogger $logger
+        private OrderManagementInterface $orderManagementInterface
     ) {
     }
 

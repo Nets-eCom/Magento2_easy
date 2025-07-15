@@ -6,8 +6,6 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface as TransactionBuilderInterface;
-use Nexi\Checkout\Exceptions\CheckoutException;
-use Nexi\Checkout\Logger\NexiLogger;
 
 class PaymentTransaction
 {
@@ -17,13 +15,11 @@ class PaymentTransaction
      * @param TransactionBuilderInterface $transactionBuilder
      * @param CancelOrderService $cancelOrderService
      * @param OrderRepositoryInterface $orderRepositoryInterface
-     * @param NexiLogger $nexiLogger
      */
     public function __construct(
         private TransactionBuilderInterface $transactionBuilder,
         private CancelOrderService          $cancelOrderService,
-        private OrderRepositoryInterface    $orderRepositoryInterface,
-        private NexiLogger              $nexiLogger
+        private OrderRepositoryInterface    $orderRepositoryInterface
     ) {
     }
 
