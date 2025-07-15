@@ -9,8 +9,6 @@ use Magento\Vault\Model\ResourceModel\PaymentToken;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory;
 use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
-use Nexi\Checkout\Model\Subscription\NextDateCalculator;
-use Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository;
 
 class SubscriptionCreate
 {
@@ -108,7 +106,7 @@ class SubscriptionCreate
         try {
             foreach ($order->getItems() as $item) {
                 $product = $this->productRepositoryInterface->getById($item->getProductId());
-                if (is_object($product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE))){
+                if (is_object($product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE))) {
                     if ($product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE)->getValue() >= 0) {
                         $orderSchedule[] = $product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE)->getValue();
                     }
