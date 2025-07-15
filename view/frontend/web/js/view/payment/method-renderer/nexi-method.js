@@ -73,11 +73,11 @@ define(
 
                 if (this.isActive() && this.isEmbedded()) {
                     this.renderCheckout();
-
-                    quote.paymentMethod.subscribe(function(method) {
-                        this.hideIframeIfNeeded();
-                    }, this);
                 }
+
+                quote.paymentMethod.subscribe(function(method) {
+                    this.hideIframeIfNeeded();
+                }, this);
             },
             isActive: function () {
                 return this.getCode() === this.isChecked();
@@ -95,7 +95,6 @@ define(
                 }
             },
             async renderCheckout() {
-                await renderEmbeddedCheckout.call(this);
                 this.subscribeToEvents();
                 quote.totals.subscribe(async function (quote) {
                     await renderEmbeddedCheckout.call(this);

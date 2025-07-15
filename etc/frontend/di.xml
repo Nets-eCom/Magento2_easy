@@ -10,4 +10,10 @@
             </argument>
         </arguments>
     </type>
+
+    <!-- include selected payment method into payment method data on order page   -->
+    <type name="Magento\Sales\Block\Order\Info">
+        <plugin name="OrderCustomerViewInfo" type="Nexi\Checkout\Plugin\Order\Data\PaymentMethodCustomerOrderInfo" />
+    </type>
+
 </config>
