@@ -11,5 +11,10 @@
                 <value id="dibspayment" type="host">*.dibspayment.eu</value>
             </values>
         </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="dibspayment" type="host">*.dibspayment.eu</value>
+            </values>
+        </policy>
     </policies>
 </csp_whitelist>
