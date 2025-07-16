@@ -213,12 +213,6 @@ class Checkout extends AbstractMethod
         $stateObject->setStatus($orderStatus);
         $stateObject->setIsNotified(false);
 
-        //We need to keep this, to restore after magento "destroy" it
-        //@see Observer\FixOrderStatus
-        $payment
-            ->setDibsEasyCheckoutState($stateObject->getState())
-            ->setDibsEasyCheckoutStatus($stateObject->getStatus());
-
         //due to some bugs, we don't want to use magento authorize, we will "replicate" almost all operations
         //$payment->authorize(true,$order->getBaseTotalDue());
 
@@ -248,15 +242,6 @@ class Checkout extends AbstractMethod
 
         $info = $this->getInfoInstance();
         $payment->setTransactionId($info->getAdditionalInformation('dibs_payment_id'));
-        //    $payment->setIsFraudDetected(false); //bug into magento <=2.1.4 (don't know when/if was fixed) which mark all orders as FraudDetected on multicurrency stores
-
-        //restore OUR state/status (set into initialize), not state set by authorize
-        //@see Magento\Sales\Model\Order\Payment\Operations\AuthorizeOperation
-        //@see Magento\Sales\Model\Order\Payment\State\OrderCommand
-
-        $order
-            ->setState($payment->getDibseasycheckoutState())
-            ->setStatus($payment->getDibseasycheckoutStatus());
 
         $canCapture = $this->canCapture();
         if ($canCapture) {
