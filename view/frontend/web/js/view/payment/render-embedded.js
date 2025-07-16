@@ -42,10 +42,7 @@ define([
            checkoutKey: response.checkoutKey,
            paymentId: response.paymentId,
            containerId: "nexi-checkout-container",
-           language: "en-GB",
-           theme: {
-             buttonRadius: "5px",
-           },
+           language: "en-GB"
          };
          const newDibsCheckout = new Dibs.Checkout(checkoutOptions);
          this.dibsCheckout(newDibsCheckout);
