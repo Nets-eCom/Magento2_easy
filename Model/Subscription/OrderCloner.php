@@ -132,7 +132,7 @@ class OrderCloner
     private function removeNonScheduledProducts($quote): void
     {
         foreach ($quote->getAllVisibleItems() as $quoteItem) {
-            if (!$quoteItem->getProduct()->getRecurringPaymentSchedule()) {
+            if (!$quoteItem->getProduct()->getSubscriptionSchedule()) {
                 $quote->deleteItem($quoteItem);
                 $quote->setTotalsCollectedFlag(false);
             }
