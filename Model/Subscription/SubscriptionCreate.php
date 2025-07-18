@@ -75,7 +75,6 @@ class SubscriptionCreate
             $subscription->setRecurringProfileId(1);
             $subscription->setRepeatCountLeft(self::REPEAT_COUNT_STATIC_VALUE);
             $subscription->setRetryCount(self::REPEAT_COUNT_STATIC_VALUE);
-            $subscription->setSelectedToken(1);
 
             $this->subscriptionRepository->save($subscription);
 

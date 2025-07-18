@@ -153,29 +153,5 @@
                 </item>
             </argument>
         </field>
-
-        <field name="selected_token" formElement="select">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="label" xsi:type="string">Selected card</item>
-                    <item name="visible" xsi:type="boolean">true</item>
-                    <item name="dataType" xsi:type="string">text</item>
-                    <item name="formElement" xsi:type="string">select</item>
-                    <item name="disabled" xsi:type="boolean">false</item>
-                </item>
-            </argument>
-            <settings>
-                <validation>
-                    <rule xsi:type="boolean" name="required-entry">true</rule>
-                </validation>
-            </settings>
-            <formElements>
-                <select>
-                    <settings>
-                        <options class="Nexi\Checkout\Model\OptionSource\SelectedToken" />
-                    </settings>
-                </select>
-            </formElements>
-        </field>
     </fieldset>
 </form>

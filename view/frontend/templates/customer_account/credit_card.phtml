@@ -10,12 +10,6 @@ use Magento\Vault\Block\CardRendererInterface;
 $ccNumberView = $escaper->escapeHtml($block->getNumberLast4Digits());
 ?>
 <tr>
-    <td data-th="<?= $escaper->escapeHtml(__('Select Card')) ?>" class="col select-card">
-        <input type="radio"
-               name="selected_token"
-               value="<?= $escaper->escapeHtml($block->getToken()->getPublicHash()) ?>"
-        />
-    </td>
     <td data-th="<?= $escaper->escapeHtml(__('Card Number')) ?>" class="col card-number">
         <span><?= $escaper->escapeHtml(__('ending')) ?></span> <?= /* @noEscape */ $ccNumberView ?>
     </td>

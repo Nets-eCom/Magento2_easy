@@ -13,7 +13,6 @@ interface SubscriptionInterface
     public const FIELD_END_DATE             = 'end_date';
     public const FIELD_REPEAT_COUNT_LEFT    = 'repeat_count_left';
     public const FIELD_RETRY_COUNT          = 'retry_count';
-    public const FIELD_SELECTED_TOKEN       = 'selected_token';
     public const STATUS_PENDING_PAYMENT     = 'pending_payment';
     public const STATUS_ACTIVE              = 'active';
     public const STATUS_CLOSED              = 'closed';
@@ -80,13 +79,6 @@ interface SubscriptionInterface
      * @return int
      */
     public function getRetryCount(): int;
-
-    /**
-     * Get selected token.
-     *
-     * @return int
-     */
-    public function getSelectedToken(): int;
 
     /**
      * Set ID.
@@ -159,13 +151,4 @@ interface SubscriptionInterface
      * @return $this
      */
     public function setRetryCount(int $count): self;
-
-    /**
-     * Set selected token.
-     *
-     * @param int $tokenId
-     *
-     * @return $this
-     */
-    public function setSelectedToken(int $tokenId): self;
 }

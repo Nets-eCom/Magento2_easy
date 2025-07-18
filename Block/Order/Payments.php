@@ -259,24 +259,6 @@ class Payments extends Template
     }
 
     /**
-     * Get credit card number.
-     *
-     * @param SubscriptionInterface $recurringPayment
-     *
-     * @return string
-     */
-    public function getCardNumber(SubscriptionInterface $recurringPayment): string
-    {
-        $token = $this->paymentTokenRepository->getById($recurringPayment->getSelectedToken());
-        if ($token) {
-            $tokenDetails = $this->serializer->unserialize($token->getTokenDetails());
-            return '**** **** **** ' . $tokenDetails['maskedCC'];
-        }
-
-        return '';
-    }
-
-    /**
      * Get add_card request redirect url.
      *
      * @return string|null

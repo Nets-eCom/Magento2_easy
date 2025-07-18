@@ -31,8 +31,6 @@
                             $block->escapeHtml($recurringPayment->getName()) ?></td>
                         <td data-th="<?= $block->escapeHtml(__('Grand total')) ?>"
                             class="col status"><?= $block->escapeHtml($block->getCurrentCurrency()) . $block->escapeHtml($recurringPayment->getBaseGrandTotal()) ?></td>
-                        <td data-th="<?= $block->escapeHtml(__('Card number')) ?>"
-                            class="col status"><?= $block->escapeHtml($block->getCardNumber($recurringPayment)) ?></td>
                         <td data-th="<?= $block->escapeHtml(__('Actions')) ?>" class="col actions">
                             <div class="customer-subscription-action">
                                 <button

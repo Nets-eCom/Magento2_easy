@@ -55,11 +55,6 @@ class Subscription extends \Magento\Framework\Model\AbstractModel implements Sub
         return $this->getData(SubscriptionInterface::FIELD_RETRY_COUNT);
     }
 
-    public function getSelectedToken(): int
-    {
-        return $this->getData(SubscriptionInterface::FIELD_SELECTED_TOKEN);
-    }
-
     public function setId($entityId): self
     {
         return $this->setData(SubscriptionInterface::FIELD_ENTITY_ID, $entityId);
@@ -98,10 +93,5 @@ class Subscription extends \Magento\Framework\Model\AbstractModel implements Sub
     public function setRetryCount(int $count): SubscriptionInterface
     {
         return $this->setData(SubscriptionInterface::FIELD_RETRY_COUNT, $count);
-    }
-
-    public function setSelectedToken(int $tokenId): SubscriptionInterface
-    {
-        return $this->setData(SubscriptionInterface::FIELD_SELECTED_TOKEN, $tokenId);
     }
 }

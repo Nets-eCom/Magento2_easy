@@ -9,7 +9,6 @@
             "end_date": true,
             "repeat_count_left": true,
             "retry_count": true,
-            "selected_token": true,
             "customer_id": true
         },
         "index": {
@@ -18,7 +17,6 @@
         "constraint": {
             "PRIMARY": true,
             "FK_8D8B31C8FA705FDDF495326B9267594D": true,
-            "NEXI_SUBSCRIPTIONS_SELECTED_TOKEN_VAULT_PAYMENT_TOKEN_ENTITY_ID": true,
             "FK_C52FB2CF53BB599FD4BAF601615C36C6": true,
             "NEXI_SUBSCRIPTIONS_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
             "FK_A3A41A8A2917DB96EB7845EE6B4A46B6": true

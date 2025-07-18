@@ -94,16 +94,6 @@ class Collection extends AbstractCollection implements SubscriptionSearchResultI
             ['order_id']
         );
 
-        $this->join(
-            ['token' => 'vault_payment_token'],
-            'token.entity_id = main_table.selected_token',
-            [
-                'token' => 'public_hash',
-                'token_active' => 'is_active',
-                'token_visible' => 'is_visible'
-            ]
-        );
-
         return $this;
     }
 }
