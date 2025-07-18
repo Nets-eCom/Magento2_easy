@@ -70,6 +70,7 @@
                 <item name="refund" xsi:type="string">NexiCommandRefund</item>
                 <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>
                 <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>
+                <item name="subscription_charge" xsi:type="string">NexiCommandSubscriptionCharge</item>
             </argument>
         </arguments>
     </virtualType>
@@ -129,6 +130,16 @@
             <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\UpdateReferenceRequestBuilder</argument>
             <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandSubscriptionCharge" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\SubscriptionCharge</argument>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </virtualType>
