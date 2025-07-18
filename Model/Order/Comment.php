@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Order;
 
 use Magento\Framework\Exception\CouldNotSaveException;

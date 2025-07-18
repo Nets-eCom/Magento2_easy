@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Plugin\QouteToOrder;
 
 use Magento\Quote\Model\Quote\Payment;

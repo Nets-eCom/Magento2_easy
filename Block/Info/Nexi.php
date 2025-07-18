@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Block\Info;
 
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\Element\Template;
 use Magento\Payment\Block\Info;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -56,12 +59,13 @@ class Nexi extends Info
      * Get payment selected method.
      *
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function getPaymentSelectedMethod(): string
     {
         $order = $this->orderRepository->get($this->getInfo()->getOrder()->getId());
+        $paymentMethod = $order->getPayment()->getAdditionalInformation(self::SELECTED_PATMENT_METHOD);
 
-        return $order->getPayment()->getAdditionalInformation(self::SELECTED_PATMENT_METHOD);
+        return is_string($paymentMethod) ? $paymentMethod : '';
     }
 }
