@@ -40,6 +40,7 @@ class OrderBiller
         private SubscriptionLinkRepositoryInterface $subscriptionLinkRepository,
         private OrderSender                         $orderSender,
         private OrderRepository                     $orderRepository,
+        private \NexiCheckout\Model\Request\BulkChargeSubscription\SubscriptionFactory $subscriptionFactory
     ) {
     }
 
@@ -54,7 +55,11 @@ class OrderBiller
      */
     public function billOrdersById($orderIds)
     {
+        $bulkChargeSubscription = $this->subscriptionFactory->create();
         // TODO: Create with nexi config
+        foreach ($orderIds as $orderId) {
+            $subscription = $this->subscriptionRepository->getByOrderId($orderId);
+        }
     }
 
     /**

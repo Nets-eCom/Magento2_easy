@@ -89,6 +89,16 @@ class SubscriptionChargeRequestBuilder implements BuilderInterface
         );
     }
 
+    private function buildSubscriptionCharge(Order|Quote $order): Payment
+    {
+        return new Payment(
+            order       : $this->buildOrder($order),
+            checkout    : $this->buildCheckout($order),
+            notification: new Notification($this->buildWebhooks()),
+            subscription: $this->getSubscriptionSetup($order),
+        );
+    }
+
     /**
      * Build the Sdk order object
      *
