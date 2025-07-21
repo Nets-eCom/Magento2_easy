@@ -275,4 +275,9 @@
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
+
+    <type name="Magento\Sales\Model\Order\Payment">
+        <plugin name="nexi_disable_invoice_void"
+                type="Nexi\Checkout\Plugin\DisableVoidAfterCapturePlugin" />
+    </type>
 </config>
