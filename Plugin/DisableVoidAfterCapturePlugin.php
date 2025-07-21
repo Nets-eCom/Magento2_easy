@@ -13,10 +13,10 @@ class DisableVoidAfterCapturePlugin
      * Do not allow to void captured orders.
      *
      * @param Payment $subject
-     * @param $result
+     * @param bool $result
      * @return bool
      */
-    public function afterCanVoid(Payment $subject, $result) : bool
+    public function afterCanVoid(Payment $subject, bool $result) : bool
     {
         $order = $subject->getOrder();
         $payment = $order->getPayment();
