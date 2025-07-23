@@ -74,6 +74,11 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
 
         $order->getPayment()->addTransaction($refund);
 
+        if (!$order->canCreditmemo()) {
+            $this->orderRepository->save($order);
+            return;
+        }
+
         if ($this->isFullRefund($webhookData, $order) && $order->canCreditmemo()) {
             $this->processFullRefund($webhookData, $order);
         } else {
