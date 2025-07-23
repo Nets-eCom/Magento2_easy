@@ -98,6 +98,7 @@ class PaymentRefundCompletedTest extends TestCase
 
         // Mock order and payment
         $orderMock      = $this->createMock(Order::class);
+        $orderMock->method('canCreditmemo')->willReturn(true);
         $paymentMock    = $this->getMockBuilder(OrderPaymentInterface::class)
             ->disableOriginalConstructor()
             ->addMethods(['addTransactionCommentsToOrder', 'addTransaction'])
@@ -160,12 +161,6 @@ class PaymentRefundCompletedTest extends TestCase
         $orderMock->expects($this->atLeastOnce())
             ->method('getPayment')
             ->willReturn($paymentMock);
-        $paymentMock->expects($this->once())
-            ->method('addTransactionCommentsToOrder')
-            ->with(
-                $refundTransactionMock,
-                $this->anything()
-            );
 
         // Setup expectations for order save
         $this->orderRepositoryMock->expects($this->once())

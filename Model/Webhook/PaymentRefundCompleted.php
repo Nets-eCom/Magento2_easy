@@ -51,9 +51,10 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
 
         $this->comment->saveComment(
             __(
-                'Webhook Received. Refund created for payment ID: %1, <br/>Refund ID: %2',
+                'Webhook Received. Refund created for payment ID: %1, <br/>Refund ID: %2 <br/>Amount: %3',
                 $webhookData['data']['paymentId'],
-                $webhookData['data']['refundId']
+                $webhookData['data']['refundId'],
+                $webhookData['data']['amount']['amount'] / 100
             ),
             $order
         );
@@ -73,6 +74,11 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
 
         $order->getPayment()->addTransaction($refund);
 
+        if (!$order->canCreditmemo()) {
+            $this->orderRepository->save($order);
+            return;
+        }
+
         if ($this->isFullRefund($webhookData, $order)) {
             $this->processFullRefund($webhookData, $order);
         } else {
@@ -82,11 +88,6 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
                 'You can create a credit memo manually with offline refund if needed.',
             );
         }
-
-        $order->getPayment()->addTransactionCommentsToOrder(
-            $refund,
-            __('Payment refund created, amount: %1', $webhookData['data']['amount']['amount'] / 100)
-        );
 
         $this->orderRepository->save($order);
     }
