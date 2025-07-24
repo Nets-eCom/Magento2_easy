@@ -10,6 +10,7 @@ use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Order\Comment;
+use Nexi\Checkout\Model\SubscriptionManagement;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
@@ -24,9 +25,10 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly WebhookDataLoader $webhookDataLoader,
-        private readonly Builder $transactionBuilder,
-        private readonly Comment $comment
+        private readonly WebhookDataLoader        $webhookDataLoader,
+        private readonly Builder                  $transactionBuilder,
+        private readonly Comment                  $comment,
+        private readonly SubscriptionManagement $subscriptionManagement
     ) {
     }
 
@@ -41,7 +43,8 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      */
     public function processWebhook(array $webhookData): void
     {
-        $paymentId          = $webhookData['data']['paymentId'];
+        $paymentId = $webhookData['data']['paymentId'];
+
         $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         if (!$paymentTransaction) {
             throw new NotFoundException(__('Payment transaction not found for %1.', $paymentId));
@@ -75,6 +78,10 @@ class PaymentReservationCreated implements WebhookProcessorInterface
             $reservationTransaction,
             __('Payment reservation created.')
         );
+
+        if (isset($webhookData['data']['subscriptionId'])) {
+            $this->subscriptionManagement->processSubscription($order, $webhookData['data']['subscriptionId']);
+        }
 
         $this->orderRepository->save($order);
     }

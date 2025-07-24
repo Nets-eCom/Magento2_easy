@@ -136,7 +136,7 @@
 
     <virtualType name="NexiCommandSubscriptionCharge" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
-            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder</argument>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\SubscriptionChargeRequestBuilder</argument>
             <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\SubscriptionCharge</argument>
