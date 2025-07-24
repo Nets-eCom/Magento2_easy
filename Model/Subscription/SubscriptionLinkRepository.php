@@ -13,10 +13,10 @@ use Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory;
 use Nexi\Checkout\Api\Data\SubscriptionLinkInterfaceFactory;
 use Nexi\Checkout\Api\Data\SubscriptionLinkSearchResultInterfaceFactory;
 use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
+use Nexi\Checkout\Model\ResourceModel\Subscription as SubscriptionResource;
 use Nexi\Checkout\Model\ResourceModel\Subscription\SubscriptionLink;
 use Nexi\Checkout\Model\ResourceModel\Subscription\SubscriptionLink\CollectionFactory;
 use Nexi\Checkout\Model\Subscription;
-use Nexi\Checkout\Model\ResourceModel\Subscription as SubscriptionResource;
 
 class SubscriptionLinkRepository implements SubscriptionLinkRepositoryInterface
 {
@@ -148,7 +148,7 @@ class SubscriptionLinkRepository implements SubscriptionLinkRepositoryInterface
      */
     public function getList(
         \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
-    ) : Data\SubscriptionLinkSearchResultInterface {
+    ): Data\SubscriptionLinkSearchResultInterface {
         /** @var Data\RecurringProfileSearchResultInterface $searchResult */
         $searchResult = $this->subscriptionLinkResultFactory->create();
         $this->collectionProcessor->process($searchCriteria, $searchResult);
@@ -182,8 +182,7 @@ class SubscriptionLinkRepository implements SubscriptionLinkRepositoryInterface
             $subscriptionLink->setOrderId($orderId);
             $subscriptionLink->setSubscriptionId($subscriptionId);
             $this->save($subscriptionLink);
-        }
-        catch (CouldNotSaveException $e) {
+        } catch (CouldNotSaveException $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
         }
     }
@@ -208,7 +207,8 @@ class SubscriptionLinkRepository implements SubscriptionLinkRepositoryInterface
     {
         $collection = $this->subscriptionLinkCollectionFactory->create();
         $collection->addFieldToFilter(
-            'subscription_id',['eq' => $subscriptionId]
+            'subscription_id',
+            ['eq' => $subscriptionId]
         );
 
         $subscriptionLinks = [];
@@ -218,6 +218,5 @@ class SubscriptionLinkRepository implements SubscriptionLinkRepositoryInterface
 
         return $subscriptionLinks;
     }
-
 
 }
