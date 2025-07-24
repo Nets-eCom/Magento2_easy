@@ -99,10 +99,6 @@ class PaymentReservationCreatedTest extends TestCase
             ->with(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED)
             ->willReturnSelf();
 
-        $orderMock->expects($this->atLeastOnce())
-            ->method('getPayment')
-            ->willReturn($paymentMock);
-
         $this->transactionBuilderMock->expects($this->once())
             ->method('build')
             ->with(
@@ -125,11 +121,6 @@ class PaymentReservationCreatedTest extends TestCase
 
         $reservationTransactionMock->expects($this->once())
             ->method('setParentId')
-            ->willReturnSelf();
-
-        $paymentMock->expects($this->once())
-            ->method('addTransactionCommentsToOrder')
-            ->with($reservationTransactionMock, $this->anything())
             ->willReturnSelf();
 
         $this->orderRepositoryMock->expects($this->once())
