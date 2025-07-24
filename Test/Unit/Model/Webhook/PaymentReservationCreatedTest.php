@@ -128,6 +128,9 @@ class PaymentReservationCreatedTest extends TestCase
             ->method('setParentId')
             ->willReturnSelf();
 
+        $orderMock->method('getPayment')
+            ->willReturn($paymentMock);
+
         $paymentMock->expects($this->once())
             ->method('formatAmount')
             ->with($rawAmount / 100, true)
