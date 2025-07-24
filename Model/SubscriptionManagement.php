@@ -4,21 +4,25 @@ namespace Nexi\Checkout\Model;
 
 use Exception;
 use Magento\Authorization\Model\UserContextInterface;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\Search\FilterGroupBuilder;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
+use Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory;
 use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
 use Nexi\Checkout\Api\SubscriptionManagementInterface;
 use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
 use Nexi\Checkout\Model\Api\ShowSubscriptionsDataProvider;
+use Nexi\Checkout\Model\Subscription\NextDateCalculator;
 use Nexi\Checkout\Model\Validation\CustomerData;
 use Psr\Log\LoggerInterface;
 
@@ -26,8 +30,12 @@ class SubscriptionManagement implements SubscriptionManagementInterface
 {
     private const STATUS_CLOSED = 'closed';
     private const ORDER_PENDING_STATUS = 'pending';
+    private const SCHEDULED_ATTRIBUTE_CODE = 'subscription_schedule';
+    private const REPEAT_COUNT_STATIC_VALUE = 5;
 
     /**
+     * SubscriptionManagement constructor.
+     *
      * @param UserContextInterface $userContext
      * @param SubscriptionRepositoryInterface $subscriptionRepository
      * @param SubscriptionLinkRepositoryInterface $subscriptionLinkRepository
@@ -40,6 +48,9 @@ class SubscriptionManagement implements SubscriptionManagementInterface
      * @param PaymentTokenRepositoryInterface $paymentTokenRepository
      * @param CustomerData $customerData
      * @param ShowSubscriptionsDataProvider $showSubscriptionsDataProvider
+     * @param ProductRepositoryInterface $productRepository
+     * @param SubscriptionInterfaceFactory $subscriptionInterfaceFactory
+     * @param NextDateCalculator $dateCalculator
      */
     public function __construct(
         private UserContextInterface                $userContext,
@@ -53,8 +64,65 @@ class SubscriptionManagement implements SubscriptionManagementInterface
         private FilterGroupBuilder                  $groupBuilder,
         private PaymentTokenRepositoryInterface     $paymentTokenRepository,
         private CustomerData                        $customerData,
-        private ShowSubscriptionsDataProvider       $showSubscriptionsDataProvider
+        private ShowSubscriptionsDataProvider       $showSubscriptionsDataProvider,
+        private ProductRepositoryInterface          $productRepository,
+        private SubscriptionInterfaceFactory        $subscriptionInterfaceFactory,
+        private NextDateCalculator                  $dateCalculator
     ) {
+    }
+
+    /**
+     * Process a subscription for the given order and Nexi subscription ID.
+     *
+     * @param $order
+     * @param $nexiSubscriptionId
+     * @return SubscriptionInterface
+     * @throws CouldNotSaveException
+     */
+    public function processSubscription($order, $nexiSubscriptionId): SubscriptionInterface
+    {
+        $orderSchedule = $this->getSubscriptionSchedule($order);
+        if (empty($orderSchedule)) {
+            throw new CouldNotSaveException(__('No valid subscription schedule found for order.'));
+        }
+        $subscription = $this->createSubscription($order, $orderSchedule);
+        $order->getPayment()->setAdditionalInformation(
+            'subscription_id',
+            $nexiSubscriptionId
+        );
+
+        $this->subscriptionRepository->save($subscription);
+
+        return $subscription;
+    }
+
+    /**
+     * Create a new subscription based on the order and its schedule.
+     *
+     * @param $order
+     * @param $orderSchedule
+     * @return SubscriptionInterface
+     * @throws CouldNotSaveException
+     */
+    public function createSubscription($order, $orderSchedule): SubscriptionInterface
+    {
+        try {
+            $subscription = $this->subscriptionInterfaceFactory->create();
+            $subscription->setStatus(SubscriptionInterface::STATUS_PENDING_PAYMENT);
+            $subscription->setCustomerId($order->getCustomerId());
+            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(1));
+            $subscription->setRecurringProfileId((int)reset($orderSchedule));
+            $subscription->setRepeatCountLeft(self::REPEAT_COUNT_STATIC_VALUE);
+            $subscription->setRetryCount(self::REPEAT_COUNT_STATIC_VALUE);
+
+            $this->subscriptionRepository->save($subscription);
+
+            $this->subscriptionLinkRepository->linkOrderToSubscription($order->getId(), $subscription->getId());
+
+            return $subscription;
+        } catch (\Exception $exception) {
+            throw new CouldNotSaveException(__($exception->getMessage()));
+        }
     }
 
     /**
@@ -140,6 +208,29 @@ class SubscriptionManagement implements SubscriptionManagementInterface
         }
 
         throw new LocalizedException(__("Customer is not logged in"));
+    }
+
+    /**
+     * @param $order
+     * @return array
+     */
+    public function getSubscriptionSchedule($order): array
+    {
+        $orderSchedule = [];
+        try {
+            foreach ($order->getItems() as $item) {
+                $product = $this->productRepository->getById($item->getProductId());
+                if (is_object($product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE))) {
+                    if ($product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE)->getValue() >= 0) {
+                        $orderSchedule[] = $product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE)->getValue();
+                    }
+                }
+            }
+        } catch (NoSuchEntityException $e) {
+            return [];
+        }
+
+        return $orderSchedule;
     }
 
     /**

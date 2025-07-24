@@ -75,8 +75,6 @@ class PaymentCreated implements WebhookProcessorInterface
             $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
             $this->orderRepository->save($order);
         }
-
-        $this->createSubscription($paymentId);
     }
 
     /**
