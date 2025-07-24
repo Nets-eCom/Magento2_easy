@@ -22,14 +22,12 @@ use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Gateway\StringSanitizer;
-use Nexi\Checkout\Model\Subscription\SubscriptionCreate;
 use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 use Nexi\Checkout\Model\WebhookHandler;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\Address;
 use NexiCheckout\Model\Request\Payment\Consumer;
-use NexiCheckout\Model\Request\Payment\UnscheduledSubscription;
 use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
@@ -60,8 +58,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         private readonly WebhookHandler $webhookHandler,
         private readonly AmountConverter $amountConverter,
         private readonly StringSanitizer $stringSanitizer,
-        private readonly TotalConfigProvider $totalConfigProvider,
-        private readonly SubscriptionCreate $subscriptionCreate
+        private readonly TotalConfigProvider $totalConfigProvider
     ) {
     }
 
@@ -490,7 +487,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     private function getSubscriptionSetup(Quote|Order $order): ?Payment\Subscription {
         if ($this->totalConfigProvider->isSubscriptionsEnabled()) {
-            $this->subscriptionCreate->createSubscription($order);
 
             return new Payment\Subscription(
                 subscriptionId: null,
