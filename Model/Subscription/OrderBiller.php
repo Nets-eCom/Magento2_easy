@@ -4,16 +4,18 @@ namespace Nexi\Checkout\Model\Subscription;
 
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Payment\Gateway\Command\CommandManagerPool;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderRepository;
 use Magento\Sales\Model\Service\InvoiceService;
 use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
 use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
+use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\ResourceModel\Subscription as SubscriptionResource;
 use Nexi\Checkout\Model\ResourceModel\Subscription\CollectionFactory;
 use Nexi\Checkout\Model\Subscription;
 use Psr\Log\LoggerInterface;
-use \Nexi\Checkout\Model\ResourceModel\Subscription\Collection;
+use Nexi\Checkout\Model\ResourceModel\Subscription\Collection;
 
 class OrderBiller
 {
@@ -31,16 +33,16 @@ class OrderBiller
      * @param OrderRepository $orderRepository
      */
     public function __construct(
-        private PaymentCount                        $paymentCount,
-        private CollectionFactory                   $collectionFactory,
-        private NextDateCalculator                  $nextDateCalculator,
-        private SubscriptionRepositoryInterface     $subscriptionRepository,
-        private SubscriptionResource                $subscriptionResource,
-        private LoggerInterface                     $logger,
-        private SubscriptionLinkRepositoryInterface $subscriptionLinkRepository,
-        private OrderSender                         $orderSender,
-        private OrderRepository                     $orderRepository,
-        private \NexiCheckout\Model\Request\BulkChargeSubscription\SubscriptionFactory $subscriptionFactory
+        private PaymentCount                                                           $paymentCount,
+        private CollectionFactory                                                      $collectionFactory,
+        private NextDateCalculator                                                     $nextDateCalculator,
+        private SubscriptionRepositoryInterface                                        $subscriptionRepository,
+        private SubscriptionResource                                                   $subscriptionResource,
+        private LoggerInterface                                                        $logger,
+        private SubscriptionLinkRepositoryInterface                                    $subscriptionLinkRepository,
+        private OrderSender                                                            $orderSender,
+        private OrderRepository                                                        $orderRepository,
+        private CommandManagerPool $commandManagerPool
     ) {
     }
 
@@ -55,10 +57,18 @@ class OrderBiller
      */
     public function billOrdersById($orderIds)
     {
-        $bulkChargeSubscription = $this->subscriptionFactory->create();
-        // TODO: Create with nexi config
         foreach ($orderIds as $orderId) {
-            $subscription = $this->subscriptionRepository->getByOrderId($orderId);
+            $paymentSuccess = $this->chargeSubscription($orderId);
+            if (!$paymentSuccess) {
+                /** @var Subscription $subscription */
+                $this->paymentCount->reduceFailureRetryCount($subscription);
+                continue;
+            }
+            /** @var Collection $subscriptionsToCharge */
+            $subscriptionsToCharge = $this->collectionFactory->create();
+            $subscriptionsToCharge->getBillingCollectionByOrderIds($orderIds);
+            $this->sendOrderConfirmationEmail($subscription->getId());
+            $this->updateNextOrderDate($subscription);
         }
     }
 
@@ -78,41 +88,33 @@ class OrderBiller
     }
 
     /**
-     * Validate token.
-     *
-     * @param Subscription $subscription
-     *
-     * @return bool
-     */
-    private function validateToken($subscription)
-    {
-        $valid = true;
-        if (!$subscription->getData('token_active') || !$subscription->getData('token_visible')) {
-            $this->logger->warning(
-                \__(
-                    'Unable to charge subscription id: %id token is invalid',
-                    ['id' => $subscription->getId()]
-                )
-            );
-            $this->paymentCount->reduceFailureRetryCount($subscription);
-
-            $valid = false;
-        }
-
-        return $valid;
-    }
-
-    /**
      * Create MIT payment request.
      *
-     * @param Subscription $subscription Must include order id of the subscription and public hash of the vault token.
+     * @param string $orderId
      *
      * @return bool
      * For subscription param @see Collection::getBillingCollectionByOrderIds
      */
-    private function createMitPayment($subscription): bool
+    private function chargeSubscription($orderId): bool
     {
-        // TODO: Create with nexi config
+        $paymentSuccess = false;
+        try {
+            $order           = $this->orderRepository->get($orderId);
+            $commandExecutor = $this->commandManagerPool->get(Config::CODE);
+
+            $commandExecutor->executeByCode(
+                commandCode: 'subscription_charge',
+                arguments  : ['order' => $order]
+            );
+        } catch (LocalizedException $e) {
+            $this->logger->error(
+                \__(
+                    'Recurring Payment: Unable to create a charge to customer token error: %error',
+                    ['error' => $e->getMessage()]
+                )
+            );
+        }
+        return $paymentSuccess;
     }
 
     /**
@@ -152,7 +154,7 @@ class OrderBiller
                     'Recurring payment:
                     Cancelling subscription %id, unable to update subscription\'s next order date: %error',
                     [
-                        'id'    => $subscription->getId(),
+                        'id' => $subscription->getId(),
                         'error' => $e->getMessage()
                     ]
                 )

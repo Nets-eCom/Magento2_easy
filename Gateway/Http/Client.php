@@ -10,12 +10,16 @@ use Magento\Payment\Gateway\Http\ClientInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Api\SubscriptionApi;
 use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\BulkChargeSubscription;
 use Psr\Log\LoggerInterface;
 
 class Client implements ClientInterface
 {
     /**
+     * Client constructor.
+     *
      * @param PaymentApiFactory $paymentApiFactory
      * @param Config $config
      * @param LoggerInterface $logger
@@ -38,7 +42,12 @@ class Client implements ClientInterface
     public function placeRequest(TransferInterface $transferObject): array
     {
         try {
-            $paymentApi = $this->getPaymentApi();
+            if (($transferObject->getBody() instanceof BulkChargeSubscription)) {
+                $paymentApi = $this->getSubscriptionApi();
+            } else {
+                $paymentApi = $this->getPaymentApi();
+            }
+
             $nexiMethod = $transferObject->getUri();
             $this->logger->debug(
                 'Nexi Client request: ',
@@ -75,6 +84,19 @@ class Client implements ClientInterface
     public function getPaymentApi(): PaymentApi
     {
         return $this->paymentApiFactory->create(
+            (string)$this->config->getApiKey(),
+            $this->config->isLiveMode()
+        );
+    }
+
+    /**
+     * Get Subscription API Client
+     *
+     * @return SubscriptionApi
+     */
+    public function getSubscriptionApi(): SubscriptionApi
+    {
+        return $this->paymentApiFactory->createSubscriptionApi(
             (string)$this->config->getApiKey(),
             $this->config->isLiveMode()
         );

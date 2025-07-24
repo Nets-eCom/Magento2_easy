@@ -15,6 +15,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector;
 use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
@@ -67,22 +68,31 @@ class SubscriptionChargeRequestBuilder implements BuilderInterface
      * Build the request for subscription charge.
      *
      * @param array $buildSubject
-     * @return Subscription
+     * @return array
      */
-    public function build(array $buildSubject): Subscription
+    public function build(array $buildSubject)
     {
         /** @var Order $paymentSubject */
-        $paymentSubject = $buildSubject['payment']->getPayment()->getOrder();
+        $paymentSubject = $buildSubject['order'];
 
         if (!$paymentSubject) {
-            $paymentSubject = $buildSubject['payment']->getPayment()->getQuote();
+            $paymentSubject = $buildSubject['order']->getPayment()->getQuote();
         }
 
-        return new Subscription(
-            subscriptionId: $paymentSubject->getAdditionalInformation('subscription_id'),
-            externalReference: $paymentSubject->getIncrementId(),
-            order: $this->buildOrder($paymentSubject)
-        );
+        return [
+            'body' => new BulkChargeSubscription(
+                externalBulkChargeId: '123123',
+                notification: new Notification($this->buildWebhooks()),
+                subscriptions: [
+                    new Subscription(
+                        subscriptionId: $paymentSubject->getPayment()->getAdditionalInformation('subscription_id'),
+                        externalReference: $paymentSubject->getIncrementId(),
+                        order: $this->buildOrder($paymentSubject)
+                    )
+                ]
+            ),
+            'nexi_method' => 'bulkChargeSubscription',
+        ];
     }
 
     private function buildSubscriptionCharge(Order|Quote $order): Payment
@@ -267,6 +277,37 @@ class SubscriptionChargeRequestBuilder implements BuilderInterface
     }
 
     /**
+     * Get shipping tax rate from the order
+     *
+     * @param Order|Quote $paymentSubject
+     *
+     * @return float
+     */
+    private function getShippingTaxRate(Order|Quote $paymentSubject)
+    {
+        if ($paymentSubject instanceof Order) {
+            foreach ($paymentSubject->getExtensionAttributes()?->getItemAppliedTaxes() as $tax) {
+                if ($tax->getType() == CommonTaxCollector::ITEM_TYPE_SHIPPING) {
+                    $appliedTaxes = $tax->getAppliedTaxes();
+                    return reset($appliedTaxes)->getPercent();
+                }
+            }
+        }
+        if ($paymentSubject instanceof Quote) {
+            if (!(float)$paymentSubject->getShippingAddress()->getBaseShippingAmount()) {
+                return 0.0;
+            }
+            $shippingTaxRate = $paymentSubject->getShippingAddress()->getBaseShippingTaxAmount() /
+                $paymentSubject->getShippingAddress()->getBaseShippingAmount() * 100;
+            if ($shippingTaxRate) {
+                return $shippingTaxRate;
+            }
+        }
+
+        return 0.0;
+    }
+
+    /**
      * Build payload with order items data based on product type
      *
      * @param Order|Quote $paymentSubject
@@ -314,5 +355,90 @@ class SubscriptionChargeRequestBuilder implements BuilderInterface
         }
 
         return $items;
+    }
+
+    /**
+     * Create the nexi SDK item
+     *
+     * @param array $data
+     * @return Item
+     */
+    private function createFinalItem(array $data): Item
+    {
+        return new Item(
+            name: $data['name'],
+            quantity: $data['quantity'],
+            unit: $data['unit'],
+            unitPrice: $data['unitPrice'],
+            grossTotalAmount: $data['grossTotalAmount'],
+            netTotalAmount: $data['netTotalAmount'],
+            reference: $data['reference'],
+            taxRate: $data['taxRate'],
+            taxAmount: $data['taxAmount'],
+        );
+    }
+
+    /**
+     * Creates base data array for an item including name, SKU, quantity, and unit.
+     *
+     * @param mixed $item
+     * @return array
+     */
+    public function createItemBaseData(mixed $item): array
+    {
+        return [
+            'name' => $item->getName(),
+            'reference' => $item->getSku(),
+            'quantity' => $this->getQuantity($item),
+            'unit' => 'pcs'
+        ];
+    }
+
+    /**
+     * Get children items of a given order item or quote item.
+     *
+     * @param OrderItem|Quote\Item $item
+     *
+     * @return array|Quote\Item\AbstractItem[]
+     */
+    public function getChildren(OrderItem|Quote\Item $item): array
+    {
+        $children = $item instanceof OrderItem ? $item->getChildrenItems() : $item->getChildren();
+
+        return $children;
+    }
+
+    /**
+     * Returns the quantity of the item.
+     *
+     * @param mixed $item
+     *
+     * @return float
+     */
+    public function getQuantity(mixed $item): float
+    {
+        $qtyOrdered = $item instanceof OrderItem ? $item->getQtyOrdered() : $item->getQty();
+
+        return (float)$qtyOrdered;
+    }
+
+    /**
+     * Appends pricing and tax data to the given item data array.
+     *
+     * @param array $data
+     * @param mixed $item
+     * @return array
+     */
+    private function appendPriceData(array $data, mixed $item): array
+    {
+        $data['unitPrice'] = $this->amountConverter->convertToNexiAmount($item->getBasePrice());
+        $data['grossTotalAmount'] = $this->amountConverter->convertToNexiAmount(
+            $item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()
+        );
+        $data['netTotalAmount'] = $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal());
+        $data['taxRate'] = $this->amountConverter->convertToNexiAmount($item->getTaxPercent());
+        $data['taxAmount'] = $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount());
+
+        return $data;
     }
 }
