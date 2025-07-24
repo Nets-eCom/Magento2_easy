@@ -68,16 +68,6 @@ class Initialize implements CommandInterface
         $this->createPayment($paymentData);
 
         $transactionId = $payment->getAdditionalInformation('payment_id');
-        if ($transactionId) {
-            /**
-             * A transaction ID exists, which means the payment might have been captured,
-             * but final confirmation has not been received yet.
-             *
-             * Set the order state to "payment_review" to prevent invoicing
-             * until the payment is verified. Manual review may be required if confirmation fails.
-             */
-            $stateObject->setState(Order::STATE_PAYMENT_REVIEW);
-        }
         $orderTransaction = $this->transactionBuilder->build(
             $transactionId,
             $order,

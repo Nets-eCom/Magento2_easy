@@ -71,6 +71,11 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         $reservationTransaction->setParentTxnId($paymentId);
         $reservationTransaction->setParentId($paymentTransaction->getTransactionId());
 
+        $payment = $order->getPayment();
+        $amount = $webhookData['data']['amount']['amount'] / 100;
+        $amount = $payment->formatAmount($amount, true);
+        $payment->setBaseAmountAuthorized($amount);
+
         $this->orderRepository->save($order);
     }
 
