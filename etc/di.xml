@@ -71,6 +71,7 @@
                 <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>
                 <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>
                 <item name="subscription_charge" xsi:type="string">NexiCommandSubscriptionCharge</item>
+                <item name="void" xsi:type="string">NexiCommandVoid</item>
             </argument>
         </arguments>
     </virtualType>
@@ -140,6 +141,15 @@
             <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\SubscriptionCharge</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandVoid" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\VoidRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </virtualType>
@@ -332,5 +342,10 @@
         <arguments>
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
+    </type>
+
+    <type name="Magento\Sales\Model\Order\Payment">
+        <plugin name="nexi_disable_invoice_void"
+                type="Nexi\Checkout\Plugin\DisableVoidAfterCapturePlugin" />
     </type>
 </config>

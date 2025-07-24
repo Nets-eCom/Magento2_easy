@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Controller\Hpp;
 
 use Magento\Checkout\Model\Session;

@@ -226,11 +226,15 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     private function appendPriceData(array $data, mixed $item): array
     {
-        $data['unitPrice'] = $this->amountConverter->convertToNexiAmount($item->getBasePrice());
-        $data['grossTotalAmount'] = $this->amountConverter->convertToNexiAmount(
-            $item->getBaseRowTotalInclTax() - $item->getBaseDiscountAmount()
+        $data['unitPrice'] = $this->amountConverter->convertToNexiAmount(
+            $item->getBasePrice() - $item->getBaseDiscountAmount() / $this->getQuantity($item)
         );
-        $data['netTotalAmount'] = $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal());
+        $data['grossTotalAmount'] = $this->amountConverter->convertToNexiAmount(
+            $item->getBaseRowTotal() - $item->getBaseDiscountAmount() + $item->getBaseTaxAmount()
+        );
+        $data['netTotalAmount'] = $this->amountConverter->convertToNexiAmount(
+            $item->getBaseRowTotal() - $item->getBaseDiscountAmount()
+        );
         $data['taxRate'] = $this->amountConverter->convertToNexiAmount($item->getTaxPercent());
         $data['taxAmount'] = $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount());
 

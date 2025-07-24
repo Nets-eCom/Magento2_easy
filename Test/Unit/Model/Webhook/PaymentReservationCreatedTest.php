@@ -61,11 +61,16 @@ class PaymentReservationCreatedTest extends TestCase
         $webhookData = [
             'id' => 'webhook-123',
             'data' => [
-                'paymentId' => 'payment-123'
+                'paymentId' => 'payment-123',
+                'amount' => [
+                    'amount' => 1300,
+                ]
             ]
         ];
 
         $paymentId = 'payment-123';
+        $rawAmount = 1300;
+        $formattedAmount = 13.00;
 
         // Mock order and payment
         $orderMock = $this->createMock(Order::class);
@@ -130,6 +135,16 @@ class PaymentReservationCreatedTest extends TestCase
         $paymentMock->expects($this->once())
             ->method('addTransactionCommentsToOrder')
             ->with($reservationTransactionMock, $this->anything())
+            ->willReturnSelf();
+
+        $paymentMock->expects($this->once())
+            ->method('formatAmount')
+            ->with($rawAmount / 100, true)
+            ->willReturn($formattedAmount);
+
+        $paymentMock->expects($this->once())
+            ->method('setBaseAmountAuthorized')
+            ->with($formattedAmount)
             ->willReturnSelf();
 
         $this->orderRepositoryMock->expects($this->once())

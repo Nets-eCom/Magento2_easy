@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Plugin\Order\Data;
 
 use Magento\Sales\Block\Order\Info;

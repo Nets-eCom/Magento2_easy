@@ -94,6 +94,10 @@ class SalesDocumentItemsBuilder
      */
     public function calculateShippingTaxRate(InvoiceInterface|CreditmemoInterface $salesObject): int|float
     {
+        if ($salesObject->getShippingAmount() == 0) {
+            return 0;
+        }
+
         return $salesObject->getShippingTaxAmount() / $salesObject->getShippingAmount() * 100;
     }
 }

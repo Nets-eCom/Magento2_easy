@@ -37,16 +37,13 @@ define([
         }
 
       const response = await initializePayment.call(this)
-       if (response.paymentId) {
-         let checkoutOptions = {
-           checkoutKey: response.checkoutKey,
-           paymentId: response.paymentId,
-           containerId: "nexi-checkout-container",
-           language: "en-GB",
-           theme: {
-             buttonRadius: "5px",
-           },
-         };
+      if (response.paymentId) {
+        let checkoutOptions = {
+          checkoutKey: response.checkoutKey,
+          paymentId: response.paymentId,
+          containerId: "nexi-checkout-container",
+          language: response.locale || "en-GB"
+        };
          const newDibsCheckout = new Dibs.Checkout(checkoutOptions);
          this.dibsCheckout(newDibsCheckout);
 

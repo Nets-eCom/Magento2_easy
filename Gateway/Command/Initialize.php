@@ -78,7 +78,6 @@ class Initialize implements CommandInterface
              */
             $stateObject->setState(Order::STATE_PAYMENT_REVIEW);
         }
-
         $orderTransaction = $this->transactionBuilder->build(
             $transactionId,
             $order,
