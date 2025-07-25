@@ -117,9 +117,5 @@ class PaymentCreated implements WebhookProcessorInterface
                 ],
                 TransactionInterface::TYPE_PAYMENT
             );
-        $order->getPayment()->addTransactionCommentsToOrder(
-            $paymentTransaction,
-            __('Payment created in Nexi Gateway.')
-        );
     }
 }

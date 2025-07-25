@@ -11,6 +11,7 @@ use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Gateway\AmountConverter;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
@@ -23,12 +24,14 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
      * @param Comment $comment
+     * @param AmountConverter $amountConverter
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly WebhookDataLoader $webhookDataLoader,
         private readonly Builder $transactionBuilder,
         private readonly Comment $comment,
+        private readonly AmountConverter $amountConverter,
     ) {
     }
 
@@ -92,15 +95,6 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             )->setParentId($reservationTxn->getTransactionId())
             ->setParentTxnId($reservationTxn->getTxnId());
 
-        $order->getPayment()->addTransactionCommentsToOrder(
-            $chargeTransaction,
-            __(
-                'Payment charge created, amount: %1 %2',
-                $webhookData['data']['amount']['amount'] / 100,
-                $webhookData['data']['amount']['currency']
-            )
-        );
-
         if ($this->isFullCharge($webhookData, $order)) {
             if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
                 throw new Exception('Order status is not authorized.');
@@ -126,7 +120,9 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      */
     private function isFullCharge(array $webhookData, Order $order): bool
     {
-        return (int)($order->getBaseGrandTotal() * 100) === $webhookData['data']['amount']['amount'];
+        $grandTotalConverted = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+
+        return $grandTotalConverted == $webhookData['data']['amount']['amount'];
     }
 
     /**
