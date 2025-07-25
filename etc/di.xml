@@ -268,7 +268,6 @@
     <type name="Nexi\Checkout\Observer\ReactivateQuoteObserver">
         <arguments>
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
-            <argument name="cartRepository" xsi:type="object">Magento\Quote\Api\CartRepositoryInterface</argument>
         </arguments>
     </type>
     <type name="Nexi\Checkout\Model\PaymentValidate">
