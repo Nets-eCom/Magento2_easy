@@ -33,7 +33,7 @@ class CheckoutSession
             return $result;
         }
 
-        $orderId = $this->getData(ReactivateQuoteObserver::NEXI_LAST_ORDER_ID);
+        $orderId = $subject->getData(ReactivateQuoteObserver::NEXI_LAST_ORDER_ID);
         $order   = $this->orderFactory->create();
         if ($orderId) {
             $order->loadByIncrementId($orderId);
