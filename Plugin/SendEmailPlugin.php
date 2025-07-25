@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Plugin;
 
 use Magento\Framework\Event\Observer;

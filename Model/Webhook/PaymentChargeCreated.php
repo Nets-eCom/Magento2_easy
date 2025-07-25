@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Webhook;
 
 use Exception;
-use Magento\Framework\Event\Manager;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
@@ -46,7 +44,11 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     {
         $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
         $this->comment->saveComment(
-            __('Webhook Received. Payment charge created for payment ID: %1', $webhookData['data']['paymentId']),
+            __(
+                'Webhook Received. Payment charge created for payment ID: %1,<br />Charge ID: %2',
+                $webhookData['data']['paymentId'],
+                $webhookData['data']['chargeId']
+            ),
             $order
         );
         $this->processOrder($order, $webhookData);
@@ -72,14 +74,10 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             TransactionInterface::TYPE_AUTH
         );
 
-        if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
-            throw new Exception('Order status is not authorized.');
-        }
-
         $chargeTxnId = $webhookData['data']['chargeId'];
 
         if ($this->webhookDataLoader->getTransactionByPaymentId($chargeTxnId, TransactionInterface::TYPE_CAPTURE)) {
-            throw new AlreadyExistsException(__('Transaction already exists.'));
+            return;
         }
 
         $chargeTransaction = $this->transactionBuilder
@@ -104,6 +102,9 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         );
 
         if ($this->isFullCharge($webhookData, $order)) {
+            if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
+                throw new Exception('Order status is not authorized.');
+            }
             $this->fullInvoice($order, $chargeTxnId);
         } else {
             $order->addCommentToStatusHistory(

@@ -35,6 +35,9 @@ class SalesDocumentItemsBuilder
     {
         $items = [];
         foreach ($salesObject->getAllItems() as $item) {
+            if ((double)$item->getBasePrice() === 0.0) {
+                continue;
+            }
             $items[] = new Item(
                 name            : $this->stringSanitizer->sanitize($item->getName()),
                 quantity        : (float)$item->getQty(),
@@ -89,6 +92,10 @@ class SalesDocumentItemsBuilder
      */
     public function calculateShippingTaxRate(InvoiceInterface|CreditmemoInterface $salesObject): int|float
     {
+        if ($salesObject->getShippingAmount() == 0) {
+            return 0;
+        }
+
         return $salesObject->getShippingTaxAmount() / $salesObject->getShippingAmount() * 100;
     }
 }

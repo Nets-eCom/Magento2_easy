@@ -11,6 +11,7 @@ use Magento\Sales\Api\CreditmemoManagementInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\CreditmemoFactory;
 use Nexi\Checkout\Gateway\AmountConverter;
+use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 
@@ -23,6 +24,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      * @param CreditmemoFactory $creditmemoFactory
      * @param CreditmemoManagementInterface $creditmemoManagement
      * @param AmountConverter $amountConverter
+     * @param Comment $comment
      */
     public function __construct(
         private readonly WebhookDataLoader $webhookDataLoader,
@@ -31,6 +33,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
         private readonly CreditmemoFactory $creditmemoFactory,
         private readonly CreditmemoManagementInterface $creditmemoManagement,
         private readonly AmountConverter $amountConverter,
+        private readonly Comment $comment,
     ) {
     }
 
@@ -46,14 +49,35 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
     {
         $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
 
+        $this->comment->saveComment(
+            __(
+                'Webhook Received. Refund created for payment ID: %1, <br/>Refund ID: %2 <br/>Amount: %3',
+                $webhookData['data']['paymentId'],
+                $webhookData['data']['refundId'],
+                $webhookData['data']['amount']['amount'] / 100
+            ),
+            $order
+        );
+
+        if ($this->findRefundTransaction($webhookData['data']['refundId'])) {
+            return;
+        }
+
         $refund = $this->transactionBuilder
             ->build(
-                $webhookData['id'],
+                $webhookData['data']['refundId'],
                 $order,
                 ['payment_id' => $webhookData['data']['paymentId']],
                 TransactionInterface::TYPE_REFUND
             )->setParentTxnId($webhookData['data']['paymentId'])
             ->setAdditionalInformation('details', json_encode($webhookData));
+
+        $order->getPayment()->addTransaction($refund);
+
+        if (!$order->canCreditmemo()) {
+            $this->orderRepository->save($order);
+            return;
+        }
 
         if ($this->isFullRefund($webhookData, $order)) {
             $this->processFullRefund($webhookData, $order);
@@ -61,14 +85,9 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
             $order->addCommentToStatusHistory(
                 'Partial refund created for order. ' .
                 'Automatic credit memo processing is not supported for partial refunds. ' .
-                'You can create a credit memo manually wit offline refund if needed.',
+                'You can create a credit memo manually with offline refund if needed.',
             );
         }
-
-        $order->getPayment()->addTransactionCommentsToOrder(
-            $refund,
-            __('Payment refund created, amount: %1', $webhookData['data']['amount']['amount'] / 100)
-        );
 
         $this->orderRepository->save($order);
     }
@@ -81,10 +100,10 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @return void
      */
-    public function processFullRefund(array $webhookData, Order $order): void
+    private function processFullRefund(array $webhookData, Order $order): void
     {
         $creditmemo = $this->creditmemoFactory->createByOrder($order);
-        $creditmemo->setTransactionId($webhookData['id']);
+        $creditmemo->setTransactionId($webhookData['data']['refundId']);
 
         $this->creditmemoManagement->refund($creditmemo);
     }
@@ -99,8 +118,20 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      */
     private function isFullRefund(array $webhookData, Order $order): bool
     {
-        $GrandTotal = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+        $grandTotal = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
 
-        return $GrandTotal == $webhookData['data']['amount']['amount'];
+        return $grandTotal === $webhookData['data']['amount']['amount'];
+    }
+
+    /**
+     * Finds and retrieves a refund transaction based on the provided payment ID.
+     *
+     * @param string $id
+     *
+     * @return TransactionInterface|null
+     */
+    private function findRefundTransaction(string $id): ?TransactionInterface
+    {
+        return $this->webhookDataLoader->getTransactionByPaymentId($id, TransactionInterface::TYPE_REFUND);
     }
 }

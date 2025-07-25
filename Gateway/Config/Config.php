@@ -169,4 +169,24 @@ class Config extends MagentoConfig
     {
         return $this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
     }
+
+    /**
+     * Get Nexi logo.
+     *
+     * @return mixed|null
+     */
+    public function getNexiLogo()
+    {
+        return $this->getValue('logo');
+    }
+
+    /**
+     * Get payment method title.
+     *
+     * @return mixed|null
+     */
+    public function getNexiTitle()
+    {
+        return $this->getValue('title');
+    }
 }

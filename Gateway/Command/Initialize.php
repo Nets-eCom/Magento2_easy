@@ -7,7 +7,6 @@ namespace Nexi\Checkout\Gateway\Command;
 use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
-use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -68,7 +67,7 @@ class Initialize implements CommandInterface
 
         $this->createPayment($paymentData);
 
-        $transactionId      = $payment->getAdditionalInformation('payment_id');
+        $transactionId = $payment->getAdditionalInformation('payment_id');
         $orderTransaction = $this->transactionBuilder->build(
             $transactionId,
             $order,
@@ -96,7 +95,7 @@ class Initialize implements CommandInterface
             $commandPool = $this->commandManagerPool->get(Config::CODE);
             $commandPool->executeByCode(
                 commandCode: 'create_payment',
-                arguments  : ['payment' => $payment,]
+                arguments  : ['payment' => $payment]
             );
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);

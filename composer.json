@@ -3,7 +3,7 @@
     "description": "Nets Easy Checkout",
     "require": {
         "php": "^8.0",
-        "nexi-checkout/php-payment-sdk": "^0.4.1",
+        "nexi-checkout/php-payment-sdk": "^0.7.0",
         "magento/framework": ">=102.0.0",
         "ext-curl": "*",
         "giggsey/libphonenumber-for-php-lite": "^9.0.5"
