@@ -7,6 +7,7 @@ namespace Nexi\Checkout\Plugin;
 use Magento\Checkout\Model\GuestPaymentInformationManagement;
 use Magento\Checkout\Model\PaymentInformationManagement;
 use Magento\Checkout\Model\Session;
+use Nexi\Checkout\Model\Language;
 use Psr\Log\LoggerInterface;
 
 class PaymentInformationManagementPlugin
@@ -14,10 +15,12 @@ class PaymentInformationManagementPlugin
     /**
      * @param Session $checkoutSession
      * @param LoggerInterface $logger
+     * @param Language $language
      */
     public function __construct(
         private readonly Session $checkoutSession,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly Language $language
     ) {
     }
 
@@ -45,13 +48,20 @@ class PaymentInformationManagementPlugin
     /**
      * Get the redirect URL from the order payment information.
      *
-     * @return string[]
+     * @return string
      */
     private function getRedirectUrl()
     {
         $order   = $this->checkoutSession->getLastRealOrder();
         $payment = $order->getPayment();
 
-        return $payment->getAdditionalInformation('redirect_url');
+        $redirectUrl = $payment?->getAdditionalInformation('redirect_url');
+
+        if ($redirectUrl && $this->language->getCode() !== Language::DEFAULT_LOCALE) {
+            $separator = strpos((string)$redirectUrl, '?') !== false ? '&' : '?';
+            $redirectUrl .= $separator . 'language=' . $this->language->getCode();
+        }
+
+        return $redirectUrl;
     }
 }
