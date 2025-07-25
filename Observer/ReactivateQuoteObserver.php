@@ -11,7 +11,7 @@ use Nexi\Checkout\Gateway\Config\Config;
 
 class ReactivateQuoteObserver implements ObserverInterface
 {
-    const NEXI_LAST_ORDER_ID = 'nexi_last_order_id';
+    public const NEXI_LAST_ORDER_ID = 'nexi_last_order_id';
 
     /**
      * @param Session $session
