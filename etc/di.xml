@@ -265,7 +265,7 @@
                 type="Nexi\Checkout\Plugin\SendEmailPlugin"
                 sortOrder="100"/>
     </type>
-    <type name="Nexi\Checkout\Observer\CartRevokeObserver">
+    <type name="Nexi\Checkout\Observer\ReactivateQuoteObserver">
         <arguments>
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
@@ -275,7 +275,11 @@
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
-
+    <type name="Magento\Checkout\Model\Session">
+        <plugin name="Nexi_Checkout::checkout_session_plugin"
+                type="Nexi\Checkout\Plugin\CheckoutSession"
+                sortOrder="100"/>
+    </type>
     <type name="Magento\Sales\Model\Order\Payment">
         <plugin name="nexi_disable_invoice_void"
                 type="Nexi\Checkout\Plugin\DisableVoidAfterCapturePlugin" />

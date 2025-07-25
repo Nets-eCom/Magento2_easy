@@ -52,6 +52,6 @@ class PaymentInformationManagementPlugin
         $order   = $this->checkoutSession->getLastRealOrder();
         $payment = $order->getPayment();
 
-        return $payment->getAdditionalInformation('redirect_url');
+        return $payment?->getAdditionalInformation('redirect_url');
     }
 }

@@ -50,7 +50,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         /** @var Order $order */
         $order = $paymentTransaction->getOrder();
         $this->comment->saveComment(
-            __('Webhook Received. payment.reservation.created.v2 with ID: %1', $webhookData['id']),
+            __('Webhook Received. Payment Reservation Created with ID: %1', $webhookData['id']),
             $order
         );
 
@@ -70,11 +70,6 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         $reservationTransaction->setIsClosed(0);
         $reservationTransaction->setParentTxnId($paymentId);
         $reservationTransaction->setParentId($paymentTransaction->getTransactionId());
-
-        $order->getPayment()->addTransactionCommentsToOrder(
-            $reservationTransaction,
-            __('Payment reservation created.')
-        );
 
         $payment = $order->getPayment();
         $amount = $webhookData['data']['amount']['amount'] / 100;
