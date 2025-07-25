@@ -1,16 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Test\Unit\Model\Webhook;
 
-use Exception;
-use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
-use Magento\Sales\Model\Order\Item as OrderItem;
-use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
+use Nexi\Checkout\Gateway\AmountConverter;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
@@ -45,18 +44,25 @@ class PaymentChargeCreatedTest extends TestCase
      */
     private $paymentChargeCreated;
 
+    /**
+     * @var AmountConverter|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $amountConverterMock;
+
     protected function setUp(): void
     {
         $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->transactionBuilderMock = $this->createMock(Builder::class);
         $this->commentMock = $this->createMock(Comment::class);
+        $this->amountConverterMock = $this->createMock(AmountConverter::class);
 
         $this->paymentChargeCreated = new PaymentChargeCreated(
             $this->orderRepositoryMock,
             $this->webhookDataLoaderMock,
             $this->transactionBuilderMock,
-            $this->commentMock
+            $this->commentMock,
+            $this->amountConverterMock
         );
     }
 
@@ -114,11 +120,6 @@ class PaymentChargeCreatedTest extends TestCase
             ->with($this->anything(), TransactionInterface::TYPE_AUTH)
             ->willReturn($reservationTransactionMock);
 
-        // Setup expectations for order status
-        $orderMock->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
-
         // Setup expectations for getTransactionByPaymentId
         $this->webhookDataLoaderMock->expects($this->once())
             ->method('getTransactionByPaymentId')
@@ -152,42 +153,10 @@ class PaymentChargeCreatedTest extends TestCase
             ->with('txn-123')
             ->willReturnSelf();
 
-        // Setup expectations for payment
-        $orderMock->expects($this->atLeastOnce())
-            ->method('getPayment')
-            ->willReturn($paymentMock);
-        $paymentMock->expects($this->once())
-            ->method('addTransactionCommentsToOrder')
-            ->with(
-                $chargeTransactionMock,
-                $this->anything()
-            );
-
         // Setup expectations for isFullCharge
         $orderMock->expects($this->once())
-            ->method('getBaseGrandTotal')
+            ->method('getGrandTotal')
             ->willReturn(100.00);
-
-        // Setup expectations for fullInvoice
-        $orderMock->expects($this->once())
-            ->method('canInvoice')
-            ->willReturn(true);
-        $orderMock->expects($this->once())
-            ->method('prepareInvoice')
-            ->willReturn($invoiceMock);
-        $invoiceMock->expects($this->once())
-            ->method('register')
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('setTransactionId')
-            ->with($chargeId)
-            ->willReturnSelf();
-        $invoiceMock->expects($this->once())
-            ->method('pay')
-            ->willReturnSelf();
-        $orderMock->expects($this->once())
-            ->method('addRelatedObject')
-            ->with($invoiceMock);
 
         // Setup expectations for order state update
         $orderMock->expects($this->once())
