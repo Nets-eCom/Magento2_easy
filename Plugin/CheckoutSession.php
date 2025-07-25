@@ -4,9 +4,19 @@ namespace Nexi\Checkout\Plugin;
 
 use Magento\Checkout\Model\Session;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderFactory;
+use Nexi\Checkout\Observer\ReactivateQuoteObserver;
 
-class CheckoutSession extends Session
+class CheckoutSession
 {
+    /**
+     * @param OrderFactory $orderFactory
+     */
+    public function __construct(
+        private readonly OrderFactory $orderFactory
+    ) {
+    }
+
     /**
      * Get the last order ID from the Nexi payment method.
      *
@@ -23,14 +33,12 @@ class CheckoutSession extends Session
             return $result;
         }
 
-        $orderId = $this->getNexiLastOrderId();
-        if ($this->_order !== null && $orderId == $this->_order->getIncrementId()) {
-            return $this->_order;
-        }
-        $this->_order = $this->_orderFactory->create();
+        $orderId = $this->getData(ReactivateQuoteObserver::NEXI_LAST_ORDER_ID);
+        $order   = $this->orderFactory->create();
         if ($orderId) {
-            $this->_order->loadByIncrementId($orderId);
+            $order->loadByIncrementId($orderId);
         }
-        return $this->_order;
+
+        return $order;
     }
 }

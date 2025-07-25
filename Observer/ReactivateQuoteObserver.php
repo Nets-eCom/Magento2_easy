@@ -11,6 +11,8 @@ use Nexi\Checkout\Gateway\Config\Config;
 
 class ReactivateQuoteObserver implements ObserverInterface
 {
+    const NEXI_LAST_ORDER_ID = 'nexi_last_order_id';
+
     /**
      * @param Session $session
      * @param Config $config
@@ -18,7 +20,6 @@ class ReactivateQuoteObserver implements ObserverInterface
     public function __construct(
         private readonly Session $session,
         private readonly Config $config,
-        private readonly \Magento\Customer\Model\Session $customerSession,
     ) {
     }
 
@@ -50,6 +51,6 @@ class ReactivateQuoteObserver implements ObserverInterface
         $this->session->restoreQuote();
 
         // Set the last real order ID to the session for the success page
-        $this->session->setdata('nexi_last_order_id', $order->getIncrementId());
+        $this->session->setData(self::NEXI_LAST_ORDER_ID, $order->getIncrementId());
     }
 }
