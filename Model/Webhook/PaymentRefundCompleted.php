@@ -64,7 +64,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
             return;
         }
 
-        $this->validateIfChargeTransactionExists($order);
+        $this->validateChargeTransactionExists($order);
 
         $refundTransaction = $this->createRefundTransaction($refundId, $order, $paymentId, $webhookData);
         $order->getPayment()->addTransaction($refundTransaction);
@@ -74,13 +74,13 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
             return;
         }
 
-        if ($this->isFullRefund($webhookData, $order)) {
+        if ($this->canRefund($webhookData, $order)) {
             $this->processFullRefund($webhookData, $order);
         } else {
             $order->addCommentToStatusHistory(
-                'Partial refund created for order. ' .
-                'Automatic credit memo processing is not supported for partial refunds. ' .
-                'You can create a credit memo manually with offline refund if needed.'
+                'Partial refund created for payment. ' .
+                'Automatic credit memo processing is not supported for this case. ' .
+                'You can still create a credit memo manually with offline refund.'
             );
         }
 
@@ -158,11 +158,13 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @return bool
      */
-    private function isFullRefund(array $webhookData, Order $order): bool
+    private function canRefund(array $webhookData, Order $order): bool
     {
-        $grandTotal = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+        $grandTotal    = $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+        $totalRefunded = $order->getTotalRefunded();
 
-        return $grandTotal === $webhookData['data']['amount']['amount'];
+        return $grandTotal === $webhookData['data']['amount']['amount']
+            && 0 === $totalRefunded;
     }
 
     /**
@@ -185,7 +187,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      * @return void
      * @throws NotFoundException
      */
-    private function validateIfChargeTransactionExists(Order $order): void
+    private function validateChargeTransactionExists(Order $order): void
     {
         $this->webhookDataLoader->getTransactionByOrderId(
             (int)$order->getId(),
