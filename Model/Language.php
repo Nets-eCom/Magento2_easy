@@ -17,6 +17,7 @@ class Language
      * List of supported locales for Nexi Checkout
      */
     private const SUPPORTED_LOCALES = [
+        'en-GB', // English (United Kingdom)
         'da-DK', // Danish
         'nl-NL', // Dutch
         'ee-EE', // Estonian
