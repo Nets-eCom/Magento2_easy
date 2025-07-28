@@ -164,7 +164,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
         $totalRefunded = $order->getTotalRefunded();
 
         return $grandTotal === $webhookData['data']['amount']['amount']
-            && 0 === $totalRefunded;
+            && 0 == $totalRefunded;
     }
 
     /**

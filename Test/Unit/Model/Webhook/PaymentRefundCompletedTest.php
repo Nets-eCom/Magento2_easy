@@ -162,6 +162,10 @@ class PaymentRefundCompletedTest extends TestCase
             ->method('getPayment')
             ->willReturn($paymentMock);
 
+        $orderMock->expects($this->atLeastOnce())
+            ->method('getTotalRefunded')
+            ->willReturn(0.00);
+
         // Setup expectations for order save
         $this->orderRepositoryMock->expects($this->once())
             ->method('save')
