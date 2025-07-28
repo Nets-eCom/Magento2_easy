@@ -71,6 +71,7 @@
                 <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>
                 <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>
                 <item name="void" xsi:type="string">NexiCommandVoid</item>
+                <item name="cancel" xsi:type="string">NexiCommandVoid</item>
             </argument>
         </arguments>
     </virtualType>
