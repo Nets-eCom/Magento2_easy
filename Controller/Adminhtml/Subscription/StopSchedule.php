@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-namespace Nexi\Checkout\Controller\Adminhtml\Recurring;
+namespace Nexi\Checkout\Controller\Adminhtml\Subscription;
 
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;

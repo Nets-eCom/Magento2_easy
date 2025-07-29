@@ -1,23 +1,21 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Block\Adminhtml\Subscription\Edit;
 
 use Magento\Backend\Block\Widget\Context;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
 
 abstract class AbstractButton implements ButtonProviderInterface
 {
     /**
-     * Url Builder
-     *
-     * @var \Magento\Framework\UrlInterface
+     * @var UrlInterface
      */
     private $urlBuilder;
 
     /**
-     * Registry
-     *
      * @var RequestInterface
      */
     private $request;
@@ -33,7 +31,7 @@ abstract class AbstractButton implements ButtonProviderInterface
         RequestInterface $request
     ) {
         $this->urlBuilder = $context->getUrlBuilder();
-        $this->request    = $request;
+        $this->request = $request;
     }
 
     /**
@@ -49,10 +47,10 @@ abstract class AbstractButton implements ButtonProviderInterface
     /**
      * Generate url by route and parameters
      *
-     * @param string $route
-     * @param array $params
+     * @param $route
+     * @param $params
      *
-     * @return  string
+     * @return string
      */
     public function getUrl($route = '', $params = [])
     {
@@ -60,7 +58,9 @@ abstract class AbstractButton implements ButtonProviderInterface
     }
 
     /**
-     * @return array
+     * Retrieve button data
+     *
+     * @return array|null
      */
     abstract public function getButtonData();
 }

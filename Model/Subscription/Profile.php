@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Subscription;
 
@@ -17,7 +18,7 @@ class Profile extends AbstractModel implements SubscriptionProfileInterface
      */
     public function getId()
     {
-        return $this->getData('profile_id');
+        return $this->getData(SubscriptionProfileInterface::FIELD_PROFILE_ID);
     }
 
     /**
@@ -25,7 +26,7 @@ class Profile extends AbstractModel implements SubscriptionProfileInterface
      */
     public function getName()
     {
-        return $this->getData('name');
+        return $this->getData(SubscriptionProfileInterface::FIELD_NAME);
     }
 
     /**
@@ -33,7 +34,7 @@ class Profile extends AbstractModel implements SubscriptionProfileInterface
      */
     public function getDescription()
     {
-        return $this->getData('description');
+        return $this->getData(SubscriptionProfileInterface::FIELD_DESCRIPTION);
     }
 
     /**
@@ -41,26 +42,26 @@ class Profile extends AbstractModel implements SubscriptionProfileInterface
      */
     public function getSchedule()
     {
-        return $this->getData('schedule');
+        return $this->getData(SubscriptionProfileInterface::FIELD_SCHEDULE);
     }
 
     public function setId($profileId): self
     {
-        return $this->setData('profile_id', $profileId);
+        return $this->setData(SubscriptionProfileInterface::FIELD_PROFILE_ID, $profileId);
     }
 
     public function setName($name): self
     {
-        return $this->setData('name', $name);
+        return $this->setData(SubscriptionProfileInterface::FIELD_NAME, $name);
     }
 
     public function setDescription($description): self
     {
-        return $this->setData('description', $description);
+        return $this->setData(SubscriptionProfileInterface::FIELD_DESCRIPTION, $description);
     }
 
     public function setSchedule($schedule): self
     {
-        return $this->setData('schedule', $schedule);
+        return $this->setData(SubscriptionProfileInterface::FIELD_SCHEDULE, $schedule);
     }
 }

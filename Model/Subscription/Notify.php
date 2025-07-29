@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Subscription;
 
@@ -33,7 +34,7 @@ class Notify
     /**
      * @var SubscriptionLinkRepository
      */
-    private                 $subscriptionLinkRepository;
+    private $subscriptionLinkRepository;
 
     private LoggerInterface $logger;
 

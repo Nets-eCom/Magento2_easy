@@ -1,7 +1,7 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Receipt;
-
 
 class ProcessPayment
 {

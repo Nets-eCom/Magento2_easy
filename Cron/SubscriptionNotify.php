@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Cron;
 
@@ -14,7 +15,7 @@ class SubscriptionNotify
      * @param TotalConfigProvider $totalConfigProvider
      */
     public function __construct(
-        private Notify $notify,
+        private Notify              $notify,
         private TotalConfigProvider $totalConfigProvider
     ) {
     }

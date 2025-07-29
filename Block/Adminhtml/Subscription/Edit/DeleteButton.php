@@ -1,9 +1,15 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Block\Adminhtml\Subscription\Edit;
 
 class DeleteButton extends AbstractButton
 {
+    /**
+     * Get button data for the delete button.
+     *
+     * @return array
+     */
     public function getButtonData()
     {
         $data = [];
@@ -22,6 +28,8 @@ class DeleteButton extends AbstractButton
     }
 
     /**
+     * Generates and returns the URL for the delete action, using the current object's identifier.
+     *
      * @return string
      */
     public function getDeleteUrl()

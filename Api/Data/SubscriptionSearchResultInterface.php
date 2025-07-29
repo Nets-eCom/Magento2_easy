@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Api\Data;
 
 interface SubscriptionSearchResultInterface extends \Magento\Framework\Api\SearchResultsInterface
