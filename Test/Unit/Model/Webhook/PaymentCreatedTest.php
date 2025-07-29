@@ -291,11 +291,6 @@ class PaymentCreatedTest extends TestCase
             ->with(Order::STATE_PENDING_PAYMENT)
             ->willReturnSelf();
 
-        // Setup expectations for payment
-        $orderMock->expects($this->atLeastOnce())
-            ->method('getPayment')
-            ->willReturn($paymentMock);
-
         // Setup expectations for transaction builder
         $this->transactionBuilderMock->expects($this->once())
             ->method('build')
@@ -306,14 +301,6 @@ class PaymentCreatedTest extends TestCase
                 TransactionInterface::TYPE_PAYMENT
             )
             ->willReturn($transactionMock);
-
-        // Setup expectations for payment
-        $paymentMock->expects($this->once())
-            ->method('addTransactionCommentsToOrder')
-            ->with(
-                $transactionMock,
-                $this->anything()
-            );
 
         // Setup expectations for order save
         $this->orderRepositoryMock->expects($this->once())

@@ -72,6 +72,7 @@
                 <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>
                 <item name="subscription_charge" xsi:type="string">NexiCommandSubscriptionCharge</item>
                 <item name="void" xsi:type="string">NexiCommandVoid</item>
+                <item name="cancel" xsi:type="string">NexiCommandVoid</item>
             </argument>
         </arguments>
     </virtualType>
@@ -333,7 +334,7 @@
         <plugin name="store_subscription"
                 type="Nexi\Checkout\Plugin\Api\OrderRepository" />
     </type>
-    <type name="Nexi\Checkout\Observer\CartRevokeObserver">
+    <type name="Nexi\Checkout\Observer\ReactivateQuoteObserver">
         <arguments>
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
@@ -343,7 +344,11 @@
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
     </type>
-
+    <type name="Magento\Checkout\Model\Session">
+        <plugin name="Nexi_Checkout::checkout_session_plugin"
+                type="Nexi\Checkout\Plugin\CheckoutSession"
+                sortOrder="100"/>
+    </type>
     <type name="Magento\Sales\Model\Order\Payment">
         <plugin name="nexi_disable_invoice_void"
                 type="Nexi\Checkout\Plugin\DisableVoidAfterCapturePlugin" />

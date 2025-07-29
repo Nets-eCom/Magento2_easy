@@ -43,8 +43,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      */
     public function processWebhook(array $webhookData): void
     {
-        $paymentId = $webhookData['data']['paymentId'];
-
+        $paymentId          = $webhookData['data']['paymentId'];
         $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         if (!$paymentTransaction) {
             throw new NotFoundException(__('Payment transaction not found for %1.', $paymentId));
@@ -53,7 +52,11 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         /** @var Order $order */
         $order = $paymentTransaction->getOrder();
         $this->comment->saveComment(
-            __('Webhook Received. payment.reservation.created.v2 with ID: %1', $webhookData['id']),
+            __(
+                'Webhook Received. Payment reservation created for payment ID: %1 <br/> Reservation Id: %2',
+                $paymentId,
+                $webhookData['id']
+            ),
             $order
         );
 

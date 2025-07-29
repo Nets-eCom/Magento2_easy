@@ -131,8 +131,6 @@ define(
                     currentDibsCheckout.on(
                         "pay-initialized",
                         async function (paymentId) {
-                            fullScreenLoader.startLoader();
-
                             try {
                                 const validationResult = await validatePayment.call(this);
                                 if (!validationResult.success) {
