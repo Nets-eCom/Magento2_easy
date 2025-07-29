@@ -259,16 +259,6 @@ class Payments extends Template
     }
 
     /**
-     * Get add_card request redirect url.
-     *
-     * @return string|null
-     */
-    public function getAddCardRedirectUrl(): ?string
-    {
-        return $this->config->getAddCardRedirectUrl();
-    }
-
-    /**
      * Get previous error.
      *
      * @return Phrase|null

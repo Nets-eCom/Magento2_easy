@@ -15,7 +15,6 @@
                     <th scope="col" class="col date"><?= $block->escapeHtml(__('Status')) ?></th>
                     <th scope="col" class="col total"><?= $block->escapeHtml(__('Recurring payment profile')) ?></th>
                     <th scope="col" class="col actions"><?= $block->escapeHtml(__('Grand total')) ?></th>
-                    <th scope="col" class="col actions"><?= $block->escapeHtml(__('Card number')) ?></th>
                     <th scope="col" class="col actions"><?= $block->escapeHtml(__('Action')) ?></th>
                 </tr>
                 </thead>
@@ -50,11 +49,6 @@
                                         <a href="<?= $block->escapeHtml($block->getStopPaymentUrl($recurringPayment)) ?>"
                                            class="action order stop-payment-confirmation">
                                             <span><?= $block->escapeHtml(__('Stop subscription')) ?></span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="action show-payment-methods" data-id="<?= $recurringPayment->getId() ?>">
-                                            <span><?= $block->escapeHtml(__('Change card')) ?></span
                                         </a>
                                     </li>
                                 </ul>
@@ -109,29 +103,13 @@
             </table>
         </div>
     <?php endif; ?>
-
-    <div id="payment-methods-modal">
-        <form method="post" action="<?= $block->getUrl('nexi/card/change') ?>">
-            <input type="hidden" name="subscription_id" id="payment-change-card-subscription-input">
-            <?= $block->getChildHtml('vault.cards.list') ?>
-
-            <button type="button" id="add-new-payment-card">
-                <span><?= $block->escapeHtml(__('Add Card')) ?></span>
-            </button>
-
-            <button type="submit">
-                <span><?= $block->escapeHtml(__('Change Card')) ?></span>
-            </button>
-        </form>
-    </div>
 <?php endif; ?>
 
 <script type="text/x-magento-init">
     {
         "*": {
             "Nexi_Checkout/js/payments": {
-                "previousError": "<?= /* @noEscape */ $block->getPreviousError() ?>",
-                "addCardRedirectUrl": "<?= /* @noEscape */ $block->getAddCardRedirectUrl() ?>"
+                "previousError": "<?= /* @noEscape */ $block->getPreviousError() ?>"
             }
         }
     }
