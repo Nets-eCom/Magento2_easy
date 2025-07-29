@@ -183,7 +183,6 @@ class SubscriptionManagement implements SubscriptionManagementInterface
             if ($this->userContext->getUserId()) {
                 $this->filterByCustomer($searchCriteria);
                 $subscriptionCollection = $this->subscriptionRepository->getList($searchCriteria)->getItems();
-                $paymentToken = $this->showSubscriptionsDataProvider->getMaskedCCById($searchCriteria);
 
                 foreach ($subscriptionCollection as $subscription) {
                     $orderData = $this->showSubscriptionsDataProvider
