@@ -93,7 +93,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @param string $paymentId
      * @param string $refundId
-     * @param float $refundAmount
+     * @param string $refundAmount
      * @param string $currency
      *
      * @return Phrase
