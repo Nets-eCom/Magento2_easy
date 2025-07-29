@@ -80,6 +80,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         );
 
         if (isset($webhookData['data']['subscriptionId'])) {
+            $order->getPayment()->setAdditionalInformation('subscription_id', $webhookData['data']['subscriptionId']);
             $this->subscriptionManagement->processSubscription($order, $webhookData['data']['subscriptionId']);
         }
 

@@ -85,7 +85,7 @@ class SubscriptionManagement implements SubscriptionManagementInterface
         if (empty($orderSchedule)) {
             throw new CouldNotSaveException(__('No valid subscription schedule found for order.'));
         }
-        $subscription = $this->createSubscription($order, $orderSchedule);
+        $subscription = $this->createSubscription($order, $orderSchedule, $nexiSubscriptionId);
         $order->getPayment()->setAdditionalInformation(
             'subscription_id',
             $nexiSubscriptionId
@@ -99,21 +99,23 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     /**
      * Create a new subscription based on the order and its schedule.
      *
-     * @param $order
-     * @param $orderSchedule
+     * @param Order $order
+     * @param array $orderSchedule
+     * @param string $subscriptionId
      * @return SubscriptionInterface
      * @throws CouldNotSaveException
      */
-    public function createSubscription($order, $orderSchedule): SubscriptionInterface
+    public function createSubscription(Order $order, array $orderSchedule, string $subscriptionId): SubscriptionInterface
     {
         try {
             $subscription = $this->subscriptionInterfaceFactory->create();
-            $subscription->setStatus(SubscriptionInterface::STATUS_PENDING_PAYMENT);
+            $subscription->setStatus(SubscriptionInterface::STATUS_ACTIVE);
             $subscription->setCustomerId($order->getCustomerId());
             $subscription->setNextOrderDate($this->dateCalculator->getNextDate(reset($orderSchedule)));
             $subscription->setRecurringProfileId((int)reset($orderSchedule));
             $subscription->setRepeatCountLeft(self::REPEAT_COUNT_STATIC_VALUE);
             $subscription->setRetryCount(self::REPEAT_COUNT_STATIC_VALUE);
+            $subscription->setNexiSubscriptionId($subscriptionId);
 
             $this->subscriptionRepository->save($subscription);
 

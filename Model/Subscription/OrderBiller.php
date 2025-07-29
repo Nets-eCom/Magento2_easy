@@ -61,6 +61,7 @@ class OrderBiller
             $paymentSuccess = $this->chargeSubscription($orderId);
             if (!$paymentSuccess) {
                 /** @var Subscription $subscription */
+                $subscription = $this->subscriptionLinkRepository->getSubscriptionFromOrderId($orderId);
                 $this->paymentCount->reduceFailureRetryCount($subscription);
                 continue;
             }

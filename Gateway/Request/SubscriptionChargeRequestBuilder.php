@@ -53,14 +53,15 @@ class SubscriptionChargeRequestBuilder implements BuilderInterface
      * @param TotalConfigProvider $totalConfigProvider
      */
     public function __construct(
-        private readonly UrlInterface                        $url,
-        private readonly Config                              $config,
-        private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
-        private readonly EncryptorInterface                  $encryptor,
-        private readonly WebhookHandler                      $webhookHandler,
-        private readonly AmountConverter                     $amountConverter,
-        private readonly StringSanitizer                     $stringSanitizer,
-        private readonly TotalConfigProvider                 $totalConfigProvider,
+        private readonly UrlInterface                                                 $url,
+        private readonly Config                                                       $config,
+        private readonly CountryInformationAcquirerInterface                          $countryInformationAcquirer,
+        private readonly EncryptorInterface                                           $encryptor,
+        private readonly WebhookHandler                                               $webhookHandler,
+        private readonly AmountConverter                                              $amountConverter,
+        private readonly StringSanitizer                                              $stringSanitizer,
+        private readonly TotalConfigProvider                                          $totalConfigProvider,
+        private readonly \Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository $subscriptionLinkRepository
     ) {
     }
 
@@ -79,13 +80,15 @@ class SubscriptionChargeRequestBuilder implements BuilderInterface
             $paymentSubject = $buildSubject['order']->getPayment()->getQuote();
         }
 
+        $subscription = $this->subscriptionLinkRepository->getSubscriptionFromOrderId($paymentSubject->getId());
+
         return [
             'body' => new BulkChargeSubscription(
-                externalBulkChargeId: '123123',
+                externalBulkChargeId: '12312312312123123',
                 notification: new Notification($this->buildWebhooks()),
                 subscriptions: [
                     new Subscription(
-                        subscriptionId: $paymentSubject->getPayment()->getAdditionalInformation('subscription_id'),
+                        subscriptionId: $subscription->getNexiSubscriptionId(),
                         externalReference: $paymentSubject->getIncrementId(),
                         order: $this->buildOrder($paymentSubject)
                     )

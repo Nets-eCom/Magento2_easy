@@ -85,7 +85,7 @@ class NextDateCalculator
 
         switch ($schedule['unit']) {
             case 'D':
-                $nextDate = $carbonDate->addDays($schedule['interval']);
+                $nextDate = $carbonDate->addDays((int)$schedule['interval']);
                 break;
             case 'W':
                 $nextDate = $carbonDate->addWeeks($schedule['interval']);

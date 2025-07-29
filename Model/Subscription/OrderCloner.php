@@ -121,6 +121,7 @@ class OrderCloner
         $quote = $this->getQuote($oldOrder);
 
         $this->removeNonScheduledProducts($quote);
+        $quote->getPayment()->setAdditionalInformation('subscription_id', $oldOrder->getPayment()->getAdditionalInformation('subscription_id'));
 
         return $this->quoteManagement->submit($quote);
     }
