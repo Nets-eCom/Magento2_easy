@@ -11,7 +11,6 @@
         <item name="buttons" xsi:type="array">
             <item name="back" xsi:type="string">Nexi\Checkout\Block\Adminhtml\Subscription\Edit\BackButton</item>
             <item name="delete" xsi:type="string">\Nexi\Checkout\Block\Adminhtml\Subscription\Edit\DeleteButton</item>
-            <item name="reset" xsi:type="string">Nexi\Checkout\Block\Adminhtml\Subscription\Edit\ResetButton</item>
             <item name="save" xsi:type="string">Nexi\Checkout\Block\Adminhtml\Subscription\Edit\SaveButton</item>
         </item>
 
