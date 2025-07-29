@@ -54,7 +54,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
                 $webhookData['data']['paymentId'],
                 $webhookData['data']['chargeId'],
                 number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                $webhookData['data']['amount']['currencyCode']
+                $webhookData['data']['amount']['currency']
             ),
             $order
         );

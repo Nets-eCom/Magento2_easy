@@ -72,7 +72,7 @@ class PaymentCreated implements WebhookProcessorInterface
                 . '<br />Amount: %3 %4.',
                 $webhookData['data']['paymentId'],
                 number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                $webhookData['data']['amount']['currencyCode']
+                $webhookData['data']['amount']['currency']
             ),
             $order
         );
