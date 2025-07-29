@@ -110,11 +110,12 @@ class OrderBiller
         } catch (LocalizedException $e) {
             $this->logger->error(
                 \__(
-                    'Recurring Payment: Unable to create a charge to customer token error: %error',
+                    "Subscription: Unable to create a charge to customer's subscription error: %error",
                     ['error' => $e->getMessage()]
                 )
             );
         }
+
         return $paymentSuccess;
     }
 
