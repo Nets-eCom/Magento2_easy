@@ -153,10 +153,10 @@ class Subscription extends AbstractDb
             'so.entity_id = sublink.order_id',
             []
         );
-        $select->where(
-            'so.grand_total != 0
-            AND so.grand_total = so.total_paid'
-        );
+//        $select->where(
+//            'so.grand_total != 0
+//            AND so.grand_total = so.total_paid'
+//        );
 
         return $connection->fetchPairs($select);
     }
