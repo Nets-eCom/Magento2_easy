@@ -16,7 +16,7 @@
                 comment="How many times a new recurring order will be made"/>
         <column xsi:type="smallint" name="retry_count" unsigned="true" nullable="true" identity="false"
                 comment="How many times payment will be attempted on this order if failure occurred."/>
-        <column xsi:type="int" name="nexi_subscription_id" unsigned="true" nullable="true" identity="false"
+        <column xsi:type="varchar" name="nexi_subscription_id" nullable="true" length="32"
                 comment="Nexi Subscription ID."/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">

@@ -13,6 +13,7 @@ interface SubscriptionInterface
     public const FIELD_END_DATE             = 'end_date';
     public const FIELD_REPEAT_COUNT_LEFT    = 'repeat_count_left';
     public const FIELD_RETRY_COUNT          = 'retry_count';
+    public const FIELD_NEXI_SUBSCRIPTION_ID          = 'nexi_subscription_id';
     public const STATUS_PENDING_PAYMENT     = 'pending_payment';
     public const STATUS_ACTIVE              = 'active';
     public const STATUS_CLOSED              = 'closed';
@@ -79,6 +80,13 @@ interface SubscriptionInterface
      * @return int
      */
     public function getRetryCount(): int;
+
+    /**
+     * Get nexi subscription ID.
+     *
+     * @return string
+     */
+    public function getNexiSubscriptionId(): string;
 
     /**
      * Set ID.
@@ -151,4 +159,13 @@ interface SubscriptionInterface
      * @return $this
      */
     public function setRetryCount(int $count): self;
+
+    /**
+     * Set nexi subscription ID.
+     *
+     * @param string $subscriptionId
+     *
+     * @return self
+     */
+    public function setNexiSubscriptionId(string $subscriptionId): self;
 }

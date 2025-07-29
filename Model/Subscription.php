@@ -55,6 +55,11 @@ class Subscription extends \Magento\Framework\Model\AbstractModel implements Sub
         return $this->getData(SubscriptionInterface::FIELD_RETRY_COUNT);
     }
 
+    public function getNexiSubscriptionId(): string
+    {
+        return $this->getData(SubscriptionInterface::FIELD_NEXI_SUBSCRIPTION_ID);
+    }
+
     public function setId($entityId): self
     {
         return $this->setData(SubscriptionInterface::FIELD_ENTITY_ID, $entityId);
@@ -93,5 +98,10 @@ class Subscription extends \Magento\Framework\Model\AbstractModel implements Sub
     public function setRetryCount(int $count): SubscriptionInterface
     {
         return $this->setData(SubscriptionInterface::FIELD_RETRY_COUNT, $count);
+    }
+
+    public function setNexiSubscriptionId(string $subscriptionId): SubscriptionInterface
+    {
+        return $this->setData(SubscriptionInterface::FIELD_NEXI_SUBSCRIPTION_ID, $subscriptionId);
     }
 }
