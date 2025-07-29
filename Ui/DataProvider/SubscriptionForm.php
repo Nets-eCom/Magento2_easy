@@ -102,7 +102,7 @@ class SubscriptionForm extends AbstractDataProvider
         $subscription->setData(
             'profile_link',
             $this->createLinkData(
-                'subscription/profile/edit',
+                'subscriptions/profile/edit',
                 ['id' => $subscription->getRecurringProfileId()],
                 $subscription->getProfileName()
             )

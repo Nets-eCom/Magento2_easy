@@ -39,7 +39,7 @@ class Subscription extends \Magento\Framework\Model\AbstractModel implements Sub
 
     public function getRecurringProfileId(): int
     {
-        return $this->getData(SubscriptionInterface::FIELD_RECURRING_PROFILE_ID);
+        return (int)$this->getData(SubscriptionInterface::FIELD_RECURRING_PROFILE_ID);
     }
 
     public function getUpdatedAt(): string
