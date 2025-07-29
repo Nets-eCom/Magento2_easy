@@ -19,6 +19,12 @@ class Edit implements HttpGetActionInterface
     ) {
     }
 
+    /**
+     * Executes the initialization of the page and sets the page title
+     * based on the presence of the 'id' parameter in the request.
+     *
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $page  = $this->initialize();
@@ -30,6 +36,11 @@ class Edit implements HttpGetActionInterface
         return $page;
     }
 
+    /**
+     * Initializes and configures the result page with the active menu.
+     *
+     * @return \Magento\Framework\View\Result\Page
+     */
     private function initialize()
     {
         $resultPage = $this->context->getResultFactory()->create(

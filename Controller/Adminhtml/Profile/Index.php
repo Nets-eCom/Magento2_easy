@@ -19,6 +19,11 @@ class Index implements HttpGetActionInterface
     ) {
     }
 
+    /**
+     * Executes the method to initialize a page and set the title to "Subscription Profiles".
+     *
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $page = $this->initialize();
@@ -27,6 +32,11 @@ class Index implements HttpGetActionInterface
         return $page;
     }
 
+    /**
+     * Initializes the result page and sets the active menu for sales orders.
+     *
+     * @return \Magento\Framework\View\Result\Page
+     */
     private function initialize()
     {
         $resultPage = $this->context->getResultFactory()

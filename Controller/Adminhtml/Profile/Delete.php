@@ -23,6 +23,8 @@ class Delete implements HttpPostActionInterface
     }
 
     /**
+     * Execute the action to delete a subscription profile.
+     *
      * @return ResponseInterface|ResultInterface
      */
     public function execute()

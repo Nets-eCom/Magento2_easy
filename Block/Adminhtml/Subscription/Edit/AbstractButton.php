@@ -45,10 +45,10 @@ abstract class AbstractButton implements ButtonProviderInterface
     }
 
     /**
-     * Generate url by route and parameters
+     * Get the URL for the given route and parameters.
      *
-     * @param $route
-     * @param $params
+     * @param string $route
+     * @param array $params
      *
      * @return string
      */

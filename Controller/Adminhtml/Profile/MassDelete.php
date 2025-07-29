@@ -21,6 +21,8 @@ class MassDelete implements HttpPostActionInterface
      *
      * @param Context $context
      * @param Filter $filter
+     * @param CollectionFactory $factory
+     * @param Profile $profileResource
      */
     public function __construct(
         private Context           $context,
@@ -31,7 +33,10 @@ class MassDelete implements HttpPostActionInterface
     }
 
     /**
-     * @return ResponseInterface|ResultInterface
+     * Executes the mass delete operation by deleting items from the collection.
+     *
+     * @return Redirect|ResponseInterface|ResultInterface
+     *
      * @throws LocalizedException
      */
     public function execute()
