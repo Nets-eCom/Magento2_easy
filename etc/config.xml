@@ -14,8 +14,6 @@
                 <can_initialize>1</can_initialize>
                 <can_capture>1</can_capture>
                 <can_capture_partial>1</can_capture_partial>
-                <can_authorize_vault>1</can_authorize_vault>
-                <can_capture_vault>1</can_capture_vault>
                 <can_use_internal>1</can_use_internal>
                 <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
                 <can_refund>1</can_refund>

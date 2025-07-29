@@ -13,7 +13,6 @@ use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Theme\Block\Html\Pager;
-use Magento\Vault\Model\PaymentTokenRepository;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
@@ -34,7 +33,6 @@ class Payments extends Template
      * @param CollectionFactory $subscriptionCollectionFactory
      * @param Session $customerSession
      * @param StoreManagerInterface $storeManager
-     * @param PaymentTokenRepository $paymentTokenRepository
      * @param SerializerInterface $serializer
      * @param TotalConfigProvider $totalConfigProvider
      * @param Config $config
@@ -46,7 +44,6 @@ class Payments extends Template
         private readonly CollectionFactory      $subscriptionCollectionFactory,
         private readonly Session                $customerSession,
         private readonly StoreManagerInterface  $storeManager,
-        private readonly PaymentTokenRepository $paymentTokenRepository,
         private readonly SerializerInterface    $serializer,
         private readonly TotalConfigProvider    $totalConfigProvider,
         private readonly Config                 $config,

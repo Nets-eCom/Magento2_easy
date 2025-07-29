@@ -2,32 +2,31 @@
 
 namespace Nexi\Checkout\Model;
 
+use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Api\Data\SubscriptionSearchResultInterface;
+use Nexi\Checkout\Api\Data\SubscriptionSearchResultInterfaceFactory;
 use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
 
 class SubscriptionRepository implements SubscriptionRepositoryInterface
 {
-    private ResourceModel\Subscription $subscriptionResource;
-    private SubscriptionFactory $subscriptionFactory;
-    private \Nexi\Checkout\Api\Data\SubscriptionSearchResultInterfaceFactory $searchResultFactory;
-    private \Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface $collectionProcessor;
-
+    /**
+     * SubscriptionRepository constructor.
+     *
+     * @param ResourceModel\Subscription $subscriptionResource
+     * @param SubscriptionFactory $subscriptionFactory
+     * @param SubscriptionSearchResultInterfaceFactory $searchResultFactory
+     * @param CollectionProcessorInterface $collectionProcessor
+     */
     public function __construct(
-        \Nexi\Checkout\Model\ResourceModel\Subscription $subscriptionResource,
-        SubscriptionFactory $subscriptionFactory,
-        \Nexi\Checkout\Api\Data\SubscriptionSearchResultInterfaceFactory $searchResultFactory,
-        \Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface $collectionProcessor
+        private \Nexi\Checkout\Model\ResourceModel\Subscription $subscriptionResource,
+        private SubscriptionFactory $subscriptionFactory,
+        private SubscriptionSearchResultInterfaceFactory $searchResultFactory,
+        private CollectionProcessorInterface $collectionProcessor
     ) {
-        $this->subscriptionResource = $subscriptionResource;
-        $this->subscriptionFactory = $subscriptionFactory;
-        $this->searchResultFactory = $searchResultFactory;
-        $this->collectionProcessor = $collectionProcessor;
     }
 
     public function get(int $entityId): SubscriptionInterface

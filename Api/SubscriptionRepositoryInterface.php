@@ -6,7 +6,6 @@ use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Api\Data\SubscriptionSearchResultInterface;
 

@@ -15,7 +15,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory;
 use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
@@ -45,7 +44,6 @@ class SubscriptionManagement implements SubscriptionManagementInterface
      * @param LoggerInterface $logger
      * @param FilterBuilder $filterBuilder
      * @param FilterGroupBuilder $groupBuilder
-     * @param PaymentTokenRepositoryInterface $paymentTokenRepository
      * @param CustomerData $customerData
      * @param ShowSubscriptionsDataProvider $showSubscriptionsDataProvider
      * @param ProductRepositoryInterface $productRepository
@@ -62,7 +60,6 @@ class SubscriptionManagement implements SubscriptionManagementInterface
         private LoggerInterface                     $logger,
         private FilterBuilder                       $filterBuilder,
         private FilterGroupBuilder                  $groupBuilder,
-        private PaymentTokenRepositoryInterface     $paymentTokenRepository,
         private CustomerData                        $customerData,
         private ShowSubscriptionsDataProvider       $showSubscriptionsDataProvider,
         private ProductRepositoryInterface          $productRepository,
@@ -264,12 +261,10 @@ class SubscriptionManagement implements SubscriptionManagementInterface
      */
     public function changeSubscription(string $subscriptionId, string $cardId): bool
     {
-        $paymentToken = $this->paymentTokenRepository->getById((int)$cardId);
         $subscription = $this->subscriptionRepository->get((int)$subscriptionId);
 
         $customerId = (int)$this->userContext->getUserId();
 
-        $this->customerData->validateTokensCustomer($paymentToken, $customerId);
         $this->customerData->validateSubscriptionsCustomer($subscription, $customerId);
 
         return $this->save($subscription);
