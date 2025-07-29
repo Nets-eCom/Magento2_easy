@@ -20,32 +20,6 @@ use Psr\Log\LoggerInterface;
 class PaymentInitialize implements PaymentInitializeInterface
 {
     /**
-     * List of supported locales for Nexi Checkout
-     */
-    private const SUPPORTED_LOCALES = [
-        'en-GB', // English (default)
-        'da-DK', // Danish
-        'nl-NL', // Dutch
-        'ee-EE', // Estonian
-        'fi-FI', // Finnish
-        'fr-FR', // French
-        'de-DE', // German
-        'it-IT', // Italian
-        'lv-LV', // Latvian
-        'lt-LT', // Lithuanian
-        'nb-NO', // Norwegian
-        'pl-PL', // Polish
-        'es-ES', // Spanish
-        'sk-SK', // Slovak
-        'sv-SE', // Swedish
-    ];
-
-    /**
-     * Default locale to use if the current locale is not supported
-     */
-    private const DEFAULT_LOCALE = 'en-GB';
-
-    /**
      * @param CartRepositoryInterface $quoteRepository
      * @param Initialize $initializeCommand
      * @param PaymentDataObjectFactoryInterface $paymentDataObjectFactory
@@ -54,6 +28,7 @@ class PaymentInitialize implements PaymentInitializeInterface
      * @param LoggerInterface $logger
      * @param Session $checkoutSession
      * @param ResolverInterface $localeResolver
+     * @param Language $language
      */
     public function __construct(
         private readonly CartRepositoryInterface           $quoteRepository,
@@ -63,19 +38,9 @@ class PaymentInitialize implements PaymentInitializeInterface
         private readonly Config                            $config,
         private readonly LoggerInterface                   $logger,
         private readonly Session                           $checkoutSession,
-        private readonly ResolverInterface                 $localeResolver
+        private readonly ResolverInterface                 $localeResolver,
+        private readonly Language                          $language
     ) {
-    }
-
-    /**
-     * Validates if the given locale is supported by Nexi Checkout
-     *
-     * @param string $locale The locale to validate
-     * @return string The validated locale or the default locale if not supported
-     */
-    private function validateLocale(string $locale): string
-    {
-        return in_array($locale, self::SUPPORTED_LOCALES) ? $locale : self::DEFAULT_LOCALE;
     }
 
     /**
@@ -104,19 +69,19 @@ class PaymentInitialize implements PaymentInitializeInterface
             $quote->setData('no_payment_update_flag', true);
             $this->quoteRepository->save($quote);
 
+            $locale = $this->language->getCode();
+
             return match ($integrationType) {
                 IntegrationTypeEnum::HostedPaymentPage->name => json_encode(
                     [
-                        'redirect_url' => $createPayment['body']['payment']['checkout']['url']
+                        'redirect_url' => $createPayment['body']['payment']['checkout']['url'] . '&language=' . $locale
                     ]
                 ),
                 IntegrationTypeEnum::EmbeddedCheckout->name => json_encode(
                     [
                         'paymentId'   => $paymentMethod->getAdditionalInformation('payment_id'),
                         'checkoutKey' => $this->config->getCheckoutKey(),
-                        'locale'      => $this->validateLocale(
-                            str_replace('_', '-', $this->localeResolver->getLocale())
-                        )
+                        'locale'      => $locale,
                     ]
                 ),
                 default => throw new InputException(__('Invalid integration type'))
