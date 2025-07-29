@@ -49,17 +49,17 @@ class Save implements HttpPostActionInterface
                 Please make sure the quote lifetime is longer than your profile's payment schedule in days.
                 See Stores->Configuration->Sales->Checkout->Shopping Cart->Quote Lifetime (days)"
             );
-            $resultRedirect->setPath('subscription/profile/edit', ['id' => $id]);
+            $resultRedirect->setPath('subscriptions/profile/edit', ['id' => $id]);
             return $resultRedirect;
         }
 
         $profile->setData($data);
         try {
             $this->profileRepo->save($profile);
-            $resultRedirect->setPath('subscription/profile');
+            $resultRedirect->setPath('subscriptions/profile');
         } catch (CouldNotSaveException $e) {
             $this->context->getMessageManager()->addErrorMessage($e->getMessage());
-            $resultRedirect->setPath('subscription/profile/edit', ['id' => $id]);
+            $resultRedirect->setPath('subscriptions/profile/edit', ['id' => $id]);
         }
 
         return $resultRedirect;
