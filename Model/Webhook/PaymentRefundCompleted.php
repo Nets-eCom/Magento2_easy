@@ -101,7 +101,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
     private function createRefundComment(
         string $paymentId,
         string $refundId,
-        float $refundAmount,
+        string $refundAmount,
         string $currency
     ): Phrase {
         return __(

@@ -56,18 +56,18 @@ class PaymentCreatedTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->transactionBuilderMock = $this->createMock(Builder::class);
-        $this->orderCollectionFactoryMock = $this->getMockForNonExistingClass(
+        $this->transactionBuilderMock       = $this->createMock(Builder::class);
+        $this->orderCollectionFactoryMock   = $this->getMockForNonExistingClass(
             'Magento\Reports\Model\ResourceModel\Order\CollectionFactory',
             ['create']
         );
-        $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
-        $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
+        $this->webhookDataLoaderMock        = $this->createMock(WebhookDataLoader::class);
+        $this->orderRepositoryMock          = $this->createMock(OrderRepositoryInterface::class);
         $this->paymentCollectionFactoryMock = $this->getMockForNonExistingClass(
             'Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory',
             ['create']
         );
-        $this->commentMock = $this->createMock(Comment::class);
+        $this->commentMock                  = $this->createMock(Comment::class);
 
         $this->paymentCreated = new PaymentCreated(
             $this->transactionBuilderMock,
@@ -84,6 +84,7 @@ class PaymentCreatedTest extends TestCase
      *
      * @param string $className The name of the class to mock
      * @param array|null $methods The methods to mock (optional)
+     *
      * @return \PHPUnit\Framework\MockObject\MockObject The mock object
      */
     private function getMockForNonExistingClass(string $className, array $methods = null)
@@ -104,20 +105,24 @@ class PaymentCreatedTest extends TestCase
     public function testProcessWebhookWithOrderReferenceAndExistingTransaction(): void
     {
         $webhookData = [
-            'id' => 'webhook-123',
+            'id'   => 'webhook-123',
             'data' => [
                 'paymentId' => 'payment-123',
-                'order' => [
+                'order'     => [
                     'reference' => '000000123'
+                ],
+                'amount'    => [
+                    'amount'   => 10000,
+                    'currency' => 'EUR'
                 ]
             ]
         ];
 
-        $paymentId = 'payment-123';
+        $paymentId      = 'payment-123';
         $orderReference = '000000123';
 
         // Mock order and collection
-        $orderMock = $this->createMock(Order::class);
+        $orderMock           = $this->createMock(Order::class);
         $orderCollectionMock = $this->createMock(OrderCollection::class);
 
         // Mock transaction
@@ -145,7 +150,13 @@ class PaymentCreatedTest extends TestCase
         $this->commentMock->expects($this->once())
             ->method('saveComment')
             ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %3 %4.',
+                    $webhookData['data']['paymentId'],
+                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['amount']['currency']
+                ),
                 $orderMock
             );
 
@@ -156,20 +167,24 @@ class PaymentCreatedTest extends TestCase
     public function testProcessWebhookWithoutOrderReferenceAndExistingTransaction(): void
     {
         $webhookData = [
-            'id' => 'webhook-123',
+            'id'   => 'webhook-123',
             'data' => [
-                'paymentId' => 'payment-123'
+                'paymentId' => 'payment-123',
+                'amount'    => [
+                    'amount'   => 10000,
+                    'currency' => 'EUR'
+                ]
             ]
         ];
 
-        $paymentId = 'payment-123';
+        $paymentId      = 'payment-123';
         $orderReference = '000000123';
 
         // Mock order, payment, and collections
-        $orderMock = $this->createMock(Order::class);
-        $paymentMock = $this->createMock(Payment::class);
+        $orderMock             = $this->createMock(Order::class);
+        $paymentMock           = $this->createMock(Payment::class);
         $paymentCollectionMock = $this->createMock(PaymentCollection::class);
-        $orderCollectionMock = $this->createMock(OrderCollection::class);
+        $orderCollectionMock   = $this->createMock(OrderCollection::class);
 
         // Mock transaction
         $transactionMock = $this->createMock(TransactionInterface::class);
@@ -218,7 +233,13 @@ class PaymentCreatedTest extends TestCase
         $this->commentMock->expects($this->once())
             ->method('saveComment')
             ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %3 %4.',
+                    $webhookData['data']['paymentId'],
+                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['amount']['currency']
+                ),
                 $orderMock
             );
 
@@ -229,21 +250,25 @@ class PaymentCreatedTest extends TestCase
     public function testProcessWebhookWithOrderReferenceAndNoTransaction(): void
     {
         $webhookData = [
-            'id' => 'webhook-123',
+            'id'   => 'webhook-123',
             'data' => [
                 'paymentId' => 'payment-123',
-                'order' => [
+                'order'     => [
                     'reference' => '000000123'
+                ],
+                'amount'    => [
+                    'amount'   => 10000,
+                    'currency' => 'EUR'
                 ]
             ]
         ];
 
-        $paymentId = 'payment-123';
+        $paymentId      = 'payment-123';
         $orderReference = '000000123';
 
         // Mock order, payment, and collections
-        $orderMock = $this->createMock(Order::class);
-        $paymentMock = $this->getMockBuilder(OrderPaymentInterface::class)
+        $orderMock           = $this->createMock(Order::class);
+        $paymentMock         = $this->getMockBuilder(OrderPaymentInterface::class)
             ->disableOriginalConstructor()
             ->addMethods(['addTransactionCommentsToOrder'])
             ->getMockForAbstractClass();
@@ -274,7 +299,13 @@ class PaymentCreatedTest extends TestCase
         $this->commentMock->expects($this->once())
             ->method('saveComment')
             ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %3 %4.',
+                    $webhookData['data']['paymentId'],
+                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['amount']['currency']
+                ),
                 $orderMock
             );
 
@@ -314,20 +345,24 @@ class PaymentCreatedTest extends TestCase
     public function testProcessWebhookWithNoTransactionAndOrderNotInNewState(): void
     {
         $webhookData = [
-            'id' => 'webhook-123',
+            'id'   => 'webhook-123',
             'data' => [
                 'paymentId' => 'payment-123',
-                'order' => [
+                'order'     => [
                     'reference' => '000000123'
+                ],
+                'amount'    => [
+                    'amount'   => 10000,
+                    'currency' => 'EUR'
                 ]
             ]
         ];
 
-        $paymentId = 'payment-123';
+        $paymentId      = 'payment-123';
         $orderReference = '000000123';
 
         // Mock order and collection
-        $orderMock = $this->createMock(Order::class);
+        $orderMock           = $this->createMock(Order::class);
         $orderCollectionMock = $this->createMock(OrderCollection::class);
 
         // Setup expectations for getTransactionByPaymentId
@@ -352,7 +387,13 @@ class PaymentCreatedTest extends TestCase
         $this->commentMock->expects($this->once())
             ->method('saveComment')
             ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %3 %4.',
+                    $webhookData['data']['paymentId'],
+                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['amount']['currency']
+                ),
                 $orderMock
             );
 
