@@ -8,6 +8,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Nexi\Checkout\Model\Order\Comment;
+use Nexi\Checkout\Model\SubscriptionManagement;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentReservationCreated;
@@ -47,12 +48,14 @@ class PaymentReservationCreatedTest extends TestCase
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->transactionBuilderMock = $this->createMock(Builder::class);
         $this->commentMock = $this->createMock(Comment::class);
+        $this->subscriptionManagement = $this->createMock(SubscriptionManagement::class);
 
         $this->paymentReservationCreated = new PaymentReservationCreated(
             $this->orderRepositoryMock,
             $this->webhookDataLoaderMock,
             $this->transactionBuilderMock,
-            $this->commentMock
+            $this->commentMock,
+            $this->subscriptionManagement
         );
     }
 

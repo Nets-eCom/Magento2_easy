@@ -93,7 +93,7 @@ class ClientTest extends TestCase
         $transferMock->expects($this->once())
             ->method('getUri')
             ->willReturn('retrievePayment');
-        $transferMock->expects($this->exactly(3))
+        $transferMock->expects($this->exactly(4))
             ->method('getBody')
             ->willReturn('test-body');
 
