@@ -69,7 +69,7 @@ class PaymentCreated implements WebhookProcessorInterface
         $this->comment->saveComment(
             __(
                 'Webhook Received. Payment created for Payment ID: %1'
-                . '<br />Amount: %3 %4.',
+                . '<br />Amount: %2 %3.',
                 $webhookData['data']['paymentId'],
                 number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
                 $webhookData['data']['amount']['currency']
