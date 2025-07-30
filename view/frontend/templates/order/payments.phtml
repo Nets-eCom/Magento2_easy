@@ -2,8 +2,8 @@
 
 /** @var \Nexi\Checkout\Block\Order\Payments $block */
 ?>
-<?php $recurringPayments = $block->getRecurringPayments() ?>
-<?php $closedSubscriptions = $block->getClosedSubscriptions() ?>
+<?php $recurringPayments = $block->getCustomerSubscriptions() ?>
+<?php $closedSubscriptions = $block->getCustomerClosedSubscriptions() ?>
 <?php if ($block->isSubscriptionsEnabled()): ?>
     <?php if ($recurringPayments && count($recurringPayments)): ?>
         <div class="table-wrapper subscriptions-history">

@@ -30,9 +30,6 @@ class SubscriptionCharge implements HandlerInterface
         if ($paymentResult instanceof PaymentResult) {
             $payment->setAdditionalInformation('payment_id', $paymentResult->getPaymentId());
 
-            if ($paymentResult instanceof PaymentWithHostedCheckoutResult) {
-                $payment->setAdditionalInformation('redirect_url', $paymentResult->getHostedPaymentPageUrl());
-            }
         }
     }
 }

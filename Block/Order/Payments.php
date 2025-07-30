@@ -14,6 +14,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Theme\Block\Html\Pager;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Model\Subscription\CustomerSubscriptionProvider;
 use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 use Nexi\Checkout\Model\ResourceModel\Subscription\Collection as SubscriptionCollection;
 use Nexi\Checkout\Model\ResourceModel\Subscription\CollectionFactory;
@@ -35,6 +36,7 @@ class Payments extends Template
      * @param TotalConfigProvider $totalConfigProvider
      * @param Config $config
      * @param CheckoutSession $checkoutSession
+     * @param CustomerSubscriptionProvider $customerSubscriptionProvider
      * @param array $data
      */
     public function __construct(
@@ -45,6 +47,7 @@ class Payments extends Template
         private readonly TotalConfigProvider   $totalConfigProvider,
         private readonly Config                $config,
         private readonly CheckoutSession       $checkoutSession,
+        private readonly CustomerSubscriptionProvider $customerSubscriptionProvider,
         array                                  $data = []
     ) {
         parent::__construct($context, $data);
@@ -76,31 +79,9 @@ class Payments extends Template
      *
      * @return SubscriptionCollection
      */
-    public function getRecurringPayments()
+    public function getCustomerSubscriptions()
     {
-        $collection = $this->subscriptionCollectionFactory->create();
-        $collection->addFieldToFilter('main_table.status', ['active', 'pending_payment', 'failed', 'rescheduled']);
-
-        $collection->getSelect()->join(
-            ['link' => 'nexi_subscription_link'],
-            'main_table.entity_id = link.subscription_id'
-        )->columns('MAX(link.order_id) as max_id')
-            ->group('link.subscription_id');
-
-        $collection->getSelect()->join(
-            ['so' => 'sales_order'],
-            'link.order_id = so.entity_id',
-            ['main_table.entity_id', 'so.base_grand_total']
-        );
-        $collection->getSelect()->join(
-            ['rpp' => 'recurring_payment_profiles'],
-            'main_table.recurring_profile_id = rpp.profile_id',
-            'name'
-        );
-
-        $collection->addFieldToFilter('main_table.customer_id', $this->customerSession->getId());
-
-        return $collection;
+        return $this->customerSubscriptionProvider->getCustomerSubscriptions();
     }
 
     /**
@@ -108,31 +89,9 @@ class Payments extends Template
      *
      * @return SubscriptionCollection
      */
-    public function getClosedSubscriptions()
+    public function getCustomerClosedSubscriptions()
     {
-        $collection = $this->subscriptionCollectionFactory->create();
-        $collection->addFieldToFilter('main_table.status', SubscriptionInterface::STATUS_CLOSED);
-
-        $collection->getSelect()->join(
-            ['link' => 'nexi_subscription_link'],
-            'main_table.entity_id = link.subscription_id'
-        )->columns('MAX(link.order_id) as max_id')
-            ->group('link.subscription_id');
-
-        $collection->getSelect()->join(
-            ['so' => 'sales_order'],
-            'link.order_id = so.entity_id',
-            ['main_table.entity_id', 'so.base_grand_total']
-        );
-        $collection->getSelect()->join(
-            ['rpp' => 'recurring_payment_profiles'],
-            'main_table.recurring_profile_id = rpp.profile_id',
-            'name'
-        );
-
-        $collection->addFieldToFilter('main_table.customer_id', $this->customerSession->getId());
-
-        return $collection;
+        return $this->customerSubscriptionProvider->getCustomerClosedSubscriptions();
     }
 
     /**
@@ -145,6 +104,7 @@ class Payments extends Template
     public function validateDate($date): string
     {
         $newDate = explode(' ', $date);
+
         return $newDate[0];
     }
 

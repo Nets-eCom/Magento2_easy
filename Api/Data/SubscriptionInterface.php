@@ -5,21 +5,21 @@ namespace Nexi\Checkout\Api\Data;
 
 interface SubscriptionInterface
 {
-    public const FIELD_ENTITY_ID            = 'entity_id';
-    public const FIELD_CUSTOMER_ID          = 'customer_id';
-    public const FIELD_STATUS               = 'status';
-    public const FIELD_NEXT_ORDER_DATE      = 'next_order_date';
+    public const FIELD_ENTITY_ID = 'entity_id';
+    public const FIELD_CUSTOMER_ID = 'customer_id';
+    public const FIELD_STATUS = 'status';
+    public const FIELD_NEXT_ORDER_DATE = 'next_order_date';
     public const FIELD_RECURRING_PROFILE_ID = 'recurring_profile_id';
-    public const FIELD_UPDATED_AT           = 'updated_at';
-    public const FIELD_END_DATE             = 'end_date';
-    public const FIELD_REPEAT_COUNT_LEFT    = 'repeat_count_left';
-    public const FIELD_RETRY_COUNT          = 'retry_count';
-    public const FIELD_NEXI_SUBSCRIPTION_ID          = 'nexi_subscription_id';
-    public const STATUS_PENDING_PAYMENT     = 'pending_payment';
-    public const STATUS_ACTIVE              = 'active';
-    public const STATUS_CLOSED              = 'closed';
-    public const STATUS_FAILED              = 'failed';
-    public const STATUS_RESCHEDULED         = 'rescheduled';
+    public const FIELD_UPDATED_AT = 'updated_at';
+    public const FIELD_END_DATE = 'end_date';
+    public const FIELD_REPEAT_COUNT_LEFT = 'repeat_count_left';
+    public const FIELD_RETRY_COUNT = 'retry_count';
+    public const FIELD_NEXI_SUBSCRIPTION_ID = 'nexi_subscription_id';
+    public const STATUS_PENDING_PAYMENT = 'pending_payment';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_CLOSED = 'closed';
+    public const STATUS_FAILED = 'failed';
+    public const STATUS_RESCHEDULED = 'rescheduled';
 
     public const CLONEABLE_STATUSES = [
         self::STATUS_ACTIVE,
