@@ -64,6 +64,7 @@ class PaymentReservationCreatedTest extends TestCase
                 'paymentId' => 'payment-123',
                 'amount' => [
                     'amount' => 1300,
+                    'currency' => 'EUR'
                 ]
             ]
         ];
