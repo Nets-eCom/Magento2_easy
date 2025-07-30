@@ -15,23 +15,9 @@ use Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface;
 class NextDateCalculator
 {
     /**
-     * @var SubscriptionProfileRepositoryInterface $profileRepo
-     */
-    private $profileRepo;
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
-
-    /**
      * @var SubscriptionProfileInterface[]
      */
     private $profiles = [];
-
-    /**
-     * @var ScopeConfigInterface
-     */
-    private ScopeConfigInterface $scopeConfig;
 
     /**
      * @var bool
@@ -39,18 +25,17 @@ class NextDateCalculator
     private bool $forceWeekdays;
 
     /**
-     * @param SubscriptionProfileRepositoryInterface $profileRepository
+     * NextDateCalculator constructor.
+     *
+     * @param SubscriptionProfileRepositoryInterface $profileRepositoryInterface
      * @param SerializerInterface $serializer
      * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        SubscriptionProfileRepositoryInterface $profileRepository,
-        SerializerInterface                    $serializer,
-        ScopeConfigInterface                   $scopeConfig
+        private SubscriptionProfileRepositoryInterface $profileRepositoryInterface,
+        private SerializerInterface                    $serializer,
+        private ScopeConfigInterface                   $scopeConfig
     ) {
-        $this->profileRepo = $profileRepository;
-        $this->serializer  = $serializer;
-        $this->scopeConfig = $scopeConfig;
     }
 
     /**
@@ -119,7 +104,7 @@ class NextDateCalculator
     private function getProfileById($profileId): SubscriptionProfileInterface
     {
         if (!isset($this->profiles[$profileId])) {
-            $this->profiles[$profileId] = $this->profileRepo->get($profileId);
+            $this->profiles[$profileId] = $this->profileRepositoryInterface->get($profileId);
         }
 
         return $this->profiles[$profileId];

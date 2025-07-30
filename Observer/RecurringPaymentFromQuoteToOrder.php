@@ -4,8 +4,6 @@ namespace Nexi\Checkout\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Nexi\Checkout\Api\Data\SubscriptionInterface;
-use Nexi\Checkout\Model\Subscription;
 use Nexi\Checkout\Model\Subscription\QuoteToOrder;
 
 class RecurringPaymentFromQuoteToOrder implements ObserverInterface

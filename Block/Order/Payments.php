@@ -131,6 +131,7 @@ class Payments extends Template
             case 'closed':
                 return __('Closed');
         }
+
         return '';
     }
 
@@ -177,6 +178,7 @@ class Payments extends Template
             $this->setChild('pager', $pager);
             $this->getRecurringPayments()->load();
         }
+
         return $this;
     }
 

@@ -97,8 +97,9 @@ class TotalConfigProvider implements ConfigProviderInterface
      */
     private function getSubscriptionSubtotal(): float
     {
+        $recurringSubtotal = 0.00;
         if ($this->isSubscriptionsEnabled()) {
-            $recurringSubtotal = 0.00;
+
             if ($this->isSubscriptionScheduled()) {
                 $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
                 foreach ($quoteItems as $item) {
@@ -112,6 +113,6 @@ class TotalConfigProvider implements ConfigProviderInterface
             return $recurringSubtotal;
         }
 
-        return 0.00;
+        return $recurringSubtotal;
     }
 }

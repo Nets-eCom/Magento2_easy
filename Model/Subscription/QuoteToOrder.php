@@ -3,38 +3,33 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Subscription;
 
+use Magento\Sales\Api\Data\OrderExtensionFactory;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
-use Nexi\Checkout\Observer\RecurringPaymentFromQuoteToOrder;
+use Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory;
 
 class QuoteToOrder
 {
     /**
-     * @var \Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory
+     * QuoteToOrder constructor.
+     *
+     * @param SubscriptionInterfaceFactory $subscriptionFactory
+     * @param NextDateCalculator $dateCalculator
+     * @param OrderExtensionFactory $extensionFactory
      */
-    private $subscriptionFactory;
-
-    /**
-     * @var \Magento\Sales\Api\Data\OrderExtensionFactory
-     */
-    private $orderExtensionFactory;
-    /**
-     * @var NextDateCalculator
-     */
-    private $dateCalculator;
-
     public function __construct(
-        \Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory $subscriptionFactory,
-        \Nexi\Checkout\Model\Subscription\NextDateCalculator $dateCalculator,
-        \Magento\Sales\Api\Data\OrderExtensionFactory      $extensionFactory
+        private SubscriptionInterfaceFactory $subscriptionFactory,
+        private NextDateCalculator           $dateCalculator,
+        private OrderExtensionFactory        $extensionFactory
     ) {
-        $this->subscriptionFactory = $subscriptionFactory;
-        $this->orderExtensionFactory = $extensionFactory;
-        $this->dateCalculator = $dateCalculator;
     }
 
     /**
-     * @param \Magento\Sales\Model\Order $order
-     * @param \Magento\Quote\Model\Quote $quote
+     * Adds a recurring payment subscription to the order based on the quote data.
+     *
+     * @param $order
+     * @param $quote
+     * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function addRecurringPaymentToOrder($order, $quote)
     {
@@ -44,26 +39,28 @@ class QuoteToOrder
         }
         $extensionAttributes = $order->getExtensionAttributes();
         if (!$extensionAttributes) {
-            $extensionAttributes = $this->orderExtensionFactory->create();
+            $extensionAttributes = $this->extensionFactory->create();
         }
         $extensionAttributes->setRecurringPayment($this->createNewRecurringPayment($oldPayment));
         $order->setExtensionAttributes($extensionAttributes);
     }
 
     /**
-     * @param \Nexi\Checkout\Api\Data\SubscriptionInterface $oldPayment
+     * Creates a new recurring payment subscription based on the provided old payment.
+     *
+     * @param $oldSubscription
      * @return SubscriptionInterface
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function createNewRecurringPayment(
-        $oldPayment
-    ): SubscriptionInterface {
+    private function createNewRecurringPayment($oldSubscription): SubscriptionInterface
+    {
         /** @var \Nexi\Checkout\Api\Data\SubscriptionInterface $subscription */
         $subscription = $this->subscriptionFactory->create();
         $subscription->setStatus(\Nexi\Checkout\Api\Data\SubscriptionInterface::STATUS_PENDING_PAYMENT);
-        $subscription->setCustomerId($oldPayment->getCustomerId());
-        $subscription->setNextOrderDate($this->dateCalculator->getNextDate($oldPayment->getRecurringProfileId()));
-        $subscription->setRecurringProfileId($oldPayment->getRecurringProfileId());
-        $subscription->setRepeatCountLeft($oldPayment->getRepeatCountLeft() - 1);
+        $subscription->setCustomerId($oldSubscription->getCustomerId());
+        $subscription->setNextOrderDate($this->dateCalculator->getNextDate($oldSubscription->getRecurringProfileId()));
+        $subscription->setRecurringProfileId($oldSubscription->getRecurringProfileId());
+        $subscription->setRepeatCountLeft($oldSubscription->getRepeatCountLeft() - 1);
         $subscription->setRetryCount(5);
 
         return $subscription;
