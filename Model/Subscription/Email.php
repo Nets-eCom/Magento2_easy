@@ -5,62 +5,37 @@ namespace Nexi\Checkout\Model\Subscription;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Mail\Template\TransportBuilder;
-use Magento\Payment\Helper\Data as PaymentHelper;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Address\Renderer;
-use Magento\Sales\Model\Order\Email\Container\OrderIdentity;
+use Magento\Store\Model\App\Emulation;
+use Psr\Log\LoggerInterface;
 
 class Email
 {
-    const XML_PATH_EMAIL_TEMPLATE = 'sales/recurring_payment/email_template';
-    const XML_PATH_EMAIL_WARNING_PERIOD = 'sales/recurring_payment/warning_period';
-    /**
-     * @var TransportBuilder
-     */
-    private $transportBuilder;
+    private const XML_PATH_EMAIL_TEMPLATE = 'sales/recurring_payment/email_template';
+    private const XML_PATH_EMAIL_WARNING_PERIOD = 'sales/recurring_payment/warning_period';
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * Email constructor.
+     *
+     * @param TransportBuilder $transportBuilder
+     * @param Emulation $emulation
+     * @param Renderer $addressRenderer
+     * @param ScopeConfigInterface $scopeConfig
+     * @param LoggerInterface $logger
      */
-    private $logger;
-
-    /**
-     * @var \Magento\Store\Model\App\Emulation
-     */
-    private $emulation;
-
-    /**
-     * @var PaymentHelper
-     */
-    private $paymentHelper;
-
-    /**
-     * @var Renderer
-     */
-    private $addressRenderer;
-
-    /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
     public function __construct(
-        TransportBuilder $transportBuilder,
-        \Magento\Store\Model\App\Emulation $emulation,
-        PaymentHelper $paymentHelper,
-        Renderer $addressRenderer,
-        ScopeConfigInterface $scopeConfig,
-        \Psr\Log\LoggerInterface $logger
+        private TransportBuilder $transportBuilder,
+        private Emulation $emulation,
+        private Renderer $addressRenderer,
+        private ScopeConfigInterface $scopeConfig,
+        private LoggerInterface $logger
     ) {
-        $this->transportBuilder = $transportBuilder;
-        $this->emulation = $emulation;
-        $this->paymentHelper = $paymentHelper;
-        $this->addressRenderer = $addressRenderer;
-        $this->scopeConfig = $scopeConfig;
-        $this->logger = $logger;
     }
 
     /**
+     * Send notifications to customers about cloned orders
+     *
      * @param Order[] $clonedOrders
      */
     public function sendNotifications(array $clonedOrders)
@@ -71,7 +46,10 @@ class Email
     }
 
     /**
-     * @param Order $order
+     * Notify customer about the cloned order
+     *
+     * @param $order
+     * @return void
      */
     private function notify($order)
     {
@@ -94,6 +72,7 @@ class Email
     }
 
     /**
+     * Get email template ID from configuration
      *
      * @param Order $order
      * @return string
@@ -108,6 +87,8 @@ class Email
     }
 
     /**
+     * Prepare template variables for email
+     *
      * @param Order $order
      * @return string[]
      */
@@ -168,6 +149,8 @@ class Email
     }
 
     /**
+     * Get template options for email
+     *
      * @param Order $order
      * @return array
      */
@@ -179,6 +162,12 @@ class Email
         ];
     }
 
+    /**
+     * Retrieve the warning period configuration value
+     *
+     * @param Order $order
+     * @return mixed
+     */
     private function getWarningPeriod($order)
     {
         return $this->scopeConfig->getValue(

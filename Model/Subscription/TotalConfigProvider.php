@@ -74,7 +74,7 @@ class TotalConfigProvider implements ConfigProviderInterface
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    private function isSubscriptionScheduled(): bool
+    public function isSubscriptionScheduled(): bool
     {
         $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
         if ($quoteItems) {

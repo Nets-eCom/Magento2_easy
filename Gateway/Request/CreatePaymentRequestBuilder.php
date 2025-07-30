@@ -164,7 +164,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     private function buildConsumer(Order|Quote $salesObject): Consumer
     {
-
         $customerId = $salesObject->getCustomerId();
         $shippingAddress = $salesObject->getShippingAddress();
         $billingAddress = $salesObject->getBillingAddress();
@@ -266,13 +265,16 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Set subscription setup for the payment.
      *
-     * @param Quote|Order $order
      * @return Payment\Subscription|null
+     * @throws NoSuchEntityException
      * @throws \DateMalformedStringException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
-    private function getSubscriptionSetup(Quote|Order $order): ?Payment\Subscription
+    private function getSubscriptionSetup(): ?Payment\Subscription
     {
-        if ($this->totalConfigProvider->isSubscriptionsEnabled()) {
+        if ($this->totalConfigProvider->isSubscriptionScheduled()
+            && $this->totalConfigProvider->isSubscriptionsEnabled()
+        ) {
 
             return new Payment\Subscription(
                 subscriptionId: null,
@@ -282,33 +284,5 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         }
 
         return null;
-    }
-
-    /**
-     * Get children items of a given order item or quote item.
-     *
-     * @param OrderItem|Quote\Item $item
-     *
-     * @return array|Quote\Item\AbstractItem[]
-     */
-    public function getChildren(OrderItem|Quote\Item $item): array
-    {
-        $children = $item instanceof OrderItem ? $item->getChildrenItems() : $item->getChildren();
-
-        return $children;
-    }
-
-    /**
-     * Returns the quantity of the item.
-     *
-     * @param mixed $item
-     *
-     * @return float
-     */
-    public function getQuantity(mixed $item): float
-    {
-        $qtyOrdered = $item instanceof OrderItem ? $item->getQtyOrdered() : $item->getQty();
-
-        return (float)$qtyOrdered;
     }
 }
