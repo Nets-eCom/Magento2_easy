@@ -51,12 +51,13 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
     {
         $paymentId    = $webhookData['data']['paymentId'];
         $refundId     = $webhookData['data']['refundId'];
-        $refundAmount = $webhookData['data']['amount']['amount'] / 100;
+        $refundAmount = number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', '');
+        $refundCurrency = $webhookData['data']['amount']['currency'];
 
         $order = $this->webhookDataLoader->loadOrderByPaymentId($paymentId);
 
         $this->comment->saveComment(
-            $this->createRefundComment($paymentId, $refundId, $refundAmount),
+            $this->createRefundComment($paymentId, $refundId, $refundAmount, $refundCurrency),
             $order
         );
 
@@ -92,17 +93,25 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      *
      * @param string $paymentId
      * @param string $refundId
-     * @param float $refundAmount
+     * @param string $refundAmount
+     * @param string $currency
      *
      * @return Phrase
      */
-    private function createRefundComment(string $paymentId, string $refundId, float $refundAmount): Phrase
-    {
+    private function createRefundComment(
+        string $paymentId,
+        string $refundId,
+        string $refundAmount,
+        string $currency
+    ): Phrase {
         return __(
-            'Webhook Received. Refund created for payment ID: %1, <br/>Refund ID: %2 <br/>Amount: %3',
+            'Webhook Received. Refund created for payment ID: %1'
+            . '<br/>Refund ID: %2'
+            . '<br/>Amount: %3 %4',
             $paymentId,
             $refundId,
-            $refundAmount
+            $refundAmount,
+            $currency
         );
     }
 
