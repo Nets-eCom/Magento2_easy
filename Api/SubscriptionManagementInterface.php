@@ -27,12 +27,11 @@ interface SubscriptionManagementInterface
     public function showSubscriptions(SearchCriteriaInterface $searchCriteria);
 
     /**
-     * Change assigned card for subscription.
+     * Change subscription.
      *
      * @param string $subscriptionId
-     * @param string $cardId
      *
      * @return bool
      */
-    public function changeSubscription(string $subscriptionId, string $cardId): bool;
+    public function changeSubscription(string $subscriptionId): bool;
 }

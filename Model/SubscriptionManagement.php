@@ -251,16 +251,15 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     }
 
     /**
-     * Change assigned card for subscription
+     * Change subscription
      *
      * @param string $subscriptionId
-     * @param string $cardId
      *
      * @return bool
-     *
      * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
-    public function changeSubscription(string $subscriptionId, string $cardId): bool
+    public function changeSubscription(string $subscriptionId): bool
     {
         $subscription = $this->subscriptionRepository->get((int)$subscriptionId);
 
