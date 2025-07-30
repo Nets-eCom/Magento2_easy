@@ -29,7 +29,7 @@ use Psr\Log\LoggerInterface;
 class SubscriptionManagement implements SubscriptionManagementInterface
 {
     private const STATUS_CLOSED = 'closed';
-    private const ORDER_PENDING_STATUS = 'pending';
+    public const ORDER_PENDING_STATUS = 'pending';
     private const SCHEDULED_ATTRIBUTE_CODE = 'subscription_schedule';
     private const REPEAT_COUNT_STATIC_VALUE = 5;
 

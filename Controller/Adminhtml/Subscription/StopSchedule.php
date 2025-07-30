@@ -5,6 +5,7 @@ namespace Nexi\Checkout\Controller\Adminhtml\Subscription;
 
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
@@ -12,11 +13,18 @@ use Magento\Sales\Api\OrderManagementInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
 use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
+use Nexi\Checkout\Model\SubscriptionManagement;
 
 class StopSchedule implements HttpGetActionInterface
 {
-    const ORDER_PENDING_STATUS = 'pending';
-
+    /**
+     * StopSchedule constructor.
+     *
+     * @param Context $context
+     * @param SubscriptionRepositoryInterface $subscriptionRepository
+     * @param OrderManagementInterface $orderManagement
+     * @param SubscriptionLinkRepositoryInterface $subscriptionLinkRepoInterface
+     */
     public function __construct(
         private Context                             $context,
         private SubscriptionRepositoryInterface     $subscriptionRepository,
@@ -25,6 +33,11 @@ class StopSchedule implements HttpGetActionInterface
     ) {
     }
 
+    /**
+     * Executes the process to cancel a recurring subscription.
+     *
+     * @return Redirect
+     */
     public function execute()
     {
         $resultRedirect = $this->context->getResultFactory()->create(ResultFactory::TYPE_REDIRECT);
@@ -42,8 +55,9 @@ class StopSchedule implements HttpGetActionInterface
     }
 
     /**
-     * @param $id
+     * Retrieves the recurring payment subscription by its ID.
      *
+     * @param $subscriptionId
      * @return false|SubscriptionInterface
      */
     private function getRecurringPayment($subscriptionId)
@@ -63,7 +77,10 @@ class StopSchedule implements HttpGetActionInterface
     }
 
     /**
+     * Cancels the order associated with the subscription if it is unpaid.
+     *
      * @param SubscriptionInterface $subscription
+     * @return void
      */
     private function cancelOrder(SubscriptionInterface $subscription): void
     {
@@ -80,7 +97,7 @@ class StopSchedule implements HttpGetActionInterface
                         'Order ID %id has a status other than %status, automatic order cancel disabled. If the order is unpaid please cancel it manually',
                         [
                             'id'     => array_shift($ordersId),
-                            'status' => self::ORDER_PENDING_STATUS
+                            'status' => SubscriptionManagement::ORDER_PENDING_STATUS
                         ]
                     )
                 );
@@ -95,6 +112,12 @@ class StopSchedule implements HttpGetActionInterface
         }
     }
 
+    /**
+     * Updates the recurring status of a subscription to "closed".
+     *
+     * @param SubscriptionInterface $subscription
+     * @return void
+     */
     private function updateRecurringStatus(SubscriptionInterface $subscription)
     {
         $subscription->setStatus(SubscriptionInterface::STATUS_CLOSED);
