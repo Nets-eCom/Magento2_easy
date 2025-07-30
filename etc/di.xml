@@ -330,10 +330,6 @@
         <plugin name="prevent_different_scheduled_cart"
                 type="Nexi\Checkout\Plugin\PreventDifferentScheduledCart"/>
     </type>
-    <type name="Magento\Sales\Api\OrderRepositoryInterface">
-        <plugin name="store_subscription"
-                type="Nexi\Checkout\Plugin\Api\OrderRepository" />
-    </type>
     <type name="Nexi\Checkout\Observer\ReactivateQuoteObserver">
         <arguments>
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
