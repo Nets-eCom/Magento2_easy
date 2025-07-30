@@ -109,8 +109,6 @@ class TotalConfigProvider implements ConfigProviderInterface
                     }
                 }
             }
-
-            return $recurringSubtotal;
         }
 
         return $recurringSubtotal;
