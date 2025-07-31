@@ -9,21 +9,12 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\ScopeInterface;
+use Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface;
 
 class TotalConfigProvider implements ConfigProviderInterface
 {
     private const NO_SCHEDULE_VALUE = null;
     private const IS_SUBSCRIPTIONS_ENABLED = 'nexi/subscriptions/active_subscriptions';
-
-    /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
 
     /**
      * TotalConfigProvider constructor.
@@ -32,11 +23,10 @@ class TotalConfigProvider implements ConfigProviderInterface
      * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        Session $checkoutSession,
-        ScopeConfigInterface $scopeConfig
+        private Session $checkoutSession,
+        private SubscriptionProfileRepositoryInterface $profileRepositoryInterface,
+        private ScopeConfigInterface $scopeConfig
     ) {
-        $this->checkoutSession = $checkoutSession;
-        $this->scopeConfig = $scopeConfig;
     }
 
     /**
@@ -86,6 +76,25 @@ class TotalConfigProvider implements ConfigProviderInterface
         }
 
         return false;
+    }
+
+    /**
+     * Get subscription interval.
+     *
+     * @return string
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getSubscriptionInterval(): string
+    {
+        $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
+        if ($quoteItems) {
+            foreach ($quoteItems as $item) {
+                $profileId = $item->getProduct()->getCustomAttribute('subscription_schedule')->getValue();
+            }
+        }
+
+        return $profileId;
     }
 
     /**

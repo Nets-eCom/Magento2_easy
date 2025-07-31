@@ -134,7 +134,7 @@ class OrderBiller
             $this->nextDateCalculator->getNextDate(
                 $subscription->getRecurringProfileId(),
                 $subscription->getNextOrderDate()
-            )
+            )->format('Y-m-d')
         );
 
         $this->saveSubscription($subscription);

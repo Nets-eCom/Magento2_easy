@@ -56,6 +56,23 @@ class NextDateCalculator
     }
 
     /**
+     * Calculate next date for a profile.
+     *
+     * @param int $profileId
+     * @param string $startDate
+     *
+     * @return string
+     * @throws NoSuchEntityException
+     * @throws Exception
+     */
+    public function getDaysInterval($profileId, $startDate = 'now')
+    {
+        $nextDate = $this->getNextDate($profileId, $startDate);
+
+        return abs((int)$nextDate->diffInDays($startDate));
+    }
+
+    /**
      * Calculate next date based on the schedule.
      *
      * @param string $schedule
@@ -74,7 +91,7 @@ class NextDateCalculator
                 $nextDate = $carbonDate->addDays((int)$schedule['interval']);
                 break;
             case 'W':
-                $nextDate = $carbonDate->addWeeks($schedule['interval']);
+                $nextDate = $carbonDate->addWeeks((int)$schedule['interval']);
                 break;
             case 'M':
                 $nextDate = $this->addMonthsNoOverflow($carbonDate, $schedule['interval']);
@@ -90,7 +107,7 @@ class NextDateCalculator
             $nextDate = $this->getNextWeekday($nextDate);
         }
 
-        return $nextDate->format('Y-m-d');
+        return $nextDate;
     }
 
     /**

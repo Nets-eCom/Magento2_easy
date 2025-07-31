@@ -109,7 +109,7 @@ class SubscriptionManagement implements SubscriptionManagementInterface
             $subscription = $this->subscriptionInterfaceFactory->create();
             $subscription->setStatus(SubscriptionInterface::STATUS_ACTIVE);
             $subscription->setCustomerId($order->getCustomerId());
-            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(reset($orderSchedule)));
+            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(reset($orderSchedule))->format('Y-m-d'));
             $subscription->setRecurringProfileId((int)reset($orderSchedule));
             $subscription->setRepeatCountLeft(self::REPEAT_COUNT_STATIC_VALUE);
             $subscription->setRetryCount(self::REPEAT_COUNT_STATIC_VALUE);
