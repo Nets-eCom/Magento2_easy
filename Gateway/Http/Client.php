@@ -10,12 +10,16 @@ use Magento\Payment\Gateway\Http\ClientInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Api\SubscriptionApi;
 use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\BulkChargeSubscription;
 use Psr\Log\LoggerInterface;
 
 class Client implements ClientInterface
 {
     /**
+     * Client constructor.
+     *
      * @param PaymentApiFactory $paymentApiFactory
      * @param Config $config
      * @param LoggerInterface $logger
@@ -23,7 +27,7 @@ class Client implements ClientInterface
     public function __construct(
         private readonly PaymentApiFactory $paymentApiFactory,
         private readonly Config            $config,
-        private readonly LoggerInterface   $logger
+        private readonly LoggerInterface   $logger,
     ) {
     }
 
@@ -38,7 +42,12 @@ class Client implements ClientInterface
     public function placeRequest(TransferInterface $transferObject): array
     {
         try {
-            $paymentApi = $this->getPaymentApi();
+            if (($transferObject->getBody() instanceof BulkChargeSubscription)) {
+                $paymentApi = $this->getSubscriptionApi();
+            } else {
+                $paymentApi = $this->getPaymentApi();
+            }
+
             $nexiMethod = $transferObject->getUri();
             $this->logger->debug(
                 'Nexi Client request: ',
@@ -47,6 +56,7 @@ class Client implements ClientInterface
                     'request' => $transferObject->getBody()
                 ]
             );
+
             if (is_array($transferObject->getBody())) {
                 $response = $paymentApi->$nexiMethod(...$transferObject->getBody());
             } else {
@@ -57,6 +67,7 @@ class Client implements ClientInterface
                 'Nexi Client response: ',
                 ['response' => var_export($response, true)]
             );
+
         } catch (PaymentApiException|\Exception $e) {
             $this->logger->error($e->getMessage(), [$e]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
@@ -73,6 +84,19 @@ class Client implements ClientInterface
     public function getPaymentApi(): PaymentApi
     {
         return $this->paymentApiFactory->create(
+            (string)$this->config->getApiKey(),
+            $this->config->isLiveMode()
+        );
+    }
+
+    /**
+     * Get Subscription API Client
+     *
+     * @return SubscriptionApi
+     */
+    public function getSubscriptionApi(): SubscriptionApi
+    {
+        return $this->paymentApiFactory->createSubscriptionApi(
             (string)$this->config->getApiKey(),
             $this->config->isLiveMode()
         );

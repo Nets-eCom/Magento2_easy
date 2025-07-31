@@ -10,6 +10,7 @@ use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Order\Comment;
+use Nexi\Checkout\Model\SubscriptionManagement;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
@@ -24,9 +25,10 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly WebhookDataLoader $webhookDataLoader,
-        private readonly Builder $transactionBuilder,
-        private readonly Comment $comment,
+        private readonly WebhookDataLoader        $webhookDataLoader,
+        private readonly Builder                  $transactionBuilder,
+        private readonly Comment                  $comment,
+        private readonly SubscriptionManagement $subscriptionManagement
     ) {
     }
 
@@ -78,6 +80,11 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         $reservationTransaction->setIsClosed(0);
         $reservationTransaction->setParentTxnId($paymentId);
         $reservationTransaction->setParentId($paymentTransaction->getTransactionId());
+
+        if (isset($webhookData['data']['subscriptionId'])) {
+            $order->getPayment()->setAdditionalInformation('subscription_id', $webhookData['data']['subscriptionId']);
+            $this->subscriptionManagement->processSubscription($order, $webhookData['data']['subscriptionId']);
+        }
 
         $payment = $order->getPayment();
         $amount = $webhookData['data']['amount']['amount'] / 100;

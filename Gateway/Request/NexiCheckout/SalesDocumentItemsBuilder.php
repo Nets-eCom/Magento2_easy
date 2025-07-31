@@ -15,6 +15,8 @@ class SalesDocumentItemsBuilder
     public const SHIPPING_COST_REFERENCE = 'shipping_cost_ref';
 
     /**
+     * SalesDocumentItemsBuilder constructor.
+     *
      * @param AmountConverter $amountConverter
      * @param StringSanitizer $stringSanitizer
      */

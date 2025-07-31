@@ -1,0 +1,288 @@
+<?php
+declare(strict_types=1);
+
+namespace Nexi\Checkout\Model;
+
+use Exception;
+use Magento\Authorization\Model\UserContextInterface;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Api\FilterBuilder;
+use Magento\Framework\Api\Search\FilterGroupBuilder;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Api\SearchCriteriaInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Sales\Api\OrderManagementInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
+use Nexi\Checkout\Api\Data\SubscriptionInterface;
+use Nexi\Checkout\Api\Data\SubscriptionInterfaceFactory;
+use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
+use Nexi\Checkout\Api\SubscriptionManagementInterface;
+use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
+use Nexi\Checkout\Model\Api\ShowSubscriptionsDataProvider;
+use Nexi\Checkout\Model\Subscription\NextDateCalculator;
+use Nexi\Checkout\Model\Validation\CustomerData;
+use Psr\Log\LoggerInterface;
+
+class SubscriptionManagement implements SubscriptionManagementInterface
+{
+    private const STATUS_CLOSED = 'closed';
+    public const ORDER_PENDING_STATUS = 'pending';
+    private const SCHEDULED_ATTRIBUTE_CODE = 'subscription_schedule';
+    private const REPEAT_COUNT_STATIC_VALUE = 5;
+
+    /**
+     * SubscriptionManagement constructor.
+     *
+     * @param UserContextInterface $userContext
+     * @param SubscriptionRepositoryInterface $subscriptionRepository
+     * @param SubscriptionLinkRepositoryInterface $subscriptionLinkRepository
+     * @param OrderRepositoryInterface $orderRepository
+     * @param OrderManagementInterface $orderManagementInterface
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param LoggerInterface $logger
+     * @param FilterBuilder $filterBuilder
+     * @param FilterGroupBuilder $groupBuilder
+     * @param CustomerData $customerData
+     * @param ShowSubscriptionsDataProvider $showSubscriptionsDataProvider
+     * @param ProductRepositoryInterface $productRepository
+     * @param SubscriptionInterfaceFactory $subscriptionInterfaceFactory
+     * @param NextDateCalculator $dateCalculator
+     */
+    public function __construct(
+        private UserContextInterface                $userContext,
+        private SubscriptionRepositoryInterface     $subscriptionRepository,
+        private SubscriptionLinkRepositoryInterface $subscriptionLinkRepository,
+        private OrderRepositoryInterface            $orderRepository,
+        private OrderManagementInterface            $orderManagementInterface,
+        private SearchCriteriaBuilder               $searchCriteriaBuilder,
+        private LoggerInterface                     $logger,
+        private FilterBuilder                       $filterBuilder,
+        private FilterGroupBuilder                  $groupBuilder,
+        private CustomerData                        $customerData,
+        private ShowSubscriptionsDataProvider       $showSubscriptionsDataProvider,
+        private ProductRepositoryInterface          $productRepository,
+        private SubscriptionInterfaceFactory        $subscriptionInterfaceFactory,
+        private NextDateCalculator                  $dateCalculator
+    ) {
+    }
+
+    /**
+     * Process a subscription for the given order and Nexi subscription ID.
+     *
+     * @param $order
+     * @param $nexiSubscriptionId
+     * @return SubscriptionInterface
+     * @throws CouldNotSaveException
+     */
+    public function processSubscription($order, $nexiSubscriptionId): SubscriptionInterface
+    {
+        $orderSchedule = $this->getSubscriptionSchedule($order);
+        if (empty($orderSchedule)) {
+            throw new CouldNotSaveException(__('No valid subscription schedule found for order.'));
+        }
+        $subscription = $this->createSubscription($order, $orderSchedule, $nexiSubscriptionId);
+        $order->getPayment()->setAdditionalInformation(
+            'subscription_id',
+            $nexiSubscriptionId
+        );
+
+        $this->subscriptionRepository->save($subscription);
+
+        return $subscription;
+    }
+
+    /**
+     * Create a new subscription based on the order and its schedule.
+     *
+     * @param Order $order
+     * @param array $orderSchedule
+     * @param string $subscriptionId
+     * @return SubscriptionInterface
+     * @throws CouldNotSaveException
+     */
+    public function createSubscription(Order $order, array $orderSchedule, string $subscriptionId): SubscriptionInterface
+    {
+        try {
+            $subscription = $this->subscriptionInterfaceFactory->create();
+            $subscription->setStatus(SubscriptionInterface::STATUS_ACTIVE);
+            $subscription->setCustomerId($order->getCustomerId());
+            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(reset($orderSchedule)));
+            $subscription->setRecurringProfileId((int)reset($orderSchedule));
+            $subscription->setRepeatCountLeft(self::REPEAT_COUNT_STATIC_VALUE);
+            $subscription->setRetryCount(self::REPEAT_COUNT_STATIC_VALUE);
+            $subscription->setNexiSubscriptionId($subscriptionId);
+
+            $this->subscriptionRepository->save($subscription);
+
+            $this->subscriptionLinkRepository->linkOrderToSubscription($order->getId(), $subscription->getId());
+
+            return $subscription;
+        } catch (\Exception $exception) {
+            throw new CouldNotSaveException(__($exception->getMessage()));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function cancelSubscription($subscriptionId)
+    {
+        $customerId = $this->userContext->getUserId();
+        if (!$customerId) {
+            throw new LocalizedException(__('Customer is not authorized for this operation'));
+        }
+
+        try {
+            $subscription = $this->subscriptionRepository->get((int)$subscriptionId);
+            if ($subscription->getStatus() === self::STATUS_CLOSED) {
+                return __('Subscription is closed')->render();
+            }
+
+            $customerId = $this->userContext->getUserId();
+            $orderIds = $this->subscriptionLinkRepository->getOrderIdsBySubscriptionId((int)$subscriptionId);
+            $searchCriteria = $this->searchCriteriaBuilder
+                ->addFilter('entity_id', $orderIds, 'in')
+                ->create();
+            $orders = $this->orderRepository->getList($searchCriteria);
+
+            foreach ($orders->getItems() as $order) {
+                if ($customerId != $order->getCustomerId()) {
+                    throw new LocalizedException(__('Customer is not authorized for this operation'));
+                }
+                $subscription->setStatus(self::STATUS_CLOSED);
+                if ($order->getStatus() === Order::STATE_PENDING_PAYMENT
+                    || $order->getStatus() === self::ORDER_PENDING_STATUS) {
+                    $this->orderManagementInterface->cancel($order->getId());
+                }
+            }
+
+            $this->subscriptionRepository->save($subscription);
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage());
+            throw new LocalizedException(__("Subscription couldn't be canceled"));
+        }
+
+        return __('Subscription has been canceled correctly')->render();
+    }
+
+    /**
+     * @param SearchCriteriaInterface $searchCriteria
+     *
+     * @return array
+     * @throws LocalizedException
+     */
+    public function showSubscriptions(SearchCriteriaInterface $searchCriteria): array
+    {
+        $subscriptions = [];
+        try {
+            if ($this->userContext->getUserId()) {
+                $this->filterByCustomer($searchCriteria);
+                $subscriptionCollection = $this->subscriptionRepository->getList($searchCriteria)->getItems();
+
+                foreach ($subscriptionCollection as $subscription) {
+                    $orderData = $this->showSubscriptionsDataProvider
+                        ->getOrderDataFromSubscriptionId($subscription->getId());
+                    $subscriptions[] = [
+                        'entity_id' => $subscription->getId(),
+                        'customer_id' => $subscription->getCustomerId(),
+                        'status' => $subscription->getStatus(),
+                        'next_order_date' => $subscription->getNextOrderDate(),
+                        'recurring_profile_id' => $subscription->getRecurringProfileId(),
+                        'updated_at' => $subscription->getUpdatedAt(),
+                        'repeat_count_left' => $subscription->getRepeatCountLeft(),
+                        'retry_count' => $subscription->getRetryCount(),
+                        'grand_total' => $orderData['grand_total'],
+                        'last_order_increment_id' => $orderData['increment_id']
+                    ];
+                }
+
+                return $subscriptions;
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error($e->getMessage());
+            throw new LocalizedException(__("Subscription orders can't be shown"));
+        }
+
+        throw new LocalizedException(__("Customer is not logged in"));
+    }
+
+    /**
+     * @param $order
+     * @return array
+     */
+    public function getSubscriptionSchedule($order): array
+    {
+        $orderSchedule = [];
+        try {
+            foreach ($order->getItems() as $item) {
+                $product = $this->productRepository->getById($item->getProductId());
+                if (is_object($product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE))) {
+                    if ($product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE)->getValue() >= 0) {
+                        $orderSchedule[] = $product->getCustomAttribute(self::SCHEDULED_ATTRIBUTE_CODE)->getValue();
+                    }
+                }
+            }
+        } catch (NoSuchEntityException $e) {
+            return [];
+        }
+
+        return $orderSchedule;
+    }
+
+    /**
+     * @param SearchCriteriaInterface $searchCriteria
+     *
+     * @return void
+     */
+    private function filterByCustomer(SearchCriteriaInterface $searchCriteria): void
+    {
+        $customerFilter = $this->filterBuilder
+            ->setField('customer_id')
+            ->setValue($this->userContext->getUserId())
+            ->setConditionType('eq')
+            ->create();
+        $customerFilterGroup = $this->groupBuilder->addFilter($customerFilter)->create();
+        $groups = $searchCriteria->getFilterGroups();
+        $groups[] = $customerFilterGroup;
+        $searchCriteria->setFilterGroups($groups);
+    }
+
+    /**
+     * Change subscription
+     *
+     * @param string $subscriptionId
+     *
+     * @return bool
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function changeSubscription(string $subscriptionId): bool
+    {
+        $subscription = $this->subscriptionRepository->get((int)$subscriptionId);
+
+        $customerId = (int)$this->userContext->getUserId();
+
+        $this->customerData->validateSubscriptionsCustomer($subscription, $customerId);
+
+        return $this->save($subscription);
+    }
+
+    /**
+     * @param SubscriptionInterface $subscription
+     *
+     * @return bool
+     */
+    private function save(SubscriptionInterface $subscription): bool
+    {
+        try {
+            $this->subscriptionRepository->save($subscription);
+        } catch (CouldNotSaveException $e) {
+            return false;
+        }
+
+        return true;
+    }
+}

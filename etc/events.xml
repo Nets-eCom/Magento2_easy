@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_order_place_before">
+        <observer name="validate_cart_before_order_place"
+                  instance="Nexi\Checkout\Observer\ScheduledCartValidation"/>
+    </event>
     <event name="sales_order_place_after">
         <!-- Add Reference Number - increment id - to the Nexi payment after order is placed - Embedded only -->
         <observer name="Nexi_Checkout::update_order_reference" instance="Nexi\Checkout\Observer\UpdateOrderReference"/>

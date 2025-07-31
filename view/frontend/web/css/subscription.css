@@ -1,0 +1,100 @@
+.customer-subscription-action {
+    display: inline-block;
+    position: relative;
+}
+
+.customer-subscription-action.active {
+    overflow: visible;
+}
+
+.customer-subscription-action::before,
+.customer-subscription-action::after {
+    content: '';
+    display: table;
+}
+
+.customer-subscription-action ul::after {
+    right: 9px;
+    top: -14px;
+}
+
+.customer-subscription-action ul::after {
+    border: 7px solid;
+    border-top-color: currentcolor;
+    border-right-color: currentcolor;
+    border-bottom-color: currentcolor;
+    border-left-color: currentcolor;
+    border-color: transparent transparent #bbbbbb transparent;
+    z-index: 98;
+}
+
+.customer-subscription-action ul::before, .customer-subscription-action ul::after {
+    border-bottom-style: solid;
+    content: '';
+    display: block;
+    height: 0;
+    position: absolute;
+    width: 0;
+}
+
+.customer-subscription-action ul::before {
+    right: 10px;
+    top: -12px;
+}
+
+.customer-subscription-action ul::before {
+    border: 6px solid;
+    border-top-color: currentcolor;
+    border-right-color: currentcolor;
+    border-bottom-color: currentcolor;
+    border-left-color: currentcolor;
+    border-color: transparent transparent #ffffff transparent;
+    z-index: 99;
+}
+
+.customer-subscription-action.active ul {
+    display: block;
+}
+
+.customer-subscription-action ul {
+    margin: 0;
+    padding: 0;
+    list-style: none none;
+    background: #ffffff;
+    border: 1px solid #bbbbbb;
+    margin-top: 4px;
+    min-width: 100%;
+    z-index: 101;
+    box-sizing: border-box;
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.15);
+}
+
+.customer-subscription-action ul li {
+    margin: 0;
+    padding: 0;
+}
+
+.customer-subscription-action ul {
+    list-style: none none;
+}
+
+.customer-subscription-action li a:visited {
+    color: #333333;
+}
+
+.customer-subscription-action li a {
+    color: #333333;
+    text-decoration: none;
+    display: block;
+    line-height: 1.4;
+    padding: 8px;
+}
+
+.customer-subscription-action ul li:hover {
+    background: #e8e8e8;
+    cursor: pointer;
+}

@@ -1,0 +1,27 @@
+<!--@subject {{trans "Restore a canceled order"}} @-->
+<!--@vars {
+"var order.increment":"order increment",
+"var order.url":"order adminurl"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<h3>{{trans "Hello"}}</h3>
+<h3>
+    {{trans
+        'Restore order <a href="%order_url">%order_increment</a>'
+
+        order_url=$order.url
+        order_increment=$order.increment
+    |raw}}
+</h3>
+<p>
+    {{trans
+        "The payment for the order %order_increment has been completed while the order was in canceled state.
+        Please navigate to your Magento orders, select the order in question, and click restore order. Note the stock."
+
+        order_increment=$order.increment
+    |raw}}
+</p>
+
+{{template config_path="design/email/footer_template"}}
