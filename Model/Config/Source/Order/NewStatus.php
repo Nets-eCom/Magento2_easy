@@ -23,6 +23,8 @@ class NewStatus implements OptionSourceInterface
     }
 
     /**
+     * Return array of options as value-label pairs
+     *
      * @return array
      */
     public function toOptionArray(): array
