@@ -52,6 +52,9 @@ class Initialize implements CommandInterface
         if ($paymentData->getPayment()->getAdditionalInformation('payment_id')) {
             return;
         }
+        if ($paymentData->getPayment()->getAdditionalInformation('subscription_id')) {
+            return;
+        }
 
         /** @var InfoInterface $payment */
         $payment = $paymentData->getPayment();

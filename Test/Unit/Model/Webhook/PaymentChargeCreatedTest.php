@@ -107,9 +107,11 @@ class PaymentChargeCreatedTest extends TestCase
             ->method('saveComment')
             ->with(
                 __(
-                    'Webhook Received. Payment charge created for payment ID: %1,<br />Charge ID: %2',
+                    'Webhook Received. Payment charge created for payment ID: %1<br/>Charge ID: %2<br/>Amount: %3 %4.',
                     $paymentId,
-                    $chargeId
+                    $chargeId,
+                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['amount']['currency']
                 ),
                 $orderMock
             );

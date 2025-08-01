@@ -14,9 +14,7 @@
                 <can_initialize>1</can_initialize>
                 <can_capture>1</can_capture>
                 <can_capture_partial>1</can_capture_partial>
-                <can_authorize_vault>1</can_authorize_vault>
-                <can_capture_vault>1</can_capture_vault>
-                <can_use_internal>1</can_use_internal>
+                <can_use_internal>0</can_use_internal>
                 <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
                 <can_refund>1</can_refund>
                 <can_void>1</can_void>
@@ -41,6 +39,14 @@
                 <test_checkout_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <integration_type>HostedPaymentPage</integration_type>
+                <subscriptions>
+                    <active_subscriptions>0</active_subscriptions>
+                    <notify_cron_schedule>0 1 * * *</notify_cron_schedule>
+                    <bill_cron_schedule>15 3 * * *</bill_cron_schedule>
+                    <email_template>subscription_email_template</email_template>
+                    <warning_period>7</warning_period>
+                    <force_weekdays>0</force_weekdays>
+                </subscriptions>
             </nexi>
         </payment>
     </default>
