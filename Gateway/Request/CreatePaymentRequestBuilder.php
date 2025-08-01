@@ -277,12 +277,12 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         if ($this->totalConfigProvider->isSubscriptionScheduled()
             && $this->totalConfigProvider->isSubscriptionsEnabled()
         ) {
-            $subscriptionInterval = $this->totalConfigProvider->getSubscriptionInterval();
+            $subscriptionProfileId = $this->totalConfigProvider->getSubscriptionProfileId();
 
             return new Payment\Subscription(
                 subscriptionId: null,
                 endDate: new \DateTime((int)date('Y') + 100 . '-01-01'),
-                interval: $this->nextDateCalculator->getDaysInterval((int)$subscriptionInterval),
+                interval: $this->nextDateCalculator->getDaysInterval((int)$subscriptionProfileId),
             );
         }
 

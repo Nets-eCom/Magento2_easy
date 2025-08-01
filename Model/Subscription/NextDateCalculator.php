@@ -44,11 +44,11 @@ class NextDateCalculator
      * @param int $profileId
      * @param string $startDate
      *
-     * @return string
+     * @return Carbon
      * @throws NoSuchEntityException
      * @throws Exception
      */
-    public function getNextDate($profileId, $startDate = 'now')
+    public function getNextDate($profileId, $startDate = 'now'): Carbon
     {
         $profile = $this->getProfileById($profileId);
 
@@ -56,20 +56,20 @@ class NextDateCalculator
     }
 
     /**
-     * Calculate next date for a profile.
+     * Calculate the number of days interval until the next date for a profile.
      *
      * @param int $profileId
      * @param string $startDate
      *
-     * @return string
+     * @return int
      * @throws NoSuchEntityException
      * @throws Exception
      */
-    public function getDaysInterval($profileId, $startDate = 'now')
+    public function getDaysInterval($profileId, $startDate = 'now'): int
     {
         $nextDate = $this->getNextDate($profileId, $startDate);
 
-        return abs((int)$nextDate->diffInDays($startDate));
+        return (int)abs($nextDate->diffInDays($startDate));
     }
 
     /**
@@ -78,10 +78,10 @@ class NextDateCalculator
      * @param string $schedule
      * @param string $startDate
      *
-     * @return string
+     * @return Carbon
      * @throws Exception
      */
-    private function calculateNextDate($schedule, $startDate)
+    private function calculateNextDate($schedule, $startDate): Carbon
     {
         $schedule   = $this->serializer->unserialize($schedule);
         $carbonDate = $startDate === 'now' ? Carbon::now() : Carbon::createFromFormat('Y-m-d H:i:s', $startDate);
@@ -132,7 +132,7 @@ class NextDateCalculator
      *
      * @return bool
      */
-    private function isForceWeekdays()
+    private function isForceWeekdays(): bool
     {
         if (!isset($this->forceWeekdays)) {
             $this->forceWeekdays = $this->scopeConfig->isSetFlag('sales/recurring_payment/force_weekdays');
@@ -147,7 +147,7 @@ class NextDateCalculator
      *
      * @return Carbon
      */
-    private function getNextWeekday($nextDate)
+    private function getNextWeekday($nextDate): Carbon
     {
         $newCarbonDate = new Carbon($nextDate);
         if (!$newCarbonDate->isWeekday()) {
@@ -167,7 +167,7 @@ class NextDateCalculator
      *
      * @return Carbon
      */
-    private function addMonthsNoOverflow($carbonDate, $interval)
+    private function addMonthsNoOverflow($carbonDate, $interval): Carbon
     {
         $isLastOfMonth = $carbonDate->isLastOfMonth();
         $nextDate      = $carbonDate->addMonthsNoOverflow($interval);

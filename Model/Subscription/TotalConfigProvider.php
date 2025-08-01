@@ -85,7 +85,7 @@ class TotalConfigProvider implements ConfigProviderInterface
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function getSubscriptionInterval(): string
+    public function getSubscriptionProfileId(): string
     {
         $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
         if ($quoteItems) {
