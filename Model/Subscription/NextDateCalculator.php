@@ -94,10 +94,10 @@ class NextDateCalculator
                 $nextDate = $carbonDate->addWeeks((int)$schedule['interval']);
                 break;
             case 'M':
-                $nextDate = $this->addMonthsNoOverflow($carbonDate, $schedule['interval']);
+                $nextDate = $this->addMonthsNoOverflow($carbonDate, (int)$schedule['interval']);
                 break;
             case 'Y':
-                $nextDate = $carbonDate->addYearsNoOverflow($schedule['interval']);
+                $nextDate = $carbonDate->addYearsNoOverflow((int)$schedule['interval']);
                 break;
             default:
                 throw new LocalizedException(__('Schedule type not supported'));
