@@ -58,18 +58,27 @@ define(
                 template: window.checkoutConfig.payment.nexi.integrationType == 'HostedPaymentPage'
                     ? 'Nexi_Checkout/payment/nexi-hosted.html'
                     : 'Nexi_Checkout/payment/nexi-embedded.html',
-                config: window.checkoutConfig.payment.nexi
+                config: window.checkoutConfig.payment.nexi,
+                creditCardType: '',
+                creditCardExpYear: '',
+                creditCardExpMonth: '',
+                creditCardNumber: '',
+                creditCardVerificationNumber: '',
+                selectedCardType: null
             },
             isEmbedded: ko.observable(false),
             dibsCheckout: ko.observable(false),
             isRendering: ko.observable(false),
             eventsSubscribed: ko.observable(false),
+            subselection: ko.observable(false),
 
             initialize: function () {
                 this._super();
                 if (this.config.integrationType === 'EmbeddedCheckout') {
                     this.isEmbedded(true);
                 }
+
+                this.subselection(this.isChecked());
 
                 if (this.isActive() && this.isEmbedded()) {
                     this.renderCheckout();
@@ -102,8 +111,14 @@ define(
 
                 }, this);
             },
-            selectPaymentMethod: function () {
-                this._super();
+            selectPaymentMethod: function (data, event) {
+                let selectedPaymentMethod = event.target.value;
+                this.subselection(selectedPaymentMethod);
+                let paymentData = this.getData()
+                paymentData.method = selectedPaymentMethod;
+                selectPaymentMethodAction(paymentData);
+                checkoutData.setSelectedPaymentMethod(selectedPaymentMethod);
+
 
                 if (this.isEmbedded()) {
                     this.renderCheckout();
@@ -111,6 +126,19 @@ define(
 
                 return true;
             },
+
+            getSubselection: function () {
+                return [
+                    { code: 'nexi_credit_card', title: $t('Credit Card') },
+                    { code: 'nexi_direct_debit', title: $t('Direct Debit') },
+                    { code: 'nexi_invoice', title: $t('Invoice') },
+                    { code: 'nexi_installment', title: $t('Installment') },
+                    { code: 'nexi_mobilepay', title: $t('MobilePay') },
+                    { code: 'nexi_swish', title: $t('Swish') },
+                    { code: 'nexi_vipps', title: $t('Vipps') }
+                ];
+            },
+
             subscribeToEvents: function () {
                 if (this.dibsCheckout()) {
                     // If events are already subscribed to this instance, don't subscribe again
@@ -178,6 +206,17 @@ define(
                     // Show the iframe container if Nexi payment method is selected
                     container.style.display = "block";
                 }
+            },
+            getData: function () {
+                return {
+                    method: this.getCode(),
+                    additional_data: {
+                        integrationType: this.config.integrationType,
+                        paymentMethod: this.config.paymentMethod,
+                        paymentId: this.dibsCheckout() ? this.dibsCheckout().getPaymentId() : null,
+                        subselection: this.subselection(),
+                    }
+                };
             },
         });
     }
