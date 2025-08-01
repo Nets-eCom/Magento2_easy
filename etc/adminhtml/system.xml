@@ -63,7 +63,7 @@
                         <field id="environment">test</field>
                     </depends>
                 </field>
-                <field id="pay_type_split" translate="label" type="select" sortOrder="32" showInDefault="1"
+                <field id="pay_type_splitting" translate="label" type="select" sortOrder="32" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>payType Splitting</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

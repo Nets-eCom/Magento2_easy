@@ -189,4 +189,14 @@ class Config extends MagentoConfig
     {
         return $this->getValue('title');
     }
+
+    /**
+     * Get the value of pay_type_splitting.
+     *
+     * @return bool
+     */
+    public function getPayTypeSplitting(): bool
+    {
+        return (bool)$this->getValue('pay_type_splitting');
+    }
 }

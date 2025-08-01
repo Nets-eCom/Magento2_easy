@@ -23,7 +23,9 @@ define(
         'Nexi_Checkout/js/sdk/loader',
         'Nexi_Checkout/js/view/payment/initialize-payment',
         'Nexi_Checkout/js/view/payment/render-embedded',
-        'Nexi_Checkout/js/view/payment/validate'
+        'Nexi_Checkout/js/view/payment/validate',
+        'Magento_Checkout/js/model/payment/place-order-hooks',
+        'Magento_Checkout/js/checkout-data',
     ],
     function (
         ko,
@@ -49,14 +51,18 @@ define(
         sdkLoader,
         initializeCartPayment,
         renderEmbeddedCheckout,
-        validatePayment
+        validatePayment,
+        placeOrderHooks,
+        checkoutDataModel
     ) {
         'use strict';
 
         return Component.extend({
             defaults: {
                 template: window.checkoutConfig.payment.nexi.integrationType == 'HostedPaymentPage'
-                    ? 'Nexi_Checkout/payment/nexi-hosted.html'
+                    ? (window.checkoutConfig.payment.nexi.payTypeSplitting
+                        ? 'Nexi_Checkout/payment/nexi-hosted-type-split.html'
+                        : 'Nexi_Checkout/payment/nexi-hosted.html')
                     : 'Nexi_Checkout/payment/nexi-embedded.html',
                 config: window.checkoutConfig.payment.nexi,
                 creditCardType: '',
@@ -71,29 +77,42 @@ define(
             isRendering: ko.observable(false),
             eventsSubscribed: ko.observable(false),
             subselection: ko.observable(false),
+            payTypeSplitting: ko.observable(window.checkoutConfig.payment.nexi.payTypeSplitting),
 
             initialize: function () {
                 this._super();
                 if (this.config.integrationType === 'EmbeddedCheckout') {
                     this.isEmbedded(true);
                 }
+                this.subselection(checkoutData.getNexiSubselection() || false);
 
-                this.subselection(this.isChecked());
+                window.subselection = this.subselection;
 
                 if (this.isActive() && this.isEmbedded()) {
                     this.renderCheckout();
                 }
 
-                quote.paymentMethod.subscribe(function(method) {
+                quote.paymentMethod.subscribe(function (method) {
                     this.hideIframeIfNeeded();
+                    this.clearSubselection(method);
                 }, this);
+
+                placeOrderHooks.requestModifiers.push(
+                    function (headers, payload) {
+
+                        if (payload.paymentMethod.extension_attributes === undefined) {
+                            payload.paymentMethod.extension_attributes = {};
+                        }
+                        payload.paymentMethod.extension_attributes.subselection = window.subselection();
+                    }.bind(this)
+                );
             },
             isActive: function () {
                 return this.getCode() === this.isChecked();
             },
             async placeOrder(data, event) {
-                    const response = await placeOrderAction(this.getData(), false, this.messageContainer);
-                    this.afterPlaceOrder(response);
+                const response = await placeOrderAction(this.getData(), false, this.messageContainer);
+                this.afterPlaceOrder(response);
             },
             afterPlaceOrder: function (response) {
                 if (this.isHosted()) {
@@ -112,31 +131,17 @@ define(
                 }, this);
             },
             selectPaymentMethod: function (data, event) {
-                let selectedPaymentMethod = event.target.value;
-                this.subselection(selectedPaymentMethod);
-                let paymentData = this.getData()
-                paymentData.method = selectedPaymentMethod;
-                selectPaymentMethodAction(paymentData);
-                checkoutData.setSelectedPaymentMethod(selectedPaymentMethod);
+                this._super();
 
+
+                this.subselection(event.target.value);
+                checkoutData.setNexiSubselection(this.subselection());
 
                 if (this.isEmbedded()) {
                     this.renderCheckout();
                 }
 
                 return true;
-            },
-
-            getSubselection: function () {
-                return [
-                    { code: 'nexi_credit_card', title: $t('Credit Card') },
-                    { code: 'nexi_direct_debit', title: $t('Direct Debit') },
-                    { code: 'nexi_invoice', title: $t('Invoice') },
-                    { code: 'nexi_installment', title: $t('Installment') },
-                    { code: 'nexi_mobilepay', title: $t('MobilePay') },
-                    { code: 'nexi_swish', title: $t('Swish') },
-                    { code: 'nexi_vipps', title: $t('Vipps') }
-                ];
             },
 
             subscribeToEvents: function () {
@@ -192,7 +197,7 @@ define(
             isHosted: function () {
                 return this.config.integrationType === 'HostedPaymentPage';
             },
-            hideIframeIfNeeded: function() {
+            hideIframeIfNeeded: function () {
                 const method = quote.paymentMethod();
                 const container = document.getElementById("nexi-checkout-container");
                 if (!container) {
@@ -218,6 +223,11 @@ define(
                     }
                 };
             },
+            clearSubselection(method) {
+                if (method && method.method !== this.getCode()) {
+                    this.subselection(false);
+                }
+            }
         });
     }
 );
