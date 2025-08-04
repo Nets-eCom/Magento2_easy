@@ -16,27 +16,15 @@ class TotalConfigProvider implements ConfigProviderInterface
     private const IS_SUBSCRIPTIONS_ENABLED = 'nexi/subscriptions/active_subscriptions';
 
     /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
      * TotalConfigProvider constructor.
      *
      * @param Session $checkoutSession
      * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        Session $checkoutSession,
-        ScopeConfigInterface $scopeConfig
+        private Session $checkoutSession,
+        private ScopeConfigInterface $scopeConfig
     ) {
-        $this->checkoutSession = $checkoutSession;
-        $this->scopeConfig = $scopeConfig;
     }
 
     /**
@@ -86,6 +74,25 @@ class TotalConfigProvider implements ConfigProviderInterface
         }
 
         return false;
+    }
+
+    /**
+     * Get subscription interval.
+     *
+     * @return string
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getSubscriptionProfileId(): string
+    {
+        $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
+        if ($quoteItems) {
+            foreach ($quoteItems as $item) {
+                $profileId = $item->getProduct()->getCustomAttribute('subscription_schedule')->getValue();
+            }
+        }
+
+        return $profileId;
     }
 
     /**

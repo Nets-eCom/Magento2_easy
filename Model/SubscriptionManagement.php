@@ -72,8 +72,8 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     /**
      * Process a subscription for the given order and Nexi subscription ID.
      *
-     * @param $order
-     * @param $nexiSubscriptionId
+     * @param Order $order
+     * @param string $nexiSubscriptionId
      * @return SubscriptionInterface
      * @throws CouldNotSaveException
      */
@@ -103,13 +103,13 @@ class SubscriptionManagement implements SubscriptionManagementInterface
      * @return SubscriptionInterface
      * @throws CouldNotSaveException
      */
-    public function createSubscription(Order $order, array $orderSchedule, string $subscriptionId): SubscriptionInterface
+    public function createSubscription($order, $orderSchedule, $subscriptionId): SubscriptionInterface
     {
         try {
             $subscription = $this->subscriptionInterfaceFactory->create();
             $subscription->setStatus(SubscriptionInterface::STATUS_ACTIVE);
             $subscription->setCustomerId($order->getCustomerId());
-            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(reset($orderSchedule)));
+            $subscription->setNextOrderDate($this->dateCalculator->getNextDate(reset($orderSchedule))->format('Y-m-d'));
             $subscription->setRecurringProfileId((int)reset($orderSchedule));
             $subscription->setRepeatCountLeft(self::REPEAT_COUNT_STATIC_VALUE);
             $subscription->setRetryCount(self::REPEAT_COUNT_STATIC_VALUE);
@@ -126,7 +126,11 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     }
 
     /**
-     * @inheritdoc
+     * Cancel a subscription by its ID.
+     *
+     * @param int $subscriptionId
+     * @return string
+     * @throws LocalizedException
      */
     public function cancelSubscription($subscriptionId)
     {
@@ -169,8 +173,9 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     }
 
     /**
-     * @param SearchCriteriaInterface $searchCriteria
+     * Show subscriptions for the logged-in customer based on search criteria.
      *
+     * @param SearchCriteriaInterface $searchCriteria
      * @return array
      * @throws LocalizedException
      */
@@ -210,7 +215,9 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     }
 
     /**
-     * @param $order
+     * Get the subscription schedule from the order items.
+     *
+     * @param Order $order
      * @return array
      */
     public function getSubscriptionSchedule($order): array
@@ -233,8 +240,9 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     }
 
     /**
-     * @param SearchCriteriaInterface $searchCriteria
+     * Filter search criteria by customer ID.
      *
+     * @param SearchCriteriaInterface $searchCriteria
      * @return void
      */
     private function filterByCustomer(SearchCriteriaInterface $searchCriteria): void
@@ -271,8 +279,9 @@ class SubscriptionManagement implements SubscriptionManagementInterface
     }
 
     /**
-     * @param SubscriptionInterface $subscription
+     * Save the subscription entity.
      *
+     * @param SubscriptionInterface $subscription
      * @return bool
      */
     private function save(SubscriptionInterface $subscription): bool
