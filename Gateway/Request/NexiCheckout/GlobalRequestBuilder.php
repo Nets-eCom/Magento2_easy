@@ -44,6 +44,11 @@ class GlobalRequestBuilder
     ) {
     }
 
+    /**
+     * Build the webhooks for the payment
+     *
+     * @return array
+     */
     public function buildWebhooks(): array
     {
         $webhooks = [];
@@ -59,6 +64,13 @@ class GlobalRequestBuilder
         return $webhooks;
     }
 
+    /**
+     * Get Phone number from the address
+     *
+     * @param Order|Quote $salesObject
+     * @return PhoneNumber
+     * @throws \libphonenumber\NumberParseException
+     */
     public function getNumber(Order|Quote $salesObject): PhoneNumber
     {
         $lib = PhoneNumberUtil::getInstance();
