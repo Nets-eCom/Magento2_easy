@@ -41,6 +41,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param StringSanitizer $stringSanitizer
      * @param TotalConfigProvider $totalConfigProvider
      * @param GlobalRequestBuilder $globalRequestBuilder
+     * @param NextDateCalculator $nextDateCalculator
      */
     public function __construct(
         private readonly UrlInterface                        $url,

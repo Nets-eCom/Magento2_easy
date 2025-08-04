@@ -9,7 +9,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\ScopeInterface;
-use Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface;
 
 class TotalConfigProvider implements ConfigProviderInterface
 {
@@ -24,7 +23,6 @@ class TotalConfigProvider implements ConfigProviderInterface
      */
     public function __construct(
         private Session $checkoutSession,
-        private SubscriptionProfileRepositoryInterface $profileRepositoryInterface,
         private ScopeConfigInterface $scopeConfig
     ) {
     }

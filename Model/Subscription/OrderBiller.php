@@ -8,7 +8,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPool;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderRepository;
-use Magento\Sales\Model\Service\InvoiceService;
 use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
 use Nexi\Checkout\Api\SubscriptionRepositoryInterface;
 use Nexi\Checkout\Gateway\Config\Config;
@@ -32,18 +31,19 @@ class OrderBiller
      * @param SubscriptionLinkRepositoryInterface $subscriptionLinkRepository
      * @param OrderSender $orderSender
      * @param OrderRepository $orderRepository
+     * @param CommandManagerPool $commandManagerPool
      */
     public function __construct(
-        private PaymentCount                                                           $paymentCount,
-        private CollectionFactory                                                      $collectionFactory,
-        private NextDateCalculator                                                     $nextDateCalculator,
-        private SubscriptionRepositoryInterface                                        $subscriptionRepository,
-        private SubscriptionResource                                                   $subscriptionResource,
-        private LoggerInterface                                                        $logger,
-        private SubscriptionLinkRepositoryInterface                                    $subscriptionLinkRepository,
-        private OrderSender                                                            $orderSender,
-        private OrderRepository                                                        $orderRepository,
-        private CommandManagerPool $commandManagerPool
+        private PaymentCount                        $paymentCount,
+        private CollectionFactory                   $collectionFactory,
+        private NextDateCalculator                  $nextDateCalculator,
+        private SubscriptionRepositoryInterface     $subscriptionRepository,
+        private SubscriptionResource                $subscriptionResource,
+        private LoggerInterface                     $logger,
+        private SubscriptionLinkRepositoryInterface $subscriptionLinkRepository,
+        private OrderSender                         $orderSender,
+        private OrderRepository                     $orderRepository,
+        private CommandManagerPool                  $commandManagerPool
     ) {
     }
 
@@ -101,12 +101,12 @@ class OrderBiller
     {
         $paymentSuccess = false;
         try {
-            $order           = $this->orderRepository->get($orderId);
+            $order = $this->orderRepository->get($orderId);
             $commandExecutor = $this->commandManagerPool->get(Config::CODE);
 
             $commandExecutor->executeByCode(
                 commandCode: 'subscription_charge',
-                arguments  : ['order' => $order]
+                arguments: ['order' => $order]
             );
         } catch (LocalizedException $e) {
             $this->logger->error(
