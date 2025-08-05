@@ -77,7 +77,7 @@ class TotalConfigProvider implements ConfigProviderInterface
     }
 
     /**
-     * Get subscription interval.
+     * Get subscription profile ID.
      *
      * @return string
      * @throws LocalizedException
@@ -85,10 +85,13 @@ class TotalConfigProvider implements ConfigProviderInterface
      */
     public function getSubscriptionProfileId(): string
     {
+        $profileId = '';
         $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
         if ($quoteItems) {
             foreach ($quoteItems as $item) {
-                $profileId = $item->getProduct()->getCustomAttribute('subscription_schedule')->getValue();
+                if ($item->getProduct()->getCustomAttribute('subscription_schedule')) {
+                    $profileId = $item->getProduct()->getCustomAttribute('subscription_schedule')->getValue();
+                }
             }
         }
 
