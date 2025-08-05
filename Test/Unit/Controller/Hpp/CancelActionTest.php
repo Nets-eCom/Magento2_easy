@@ -10,6 +10,7 @@ use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
+use Magento\Sales\Api\OrderManagementInterface;
 use Nexi\Checkout\Controller\Hpp\CancelAction;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -71,11 +72,13 @@ class CancelActionTest extends TestCase
         $this->quoteMock->method('getPayment')
             ->willReturn($this->createMock(\Magento\Quote\Model\Quote\Payment::class));
         $this->messageManagerMock = $this->createMock(ManagerInterface::class);
+        $this->orderManagementInterfaceMock = $this->createMock(OrderManagementInterface::class);
 
         $this->controller = new CancelAction(
             $this->redirectFactoryMock,
             $this->urlMock,
             $this->checkoutSessionMock,
+            $this->orderManagementInterfaceMock,
             $this->messageManagerMock
         );
     }
