@@ -13,12 +13,14 @@ use Magento\Framework\Controller\ResultInterface;
 class Delete implements HttpPostActionInterface
 {
     /**
+     * Delete constructor.
+     *
      * @param Context $context
-     * @param SubscriptionProfileRepositoryInterface $profileRepo
+     * @param SubscriptionProfileRepositoryInterface $subscriptionProfileRepository
      */
     public function __construct(
         private Context                             $context,
-        private SubscriptionProfileRepositoryInterface $profileRepo
+        private SubscriptionProfileRepositoryInterface $subscriptionProfileRepository
     ) {
     }
 
@@ -33,8 +35,8 @@ class Delete implements HttpPostActionInterface
         $resultRedirect = $this->context->getResultFactory()->create(ResultFactory::TYPE_REDIRECT);
 
         try {
-            $profile = $this->profileRepo->get($id);
-            $this->profileRepo->delete($profile);
+            $profile = $this->subscriptionProfileRepository->get($id);
+            $this->subscriptionProfileRepository->delete($profile);
             $resultRedirect->setPath('subscriptions/profile');
             $this->context->getMessageManager()->addSuccessMessage('Subscription profile deleted');
         } catch (\Throwable $e) {
