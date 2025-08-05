@@ -42,7 +42,7 @@ class CancelAction implements ActionInterface
     public function execute(): ResultInterface
     {
         $this->checkoutSession->restoreQuote();
-        $this->cancelOrderById($this->checkoutSession->getLastOrderId());
+        $this->cancelOrderById((int)$this->checkoutSession->getLastOrderId());
         $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
 
         return $this->resultRedirectFactory->create()->setUrl(
@@ -53,7 +53,7 @@ class CancelAction implements ActionInterface
     /**
      * CancelOrderById function.
      *
-     * @param $orderId
+     * @param int $orderId
      * @return void
      * @throws LocalizedException
      */

@@ -73,6 +73,7 @@ class CancelActionTest extends TestCase
             ->willReturn($this->createMock(\Magento\Quote\Model\Quote\Payment::class));
         $this->messageManagerMock = $this->createMock(ManagerInterface::class);
         $this->orderManagementInterfaceMock = $this->createMock(OrderManagementInterface::class);
+        $this->orderManagementInterfaceMock->method('cancel');
 
         $this->controller = new CancelAction(
             $this->redirectFactoryMock,
@@ -87,6 +88,8 @@ class CancelActionTest extends TestCase
     {
         $this->checkoutSessionMock->expects($this->once())
             ->method('restoreQuote');
+        $this->orderManagementInterfaceMock->expects($this->once())
+            ->method('cancel');
         $this->messageManagerMock->expects($this->once())
             ->method('addNoticeMessage')
             ->with(__('The payment has been canceled.'));
