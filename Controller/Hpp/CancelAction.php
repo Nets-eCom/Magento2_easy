@@ -34,15 +34,16 @@ class CancelAction implements ActionInterface
     }
 
     /**
-     * Execute action based on request and return result
+     * Execute cancel action.
      *
      * @return ResultInterface
+     * @throws LocalizedException
      */
     public function execute(): ResultInterface
     {
         $this->checkoutSession->restoreQuote();
-        $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
         $this->cancelOrderById($this->checkoutSession->getLastOrderId());
+        $this->messageManager->addNoticeMessage(__('The payment has been canceled.'));
 
         return $this->resultRedirectFactory->create()->setUrl(
             $this->url->getUrl('checkout/cart/index', ['_secure' => true])
