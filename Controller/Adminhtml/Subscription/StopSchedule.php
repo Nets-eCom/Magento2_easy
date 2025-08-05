@@ -41,10 +41,10 @@ class StopSchedule implements HttpGetActionInterface
     public function execute()
     {
         $resultRedirect = $this->context->getResultFactory()->create(ResultFactory::TYPE_REDIRECT);
-        $resultRedirect->setPath($this->_redirect->getRefererUrl());
+        $resultRedirect->setPath($this->context->getRedirect()->getRefererUrl());
         $id = $this->context->getRequest()->getParam('id');
 
-        $subscription = $this->getRecurringPayment($id);
+        $subscription = $this->getRecurringPayment((int)$id);
         if (!$subscription) {
             return $resultRedirect;
         }
