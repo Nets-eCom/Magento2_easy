@@ -1,9 +1,9 @@
 <?php
-/** @var $block Nexi */
-/** @var $escaper \Magento\Framework\Escaper */
 
 use Nexi\Checkout\Block\Info\Nexi;
 
+/** @var $block Nexi */
+/** @var $escaper \Magento\Framework\Escaper */
 ?>
 
 <?= $block->getChildHtml() ?>
@@ -24,4 +24,3 @@ use Nexi\Checkout\Block\Info\Nexi;
         </tr>
     </tbody>
 </table>
-<!--<p>Payment method: --><?php //= $block->escapeHtml($block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()') ?><!--</p>-->
