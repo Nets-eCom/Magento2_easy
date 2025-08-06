@@ -17,14 +17,14 @@ use Nexi\Checkout\Block\Info\Nexi;
         <tr>
             <th><?= $escaper->escapeHtml(__('Payment Method')) ?></th>
             <td><?= $escaper->escapeHtml(
-                    $block->getSelectedPaymentMethodData()[Nexi::SELECTED_PATMENT_METHOD] ?? ''
-                ) ?></td>
+                $block->getSelectedPaymentMethodData()[Nexi::SELECTED_PATMENT_METHOD] ?? ''
+            ) ?></td>
         </tr>
         <tr>
             <th><?= $escaper->escapeHtml(__('Payment Type')) ?></th>
             <td><?= $escaper->escapeHtml(
-                    $block->getSelectedPaymentMethodData()[Nexi::SELECTED_PATMENT_TYPE] ?? ''
-                ) ?></td>
+                $block->getSelectedPaymentMethodData()[Nexi::SELECTED_PATMENT_TYPE] ?? ''
+            ) ?></td>
         </tr>
     </tbody>
 </table>
