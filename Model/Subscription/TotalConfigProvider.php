@@ -1,0 +1,126 @@
+<?php
+declare(strict_types=1);
+
+namespace Nexi\Checkout\Model\Subscription;
+
+use Magento\Checkout\Model\ConfigProviderInterface;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\ScopeInterface;
+
+class TotalConfigProvider implements ConfigProviderInterface
+{
+    private const NO_SCHEDULE_VALUE = null;
+    private const IS_SUBSCRIPTIONS_ENABLED = 'nexi/subscriptions/active_subscriptions';
+
+    /**
+     * TotalConfigProvider constructor.
+     *
+     * @param Session $checkoutSession
+     * @param ScopeConfigInterface $scopeConfig
+     */
+    public function __construct(
+        private Session $checkoutSession,
+        private ScopeConfigInterface $scopeConfig
+    ) {
+    }
+
+    /**
+     * Is recurring payment feature enable.
+     *
+     * @return bool
+     */
+    public function isSubscriptionsEnabled(): bool
+    {
+        return (bool)$this->scopeConfig->getValue(
+            self::IS_SUBSCRIPTIONS_ENABLED,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * Get subscription values to config.
+     *
+     * @return array
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getConfig(): array
+    {
+        return [
+            'isRecurringScheduled' => $this->isSubscriptionScheduled(),
+            'recurringSubtotal' => $this->getSubscriptionSubtotal()
+            ];
+    }
+
+    /**
+     * Is cart has subscription schedule products.
+     *
+     * @return bool
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function isSubscriptionScheduled(): bool
+    {
+        $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
+        if ($quoteItems) {
+            foreach ($quoteItems as $item) {
+                if ($item->getProduct()->getCustomAttribute('subscription_schedule') != self::NO_SCHEDULE_VALUE) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get subscription profile ID.
+     *
+     * @return string
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getSubscriptionProfileId(): string
+    {
+        $profileId = '';
+        $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
+        if ($quoteItems) {
+            foreach ($quoteItems as $item) {
+                if ($item->getProduct()->getCustomAttribute('subscription_schedule')) {
+                    $profileId = $item->getProduct()->getCustomAttribute('subscription_schedule')->getValue();
+                }
+            }
+        }
+
+        return $profileId;
+    }
+
+    /**
+     * Get subscription cart subtotal value.
+     *
+     * @return float
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    private function getSubscriptionSubtotal(): float
+    {
+        $recurringSubtotal = 0.00;
+        if ($this->isSubscriptionsEnabled()) {
+
+            if ($this->isSubscriptionScheduled()) {
+                $quoteItems = $this->checkoutSession->getQuote()->getAllItems();
+                foreach ($quoteItems as $item) {
+                    if ($item->getProduct()
+                            ->getCustomAttribute('subscription_schedule') != self::NO_SCHEDULE_VALUE) {
+                        $recurringSubtotal = $recurringSubtotal + ($item->getPrice() * $item->getQty());
+                    }
+                }
+            }
+        }
+
+        return $recurringSubtotal;
+    }
+}

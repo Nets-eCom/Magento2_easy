@@ -7,7 +7,6 @@ namespace Nexi\Checkout\Gateway\Command;
 use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
-use Magento\Payment\Gateway\Command\ResultInterface;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -49,6 +48,14 @@ class Initialize implements CommandInterface
         $paymentData = $this->subjectReader->readPayment($commandSubject);
         $stateObject = $this->subjectReader->readStateObject($commandSubject);
 
+        // For embedded integration, we don't need to create payment here, it was already created for the quote.
+        if ($paymentData->getPayment()->getAdditionalInformation('payment_id')) {
+            return;
+        }
+        if ($paymentData->getPayment()->getAdditionalInformation('subscription_id')) {
+            return;
+        }
+
         /** @var InfoInterface $payment */
         $payment = $paymentData->getPayment();
         $payment->setIsTransactionPending(true);
@@ -61,9 +68,9 @@ class Initialize implements CommandInterface
         $stateObject->setStatus(self::STATUS_PENDING);
         $stateObject->setIsNotified(false);
 
-        $this->cratePayment($paymentData);
+        $this->createPayment($paymentData);
 
-        $transactionId      = $payment->getAdditionalInformation('payment_id');
+        $transactionId = $payment->getAdditionalInformation('payment_id');
         $orderTransaction = $this->transactionBuilder->build(
             $transactionId,
             $order,
@@ -82,22 +89,32 @@ class Initialize implements CommandInterface
      *
      * @param PaymentDataObjectInterface $payment
      *
-     * @return ResultInterface|null
+     * @return void
      * @throws LocalizedException
      */
-    public function cratePayment(PaymentDataObjectInterface $payment): ?ResultInterface
+    public function createPayment(PaymentDataObjectInterface $payment)
     {
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
-            $result      = $commandPool->executeByCode(
+            $commandPool->executeByCode(
                 commandCode: 'create_payment',
-                arguments  : ['payment' => $payment,]
+                arguments  : ['payment' => $payment]
             );
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
             throw new LocalizedException(__('An error occurred during the payment process. Please try again later.'));
         }
+    }
 
-        return $result;
+    /**
+     * Check if payment is already created
+     *
+     * @param PaymentDataObjectInterface $payment
+     *
+     * @return bool
+     */
+    private function isPaymentAlreadyCreated(PaymentDataObjectInterface $payment): bool
+    {
+        return (bool)$payment->getPayment()->getAdditionalInformation('payment_id');
     }
 }

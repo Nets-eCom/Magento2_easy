@@ -33,7 +33,7 @@ class ConfigProvider implements ConfigProviderInterface
             return [];
         }
 
-        return [
+        $config = [
             'payment' => [
                 Config::CODE => [
                     'isActive'    => $this->config->isActive(),
@@ -43,5 +43,11 @@ class ConfigProvider implements ConfigProviderInterface
                 ]
             ]
         ];
+
+        if ($this->config->isEmbedded()) {
+            $config['payment'][Config::CODE]['checkoutKey'] = $this->config->getCheckoutKey();
+        }
+
+        return $config;
     }
 }
