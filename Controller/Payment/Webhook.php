@@ -65,7 +65,7 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
             $this->webhookHandler->handle($content);
             $this->_response->setHttpResponseCode(200);
         } catch (Exception $e) {
-            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
+            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
             $this->_response->setHttpResponseCode(500);
         }
     }
