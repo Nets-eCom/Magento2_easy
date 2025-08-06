@@ -136,6 +136,9 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             checkout: $this->buildCheckout($order),
             notification: new Notification($this->globalRequestBuilder->buildWebhooks()),
             subscription: $this->getSubscriptionSetup($order),
+            paymentMethodsConfiguration: $this->globalRequestBuilder->buildPaymentMethodsConfiguration(
+                $order
+            ),
         );
     }
 

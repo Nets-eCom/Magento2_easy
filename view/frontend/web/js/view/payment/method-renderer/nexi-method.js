@@ -25,7 +25,6 @@ define(
         'Nexi_Checkout/js/view/payment/render-embedded',
         'Nexi_Checkout/js/view/payment/validate',
         'Magento_Checkout/js/model/payment/place-order-hooks',
-        'Magento_Checkout/js/checkout-data',
     ],
     function (
         ko,
@@ -53,7 +52,6 @@ define(
         renderEmbeddedCheckout,
         validatePayment,
         placeOrderHooks,
-        checkoutDataModel
     ) {
         'use strict';
 
@@ -72,22 +70,31 @@ define(
                 creditCardVerificationNumber: '',
                 selectedCardType: null
             },
+            payTypeSplitting: ko.observable(window.checkoutConfig.payment.nexi.payTypeSplitting),
             isEmbedded: ko.observable(false),
             dibsCheckout: ko.observable(false),
             isRendering: ko.observable(false),
             eventsSubscribed: ko.observable(false),
             subselection: ko.observable(false),
-            payTypeSplitting: ko.observable(window.checkoutConfig.payment.nexi.payTypeSplitting),
-
             initialize: function () {
                 this._super();
                 if (this.config.integrationType === 'EmbeddedCheckout') {
                     this.isEmbedded(true);
                 }
-                this.subselection(checkoutData.getNexiSubselection() || false);
+                if (this.payTypeSplitting()) {
+                    if (this.isActive()) {
+                        this.subselection(checkoutData.getNexiSubselection() || false);
+                        this.moveContentToSubselection(this.subselection());
+                    }
+                    this.subselection.subscribe(function (newSubselection) {
+                        if (newSubselection) {
+                            this.moveContentToSubselection(newSubselection);
+                            this.selectPaymentMethod();
+                        }
+                        checkoutData.setNexiSubselection(newSubselection);
+                    }, this);
 
-                window.subselection = this.subselection;
-
+                }
                 if (this.isActive() && this.isEmbedded()) {
                     this.renderCheckout();
                 }
@@ -103,9 +110,28 @@ define(
                         if (payload.paymentMethod.extension_attributes === undefined) {
                             payload.paymentMethod.extension_attributes = {};
                         }
-                        payload.paymentMethod.extension_attributes.subselection = window.subselection();
+                        payload.paymentMethod.extension_attributes.subselection = this.subselection();
                     }.bind(this)
                 );
+            },
+            afterRender: function () {
+                if (this.isActive()) {
+                    this.moveContentToSubselection(this.subselection());
+                }
+            },
+            moveContentToSubselection: function (subselection) {
+                const contentElement = document.getElementById("nexi-content");
+                const placeholderElement = document.getElementById("nexi-content-" + subselection);
+                if (contentElement && placeholderElement) {
+                    if (subselection) {
+                        placeholderElement.appendChild(contentElement);
+                    } else {
+                        const originalContainer = document.getElementById("nexi-original-container");
+                        if (originalContainer) {
+                            originalContainer.appendChild(contentElement);
+                        }
+                    }
+                }
             },
             isActive: function () {
                 return this.getCode() === this.isChecked();
@@ -127,20 +153,14 @@ define(
                 quote.totals.subscribe(async function (quote) {
                     await renderEmbeddedCheckout.call(this);
                     this.subscribeToEvents();
-
                 }, this);
             },
-            selectPaymentMethod: function (data, event) {
+            selectPaymentMethod: function () {
                 this._super();
-
-
-                this.subselection(event.target.value);
                 checkoutData.setNexiSubselection(this.subselection());
-
                 if (this.isEmbedded()) {
                     this.renderCheckout();
                 }
-
                 return true;
             },
 
@@ -205,10 +225,8 @@ define(
                 }
 
                 if (!method || method.method !== this.getCode()) {
-                    // Hide the iframe container if another payment method is selected
                     container.style.display = "none";
                 } else {
-                    // Show the iframe container if Nexi payment method is selected
                     container.style.display = "block";
                 }
             },
@@ -227,6 +245,17 @@ define(
                 if (method && method.method !== this.getCode()) {
                     this.subselection(false);
                 }
+            },
+            getSubselections: function () {
+                if (this.config.payTypeSplitting && this.config.subselections) {
+                    return this.config.subselections.map(function (subselection) {
+                        return {
+                            value: subselection.value,
+                            label: subselection.label,
+                        };
+                    }, this);
+                }
+                return [];
             }
         });
     }

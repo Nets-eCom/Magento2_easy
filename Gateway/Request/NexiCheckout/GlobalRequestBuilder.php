@@ -18,6 +18,7 @@ use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\WebhookHandler;
 use NexiCheckout\Model\Request\Item;
+use NexiCheckout\Model\Request\Payment\MethodConfiguration;
 use NexiCheckout\Model\Request\Payment\PhoneNumber;
 use NexiCheckout\Model\Request\Shared\Notification\Webhook;
 use NexiCheckout\Model\Request\Shared\Order as NexiRequestOrder;
@@ -301,5 +302,28 @@ class GlobalRequestBuilder
         $data['taxAmount'] = $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount());
 
         return $data;
+    }
+
+    /**
+     * Build the payment methods configuration for the order or quote.
+     *
+     * @param Quote|Order $order
+     *
+     * @return MethodConfiguration[]
+     */
+    public function buildPaymentMethodsConfiguration(Quote|Order $order): array
+    {
+
+        if (!$this->config->getPayTypeSplitting()) {
+            return [];
+        }
+
+        $subselection = $order->getPayment()->getAdditionalInformation('subselection') ?? [];
+        return [
+            new MethodConfiguration(
+                name: $subselection,
+                enabled: true
+            )
+        ];
     }
 }

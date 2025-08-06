@@ -5,5 +5,5 @@
 
 <img src="<?= $escaper->escapeHtml($block->getLogo() ? $block->getLogo() : ''); ?>">
 <p><?= $escaper->escapeHtml($block->getTitle() ? $block->getTitle() : '') ?></p>
-<?= $block->getChildHtml()?>
+<?= $block->getChildHtml() ?>
 <!--<p>Payment method: --><?php //= $block->escapeHtml($block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()') ?><!--</p>-->

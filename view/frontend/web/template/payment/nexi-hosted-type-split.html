@@ -1,41 +1,25 @@
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
-    <div class="payment-method-title field choice">
-
-       <span data-bind="text: getTitle()"></span>
-
+    <div class="payment-method-nexi">
         <div class="payment-method-subselection">
-
-            <div class="payment-method-subselection-item">
+            <!-- ko foreach: getSubselections() -->
+            <div class="payment-method-title field choice">
                 <input type="radio"
                        name="payment[method][subselection]"
                        class="radio"
-                       data-bind="attr: {'id': 'nexi_credit_card'},
-                       value: 'nexi_credit_card',
-                       checked: subselection,
-                       click: selectPaymentMethod"
+                       data-bind="attr: {'id': value},
+                          value: value,
+                          checked: $parent.subselection"
                 />
-                <label data-bind="attr: {'for': 'nexi_credit_card'}" class="label">
-                    <span data-bind="text: 'nexi_credit_card'"></span>
+                <label data-bind="attr: {'for': value}" class="label">
+                    <span data-bind="text: label"></span>
                 </label>
-            </div>
 
-            <div class="payment-method-subselection-item">
-                <input type="radio"
-                       name="payment[method][subselection]"
-                       class="radio"
-                       data-bind="attr: {'id': 'nexi_mobilepay'},
-                       value: 'nexi_mobilepay',
-                       checked: subselection,
-                       click: selectPaymentMethod"
-                />
-                <label data-bind="attr: {'for': 'nexi_mobilepay'}" class="label">
-                    <span data-bind="text: 'nexi_mobilepay'"></span>
-                </label>
+                <div class="subselection-content-placeholder" data-bind="attr: {id: 'nexi-content-' + value}"></div>
             </div>
-
+            <!--/ko-->
         </div>
 
-        <div class="payment-method-content nexi-hosted-content">
+        <div class="payment-method-content" id="nexi-content">
             <!-- ko foreach: getRegion('messages') -->
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
@@ -62,7 +46,7 @@
                             enable: (getCode() == isChecked())
                             "
                             disabled>
-                        <span data-bind="i18n: 'Place Order'"></span>
+                        <span data-bind="i18n: 'Place Order', afterRender: afterRender()" ></span>
                     </button>
                 </div>
             </div>

@@ -199,4 +199,14 @@ class Config extends MagentoConfig
     {
         return (bool)$this->getValue('pay_type_splitting');
     }
+
+    /**
+     * Retrieve the payment type options
+     *
+     * @return mixed
+     */
+    public function getPayTypeOptions()
+    {
+        return $this->getValue('pay_type_options');
+    }
 }
