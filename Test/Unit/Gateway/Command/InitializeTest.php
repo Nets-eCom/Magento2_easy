@@ -46,6 +46,11 @@ class InitializeTest extends TestCase
      */
     private $initialize;
 
+    /**
+     * @var Config|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $configMock;
+
     protected function setUp(): void
     {
         $this->commandManagerPoolMock = $this->createMock(CommandManagerPoolInterface::class);
@@ -54,12 +59,14 @@ class InitializeTest extends TestCase
         $this->subjectReaderMock = $this->getMockBuilder(SubjectReader::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $this->configMock = $this->createMock(Config::class);
 
         $this->initialize = new Initialize(
             $this->subjectReaderMock,
             $this->commandManagerPoolMock,
             $this->loggerMock,
-            $this->transactionBuilderMock
+            $this->transactionBuilderMock,
+            $this->configMock,
         );
     }
 

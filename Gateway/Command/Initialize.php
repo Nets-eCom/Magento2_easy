@@ -26,12 +26,14 @@ class Initialize implements CommandInterface
      * @param CommandManagerPoolInterface $commandManagerPool
      * @param LoggerInterface $logger
      * @param Builder $transactionBuilder
+     * @param Config $config
      */
     public function __construct(
         private readonly SubjectReader $subjectReader,
         private readonly CommandManagerPoolInterface $commandManagerPool,
         private readonly LoggerInterface $logger,
-        private readonly Builder $transactionBuilder
+        private readonly Builder $transactionBuilder,
+        private readonly Config $config
     ) {
     }
 
@@ -49,9 +51,10 @@ class Initialize implements CommandInterface
         $stateObject = $this->subjectReader->readStateObject($commandSubject);
 
         // For embedded integration, we don't need to create payment here, it was already created for the quote.
-        if ($paymentData->getPayment()->getAdditionalInformation('payment_id')) {
+        if ($this->config->isEmbedded() && $paymentData->getPayment()->getAdditionalInformation('payment_id')) {
             return;
         }
+
         if ($paymentData->getPayment()->getAdditionalInformation('subscription_id')) {
             return;
         }
