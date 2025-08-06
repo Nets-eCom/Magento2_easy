@@ -53,11 +53,6 @@ class PaymentValidate implements PaymentValidateInterface
             }
             $quote = $this->quoteRepository->get($cartId);
 
-            // check quote is active and restore it if needed
-            if (!$quote->getIsActive()) {
-                $this->session->restoreQuote();
-            }
-
             $paymentMethod = $quote->getPayment();
             if (!$paymentMethod) {
                 throw new LocalizedException(__('No payment method found for the quote'));
