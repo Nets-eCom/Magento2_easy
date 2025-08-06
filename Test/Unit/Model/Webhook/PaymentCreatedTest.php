@@ -109,12 +109,12 @@ class PaymentCreatedTest extends TestCase
             'data' => [
                 'paymentId' => 'payment-123',
                 'order'     => [
-                    'reference' => '000000123'
+                    'reference' => '000000123',
+                    'amount'    => [
+                        'amount'   => 10000,
+                        'currency' => 'EUR'
+                    ]
                 ],
-                'amount'    => [
-                    'amount'   => 10000,
-                    'currency' => 'EUR'
-                ]
             ]
         ];
 
@@ -146,20 +146,6 @@ class PaymentCreatedTest extends TestCase
             ->method('getFirstItem')
             ->willReturn($orderMock);
 
-        // Setup expectations for saveComment
-        $this->commentMock->expects($this->once())
-            ->method('saveComment')
-            ->with(
-                __(
-                    'Webhook Received. Payment created for Payment ID: %1'
-                    . '<br />Amount: %2 %3.',
-                    $webhookData['data']['paymentId'],
-                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                    $webhookData['data']['amount']['currency']
-                ),
-                $orderMock
-            );
-
         // Execute the method
         $this->paymentCreated->processWebhook($webhookData);
     }
@@ -170,9 +156,11 @@ class PaymentCreatedTest extends TestCase
             'id'   => 'webhook-123',
             'data' => [
                 'paymentId' => 'payment-123',
-                'amount'    => [
-                    'amount'   => 10000,
-                    'currency' => 'EUR'
+                'order'     => [
+                    'amount' => [
+                        'amount'   => 10000,
+                        'currency' => 'EUR'
+                    ]
                 ]
             ]
         ];
@@ -229,20 +217,6 @@ class PaymentCreatedTest extends TestCase
 
         $orderMock->method('getId')->willReturn(1);
 
-        // Setup expectations for saveComment
-        $this->commentMock->expects($this->once())
-            ->method('saveComment')
-            ->with(
-                __(
-                    'Webhook Received. Payment created for Payment ID: %1'
-                    . '<br />Amount: %2 %3.',
-                    $webhookData['data']['paymentId'],
-                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                    $webhookData['data']['amount']['currency']
-                ),
-                $orderMock
-            );
-
         // Execute the method
         $this->paymentCreated->processWebhook($webhookData);
     }
@@ -254,12 +228,12 @@ class PaymentCreatedTest extends TestCase
             'data' => [
                 'paymentId' => 'payment-123',
                 'order'     => [
-                    'reference' => '000000123'
+                    'reference' => '000000123',
+                    'amount'    => [
+                        'amount'   => 10000,
+                        'currency' => 'EUR'
+                    ]
                 ],
-                'amount'    => [
-                    'amount'   => 10000,
-                    'currency' => 'EUR'
-                ]
             ]
         ];
 
@@ -303,8 +277,8 @@ class PaymentCreatedTest extends TestCase
                     'Webhook Received. Payment created for Payment ID: %1'
                     . '<br />Amount: %2 %3.',
                     $webhookData['data']['paymentId'],
-                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                    $webhookData['data']['amount']['currency']
+                    number_format($webhookData['data']['order']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['order']['amount']['currency']
                 ),
                 $orderMock
             );
@@ -349,12 +323,12 @@ class PaymentCreatedTest extends TestCase
             'data' => [
                 'paymentId' => 'payment-123',
                 'order'     => [
-                    'reference' => '000000123'
+                    'reference' => '000000123',
+                    'amount'    => [
+                        'amount'   => 10000,
+                        'currency' => 'EUR'
+                    ]
                 ],
-                'amount'    => [
-                    'amount'   => 10000,
-                    'currency' => 'EUR'
-                ]
             ]
         ];
 
@@ -391,8 +365,8 @@ class PaymentCreatedTest extends TestCase
                     'Webhook Received. Payment created for Payment ID: %1'
                     . '<br />Amount: %2 %3.',
                     $webhookData['data']['paymentId'],
-                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                    $webhookData['data']['amount']['currency']
+                    number_format($webhookData['data']['order']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['order']['amount']['currency']
                 ),
                 $orderMock
             );

@@ -23,6 +23,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
      * @param Comment $comment
+     * @param SubscriptionManagement $subscriptionManagement
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
@@ -52,18 +53,6 @@ class PaymentReservationCreated implements WebhookProcessorInterface
 
         /** @var Order $order */
         $order = $paymentTransaction->getOrder();
-        $this->comment->saveComment(
-            __(
-                'Webhook Received. Payment reservation created for payment ID: %1'
-                . '<br/>Reservation Id: %2'
-                . '<br/>Amount: %3 %4.',
-                $paymentId,
-                $webhookData['id'],
-                number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                $webhookData['data']['amount']['currency']
-            ),
-            $order
-        );
 
         if ($this->authorizationAlreadyExists($webhookData['id'])) {
             return;
@@ -94,6 +83,8 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         $payment->setBaseAmountAuthorized($amount);
 
         $this->orderRepository->save($order);
+
+        $this->saveComment($paymentId, $webhookData, $order);
     }
 
     /**
@@ -106,6 +97,30 @@ class PaymentReservationCreated implements WebhookProcessorInterface
     private function authorizationAlreadyExists(mixed $id)
     {
         return $this->webhookDataLoader->getTransactionByPaymentId($id, TransactionInterface::TYPE_AUTH) !== null;
+    }
+
+    /**
+     * @param mixed $paymentId
+     * @param array $webhookData
+     * @param Order $order
+     *
+     * @return void
+     * @throws CouldNotSaveException
+     */
+    private function saveComment(mixed $paymentId, array $webhookData, Order $order): void
+    {
+        $this->comment->saveComment(
+            __(
+                'Webhook Received. Payment reservation created for payment ID: %1'
+                . '<br/>Reservation Id: %2'
+                . '<br/>Amount: %3 %4.',
+                $paymentId,
+                $webhookData['id'],
+                number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
+                $webhookData['data']['amount']['currency']
+            ),
+            $order
+        );
     }
 
     /**
