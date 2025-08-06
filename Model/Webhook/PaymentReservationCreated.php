@@ -105,7 +105,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * @return void
      * @throws CouldNotSaveException
      */
-    public function saveComment(mixed $paymentId, array $webhookData, Order $order): void
+    private function saveComment(mixed $paymentId, array $webhookData, Order $order): void
     {
         $this->comment->saveComment(
             __(
