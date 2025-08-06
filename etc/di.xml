@@ -6,7 +6,7 @@
         <arguments>
             <argument name="code" xsi:type="const">Nexi\Checkout\Gateway\Config\Config::CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
-            <argument name="infoBlockType" xsi:type="string">Nexi\Checkout\Block\Info\Nexi</argument>
+            <argument name="infoBlockType" xsi:type="string">\Nexi\Checkout\Block\Info\Nexi</argument>
             <argument name="valueHandlerPool" xsi:type="object">NexiValueHandlerPool</argument>
             <argument name="validatorPool" xsi:type="object">Magento\Payment\Gateway\Validator\ValidatorPool</argument>
             <argument name="commandPool" xsi:type="object">NexiCommandPool</argument>
@@ -268,6 +268,11 @@
         </arguments>
     </type>
     <type name="Nexi\Checkout\Model\Receipt\LoadService">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Block\Info\Nexi">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>

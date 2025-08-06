@@ -9,6 +9,7 @@ use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Block\Info\Nexi;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\SubscriptionManagement;
 use Nexi\Checkout\Model\Transaction\Builder;
@@ -70,6 +71,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
 
         $order->setState(Order::STATE_PENDING_PAYMENT)
             ->setStatus(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
+        $this->setSelectedPaymentMethodData($order, $webhookData);
 
         $reservationTransaction = $this->transactionBuilder->build(
             $webhookData['id'],
@@ -104,5 +106,31 @@ class PaymentReservationCreated implements WebhookProcessorInterface
     private function authorizationAlreadyExists(mixed $id)
     {
         return $this->webhookDataLoader->getTransactionByPaymentId($id, TransactionInterface::TYPE_AUTH) !== null;
+    }
+
+    /**
+     * Sets the selected payment method data in the order's payment information.
+     *
+     * @param Order $order
+     * @param array $webhookData
+     * @return void
+     */
+    private function setSelectedPaymentMethodData($order, $webhookData): void
+    {
+        try {
+            $payment = $order->getPayment();
+            if ($payment) {
+                $payment->setAdditionalInformation(
+                    Nexi::SELECTED_PATMENT_METHOD,
+                    $webhookData['data']['paymentMethod'] ?? ''
+                );
+                $payment->setAdditionalInformation(
+                    Nexi::SELECTED_PATMENT_TYPE,
+                    $webhookData['data']['paymentType'] ?? ''
+                );
+            }
+        } catch (\Exception $e) {
+            $this->logger->critical($e);
+        }
     }
 }
