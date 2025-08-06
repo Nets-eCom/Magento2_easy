@@ -6,6 +6,7 @@ namespace Nexi\Checkout\Model\Webhook;
 
 use Exception;
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
@@ -46,20 +47,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     public function processWebhook(array $webhookData): void
     {
         $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
-        $this->comment->saveComment(
-            __(
-                'Webhook Received. Payment charge created for payment ID: %1'
-                . '<br/>Charge ID: %2'
-                . '<br/>Amount: %3 %4.',
-                $webhookData['data']['paymentId'],
-                $webhookData['data']['chargeId'],
-                number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                $webhookData['data']['amount']['currency']
-            ),
-            $order
-        );
         $this->processOrder($order, $webhookData);
-
         $this->orderRepository->save($order);
     }
 
@@ -87,6 +75,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             return;
         }
 
+
         $chargeTransaction = $this->transactionBuilder
             ->build(
                 $chargeTxnId,
@@ -98,6 +87,8 @@ class PaymentChargeCreated implements WebhookProcessorInterface
                 TransactionInterface::TYPE_CAPTURE
             )->setParentId($reservationTxn->getTransactionId())
             ->setParentTxnId($reservationTxn->getTxnId());
+
+        $this->saveOrderHistoryComment($webhookData['data'], $order);
 
         if ($this->isFullCharge($webhookData, $order)) {
             if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
@@ -112,6 +103,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         }
 
         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+
     }
 
     /**
@@ -151,5 +143,30 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         $invoice->pay();
 
         $order->addRelatedObject($invoice);
+    }
+
+    /**
+     * Save order history comment.
+     *
+     * @param array $data
+     * @param Order $order
+     *
+     * @return void
+     * @throws CouldNotSaveException
+     */
+    private function saveOrderHistoryComment(array $data, Order $order): void
+    {
+        $this->comment->saveComment(
+            __(
+                'Webhook Received. Payment charge created for payment ID: %1'
+                . '<br/>Charge ID: %2'
+                . '<br/>Amount: %3 %4.',
+                $data['paymentId'],
+                $data['chargeId'],
+                number_format($data['amount']['amount'] / 100, 2, '.', ''),
+                $data['amount']['currency']
+            ),
+            $order
+        );
     }
 }

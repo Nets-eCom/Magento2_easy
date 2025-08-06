@@ -57,6 +57,11 @@ class CancelActionTest extends TestCase
      */
     private $quoteMock;
 
+    /**
+     * @var OrderManagementInterface
+     */
+    private $orderManagementInterfaceMock;
+
     protected function setUp(): void
     {
         $this->redirectMock = $this->createMock(Redirect::class);

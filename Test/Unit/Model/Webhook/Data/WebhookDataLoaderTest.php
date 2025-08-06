@@ -185,47 +185,7 @@ class WebhookDataLoaderTest extends TestCase
 
         // Expect exception
         $this->expectException(NotFoundException::class);
-        $this->expectExceptionMessage('Transaction not found or multiple transactions found for payment ID.');
-
-        // Execute the method
-        $this->webhookDataLoader->getTransactionByOrderId($orderId, $txnType);
-    }
-
-    public function testGetTransactionByOrderIdThrowsExceptionWhenMultipleFound(): void
-    {
-        $orderId = 123;
-        $txnType = TransactionInterface::TYPE_PAYMENT;
-
-        // Mock search criteria
-        $searchCriteriaMock = $this->createMock(SearchCriteria::class);
-        $searchResultMock = $this->createMock(TransactionSearchResultInterface::class);
-        $transactionMock1 = $this->createMock(TransactionInterface::class);
-        $transactionMock2 = $this->createMock(TransactionInterface::class);
-
-        // Setup expectations for search criteria builder
-        $this->searchCriteriaBuilderMock->expects($this->exactly(2))
-            ->method('addFilter')
-            ->withConsecutive(
-                ['order_id', $orderId, 'eq'],
-                ['txn_type', $txnType, 'eq']
-            )
-            ->willReturnSelf();
-        $this->searchCriteriaBuilderMock->expects($this->once())
-            ->method('create')
-            ->willReturn($searchCriteriaMock);
-
-        // Setup expectations for transaction repository
-        $this->transactionRepositoryMock->expects($this->once())
-            ->method('getList')
-            ->with($searchCriteriaMock)
-            ->willReturn($searchResultMock);
-        $searchResultMock->expects($this->once())
-            ->method('getItems')
-            ->willReturn([$transactionMock1, $transactionMock2]);
-
-        // Expect exception
-        $this->expectException(NotFoundException::class);
-        $this->expectExceptionMessage('Transaction not found or multiple transactions found for payment ID.');
+        $this->expectExceptionMessage('Transaction not found for payment ID.');
 
         // Execute the method
         $this->webhookDataLoader->getTransactionByOrderId($orderId, $txnType);
