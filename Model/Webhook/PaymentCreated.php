@@ -73,7 +73,7 @@ class PaymentCreated implements WebhookProcessorInterface
                 __(
                     'Webhook Received. Payment created for Payment ID: %1'
                     . '<br />Amount: %2 %3.',
-                    $webhookData['data']['paymentId'] ?? 'N/A',
+                    $webhookData['data']['paymentId'],
                     number_format($webhookData['data']['order']['amount']['amount'] / 100, 2, '.', ''),
                     $webhookData['data']['order']['amount']['currency']
                 ),
