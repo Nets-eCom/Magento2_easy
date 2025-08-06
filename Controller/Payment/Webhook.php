@@ -54,6 +54,7 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
 
         try {
             $content = $this->serializer->unserialize($this->getRequest()->getContent());
+            $this->logger->info('Webhook called:', ['webhook_data' => $content]);
 
             if (!isset($content['event'])) {
                 return $this->_response
@@ -62,8 +63,6 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
             }
 
             $this->webhookHandler->handle($content);
-
-            $this->logger->info('Webhook called:', ['webhook_data' => $content]);
             $this->_response->setHttpResponseCode(200);
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);

@@ -66,20 +66,19 @@ class PaymentCreated implements WebhookProcessorInterface
             )->getFirstItem();
         }
 
-        $this->comment->saveComment(
-            __(
-                'Webhook Received. Payment created for Payment ID: %1'
-                . '<br />Amount: %2 %3.',
-                $webhookData['data']['paymentId'],
-                number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                $webhookData['data']['amount']['currency']
-            ),
-            $order
-        );
-
         if (!$transaction) {
             $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
             $this->orderRepository->save($order);
+            $this->comment->saveComment(
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %2 %3.',
+                    $webhookData['data']['paymentId'] ?? 'N/A',
+                    number_format($webhookData['data']['order']['amount']['amount'] / 100, 2, '.', ''),
+                    $webhookData['data']['order']['amount']['currency']
+                ),
+                $order
+            );
         }
     }
 

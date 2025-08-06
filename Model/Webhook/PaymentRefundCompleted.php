@@ -49,17 +49,12 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      */
     public function processWebhook(array $webhookData): void
     {
-        $paymentId    = $webhookData['data']['paymentId'];
-        $refundId     = $webhookData['data']['refundId'];
-        $refundAmount = number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', '');
+        $paymentId      = $webhookData['data']['paymentId'];
+        $refundId       = $webhookData['data']['refundId'];
+        $refundAmount   = number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', '');
         $refundCurrency = $webhookData['data']['amount']['currency'];
 
         $order = $this->webhookDataLoader->loadOrderByPaymentId($paymentId);
-
-        $this->comment->saveComment(
-            $this->createRefundComment($paymentId, $refundId, $refundAmount, $refundCurrency),
-            $order
-        );
 
         if ($this->findRefundTransaction($refundId)) {
             return;
@@ -70,12 +65,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
         $refundTransaction = $this->createRefundTransaction($refundId, $order, $paymentId, $webhookData);
         $order->getPayment()->addTransaction($refundTransaction);
 
-        if (!$order->canCreditmemo()) {
-            $this->orderRepository->save($order);
-            return;
-        }
-
-        if ($this->canRefund($webhookData, $order)) {
+        if ($this->canRefund($webhookData, $order) && $order->canCreditmemo()) {
             $this->processFullRefund($webhookData, $order);
         } else {
             $order->addCommentToStatusHistory(
@@ -86,6 +76,11 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
         }
 
         $this->orderRepository->save($order);
+
+        $this->comment->saveComment(
+            $this->createRefundComment($paymentId, $refundId, $refundAmount, $refundCurrency),
+            $order
+        );
     }
 
     /**
