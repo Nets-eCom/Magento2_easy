@@ -100,6 +100,8 @@ class PaymentReservationCreated implements WebhookProcessorInterface
     }
 
     /**
+     * Saves a comment in the order with details from the webhook data.
+     *
      * @param mixed $paymentId
      * @param array $webhookData
      * @param Order $order
