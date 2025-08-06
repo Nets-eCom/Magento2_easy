@@ -1,9 +1,30 @@
 <?php
-/** @var $block \Nexi\Checkout\Block\Info\Nexi */
+
+use Nexi\Checkout\Block\Info\Nexi;
+
+/** @var $block Nexi */
 /** @var $escaper \Magento\Framework\Escaper */
 ?>
 
-<img src="<?= $escaper->escapeHtml($block->getLogo() ? $block->getLogo() : ''); ?>">
-<p><?= $escaper->escapeHtml($block->getTitle() ? $block->getTitle() : '') ?></p>
-<?= $block->getChildHtml()?>
-<!--<p>Payment method: --><?php //= $block->escapeHtml($block->getPaymentSelectedMethod() ? $block->getPaymentSelectedMethod() : '()') ?><!--</p>-->
+<?= $block->getChildHtml() ?>
+<table class="admin__table-secondary order-information-table">
+    <tbody>
+        <tr>
+            <th><?= $escaper->escapeHtml(__('Payment Provider')) ?></th>
+            <td><img alt="Nexi Logo" style="width: 65px; height: 25px; background-color: white; "
+                     src="<?= $escaper->escapeHtml($block->getLogo() ? $block->getLogo() : ''); ?>"/></td>
+        </tr>
+        <tr>
+            <th><?= $escaper->escapeHtml(__('Payment Method')) ?></th>
+            <td><?= $escaper->escapeHtml(
+                $block->getSelectedPaymentMethodData()[Nexi::SELECTED_PATMENT_METHOD] ?? ''
+            ) ?></td>
+        </tr>
+        <tr>
+            <th><?= $escaper->escapeHtml(__('Payment Type')) ?></th>
+            <td><?= $escaper->escapeHtml(
+                $block->getSelectedPaymentMethodData()[Nexi::SELECTED_PATMENT_TYPE] ?? ''
+            ) ?></td>
+        </tr>
+    </tbody>
+</table>
