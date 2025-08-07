@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
-use Nexi\Checkout\Gateway\Request\PaymentTypesEnum;
 
 class PayTypeOptions implements OptionSourceInterface
 {

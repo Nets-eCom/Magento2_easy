@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexi\Checkout\Gateway\Request;
+namespace Nexi\Checkout\Model\Config\Source;
 
 enum PaymentTypesEnum: string
 {

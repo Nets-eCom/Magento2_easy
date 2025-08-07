@@ -6,19 +6,27 @@ namespace Nexi\Checkout\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Nexi\Checkout\Gateway\Config\Config;
 use Magento\Payment\Helper\Data as PaymentHelper;
-use Nexi\Checkout\Gateway\Request\PaymentTypesEnum;
+use Nexi\Checkout\Model\Config\Source\PaymentTypesEnum;
+use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 
 class ConfigProvider implements ConfigProviderInterface
 {
+    const SUBSCRIPTION_PAYMENT_TYPES = [
+        PaymentTypesEnum::CREDIT_CARD_TYPE
+    ];
+
     /**
      * @param Config $config
      * @param PaymentHelper $paymentHelper
+     * @param TotalConfigProvider $totalConfigProvider
      */
     public function __construct(
         private readonly Config $config,
         private readonly PaymentHelper $paymentHelper,
+        private readonly TotalConfigProvider $totalConfigProvider
     ) {
     }
 
@@ -58,6 +66,8 @@ class ConfigProvider implements ConfigProviderInterface
      * Get subselections for payment types.
      *
      * @return array
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     private function getSubselections(): array
     {
@@ -66,14 +76,34 @@ class ConfigProvider implements ConfigProviderInterface
         }
 
         $subselections  = [];
-        $payTypeOptions = explode(',', $this->config->getPayTypeOptions());
-        foreach ($payTypeOptions as $value) {
+        $payTypeOptions = $this->config->getPayTypeOptions();
+
+        if ($this->totalConfigProvider->isSubscriptionScheduled()) {
+            $payTypeOptions = $this->filterSubselectionsForSubscription($payTypeOptions);
+        }
+
+        /** @var PaymentTypesEnum $option */
+        foreach ($payTypeOptions as $option) {
             $subselections[] = [
-                'value' => $value,
-                'label' => __($value),
+                'value' => $option->value,
+                'label' => __($option->value),
             ];
         }
 
         return $subselections;
+    }
+
+    /**
+     * Filter payment types for subscription.
+     *
+     * @param array $payTypeOptions
+     *
+     * @return array
+     */
+    private function filterSubselectionsForSubscription(array $payTypeOptions): array
+    {
+        return array_filter($payTypeOptions, function ($type) {
+            return in_array($type, self::SUBSCRIPTION_PAYMENT_TYPES, true);
+        });
     }
 }

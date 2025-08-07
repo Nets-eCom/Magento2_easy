@@ -9,6 +9,7 @@ use Magento\Payment\Gateway\Config\Config as MagentoConfig;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Model\Config\Source\Environment;
+use Nexi\Checkout\Model\Config\Source\PaymentTypesEnum;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 
 class Config extends MagentoConfig
@@ -203,10 +204,15 @@ class Config extends MagentoConfig
     /**
      * Retrieve the payment type options
      *
-     * @return mixed
+     * @return PaymentTypesEnum[]
      */
-    public function getPayTypeOptions()
+    public function getPayTypeOptions(): array
     {
-        return $this->getValue('pay_type_options');
+        $values = explode(',', (string)$this->getValue('pay_type_options'));
+
+        return array_map(
+            fn($value) => \Nexi\Checkout\Model\Config\Source\PaymentTypesEnum::from($value),
+            array_filter($values)
+        );
     }
 }
