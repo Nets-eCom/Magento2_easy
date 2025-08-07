@@ -6,6 +6,7 @@ namespace Nexi\Checkout\Gateway\Request;
 
 use libphonenumber\NumberParseException;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
@@ -215,7 +216,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Quote|Order $salesObject
      *
      * @return EmbeddedCheckout
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|NumberParseException
      */
     public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
     {
@@ -270,8 +271,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      *
      * @return Payment\Subscription|null
      * @throws NoSuchEntityException
-     * @throws \DateMalformedStringException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException|\DateMalformedStringException
      */
     private function getSubscriptionSetup(): ?Payment\Subscription
     {

@@ -61,7 +61,9 @@ define(
                     ? (window.checkoutConfig.payment.nexi.payTypeSplitting
                         ? 'Nexi_Checkout/payment/nexi-hosted-type-split.html'
                         : 'Nexi_Checkout/payment/nexi-hosted.html')
-                    : 'Nexi_Checkout/payment/nexi-embedded.html',
+                    : (window.checkoutConfig.payment.nexi.payTypeSplitting
+                        ? 'Nexi_Checkout/payment/nexi-embedded-type-split.html'
+                        : 'Nexi_Checkout/payment/nexi-embedded.html'),
                 config: window.checkoutConfig.payment.nexi,
                 creditCardType: '',
                 creditCardExpYear: '',
@@ -236,7 +238,6 @@ define(
                     additional_data: {
                         integrationType: this.config.integrationType,
                         paymentMethod: this.config.paymentMethod,
-                        paymentId: this.dibsCheckout() ? this.dibsCheckout().getPaymentId() : null,
                         subselection: this.subselection(),
                     }
                 };

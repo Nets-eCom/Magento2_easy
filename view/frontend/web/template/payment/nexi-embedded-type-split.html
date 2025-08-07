@@ -12,8 +12,8 @@
                 />
                 <label data-bind="attr: {'for': value}" class="label with-icon">
                     <span class="subselection-label" data-bind="text: label"></span>
-                    <img class="subselection-icon"
-                         data-bind="attr: { src: $parent.config.methodIcons[value] || $parent.config.methodIcons['default'] }"/>
+                <img class="subselection-icon"
+                     data-bind="attr: { src: $parent.config.methodIcons[value] || $parent.config.methodIcons['default'] }"/>
                 </label>
 
             </div>
@@ -25,33 +25,18 @@
             <!-- ko foreach: getRegion('messages') -->
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
-
             <div class="payment-method-billing-address">
                 <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
                 <!-- ko template: getTemplate() --><!-- /ko -->
                 <!--/ko-->
             </div>
-
             <div class="checkout-agreements-block">
                 <!-- ko foreach: $parent.getRegion('before-place-order') -->
                 <!-- ko template: getTemplate() --><!-- /ko -->
                 <!--/ko-->
             </div>
-            <div class="actions-toolbar">
-                <div class="primary">
-                    <button class="action primary checkout"
-                            type="submit"
-                            data-bind="
-                            click: placeOrder,
-                            attr: {title: $t('Place Order')},
-                            css: {disabled: !isPlaceOrderActionAllowed()},
-                            enable: (getCode() == isChecked())
-                            "
-                            disabled>
-                        <span data-bind="i18n: 'Place Order', afterRender: afterRender()"></span>
-                    </button>
-                </div>
-            </div>
+            <div id="nexi-checkout-container" data-bind="afterRender: afterRender()"></div>
         </div>
+
     </div>
 </div>
