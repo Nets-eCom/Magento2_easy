@@ -53,10 +53,9 @@ class TestConnection extends Action implements HttpPostActionInterface
     }
 
     /**
-     * Check for connection to server
+     * Check for connection to the server
      *
      * @return Json
-     * @throws JsonException
      */
     public function execute()
     {

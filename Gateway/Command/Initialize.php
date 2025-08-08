@@ -39,10 +39,8 @@ class Initialize implements CommandInterface
      * Implementation of execute method, creating payment in Nexi Gateway when order is placed
      *
      * @param array $commandSubject
-     *
-     * @throws LocalizedException
      */
-    public function execute(array $commandSubject)
+    public function execute(array $commandSubject): void
     {
         /** @var PaymentDataObjectInterface $payment */
         $paymentData = $this->subjectReader->readPayment($commandSubject);
@@ -56,7 +54,7 @@ class Initialize implements CommandInterface
         /** @var InfoInterface $payment */
         $payment = $paymentData->getPayment();
         $payment->setIsTransactionPending(true);
-        $payment->setIsTransactionIsClosed(false);
+        $payment->setIsTransactionClosed(false);
 
         $order = $payment->getOrder();
         $order->setCanSendNewEmailFlag(false);

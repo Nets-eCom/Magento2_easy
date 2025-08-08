@@ -23,8 +23,6 @@ class PaymentCancelCreated implements WebhookProcessorInterface
 
     /**
      * @inheritdoc
-     *
-     * @throws CouldNotSaveException
      */
     public function processWebhook(array $webhookData): void
     {

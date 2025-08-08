@@ -66,7 +66,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param array $buildSubject
      *
      * @return array
-     * @throws NoSuchEntityException
      */
     public function build(array $buildSubject): array
     {
@@ -259,7 +258,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $order
      *
      * @return Payment
-     * @throws NoSuchEntityException
      */
     private function buildPayment(Order|Quote $order): Payment
     {
@@ -296,7 +294,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $salesObject
      *
      * @return HostedCheckout|EmbeddedCheckout
-     * @throws NoSuchEntityException
      */
     public function buildCheckout(Quote|Order $salesObject): HostedCheckout|EmbeddedCheckout
     {
@@ -311,7 +308,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $salesObject
      *
      * @return Consumer
-     * @throws NoSuchEntityException|NumberParseException
      */
     private function buildConsumer(Order|Quote $salesObject): Consumer
     {
@@ -364,7 +360,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Quote|Order $salesObject
      *
      * @return EmbeddedCheckout
-     * @throws NoSuchEntityException
      */
     public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
     {
@@ -384,7 +379,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Quote|Order $salesObject
      *
      * @return HostedCheckout
-     * @throws NoSuchEntityException|NumberParseException
      */
     public function buildHostedCheckout(Quote|Order $salesObject): HostedCheckout
     {
@@ -405,7 +399,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param string $countryCode
      *
      * @return string
-     * @throws NoSuchEntityException
      */
     public function getThreeLetterCountryCode(string $countryCode): string
     {
@@ -420,7 +413,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $salesObject
      *
      * @return PhoneNumber
-     * @throws NumberParseException
      */
     public function getNumber(Order|Quote $salesObject): PhoneNumber
     {

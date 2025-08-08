@@ -27,7 +27,6 @@ class Comment
      *
      * @param string $comment
      * @param Order $order
-     * @throws CouldNotSaveException
      */
     public function saveComment(string|Phrase $comment, Order $order): void
     {
