@@ -4,7 +4,7 @@
             <nexi>
                 <model>NexiFacade</model>
                 <title>Nexi Payments</title>
-                <logo>https://www.pikpng.com/pngl/m/247-2474711_nexi-nexi-logo-png-clipart.png</logo>
+                <logo>https://www.nexi.de/content/dam/nexide/img/nexi-de-test/logos/nexi-logos/NEXI_RGB_Colore.png</logo>
                 <payment_action>authorize_capture</payment_action>
                 <active>0</active>
                 <is_gateway>0</is_gateway>
