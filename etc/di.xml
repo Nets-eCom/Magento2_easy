@@ -203,7 +203,7 @@
         </arguments>
     </type>
 
-    <type name="\Nexi\Checkout\Controller\Hpp\CancelAction">
+    <type name="Nexi\Checkout\Controller\Hpp\CancelAction">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>

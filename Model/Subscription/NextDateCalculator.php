@@ -44,15 +44,32 @@ class NextDateCalculator
      * @param int $profileId
      * @param string $startDate
      *
-     * @return string
+     * @return Carbon
      * @throws NoSuchEntityException
      * @throws Exception
      */
-    public function getNextDate($profileId, $startDate = 'now')
+    public function getNextDate($profileId, $startDate = 'now'): Carbon
     {
         $profile = $this->getProfileById($profileId);
 
         return $this->calculateNextDate($profile->getSchedule(), $startDate);
+    }
+
+    /**
+     * Calculate the number of days interval until the next date for a profile.
+     *
+     * @param int $profileId
+     * @param string $startDate
+     *
+     * @return int
+     * @throws NoSuchEntityException
+     * @throws Exception
+     */
+    public function getDaysInterval($profileId, $startDate = 'now'): int
+    {
+        $nextDate = $this->getNextDate($profileId, $startDate);
+
+        return (int)abs($nextDate->diffInDays($startDate));
     }
 
     /**
@@ -61,10 +78,10 @@ class NextDateCalculator
      * @param string $schedule
      * @param string $startDate
      *
-     * @return string
+     * @return Carbon
      * @throws Exception
      */
-    private function calculateNextDate($schedule, $startDate)
+    private function calculateNextDate($schedule, $startDate): Carbon
     {
         $schedule   = $this->serializer->unserialize($schedule);
         $carbonDate = $startDate === 'now' ? Carbon::now() : Carbon::createFromFormat('Y-m-d H:i:s', $startDate);
@@ -74,13 +91,13 @@ class NextDateCalculator
                 $nextDate = $carbonDate->addDays((int)$schedule['interval']);
                 break;
             case 'W':
-                $nextDate = $carbonDate->addWeeks($schedule['interval']);
+                $nextDate = $carbonDate->addWeeks((int)$schedule['interval']);
                 break;
             case 'M':
-                $nextDate = $this->addMonthsNoOverflow($carbonDate, $schedule['interval']);
+                $nextDate = $this->addMonthsNoOverflow($carbonDate, (int)$schedule['interval']);
                 break;
             case 'Y':
-                $nextDate = $carbonDate->addYearsNoOverflow($schedule['interval']);
+                $nextDate = $carbonDate->addYearsNoOverflow((int)$schedule['interval']);
                 break;
             default:
                 throw new LocalizedException(__('Schedule type not supported'));
@@ -90,7 +107,7 @@ class NextDateCalculator
             $nextDate = $this->getNextWeekday($nextDate);
         }
 
-        return $nextDate->format('Y-m-d');
+        return $nextDate;
     }
 
     /**
@@ -115,7 +132,7 @@ class NextDateCalculator
      *
      * @return bool
      */
-    private function isForceWeekdays()
+    private function isForceWeekdays(): bool
     {
         if (!isset($this->forceWeekdays)) {
             $this->forceWeekdays = $this->scopeConfig->isSetFlag('sales/recurring_payment/force_weekdays');
@@ -130,7 +147,7 @@ class NextDateCalculator
      *
      * @return Carbon
      */
-    private function getNextWeekday($nextDate)
+    private function getNextWeekday($nextDate): Carbon
     {
         $newCarbonDate = new Carbon($nextDate);
         if (!$newCarbonDate->isWeekday()) {
@@ -150,7 +167,7 @@ class NextDateCalculator
      *
      * @return Carbon
      */
-    private function addMonthsNoOverflow($carbonDate, $interval)
+    private function addMonthsNoOverflow($carbonDate, $interval): Carbon
     {
         $isLastOfMonth = $carbonDate->isLastOfMonth();
         $nextDate      = $carbonDate->addMonthsNoOverflow($interval);

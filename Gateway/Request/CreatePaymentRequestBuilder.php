@@ -18,6 +18,7 @@ use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\GlobalRequestBuilder;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Gateway\StringSanitizer;
+use Nexi\Checkout\Model\Subscription\NextDateCalculator;
 use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
@@ -41,6 +42,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param StringSanitizer $stringSanitizer
      * @param TotalConfigProvider $totalConfigProvider
      * @param GlobalRequestBuilder $globalRequestBuilder
+     * @param NextDateCalculator $nextDateCalculator
      */
     public function __construct(
         private readonly UrlInterface                        $url,
@@ -49,7 +51,8 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         private readonly AmountConverter                     $amountConverter,
         private readonly StringSanitizer                     $stringSanitizer,
         private readonly TotalConfigProvider                 $totalConfigProvider,
-        private readonly GlobalRequestBuilder                $globalRequestBuilder
+        private readonly GlobalRequestBuilder                $globalRequestBuilder,
+        private readonly NextDateCalculator $nextDateCalculator
     ) {
     }
 
@@ -278,11 +281,12 @@ class CreatePaymentRequestBuilder implements BuilderInterface
         if ($this->totalConfigProvider->isSubscriptionScheduled()
             && $this->totalConfigProvider->isSubscriptionsEnabled()
         ) {
+            $subscriptionProfileId = $this->totalConfigProvider->getSubscriptionProfileId();
 
             return new Payment\Subscription(
                 subscriptionId: null,
                 endDate: new \DateTime((int)date('Y') + 100 . '-01-01'),
-                interval: 30,
+                interval: $this->nextDateCalculator->getDaysInterval((int)$subscriptionProfileId),
             );
         }
 

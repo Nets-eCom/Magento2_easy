@@ -9,6 +9,7 @@ use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderManagementInterface;
 use Nexi\Checkout\Api\Data\SubscriptionInterface;
 use Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface;
@@ -41,10 +42,10 @@ class StopSchedule implements HttpGetActionInterface
     public function execute()
     {
         $resultRedirect = $this->context->getResultFactory()->create(ResultFactory::TYPE_REDIRECT);
-        $resultRedirect->setPath($this->_redirect->getRefererUrl());
+        $resultRedirect->setPath($this->context->getRedirect()->getRefererUrl());
         $id = $this->context->getRequest()->getParam('id');
 
-        $subscription = $this->getRecurringPayment($id);
+        $subscription = $this->getRecurringPayment((int)$id);
         if (!$subscription) {
             return $resultRedirect;
         }
@@ -57,14 +58,14 @@ class StopSchedule implements HttpGetActionInterface
     /**
      * Retrieves the recurring payment subscription by its ID.
      *
-     * @param $subscriptionId
+     * @param int $subscriptionId
      * @return false|SubscriptionInterface
      */
     private function getRecurringPayment($subscriptionId)
     {
         try {
             return $this->subscriptionRepository->get($subscriptionId);
-        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+        } catch (NoSuchEntityException $e) {
             $this->context->getMessageManager()->addErrorMessage(
                 \__(
                     'Unable to load subscription with ID: %id',
@@ -94,9 +95,10 @@ class StopSchedule implements HttpGetActionInterface
             } else {
                 $this->context->getMessageManager()->addWarningMessage(
                     \__(
-                        'Order ID %id has a status other than %status, automatic order cancel disabled. If the order is unpaid please cancel it manually',
+                        'Order ID %id has a status other than %status,
+                        automatic order cancel disabled. If the order is unpaid please cancel it manually',
                         [
-                            'id'     => array_shift($ordersId),
+                            'id' => array_shift($ordersId),
                             'status' => SubscriptionManagement::ORDER_PENDING_STATUS
                         ]
                     )

@@ -43,6 +43,11 @@ class PaymentReservationCreatedTest extends TestCase
      */
     private Comment $commentMock;
 
+    /**
+     * @var SubscriptionManagement
+     */
+    private SubscriptionManagement $subscriptionManagement;
+
     protected function setUp(): void
     {
         $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
