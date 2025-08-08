@@ -157,7 +157,13 @@ define(
                     this.subscribeToEvents();
                 }, this);
             },
-            selectPaymentMethod: function () {
+            clearNexiCheckout() {
+                this.dibsCheckout().cleanup();
+                if (document.getElementById("nexi-checkout-container")) {
+                    document.getElementById("nexi-checkout-container").innerHTML = "";
+                }
+            }, selectPaymentMethod: function () {
+                this.clearNexiCheckout();
                 this._super();
                 checkoutData.setNexiSubselection(this.subselection());
                 if (this.isEmbedded()) {
