@@ -7,6 +7,7 @@ namespace Nexi\Checkout\Model\Ui;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\View\Asset\Repository;
 use Nexi\Checkout\Gateway\Config\Config;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Nexi\Checkout\Model\Config\Source\PaymentTypesEnum;
@@ -19,23 +20,20 @@ class ConfigProvider implements ConfigProviderInterface
      * Payment methods that could be used for subscription payment.
      */
     public const SUBSCRIPTION_PAYMENT_TYPES = [
-        PaymentTypesEnum::VISA,
-        PaymentTypesEnum::MASTERCARD,
-        PaymentTypesEnum::AMERICAN_EXPRESS,
-        PaymentTypesEnum::DANKORT,
-        PaymentTypesEnum::FORBRUGSFORENINGEN
+        PaymentTypesEnum::CARD
     ];
-
 
     /**
      * @param Config $config
      * @param PaymentHelper $paymentHelper
      * @param TotalConfigProvider $totalConfigProvider
+     * @param Repository $assetRepo
      */
     public function __construct(
         private readonly Config $config,
         private readonly PaymentHelper $paymentHelper,
-        private readonly TotalConfigProvider $totalConfigProvider
+        private readonly TotalConfigProvider $totalConfigProvider,
+        private readonly Repository $assetRepo
     ) {
     }
 
@@ -122,28 +120,26 @@ class ConfigProvider implements ConfigProviderInterface
      *
      * @return string[]
      */
-    public function getMethodIcons()
+    public function getMethodIcons(): array
     {
         $icons = [
-            PaymentTypesEnum::VISA->value                 => 'visa-blue.svg',
-            PaymentTypesEnum::MASTERCARD->value           => 'mastercard_wtext.svg',
-            PaymentTypesEnum::FORBRUGSFORENINGEN->value   => 'forbrugsforeningen.svg',
-            PaymentTypesEnum::PAYPAL->value               => 'paypal-text.svg',
-            PaymentTypesEnum::VIPPS->value                => 'vipps.svg',
-            PaymentTypesEnum::MOBILE_PAY->value           => 'mobilepay.svg',
-            PaymentTypesEnum::SWISH->value                => 'swish_secondary.svg',
-            PaymentTypesEnum::RATE_PAY_INVOICE->value     => 'ratepay.svg',
-            PaymentTypesEnum::RATE_PAY_INSTALLMENT->value => 'ratepay.svg',
-            PaymentTypesEnum::RATE_PAY_SEPA->value        => 'ratepay.svg',
-            PaymentTypesEnum::APPLE_PAY->value            => 'applepay.svg',
-            PaymentTypesEnum::DANKORT->value              => 'dankort.svg',
-            PaymentTypesEnum::KLARNA->value               => 'klarna.svg',
-            PaymentTypesEnum::GOOGLE_PAY->value           => 'googlepay.svg',
-            'default'                                     => 'easy-logo-blue_150px.svg',
+            PaymentTypesEnum::CARD->value                 => 'nexi-cards.png',
+            PaymentTypesEnum::PAYPAL->value               => 'paypal.png',
+            PaymentTypesEnum::VIPPS->value                => 'vipps.png',
+            PaymentTypesEnum::MOBILE_PAY->value           => 'mobilepay.png',
+            PaymentTypesEnum::SWISH->value                => 'swish.png',
+            PaymentTypesEnum::RATE_PAY_INVOICE->value     => 'ratepay.png',
+            PaymentTypesEnum::RATE_PAY_INSTALLMENT->value => 'ratepay.png',
+            PaymentTypesEnum::RATE_PAY_SEPA->value        => 'ratepay.png',
+            PaymentTypesEnum::SOFORT->value               => 'sofort.png',
+            PaymentTypesEnum::TRUSTLY->value              => 'trustly.png',
+            PaymentTypesEnum::APPLE_PAY->value            => 'applepay.png',
+            PaymentTypesEnum::KLARNA->value               => 'klarna.png',
+            PaymentTypesEnum::GOOGLE_PAY->value           => 'googlepay.png',
         ];
 
-        return array_map(function ($type) {
-            return HTTPS_CHECKOUT_DIBSPAYMENT_EU_V_1_ICONS . $type;
+        return array_map(function ($image) {
+            return $this->assetRepo->getUrl('Nexi_Checkout::images/' . $image);
         }, $icons);
     }
 }

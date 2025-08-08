@@ -4,14 +4,10 @@ namespace Nexi\Checkout\Model\Config\Source;
 
 enum PaymentTypesEnum: string
 {
-    // Credit card payment types
-    case VISA = 'Visa';
-    case MASTERCARD = 'MasterCard';
-    case DANKORT = 'Dankort';
-    case AMERICAN_EXPRESS = 'AmericanExpress';
-    case FORBRUGSFORENINGEN = 'Forbrugsforeningen';
+    // Credit card payment type
+    case CARD = 'Card';
 
-    // Other payment types
+    // Other payment methods
     case PAYPAL = 'PayPal';
     case VIPPS = 'Vipps';
     case MOBILE_PAY = 'MobilePay';
