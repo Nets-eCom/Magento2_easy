@@ -167,7 +167,8 @@ define(
                 if (document.getElementById("nexi-checkout-container")) {
                     document.getElementById("nexi-checkout-container").innerHTML = "";
                 }
-            }, selectPaymentMethod: function () {
+            },
+            selectPaymentMethod: function () {
                 this.clearNexiCheckout();
                 this._super();
                 checkoutData.setNexiSubselection(this.subselection());
