@@ -96,10 +96,9 @@ class Initialize implements CommandInterface
      *
      * @param PaymentDataObjectInterface $payment
      *
-     * @return void
      * @throws LocalizedException
      */
-    public function createPayment(PaymentDataObjectInterface $payment)
+    public function createPayment(PaymentDataObjectInterface $payment): void
     {
         try {
             $commandPool = $this->commandManagerPool->get(Config::CODE);
