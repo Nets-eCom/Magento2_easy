@@ -152,7 +152,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $paymentSubject
      * @return array
      */
-    public function getProductsData(Order|Quote $paymentSubject): array
+    private function getProductsData(Order|Quote $paymentSubject): array
     {
         $items = [];
         /** @var OrderItem|Quote\Item $item */
@@ -202,7 +202,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param mixed $item
      * @return array
      */
-    public function createItemBaseData(mixed $item): array
+    private function createItemBaseData(mixed $item): array
     {
         return [
             'name' => $item->getName(),
