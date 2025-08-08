@@ -108,7 +108,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             $this->fullInvoice($order, $chargeTxnId);
         } else {
             $order->addCommentToStatusHistory(
-                'Partial charge received from the Dibs Portal gateway. ' .
+                'Partial charge received from the Nexi | Nets Portal gateway. ' .
                 'The order processing could not be completed automatically. '
             );
         }
