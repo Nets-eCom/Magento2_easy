@@ -8,10 +8,12 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Api\Data\PaymentInterface;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Nexi\Checkout\Gateway\Command\Initialize;
 use Nexi\Checkout\Api\PaymentInitializeInterface;
 use Nexi\Checkout\Gateway\Config\Config;
+use NexiCheckout\Model\Request\UpdateOrder\PaymentMethod;
 use Psr\Log\LoggerInterface;
 
 class PaymentInitialize implements PaymentInitializeInterface
@@ -39,7 +41,7 @@ class PaymentInitialize implements PaymentInitializeInterface
     /**
      * @inheritDoc
      */
-    public function initialize(string $cartId, string $integrationType, $paymentMethod): string
+    public function initialize(string $cartId, string $integrationType, PaymentInterface $paymentMethod): string
     {
         try {
             if (!is_numeric($cartId)) {
