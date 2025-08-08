@@ -153,12 +153,17 @@ define(
             async renderCheckout() {
                 this.subscribeToEvents();
                 quote.totals.subscribe(async function (quote) {
+                    if (!this.isActive()) {
+                        return;
+                    }
                     await renderEmbeddedCheckout.call(this);
                     this.subscribeToEvents();
                 }, this);
             },
             clearNexiCheckout() {
-                this.dibsCheckout().cleanup();
+                if (this.dibsCheckout()) {
+                    this.dibsCheckout().cleanup();
+                }
                 if (document.getElementById("nexi-checkout-container")) {
                     document.getElementById("nexi-checkout-container").innerHTML = "";
                 }
