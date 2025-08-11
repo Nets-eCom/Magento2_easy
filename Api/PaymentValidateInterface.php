@@ -15,5 +15,5 @@ interface PaymentValidateInterface
      *
      * @return string
      */
-    public function validate(string $cartId);
+    public function validate(string $cartId, string $paymentId);
 }

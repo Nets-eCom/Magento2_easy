@@ -206,8 +206,6 @@ define(
                                 }
 
                                 await this.placeOrder(); // Ensure the order is placed before proceeding
-                                document.getElementById("nexi-checkout-container").style.position = "relative";
-                                document.getElementById("nexi-checkout-container").style.zIndex = "9999";
 
                                 // Trigger Dibs processing only after the order is placed
                                 // Use the same instance reference to send the event

@@ -37,11 +37,11 @@ class GlobalRequestBuilder
      * @param AmountConverter $amountConverter
      */
     public function __construct(
-        private readonly UrlInterface       $url,
-        private readonly Config             $config,
+        private readonly UrlInterface $url,
+        private readonly Config $config,
         private readonly EncryptorInterface $encryptor,
-        private readonly WebhookHandler     $webhookHandler,
-        private readonly AmountConverter    $amountConverter,
+        private readonly WebhookHandler $webhookHandler,
+        private readonly AmountConverter $amountConverter,
     ) {
     }
 
@@ -54,10 +54,10 @@ class GlobalRequestBuilder
     {
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
+            $webhookUrl = "https://de3762705cf1.ngrok-free.app" . '/' . self::NEXI_PAYMENT_WEBHOOK_PATH;
             $webhooks[] = new Webhook(
-                eventName: $eventName,
-                url: $webhookUrl,
+                eventName    : $eventName,
+                url          : $webhookUrl,
                 authorization: $this->encryptor->hash($this->config->getWebhookSecret())
             );
         }
@@ -69,6 +69,7 @@ class GlobalRequestBuilder
      * Get Phone number from the address
      *
      * @param Order|Quote $salesObject
+     *
      * @return PhoneNumber
      */
     public function getNumber(Order|Quote $salesObject): PhoneNumber
@@ -93,14 +94,15 @@ class GlobalRequestBuilder
      * Build the Sdk order object
      *
      * @param Quote|Order $order
+     *
      * @return NexiRequestOrder
      */
     public function buildOrder(Quote|Order $order): NexiRequestOrder
     {
         return new NexiRequestOrder(
-            items: $this->buildItems($order),
-            currency: $order->getBaseCurrencyCode(),
-            amount: $this->amountConverter->convertToNexiAmount($order->getBaseGrandTotal()),
+            items    : $this->buildItems($order),
+            currency : $order->getBaseCurrencyCode(),
+            amount   : $this->amountConverter->convertToNexiAmount($order->getBaseGrandTotal()),
             reference: $order->getIncrementId()
         );
     }
@@ -124,23 +126,23 @@ class GlobalRequestBuilder
 
         if ($shippingInfoHolder->getShippingInclTax()) {
             $items[] = new Item(
-                name: $shippingInfoHolder->getShippingDescription(),
-                quantity: 1,
-                unit: 'pcs',
-                unitPrice: $this->amountConverter->convertToNexiAmount(
+                name            : $shippingInfoHolder->getShippingDescription(),
+                quantity        : 1,
+                unit            : 'pcs',
+                unitPrice       : $this->amountConverter->convertToNexiAmount(
                     $shippingInfoHolder->getBaseShippingAmount()
                 ),
                 grossTotalAmount: $this->amountConverter->convertToNexiAmount(
                     $shippingInfoHolder->getBaseShippingInclTax()
                 ),
-                netTotalAmount: $this->amountConverter->convertToNexiAmount(
+                netTotalAmount  : $this->amountConverter->convertToNexiAmount(
                     $shippingInfoHolder->getBaseShippingAmount()
                 ),
-                reference: SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
-                taxRate: $this->amountConverter->convertToNexiAmount(
+                reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
+                taxRate         : $this->amountConverter->convertToNexiAmount(
                     $this->getShippingTaxRate($paymentSubject)
                 ),
-                taxAmount: $this->amountConverter->convertToNexiAmount(
+                taxAmount       : $this->amountConverter->convertToNexiAmount(
                     $shippingInfoHolder->getBaseShippingTaxAmount()
                 ),
             );
@@ -184,6 +186,7 @@ class GlobalRequestBuilder
      * Build payload with order items data based on product type
      *
      * @param Order|Quote $paymentSubject
+     *
      * @return array
      */
     public function getProductsData(Order|Quote $paymentSubject): array
@@ -234,20 +237,21 @@ class GlobalRequestBuilder
      * Create the nexi SDK item
      *
      * @param array $data
+     *
      * @return Item
      */
     private function createFinalItem(array $data): Item
     {
         return new Item(
-            name: $data['name'],
-            quantity: $data['quantity'],
-            unit: $data['unit'],
-            unitPrice: $data['unitPrice'],
+            name            : $data['name'],
+            quantity        : $data['quantity'],
+            unit            : $data['unit'],
+            unitPrice       : $data['unitPrice'],
             grossTotalAmount: $data['grossTotalAmount'],
-            netTotalAmount: $data['netTotalAmount'],
-            reference: $data['reference'],
-            taxRate: $data['taxRate'],
-            taxAmount: $data['taxAmount'],
+            netTotalAmount  : $data['netTotalAmount'],
+            reference       : $data['reference'],
+            taxRate         : $data['taxRate'],
+            taxAmount       : $data['taxAmount'],
         );
     }
 
@@ -255,15 +259,16 @@ class GlobalRequestBuilder
      * Creates base data array for an item including name, SKU, quantity, and unit.
      *
      * @param mixed $item
+     *
      * @return array
      */
     private function createItemBaseData(mixed $item): array
     {
         return [
-            'name' => $item->getName(),
+            'name'      => $item->getName(),
             'reference' => $item->getSku(),
-            'quantity' => $this->getQuantity($item),
-            'unit' => 'pcs'
+            'quantity'  => $this->getQuantity($item),
+            'unit'      => 'pcs'
         ];
     }
 
@@ -300,6 +305,7 @@ class GlobalRequestBuilder
      *
      * @param array $data
      * @param mixed $item
+     *
      * @return array
      */
     private function appendPriceData(array $data, mixed $item): array
@@ -322,21 +328,21 @@ class GlobalRequestBuilder
     /**
      * Build the payment methods configuration for the order or quote.
      *
-     * @param Quote|Order $order
+     * @param Quote|Order $salesObject
      *
      * @return MethodConfiguration[]
      */
-    public function buildPaymentMethodsConfiguration(Quote|Order $order): array
+    public function buildPaymentMethodsConfiguration(Quote|Order $salesObject): array
     {
+        $subselection = $salesObject->getPayment()->getAdditionalInformation('subselection');
 
-        if (!$this->config->getPayTypeSplitting()) {
+        if (!$this->config->getPayTypeSplitting() || !$subselection) {
             return [];
         }
 
-        $subselection = $order->getPayment()->getAdditionalInformation('subselection') ?? [];
         return [
             new MethodConfiguration(
-                name: $subselection,
+                name   : $subselection,
                 enabled: true
             )
         ];

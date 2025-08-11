@@ -27,7 +27,6 @@ class PaymentInitialize implements PaymentInitializeInterface
      * @param Config $config
      * @param LoggerInterface $logger
      * @param Session $checkoutSession
-     * @param ResolverInterface $localeResolver
      */
     public function __construct(
         private readonly CartRepositoryInterface $quoteRepository,
@@ -55,17 +54,25 @@ class PaymentInitialize implements PaymentInitializeInterface
             if (!$quote->getIsActive()) {
                 $this->checkoutSession->restoreQuote();
             }
-            $paymentMethod = $quote->getPayment();
-            if (!$paymentMethod) {
+            $quotePayment = $quote->getPayment();
+            if (!$quotePayment) {
                 throw new LocalizedException(__('No payment method found for the quote'));
             }
 
-            $paymentData = $this->paymentDataObjectFactory->create($paymentMethod);
+            $paymentData = $this->paymentDataObjectFactory->create($quotePayment);
+
+            if (isset($paymentMethod->getAdditionalData()['subselection'])) {
+                $paymentData->getPayment()->setAdditionalInformation(
+                    'subselection',
+                    $paymentMethod->getAdditionalData()['subselection']
+                );
+            }
+
             $this->initializeCommand->createPayment($paymentData);
             $this->quoteRepository->save($quote);
 
             return json_encode([
-                'paymentId'   => $paymentMethod->getAdditionalInformation('payment_id'),
+                'paymentId'   => $quotePayment->getAdditionalInformation('payment_id'),
                 'checkoutKey' => $this->config->getCheckoutKey()
             ]);
         } catch (\Exception $e) {

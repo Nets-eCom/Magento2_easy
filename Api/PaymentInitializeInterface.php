@@ -13,9 +13,9 @@ interface PaymentInitializeInterface
      *
      * @param string $cartId
      * @param string $integrationType
-     * @param PaymentInterface $paymentMethod
+     * @param PaymentInterface $quotePayment
      *
      * @return string
      */
-    public function initialize(string $cartId, string $integrationType, PaymentInterface $paymentMethod);
+    public function initialize(string $cartId, string $integrationType, PaymentInterface $quotePayment);
 }
