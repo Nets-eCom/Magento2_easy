@@ -13,7 +13,7 @@ class PayTypeOptions implements OptionSourceInterface
      *
      * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         $options = [];
         foreach (PaymentTypesEnum::cases() as $case) {

@@ -13,7 +13,6 @@ use Magento\Payment\Helper\Data as PaymentHelper;
 use Nexi\Checkout\Model\Config\Source\PaymentTypesEnum;
 use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 
-const HTTPS_CHECKOUT_DIBSPAYMENT_EU_V_1_ICONS = 'https://checkout.dibspayment.eu/v1/icons/';
 class ConfigProvider implements ConfigProviderInterface
 {
     /**
