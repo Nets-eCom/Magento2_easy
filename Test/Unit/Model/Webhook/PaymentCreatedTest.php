@@ -210,11 +210,6 @@ class PaymentCreatedTest extends TestCase
             ->method('getFirstItem')
             ->willReturn($orderMock);
 
-        // Setup expectations for order
-        $orderMock->expects($this->once())
-            ->method('getIncrementId')
-            ->willReturn($orderReference);
-
         $orderMock->method('getId')->willReturn(1);
 
         // Execute the method
