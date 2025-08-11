@@ -40,8 +40,7 @@ class ConfigProvider implements ConfigProviderInterface
     /**
      * Returns Nexi configuration values.
      *
-     * @return array|\array[][]
-     * @throws LocalizedException
+     * @return array
      */
     public function getConfig(): array
     {

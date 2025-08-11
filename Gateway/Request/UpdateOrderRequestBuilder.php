@@ -29,7 +29,6 @@ class UpdateOrderRequestBuilder implements BuilderInterface
      * @param array $buildSubject
      *
      * @return array
-     * @throws NoSuchEntityException
      */
     public function build(array $buildSubject): array
     {

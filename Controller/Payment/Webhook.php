@@ -42,7 +42,6 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
      * Execute the webhook action
      *
      * @return void
-     * @throws Exception
      */
     public function execute()
     {
