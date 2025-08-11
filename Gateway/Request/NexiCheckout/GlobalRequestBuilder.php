@@ -70,7 +70,6 @@ class GlobalRequestBuilder
      *
      * @param Order|Quote $salesObject
      * @return PhoneNumber
-     * @throws \libphonenumber\NumberParseException
      */
     public function getNumber(Order|Quote $salesObject): PhoneNumber
     {
@@ -113,7 +112,7 @@ class GlobalRequestBuilder
      *
      * @return OrderItem|array
      */
-    public function buildItems(Order|Quote $paymentSubject): OrderItem|array
+    private function buildItems(Order|Quote $paymentSubject): OrderItem|array
     {
         $items = $this->getProductsData($paymentSubject);
 
@@ -258,7 +257,7 @@ class GlobalRequestBuilder
      * @param mixed $item
      * @return array
      */
-    public function createItemBaseData(mixed $item): array
+    private function createItemBaseData(mixed $item): array
     {
         return [
             'name' => $item->getName(),
@@ -275,7 +274,7 @@ class GlobalRequestBuilder
      *
      * @return array|Quote\Item\AbstractItem[]
      */
-    public function getChildren(OrderItem|Quote\Item $item): array
+    private function getChildren(OrderItem|Quote\Item $item): array
     {
         $children = $item instanceof OrderItem ? $item->getChildrenItems() : $item->getChildren();
 
@@ -289,7 +288,7 @@ class GlobalRequestBuilder
      *
      * @return float
      */
-    public function getQuantity(mixed $item): float
+    private function getQuantity(mixed $item): float
     {
         $qtyOrdered = $item instanceof OrderItem ? $item->getQtyOrdered() : $item->getQty();
 
