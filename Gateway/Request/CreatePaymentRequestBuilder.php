@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Gateway\Request;
 
-use libphonenumber\NumberParseException;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
@@ -130,7 +129,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $order
      *
      * @return Payment
-     * @throws NoSuchEntityException
      */
     private function buildPayment(Order|Quote $order): Payment
     {
@@ -148,7 +146,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $salesObject
      *
      * @return HostedCheckout|EmbeddedCheckout
-     * @throws NoSuchEntityException
      */
     public function buildCheckout(Quote|Order $salesObject): HostedCheckout|EmbeddedCheckout
     {
@@ -163,7 +160,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Order|Quote $salesObject
      *
      * @return Consumer
-     * @throws NoSuchEntityException|NumberParseException
      */
     private function buildConsumer(Order|Quote $salesObject): Consumer
     {
@@ -215,7 +211,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Quote|Order $salesObject
      *
      * @return EmbeddedCheckout
-     * @throws NoSuchEntityException
      */
     public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
     {
@@ -235,7 +230,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param Quote|Order $salesObject
      *
      * @return HostedCheckout
-     * @throws NoSuchEntityException|NumberParseException
      */
     public function buildHostedCheckout(Quote|Order $salesObject): HostedCheckout
     {
@@ -256,7 +250,6 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      * @param string $countryCode
      *
      * @return string
-     * @throws NoSuchEntityException
      */
     public function getThreeLetterCountryCode(string $countryCode): string
     {
@@ -268,10 +261,7 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     /**
      * Set subscription setup for the payment.
      *
-     * @return Payment\Subscription|null
-     * @throws NoSuchEntityException
-     * @throws \DateMalformedStringException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return PhoneNumber
      */
     private function getSubscriptionSetup(): ?Payment\Subscription
     {

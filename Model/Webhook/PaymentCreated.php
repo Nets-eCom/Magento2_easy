@@ -43,13 +43,12 @@ class PaymentCreated implements WebhookProcessorInterface
      * @param array $webhookData
      *
      * @return void
-     * @throws CouldNotSaveException|NotFoundException
+     * @throws NotFoundException
      */
     public function processWebhook(array $webhookData): void
     {
         $paymentId   = $webhookData['data']['paymentId'];
         $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
-        $order       = null;
 
         $orderReference = $webhookData['data']['order']['reference'] ?? null;
 
@@ -58,7 +57,6 @@ class PaymentCreated implements WebhookProcessorInterface
             if (!$order->getId()) {
                 throw new NotFoundException(__('Order not found for payment ID: %1', $paymentId));
             }
-            $orderReference = $order->getIncrementId();
         } else {
             $order = $this->orderCollectionFactory->create()->addFieldToFilter(
                 'increment_id',

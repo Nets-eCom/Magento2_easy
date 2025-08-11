@@ -59,8 +59,7 @@ class Nexi extends Info
     /**
      * Get payment selected method data.
      *
-     * @return array
-     * @throws LocalizedException
+     * @return string
      */
     public function getSelectedPaymentMethodData(): array
     {

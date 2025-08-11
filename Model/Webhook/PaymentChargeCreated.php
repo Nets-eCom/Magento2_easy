@@ -42,7 +42,6 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param array $webhookData
      *
      * @return void
-     * @throws LocalizedException
      */
     public function processWebhook(array $webhookData): void
     {
@@ -58,9 +57,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param array $webhookData
      *
      * @return void
-     * @throws AlreadyExistsException
-     * @throws LocalizedException
-     * @throws NotFoundException
+     * @throws Exception
      */
     private function processOrder(Order $order, array $webhookData): void
     {
@@ -97,7 +94,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             $this->fullInvoice($order, $chargeTxnId);
         } else {
             $order->addCommentToStatusHistory(
-                'Partial charge received from the Dibs Portal gateway. ' .
+                'Partial charge received from the Nexi | Nets Portal gateway. ' .
                 'The order processing could not be completed automatically. '
             );
         }
@@ -129,7 +126,6 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param string $chargeTxnId
      *
      * @return void
-     * @throws LocalizedException
      */
     public function fullInvoice(Order $order, string $chargeTxnId): void
     {

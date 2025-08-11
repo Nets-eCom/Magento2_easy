@@ -80,7 +80,7 @@ class SalesDocumentItemsBuilder
      *
      * @return mixed
      */
-    public function calculateTaxRate(mixed $item): mixed
+    private function calculateTaxRate(mixed $item): mixed
     {
         return $item->getTaxAmount() / $item->getRowTotal() * 100;
     }
@@ -92,7 +92,7 @@ class SalesDocumentItemsBuilder
      *
      * @return float|int
      */
-    public function calculateShippingTaxRate(InvoiceInterface|CreditmemoInterface $salesObject): int|float
+    private function calculateShippingTaxRate(InvoiceInterface|CreditmemoInterface $salesObject): int|float
     {
         if ($salesObject->getShippingAmount() == 0) {
             return 0;

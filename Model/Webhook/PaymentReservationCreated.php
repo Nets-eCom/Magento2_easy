@@ -41,7 +41,6 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      *
      * @return void
      * @throws NotFoundException
-     * @throws CouldNotSaveException
      */
     public function processWebhook(array $webhookData): void
     {

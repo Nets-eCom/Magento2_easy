@@ -45,7 +45,6 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      * @param array $webhookData
      *
      * @return void
-     * @throws LocalizedException
      */
     public function processWebhook(array $webhookData): void
     {

@@ -24,8 +24,6 @@ class PaymentChargeFailed implements WebhookProcessorInterface
 
     /**
      * @inheritdoc
-     *
-     * @throws CouldNotSaveException
      */
     public function processWebhook(array $webhookData): void
     {

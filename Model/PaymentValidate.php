@@ -8,8 +8,8 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Payment\Gateway\Command\CommandManagerPoolInterface;
-use Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Nexi\Checkout\Api\PaymentValidateInterface;
 use Nexi\Checkout\Gateway\AmountConverter;
@@ -21,7 +21,6 @@ class PaymentValidate implements PaymentValidateInterface
 {
     /**
      * @param CartRepositoryInterface $quoteRepository
-     * @param PaymentDataObjectFactoryInterface $paymentDataObjectFactory
      * @param QuoteIdMaskFactory $quoteIdMaskFactory
      * @param LoggerInterface $logger
      * @param Json $json
@@ -31,7 +30,6 @@ class PaymentValidate implements PaymentValidateInterface
      */
     public function __construct(
         private readonly CartRepositoryInterface $quoteRepository,
-        private readonly PaymentDataObjectFactoryInterface $paymentDataObjectFactory,
         private readonly QuoteIdMaskFactory $quoteIdMaskFactory,
         private readonly LoggerInterface $logger,
         private readonly Json $json,
@@ -43,13 +41,15 @@ class PaymentValidate implements PaymentValidateInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws LocalizedException
      */
     public function validate(string $cartId): string
     {
         try {
             if (!is_numeric($cartId)) {
                 $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'masked_id');
-                $cartId      = $quoteIdMask->getQuoteId();
+                $cartId = $quoteIdMask->getQuoteId();
             }
             $quote = $this->quoteRepository->get($cartId);
 
@@ -58,9 +58,9 @@ class PaymentValidate implements PaymentValidateInterface
                 throw new LocalizedException(__('No payment method found for the quote'));
             }
 
-            $paymentData     = $this->paymentDataObjectFactory->create($paymentMethod);
-            $paymentId       = $paymentMethod->getAdditionalInformation('payment_id');
-            $paymentDeteaild = $this->commandManagerPool->get(Config::CODE)->executeByCode(
+            $paymentId = $paymentMethod->getAdditionalInformation('payment_id');
+
+            $this->commandManagerPool->get(Config::CODE)->executeByCode(
                 'retrieve',
                 $paymentMethod,
                 [
@@ -90,15 +90,15 @@ class PaymentValidate implements PaymentValidateInterface
     /**
      * Compare items and amounts between retrieved payment and quote
      *
-     * @param array $retrievedPayment
-     * @param \Magento\Quote\Model\Quote $quote
+     * @param RetrievePaymentResult $retrievedPayment
+     * @param CartInterface $quote
      *
      * @return void
      * @throws LocalizedException
      */
-    private function compareAmounts(RetrievePaymentResult $retrievedPayment, \Magento\Quote\Model\Quote $quote): void
+    private function compareAmounts(RetrievePaymentResult $retrievedPayment, CartInterface $quote): void
     {
-        $quoteTotal     = $this->amountConverter->convertToNexiAmount($quote->getGrandTotal());
+        $quoteTotal = $this->amountConverter->convertToNexiAmount($quote->getGrandTotal());
         $retrievedTotal = $retrievedPayment->getPayment()->getOrderDetails()->getAmount();
 
         if ($quoteTotal !== $retrievedTotal) {

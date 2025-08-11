@@ -11,7 +11,6 @@ use NexiCheckout\Model\Result\RetrievePaymentResult;
 
 class Retrieve implements HandlerInterface
 {
-
     /**
      * @param SubjectReader $subjectReader
      */
