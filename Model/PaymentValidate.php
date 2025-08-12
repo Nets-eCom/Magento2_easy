@@ -87,7 +87,7 @@ class PaymentValidate implements PaymentValidateInterface
                     'trace'     => $e->getTraceAsString()
                 ]
             );
-            throw new LocalizedException(__('Could not finalize payment.'), $e);
+            throw new LocalizedException(__('Could not validate the payment.'), $e);
         }
     }
 
