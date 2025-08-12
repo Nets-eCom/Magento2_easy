@@ -354,4 +354,9 @@
         <plugin name="nexi_disable_invoice_void"
                 type="Nexi\Checkout\Plugin\DisableVoidAfterCapturePlugin" />
     </type>
+    <type name="Magento\Quote\Model\Quote\Payment">
+        <plugin name="Nexi_Checkout::magento_quote_model_payment"
+                type="Nexi\Checkout\Plugin\PaymentData"
+                sortOrder="100"/>
+    </type>
 </config>

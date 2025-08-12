@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Gateway\Request;
 
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
@@ -137,6 +138,9 @@ class CreatePaymentRequestBuilder implements BuilderInterface
             checkout: $this->buildCheckout($order),
             notification: new Notification($this->globalRequestBuilder->buildWebhooks()),
             subscription: $this->getSubscriptionSetup($order),
+            paymentMethodsConfiguration: $this->globalRequestBuilder->buildPaymentMethodsConfiguration(
+                $order
+            ),
         );
     }
 

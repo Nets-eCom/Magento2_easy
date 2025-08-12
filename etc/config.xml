@@ -39,6 +39,7 @@
                 <test_checkout_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <webhook_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <integration_type>HostedPaymentPage</integration_type>
+                <pay_type_splitting>0</pay_type_splitting>
                 <subscriptions>
                     <active_subscriptions>0</active_subscriptions>
                     <notify_cron_schedule>0 1 * * *</notify_cron_schedule>

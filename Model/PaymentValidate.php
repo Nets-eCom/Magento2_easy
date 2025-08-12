@@ -44,7 +44,7 @@ class PaymentValidate implements PaymentValidateInterface
      *
      * @throws LocalizedException
      */
-    public function validate(string $cartId): string
+    public function validate(string $cartId, string $paymentId): string
     {
         try {
             if (!is_numeric($cartId)) {
@@ -58,7 +58,11 @@ class PaymentValidate implements PaymentValidateInterface
                 throw new LocalizedException(__('No payment method found for the quote'));
             }
 
-            $paymentId = $paymentMethod->getAdditionalInformation('payment_id');
+            $quotePaymentId = $paymentMethod->getAdditionalInformation('payment_id');
+
+            if ($quotePaymentId !== $paymentId) {
+                throw new LocalizedException(__('Payment ID does not match the current cart payment ID.'));
+            }
 
             $this->commandManagerPool->get(Config::CODE)->executeByCode(
                 'retrieve',
@@ -71,7 +75,7 @@ class PaymentValidate implements PaymentValidateInterface
             $this->compareAmounts($paymentMethod->getData('retrieved_payment'), $quote);
 
             return $this->json->serialize([
-                'payment_id' => $paymentId,
+                'payment_id' => $quotePaymentId,
                 'success'    => true
             ]);
 
