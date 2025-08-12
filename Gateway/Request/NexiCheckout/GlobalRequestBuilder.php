@@ -54,7 +54,7 @@ class GlobalRequestBuilder
     {
         $webhooks = [];
         foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $webhookUrl = "https://de3762705cf1.ngrok-free.app" . '/' . self::NEXI_PAYMENT_WEBHOOK_PATH;
+            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
             $webhooks[] = new Webhook(
                 eventName    : $eventName,
                 url          : $webhookUrl,
