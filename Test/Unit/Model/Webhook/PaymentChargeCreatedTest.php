@@ -15,6 +15,10 @@ use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentChargeCreated;
 use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
+use NexiCheckout\Model\Webhook\ChargeCreated;
+use NexiCheckout\Model\Webhook\Data\Amount;
+use NexiCheckout\Model\Webhook\Data\ChargeCreatedData;
+use NexiCheckout\Model\Webhook\EventNameEnum;
 use PHPUnit\Framework\TestCase;
 
 class PaymentChargeCreatedTest extends TestCase
@@ -49,6 +53,21 @@ class PaymentChargeCreatedTest extends TestCase
      */
     private $amountConverterMock;
 
+    /**
+     * @var ChargeCreated|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $webhookMock;
+
+    /**
+     * @var ChargeCreatedData|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $chargeCreatedDataMock;
+
+    /**
+     * @var Amount|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $amountMock;
+
     protected function setUp(): void
     {
         $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
@@ -56,6 +75,9 @@ class PaymentChargeCreatedTest extends TestCase
         $this->transactionBuilderMock = $this->createMock(Builder::class);
         $this->commentMock = $this->createMock(Comment::class);
         $this->amountConverterMock = $this->createMock(AmountConverter::class);
+        $this->webhookMock = $this->createMock(ChargeCreated::class);
+        $this->chargeCreatedDataMock = $this->createMock(ChargeCreatedData::class);
+        $this->amountMock = $this->createMock(Amount::class);
 
         $this->paymentChargeCreated = new PaymentChargeCreated(
             $this->orderRepositoryMock,
@@ -68,21 +90,33 @@ class PaymentChargeCreatedTest extends TestCase
 
     public function testProcessWebhookWithFullCharge(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123',
-                'chargeId' => 'charge-123',
-                'amount' => [
-                    'amount' => 10000, // 100.00 in cents
-                    'currency' => 'USD'
-                ],
-                'orderItems' => []
-            ]
-        ];
-
         $paymentId = 'payment-123';
         $chargeId = 'charge-123';
+        $amountValue = 10000; // 100.00 in cents
+        $currency = 'USD';
+
+        // Mock webhook data
+        $this->amountMock->expects($this->atLeastOnce())
+            ->method('getAmount')
+            ->willReturn($amountValue);
+        $this->amountMock->expects($this->once())
+            ->method('getCurrency')
+            ->willReturn($currency);
+
+        $this->chargeCreatedDataMock->expects($this->atLeastOnce())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+        $this->chargeCreatedDataMock->expects($this->atLeastOnce())
+            ->method('getChargeId')
+            ->willReturn($chargeId);
+        $this->chargeCreatedDataMock->expects($this->atLeastOnce())
+            ->method('getAmount')
+            ->willReturn($this->amountMock);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->atLeastOnce())
+            ->method('getData')
+            ->willReturn($this->chargeCreatedDataMock);
 
         // Mock order and payment
         $orderMock = $this->createMock(Order::class);
@@ -110,8 +144,8 @@ class PaymentChargeCreatedTest extends TestCase
                     'Webhook Received. Payment charge created for payment ID: %1<br/>Charge ID: %2<br/>Amount: %3 %4.',
                     $paymentId,
                     $chargeId,
-                    number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                    $webhookData['data']['amount']['currency']
+                    number_format($amountValue / 100, 2, '.', ''),
+                    $currency
                 ),
                 $orderMock
             );
@@ -176,6 +210,6 @@ class PaymentChargeCreatedTest extends TestCase
             ->with($orderMock);
 
         // Execute the method
-        $this->paymentChargeCreated->processWebhook($webhookData);
+        $this->paymentChargeCreated->processWebhook($this->webhookMock);
     }
 }

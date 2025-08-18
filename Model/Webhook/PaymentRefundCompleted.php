@@ -119,7 +119,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
      * @param string $refundId
      * @param Order $order
      * @param string $paymentId
-     * @param array $webhookData
+     * @param RefundCompletedData $webhookData
      *
      * @return TransactionInterface
      * @throws LocalizedException
@@ -128,7 +128,7 @@ class PaymentRefundCompleted implements WebhookProcessorInterface
         string $refundId,
         Order $order,
         string $paymentId,
-        array $webhookData
+        RefundCompletedData $webhookData
     ): TransactionInterface {
         return $this->transactionBuilder
             ->build(

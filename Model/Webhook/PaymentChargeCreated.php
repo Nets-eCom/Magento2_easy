@@ -80,7 +80,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
                 $chargeTxnId,
                 $order,
                 [
-                    'payment_id' => $webhook['data']['paymentId'],
+                    'payment_id' => $webhook->getData()->getPaymentId(),
                     'webhook'    => json_encode($webhook, JSON_PRETTY_PRINT),
                 ],
                 TransactionInterface::TYPE_CAPTURE

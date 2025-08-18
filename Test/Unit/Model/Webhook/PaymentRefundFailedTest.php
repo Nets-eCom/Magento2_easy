@@ -6,6 +6,9 @@ use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentRefundFailed;
+use NexiCheckout\Model\Webhook\Data\RefundFailedData;
+use NexiCheckout\Model\Webhook\RefundFailed;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use PHPUnit\Framework\TestCase;
 
 class PaymentRefundFailedTest extends TestCase
@@ -21,6 +24,16 @@ class PaymentRefundFailedTest extends TestCase
     private $commentMock;
 
     /**
+     * @var WebhookInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $webhookMock;
+
+    /**
+     * @var RefundFailedData|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $refundFailedDataMock;
+
+    /**
      * @var PaymentRefundFailed
      */
     private $paymentRefundFailed;
@@ -29,6 +42,8 @@ class PaymentRefundFailedTest extends TestCase
     {
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->commentMock = $this->createMock(Comment::class);
+        $this->webhookMock = $this->createMock(RefundFailed::class);
+        $this->refundFailedDataMock = $this->createMock(RefundFailedData::class);
 
         $this->paymentRefundFailed = new PaymentRefundFailed(
             $this->webhookDataLoaderMock,
@@ -38,14 +53,17 @@ class PaymentRefundFailedTest extends TestCase
 
     public function testProcessWebhookSuccessfully(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123'
-            ]
-        ];
-
         $paymentId = 'payment-123';
+
+        // Mock webhook data
+        $this->refundFailedDataMock->expects($this->once())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->once())
+            ->method('getData')
+            ->willReturn($this->refundFailedDataMock);
 
         // Mock order
         $orderMock = $this->createMock(Order::class);
@@ -64,6 +82,6 @@ class PaymentRefundFailedTest extends TestCase
             );
 
         // Execute the method
-        $this->paymentRefundFailed->processWebhook($webhookData);
+        $this->paymentRefundFailed->processWebhook($this->webhookMock);
     }
 }

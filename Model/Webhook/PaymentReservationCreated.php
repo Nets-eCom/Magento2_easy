@@ -51,7 +51,7 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      */
     public function processWebhook(WebhookInterface $webhook): void
     {
-        /* @var ReservationCreatedData $webhookData */
+        /* @var ReservationCreatedData $data */
         $data = $webhook->getData();
         $paymentId = $data->getPaymentId();
         $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
@@ -80,13 +80,13 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         $reservationTransaction->setParentTxnId($paymentId);
         $reservationTransaction->setParentId($paymentTransaction->getTransactionId());
 
-        if (isset($data['subscriptionId'])) {
-            $order->getPayment()->setAdditionalInformation('subscription_id', $data['subscriptionId']);
-            $this->subscriptionManagement->processSubscription($order, $data['subscriptionId']);
+        if ($data->getSubscriptionId() !== null) {
+            $order->getPayment()->setAdditionalInformation('subscription_id', $data->getSubscriptionId());
+            $this->subscriptionManagement->processSubscription($order, $data->getSubscriptionId());
         }
 
         $payment = $order->getPayment();
-        $amount = $data['amount']['amount'] / 100;
+        $amount = $data->getAmount()->getAmount() / 100;
         $amount = $payment->formatAmount($amount, true);
         $payment->setBaseAmountAuthorized($amount);
 
@@ -111,12 +111,12 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * Saves a comment in the order with details from the webhook data.
      *
      * @param mixed $paymentId
-     * @param ReservationCreated $webhook
+     * @param ReservationCreatedData $webhookData
      * @param Order $order
      *
      * @return void
      */
-    private function saveComment(mixed $paymentId, ReservationCreated $webhook, Order $order): void
+    private function saveComment(mixed $paymentId, ReservationCreatedData $webhookData, Order $order): void
     {
         $this->comment->saveComment(
             __(
@@ -124,9 +124,9 @@ class PaymentReservationCreated implements WebhookProcessorInterface
                 . '<br/>Reservation Id: %2'
                 . '<br/>Amount: %3 %4.',
                 $paymentId,
-                $webhook->getId(),
-                number_format($webhook->getData()->getAmount()->getAmount() / 100, 2, '.', ''),
-                $webhook->getData()->getAmount()->getCurrency()
+                $webhookData->getPaymentId(),
+                number_format($webhookData->getAmount()->getAmount() / 100, 2, '.', ''),
+                $webhookData->getAmount()->getCurrency()
             ),
             $order
         );
