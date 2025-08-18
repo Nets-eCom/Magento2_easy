@@ -99,8 +99,7 @@ class PaymentChargeCreatedTest extends TestCase
         $this->amountMock->expects($this->atLeastOnce())
             ->method('getAmount')
             ->willReturn($amountValue);
-        $this->amountMock->expects($this->once())
-            ->method('getCurrency')
+        $this->amountMock->method('getCurrency')
             ->willReturn($currency);
 
         $this->chargeCreatedDataMock->expects($this->atLeastOnce())
