@@ -201,7 +201,7 @@ class Payments extends Template
      */
     public function getStopPaymentUrl(SubscriptionInterface $recurringPayment)
     {
-        return $this->getUrl('nexi/payments/stop', ['payment_id' => $recurringPayment->getId()]);
+        return $this->getUrl('nexi/payment/stop', ['payment_id' => $recurringPayment->getId()]);
     }
 
     /**
