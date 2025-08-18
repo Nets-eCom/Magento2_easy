@@ -39,6 +39,7 @@ class GlobalRequestBuilder
      * @param EncryptorInterface $encryptor
      * @param WebhookHandler $webhookHandler
      * @param AmountConverter $amountConverter
+     * @param ProductRepositoryInterface $productRepository
      */
     public function __construct(
         private readonly UrlInterface $url,
@@ -293,9 +294,8 @@ class GlobalRequestBuilder
             return $item->getChildren();
         }
 
-        if (
-            $item instanceof \Magento\Sales\Model\Order\Invoice\Item ||
-            $item instanceof \Magento\Sales\Model\Order\Creditmemo\Item
+        if ($item instanceof \Magento\Sales\Model\Order\Invoice\Item
+            || $item instanceof \Magento\Sales\Model\Order\Creditmemo\Item
         ) {
             $orderItem = $item->getOrderItem();
             $childOrderItems = $orderItem->getChildrenItems();
@@ -311,7 +311,6 @@ class GlobalRequestBuilder
 
             return $childrenItems;
         }
-
 
         return [];
     }
