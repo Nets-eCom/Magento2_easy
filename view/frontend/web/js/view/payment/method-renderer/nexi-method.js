@@ -201,8 +201,8 @@ define(
                             try {
                                 const validationResult = await validatePayment.call(this);
                                 if (!validationResult.success) {
-                                    await renderEmbeddedCheckout.call(this);
-                                    return;
+                                    console.error("Payment validation failed. paymentId:", paymentId);
+                                    window.location.reload();
                                 }
 
                                 await this.placeOrder(); // Ensure the order is placed before proceeding
@@ -211,7 +211,8 @@ define(
                                 // Use the same instance reference to send the event
                                 currentDibsCheckout.send("payment-order-finalized", true);
                             } catch (error) {
-                                await renderEmbeddedCheckout.call(this);
+                                console.error("Error during payment initialization:", error);
+                                window.location.reload();
                             }
                         }.bind(this)
                     );
