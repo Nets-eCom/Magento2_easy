@@ -75,7 +75,7 @@ class PaymentChargeCreated implements WebhookProcessorInterface
             return;
         }
 
-        $chargeTransaction = $this->transactionBuilder
+        $this->transactionBuilder
             ->build(
                 $chargeTxnId,
                 $order,
@@ -114,8 +114,8 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      */
     private function isFullCharge(ChargeCreated $webhook, Order $order): bool
     {
-        $grandTotalConverted = (int) $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
-        $webhookAmount = (int) $webhook->getData()->getAmount()->getAmount();
+        $grandTotalConverted = (int)$this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+        $webhookAmount = (int)$webhook->getData()->getAmount()->getAmount();
 
         return $grandTotalConverted === $webhookAmount;
     }
