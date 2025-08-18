@@ -9,6 +9,7 @@ use Magento\Sales\Api\Data\InvoiceInterface;
 use Nexi\Checkout\Gateway\AmountConverter;
 use Nexi\Checkout\Gateway\StringSanitizer;
 use NexiCheckout\Model\Request\Item;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\GlobalRequestBuilder;
 
 class SalesDocumentItemsBuilder
 {
@@ -23,6 +24,7 @@ class SalesDocumentItemsBuilder
     public function __construct(
         private readonly AmountConverter $amountConverter,
         private readonly StringSanitizer $stringSanitizer,
+        private readonly GlobalRequestBuilder $globalRequestBuilder,
     ) {
     }
 
@@ -35,23 +37,7 @@ class SalesDocumentItemsBuilder
      */
     public function build(CreditmemoInterface|InvoiceInterface $salesObject): array
     {
-        $items = [];
-        foreach ($salesObject->getAllItems() as $item) {
-            if ((double)$item->getBasePrice() === 0.0) {
-                continue;
-            }
-            $items[] = new Item(
-                name            : $this->stringSanitizer->sanitize($item->getName()),
-                quantity        : (float)$item->getQty(),
-                unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getBasePrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getBaseRowTotalInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getBaseRowTotal()),
-                reference       : $this->stringSanitizer->sanitize($item->getSku()),
-                taxRate         : $this->amountConverter->convertToNexiAmount($this->calculateTaxRate($item)),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount()),
-            );
-        }
+        $items = $this->globalRequestBuilder->getProductsData($salesObject);
 
         if ($salesObject->getShippingInclTax()) {
             $items[] = new Item(
