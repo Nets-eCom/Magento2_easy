@@ -74,7 +74,7 @@ class PaymentCreated implements WebhookProcessorInterface
                 __(
                     'Webhook Received. Payment created for Payment ID: %1'
                     . '<br />Amount: %2 %3.',
-                   $data->getPaymentId() ,
+                    $data->getPaymentId(),
                     number_format($data->getOrder()->getAmount()->getAmount() / 100, 2, '.', ''),
                     $data->getOrder()->getAmount()->getCurrency()
                 ),
