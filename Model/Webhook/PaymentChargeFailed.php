@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Framework\Exception\CouldNotSaveException;
-use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 
 class PaymentChargeFailed implements WebhookProcessorInterface
 {
@@ -25,13 +24,14 @@ class PaymentChargeFailed implements WebhookProcessorInterface
     /**
      * @inheritdoc
      */
-    public function processWebhook(array $webhookData): void
+    public function processWebhook(WebhookInterface $webhook): void
     {
-        /* @var Order $order */
-        $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
+        $paymentId = $webhook->getData()->getPaymentId();
+
+        $order = $this->webhookDataLoader->loadOrderByPaymentId($paymentId);
 
         $this->comment->saveComment(
-            __('Webhook Received. Payment charge failed for payment ID: %1', $webhookData['data']['paymentId']),
+            __('Webhook Received. Payment charge failed for payment ID: %1', $paymentId),
             $order
         );
     }

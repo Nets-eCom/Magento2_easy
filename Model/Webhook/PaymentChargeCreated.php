@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Webhook;
 
 use Exception;
-use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Exception\CouldNotSaveException;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -17,6 +15,9 @@ use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
+use NexiCheckout\Model\Webhook\ChargeCreated;
+use NexiCheckout\Model\Webhook\Shared\Data;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 
 class PaymentChargeCreated implements WebhookProcessorInterface
 {
@@ -39,14 +40,15 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     /**
      * ProcessWebhook function for 'payment.charge.created.v2' event.
      *
-     * @param array $webhookData
+     * @param WebhookInterface $webhook
      *
      * @return void
+     * @throws NotFoundException
      */
-    public function processWebhook(array $webhookData): void
+    public function processWebhook(WebhookInterface $webhook): void
     {
-        $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
-        $this->processOrder($order, $webhookData);
+        $order = $this->webhookDataLoader->loadOrderByPaymentId($webhook->getData()->getPaymentId());
+        $this->processOrder($order, $webhook);
         $this->orderRepository->save($order);
     }
 
@@ -54,40 +56,40 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * ProcessOrder function.
      *
      * @param Order $order
-     * @param array $webhookData
+     * @param ChargeCreated $webhook
      *
      * @return void
-     * @throws Exception
+     * @throws CouldNotSaveException
+     * @throws NotFoundException
      */
-    private function processOrder(Order $order, array $webhookData): void
+    private function processOrder(Order $order, ChargeCreated $webhook): void
     {
         $reservationTxn = $this->webhookDataLoader->getTransactionByOrderId(
             (int)$order->getId(),
             TransactionInterface::TYPE_AUTH
         );
 
-        $chargeTxnId = $webhookData['data']['chargeId'];
+        $chargeTxnId = $webhook->getData()->getChargeId();
 
         if ($this->webhookDataLoader->getTransactionByPaymentId($chargeTxnId, TransactionInterface::TYPE_CAPTURE)) {
             return;
         }
-
 
         $chargeTransaction = $this->transactionBuilder
             ->build(
                 $chargeTxnId,
                 $order,
                 [
-                    'payment_id' => $webhookData['data']['paymentId'],
-                    'webhook'    => json_encode($webhookData, JSON_PRETTY_PRINT),
+                    'payment_id' => $webhook['data']['paymentId'],
+                    'webhook'    => json_encode($webhook, JSON_PRETTY_PRINT),
                 ],
                 TransactionInterface::TYPE_CAPTURE
             )->setParentId($reservationTxn->getTransactionId())
             ->setParentTxnId($reservationTxn->getTxnId());
 
-        $this->saveOrderHistoryComment($webhookData['data'], $order);
+        $this->saveOrderHistoryComment($webhook->getData(), $order);
 
-        if ($this->isFullCharge($webhookData, $order)) {
+        if ($this->isFullCharge($webhook, $order)) {
             if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
                 throw new Exception('Order status is not authorized.');
             }
@@ -100,21 +102,20 @@ class PaymentChargeCreated implements WebhookProcessorInterface
         }
 
         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
-
     }
 
     /**
      * Validate charge transaction.
      *
-     * @param array $webhookData
+     * @param ChargeCreated $webhook
      * @param Order $order
      *
      * @return bool
      */
-    private function isFullCharge(array $webhookData, Order $order): bool
+    private function isFullCharge(ChargeCreated $webhook, Order $order): bool
     {
         $grandTotalConverted = (int) $this->amountConverter->convertToNexiAmount($order->getGrandTotal());
-        $webhookAmount = (int) $webhookData['data']['amount']['amount'];
+        $webhookAmount = (int) $webhook->getData()->getAmount()->getAmount();
 
         return $grandTotalConverted === $webhookAmount;
     }
@@ -144,23 +145,22 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     /**
      * Save order history comment.
      *
-     * @param array $data
+     * @param Data $data
      * @param Order $order
      *
      * @return void
-     * @throws CouldNotSaveException
      */
-    private function saveOrderHistoryComment(array $data, Order $order): void
+    private function saveOrderHistoryComment(Data $data, Order $order): void
     {
         $this->comment->saveComment(
             __(
                 'Webhook Received. Payment charge created for payment ID: %1'
                 . '<br/>Charge ID: %2'
                 . '<br/>Amount: %3 %4.',
-                $data['paymentId'],
-                $data['chargeId'],
-                number_format($data['amount']['amount'] / 100, 2, '.', ''),
-                $data['amount']['currency']
+                $data->getPaymentId(),
+                $data->getChargeId(),
+                number_format($data->getAmount()->getAmount() / 100, 2, '.', ''),
+                $data->getAmount()->getCurrency()
             ),
             $order
         );

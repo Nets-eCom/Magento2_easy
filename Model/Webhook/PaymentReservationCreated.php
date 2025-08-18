@@ -15,6 +15,10 @@ use Nexi\Checkout\Model\SubscriptionManagement;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
+use NexiCheckout\Model\Webhook\Data\ReservationCreatedData;
+use NexiCheckout\Model\Webhook\ReservationCreated;
+use NexiCheckout\Model\Webhook\WebhookInterface;
+use Psr\Log\LoggerInterface;
 
 class PaymentReservationCreated implements WebhookProcessorInterface
 {
@@ -24,27 +28,32 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * @param Builder $transactionBuilder
      * @param Comment $comment
      * @param SubscriptionManagement $subscriptionManagement
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly WebhookDataLoader        $webhookDataLoader,
-        private readonly Builder                  $transactionBuilder,
-        private readonly Comment                  $comment,
-        private readonly SubscriptionManagement $subscriptionManagement
+        private readonly WebhookDataLoader $webhookDataLoader,
+        private readonly Builder $transactionBuilder,
+        private readonly Comment $comment,
+        private readonly SubscriptionManagement $subscriptionManagement,
+        private readonly LoggerInterface $logger
     ) {
     }
 
     /**
      * ProcessWebhook function for 'payment.reservation.created.v2' event.
      *
-     * @param array $webhookData
+     * @param WebhookInterface $webhook
      *
      * @return void
+     * @throws CouldNotSaveException
      * @throws NotFoundException
      */
-    public function processWebhook(array $webhookData): void
+    public function processWebhook(WebhookInterface $webhook): void
     {
-        $paymentId          = $webhookData['data']['paymentId'];
+        /* @var ReservationCreatedData $webhookData */
+        $data = $webhook->getData();
+        $paymentId = $data->getPaymentId();
         $paymentTransaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
         if (!$paymentTransaction) {
             throw new NotFoundException(__('Payment transaction not found for %1.', $paymentId));
@@ -53,16 +62,16 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         /** @var Order $order */
         $order = $paymentTransaction->getOrder();
 
-        if ($this->authorizationAlreadyExists($webhookData['id'])) {
+        if ($this->authorizationAlreadyExists($webhook->getId())) {
             return;
         }
 
         $order->setState(Order::STATE_PENDING_PAYMENT)
             ->setStatus(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED);
-        $this->setSelectedPaymentMethodData($order, $webhookData);
+        $this->setSelectedPaymentMethodData($order, $data);
 
         $reservationTransaction = $this->transactionBuilder->build(
-            $webhookData['id'],
+            $webhook->getId(),
             $order,
             ['payment_id' => $paymentId],
             TransactionInterface::TYPE_AUTH
@@ -71,29 +80,29 @@ class PaymentReservationCreated implements WebhookProcessorInterface
         $reservationTransaction->setParentTxnId($paymentId);
         $reservationTransaction->setParentId($paymentTransaction->getTransactionId());
 
-        if (isset($webhookData['data']['subscriptionId'])) {
-            $order->getPayment()->setAdditionalInformation('subscription_id', $webhookData['data']['subscriptionId']);
-            $this->subscriptionManagement->processSubscription($order, $webhookData['data']['subscriptionId']);
+        if (isset($data['subscriptionId'])) {
+            $order->getPayment()->setAdditionalInformation('subscription_id', $data['subscriptionId']);
+            $this->subscriptionManagement->processSubscription($order, $data['subscriptionId']);
         }
 
         $payment = $order->getPayment();
-        $amount = $webhookData['data']['amount']['amount'] / 100;
+        $amount = $data['amount']['amount'] / 100;
         $amount = $payment->formatAmount($amount, true);
         $payment->setBaseAmountAuthorized($amount);
 
         $this->orderRepository->save($order);
 
-        $this->saveComment($paymentId, $webhookData, $order);
+        $this->saveComment($paymentId, $data, $order);
     }
 
     /**
      * Checks if an authorization already exists for the given ID.
      *
-     * @param mixed $id
+     * @param string $id
      *
      * @return bool
      */
-    private function authorizationAlreadyExists(mixed $id)
+    private function authorizationAlreadyExists(string $id): bool
     {
         return $this->webhookDataLoader->getTransactionByPaymentId($id, TransactionInterface::TYPE_AUTH) !== null;
     }
@@ -102,13 +111,12 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * Saves a comment in the order with details from the webhook data.
      *
      * @param mixed $paymentId
-     * @param array $webhookData
+     * @param ReservationCreated $webhook
      * @param Order $order
      *
      * @return void
-     * @throws CouldNotSaveException
      */
-    private function saveComment(mixed $paymentId, array $webhookData, Order $order): void
+    private function saveComment(mixed $paymentId, ReservationCreated $webhook, Order $order): void
     {
         $this->comment->saveComment(
             __(
@@ -116,9 +124,9 @@ class PaymentReservationCreated implements WebhookProcessorInterface
                 . '<br/>Reservation Id: %2'
                 . '<br/>Amount: %3 %4.',
                 $paymentId,
-                $webhookData['id'],
-                number_format($webhookData['data']['amount']['amount'] / 100, 2, '.', ''),
-                $webhookData['data']['amount']['currency']
+                $webhook->getId(),
+                number_format($webhook->getData()->getAmount()->getAmount() / 100, 2, '.', ''),
+                $webhook->getData()->getAmount()->getCurrency()
             ),
             $order
         );
@@ -128,21 +136,22 @@ class PaymentReservationCreated implements WebhookProcessorInterface
      * Sets the selected payment method data in the order's payment information.
      *
      * @param Order $order
-     * @param array $webhookData
+     * @param ReservationCreatedData $webhookData
+     *
      * @return void
      */
-    private function setSelectedPaymentMethodData($order, $webhookData): void
+    private function setSelectedPaymentMethodData(Order $order, ReservationCreatedData $webhookData): void
     {
         try {
             $payment = $order->getPayment();
             if ($payment) {
                 $payment->setAdditionalInformation(
                     Nexi::SELECTED_PATMENT_METHOD,
-                    $webhookData['data']['paymentMethod'] ?? ''
+                    $webhookData->getPaymentMethod()
                 );
                 $payment->setAdditionalInformation(
                     Nexi::SELECTED_PATMENT_TYPE,
-                    $webhookData['data']['paymentType'] ?? ''
+                    $webhookData->getPaymentType()
                 );
             }
         } catch (\Exception $e) {
