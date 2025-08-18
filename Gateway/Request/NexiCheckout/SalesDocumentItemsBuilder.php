@@ -60,18 +60,6 @@ class SalesDocumentItemsBuilder
     }
 
     /**
-     * Calculate the tax rate for a given item.
-     *
-     * @param mixed $item
-     *
-     * @return mixed
-     */
-    private function calculateTaxRate(mixed $item): mixed
-    {
-        return $item->getTaxAmount() / $item->getRowTotal() * 100;
-    }
-
-    /**
      * Calculate the shipping tax rate for a given sales object.
      *
      * @param InvoiceInterface|CreditmemoInterface $salesObject
