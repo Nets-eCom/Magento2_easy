@@ -81,7 +81,15 @@ class PaymentChargeCreated implements WebhookProcessorInterface
                 $order,
                 [
                     'payment_id' => $webhook->getData()->getPaymentId(),
-                    'webhook'    => json_encode($webhook, JSON_PRETTY_PRINT),
+                    'webhook'    => json_encode(
+                        [
+                            'webhook_id' => $webhook->getId(),
+                            'charge_id'  => $webhook->getData()->getChargeId(),
+                            'amount'     => $webhook->getData()->getAmount()->getAmount(),
+                            'currency'   => $webhook->getData()->getAmount()->getCurrency(),
+                        ],
+                        JSON_PRETTY_PRINT
+                    ),
                 ],
                 TransactionInterface::TYPE_CAPTURE
             )->setParentId($reservationTxn->getTransactionId())
