@@ -6,6 +6,8 @@ use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentCancelFailed;
+use NexiCheckout\Model\Webhook\Data\CancelFailedData;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use PHPUnit\Framework\TestCase;
 
 class PaymentCancelFailedTest extends TestCase
@@ -21,6 +23,16 @@ class PaymentCancelFailedTest extends TestCase
     private $commentMock;
 
     /**
+     * @var WebhookInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $webhookMock;
+
+    /**
+     * @var CancelFailedData|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $cancelFailedDataMock;
+
+    /**
      * @var PaymentCancelFailed
      */
     private $paymentCancelFailed;
@@ -29,6 +41,8 @@ class PaymentCancelFailedTest extends TestCase
     {
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->commentMock = $this->createMock(Comment::class);
+        $this->webhookMock = $this->createMock(WebhookInterface::class);
+        $this->cancelFailedDataMock = $this->createMock(CancelFailedData::class);
 
         $this->paymentCancelFailed = new PaymentCancelFailed(
             $this->webhookDataLoaderMock,
@@ -38,14 +52,17 @@ class PaymentCancelFailedTest extends TestCase
 
     public function testProcessWebhookSuccessfully(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123'
-            ]
-        ];
-
         $paymentId = 'payment-123';
+
+        // Mock webhook data
+        $this->cancelFailedDataMock->expects($this->exactly(2))
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->exactly(2))
+            ->method('getData')
+            ->willReturn($this->cancelFailedDataMock);
 
         // Mock order
         $orderMock = $this->createMock(Order::class);
@@ -64,6 +81,6 @@ class PaymentCancelFailedTest extends TestCase
             );
 
         // Execute the method
-        $this->paymentCancelFailed->processWebhook($webhookData);
+        $this->paymentCancelFailed->processWebhook($this->webhookMock);
     }
 }

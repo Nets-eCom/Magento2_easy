@@ -15,6 +15,8 @@ class SalesDocumentItemsBuilder
     public const SHIPPING_COST_REFERENCE = 'shipping_cost_ref';
 
     /**
+     * SalesDocumentItemsBuilder constructor.
+     *
      * @param AmountConverter $amountConverter
      * @param StringSanitizer $stringSanitizer
      */
@@ -92,6 +94,10 @@ class SalesDocumentItemsBuilder
      */
     private function calculateShippingTaxRate(InvoiceInterface|CreditmemoInterface $salesObject): int|float
     {
+        if ($salesObject->getShippingAmount() == 0) {
+            return 0;
+        }
+
         return $salesObject->getShippingTaxAmount() / $salesObject->getShippingAmount() * 100;
     }
 }

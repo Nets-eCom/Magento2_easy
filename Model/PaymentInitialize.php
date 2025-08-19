@@ -6,6 +6,7 @@ namespace Nexi\Checkout\Model;
 
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Locale\ResolverInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactoryInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
@@ -53,17 +54,25 @@ class PaymentInitialize implements PaymentInitializeInterface
             if (!$quote->getIsActive()) {
                 $this->checkoutSession->restoreQuote();
             }
-            $paymentMethod = $quote->getPayment();
-            if (!$paymentMethod) {
+            $quotePayment = $quote->getPayment();
+            if (!$quotePayment) {
                 throw new LocalizedException(__('No payment method found for the quote'));
             }
 
-            $paymentData = $this->paymentDataObjectFactory->create($paymentMethod);
+            $paymentData = $this->paymentDataObjectFactory->create($quotePayment);
+
+            if (isset($paymentMethod->getAdditionalData()['subselection'])) {
+                $paymentData->getPayment()->setAdditionalInformation(
+                    'subselection',
+                    $paymentMethod->getAdditionalData()['subselection']
+                );
+            }
+
             $this->initializeCommand->createPayment($paymentData);
             $this->quoteRepository->save($quote);
 
             return json_encode([
-                'paymentId'   => $paymentMethod->getAdditionalInformation('payment_id'),
+                'paymentId'   => $quotePayment->getAdditionalInformation('payment_id'),
                 'checkoutKey' => $this->config->getCheckoutKey()
             ]);
         } catch (\Exception $e) {

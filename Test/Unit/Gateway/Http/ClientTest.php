@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Test\Unit\Gateway\Http;
 
@@ -93,7 +94,7 @@ class ClientTest extends TestCase
         $transferMock->expects($this->once())
             ->method('getUri')
             ->willReturn('retrievePayment');
-        $transferMock->expects($this->exactly(3))
+        $transferMock->expects($this->exactly(4))
             ->method('getBody')
             ->willReturn('test-body');
 

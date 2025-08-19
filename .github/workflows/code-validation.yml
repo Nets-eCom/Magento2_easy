@@ -40,7 +40,7 @@ jobs:
       matrix:
         node-version:
           - 20
-        php-version: ["8.1", "8.2", "8.3"]
+        php-version: ["8.1", "8.2", "8.3", "8.4"]
         dependencies:
           - "highest"
         composer-options:

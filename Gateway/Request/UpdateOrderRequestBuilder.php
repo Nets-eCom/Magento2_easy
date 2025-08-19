@@ -8,15 +8,18 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
+use Nexi\Checkout\Gateway\AmountConverter;
 use NexiCheckout\Model\Request\UpdateOrder;
 
 class UpdateOrderRequestBuilder implements BuilderInterface
 {
     /**
      * @param CreatePaymentRequestBuilder $createPaymentRequestBuilder
+     * @param AmountConverter $amountConverter
      */
     public function __construct(
         private readonly CreatePaymentRequestBuilder $createPaymentRequestBuilder,
+        private readonly AmountConverter $amountConverter
     ) {
     }
 
@@ -45,7 +48,7 @@ class UpdateOrderRequestBuilder implements BuilderInterface
             'body'        => [
                 'paymentId'    => $paymentSubject->getPayment()->getAdditionalInformation('payment_id'),
                 'updateOrder' => new UpdateOrder(
-                    amount        : (int)($paymentSubject->getGrandTotal() * 100),
+                    amount        : $this->amountConverter->convertToNexiAmount($paymentSubject->getGrandTotal()),
                     items         : $this->createPaymentRequestBuilder->buildItems($paymentSubject),
                     shipping      : new UpdateOrder\Shipping(costSpecified: true),
                     paymentMethods: [],

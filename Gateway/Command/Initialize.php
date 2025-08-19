@@ -26,12 +26,14 @@ class Initialize implements CommandInterface
      * @param CommandManagerPoolInterface $commandManagerPool
      * @param LoggerInterface $logger
      * @param Builder $transactionBuilder
+     * @param Config $config
      */
     public function __construct(
         private readonly SubjectReader $subjectReader,
         private readonly CommandManagerPoolInterface $commandManagerPool,
         private readonly LoggerInterface $logger,
-        private readonly Builder $transactionBuilder
+        private readonly Builder $transactionBuilder,
+        private readonly Config $config
     ) {
     }
 
@@ -47,7 +49,11 @@ class Initialize implements CommandInterface
         $stateObject = $this->subjectReader->readStateObject($commandSubject);
 
         // For embedded integration, we don't need to create payment here, it was already created for the quote.
-        if ($paymentData->getPayment()->getAdditionalInformation('payment_id')) {
+        if ($this->config->isEmbedded() && $paymentData->getPayment()->getAdditionalInformation('payment_id')) {
+            return;
+        }
+
+        if ($paymentData->getPayment()->getAdditionalInformation('subscription_id')) {
             return;
         }
 
@@ -66,16 +72,6 @@ class Initialize implements CommandInterface
         $this->createPayment($paymentData);
 
         $transactionId = $payment->getAdditionalInformation('payment_id');
-        if ($transactionId) {
-            /**
-             * A transaction ID exists, which means the payment might have been captured,
-             * but final confirmation has not been received yet.
-             *
-             * Set the order state to "payment_review" to prevent invoicing
-             * until the payment is verified. Manual review may be required if confirmation fails.
-             */
-            $stateObject->setState(Order::STATE_PAYMENT_REVIEW);
-        }
         $orderTransaction = $this->transactionBuilder->build(
             $transactionId,
             $order,

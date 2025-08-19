@@ -17,6 +17,7 @@ class Nexi extends Info
      */
     protected $_template = 'Nexi_Checkout::info/checkout.phtml';
     public const SELECTED_PATMENT_METHOD = 'selected_payment_method';
+    public const SELECTED_PATMENT_TYPE = 'selected_payment_type';
 
     /**
      * Nexi constructor.
@@ -56,15 +57,23 @@ class Nexi extends Info
     }
 
     /**
-     * Get payment selected method.
+     * Get payment selected method data.
      *
      * @return string
      */
-    public function getPaymentSelectedMethod(): string
+    public function getSelectedPaymentMethodData(): array
     {
-        $order = $this->orderRepository->get($this->getInfo()->getOrder()->getId());
-        $paymentMethod = $order->getPayment()->getAdditionalInformation(self::SELECTED_PATMENT_METHOD);
+        try {
+            $payment = $this->orderRepository->get($this->getInfo()->getOrder()->getId())->getPayment();
 
-        return is_string($paymentMethod) ? $paymentMethod : '';
+            return [
+                self::SELECTED_PATMENT_METHOD => $payment->getAdditionalInformation(self::SELECTED_PATMENT_METHOD),
+                self::SELECTED_PATMENT_TYPE => $payment->getAdditionalInformation(self::SELECTED_PATMENT_TYPE),
+            ];
+        } catch (LocalizedException $e) {
+            $this->logger->critical($e);
+        }
+
+        return [];
     }
 }

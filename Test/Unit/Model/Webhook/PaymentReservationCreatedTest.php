@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Test\Unit\Model\Webhook;
 
@@ -8,11 +9,17 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Nexi\Checkout\Model\Order\Comment;
+use Nexi\Checkout\Model\SubscriptionManagement;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentReservationCreated;
 use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
+use NexiCheckout\Model\Webhook\Data\Amount;
+use NexiCheckout\Model\Webhook\Data\ReservationCreatedData;
+use NexiCheckout\Model\Webhook\ReservationCreated;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class PaymentReservationCreatedTest extends TestCase
 {
@@ -37,9 +44,34 @@ class PaymentReservationCreatedTest extends TestCase
     private $paymentReservationCreated;
 
     /**
-     * @var Comment
+     * @var Comment|\PHPUnit\Framework\MockObject\MockObject
      */
-    private Comment $commentMock;
+    private $commentMock;
+
+    /**
+     * @var SubscriptionManagement|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $subscriptionManagement;
+
+    /**
+     * @var WebhookInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $webhookMock;
+
+    /**
+     * @var ReservationCreatedData|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $reservationCreatedDataMock;
+
+    /**
+     * @var Amount|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $amountMock;
+
+    /**
+     * @var LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $loggerMock;
 
     protected function setUp(): void
     {
@@ -47,25 +79,59 @@ class PaymentReservationCreatedTest extends TestCase
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->transactionBuilderMock = $this->createMock(Builder::class);
         $this->commentMock = $this->createMock(Comment::class);
+        $this->subscriptionManagement = $this->createMock(SubscriptionManagement::class);
+        $this->webhookMock = $this->createMock(ReservationCreated::class);
+        $this->reservationCreatedDataMock = $this->createMock(ReservationCreatedData::class);
+        $this->amountMock = $this->createMock(Amount::class);
+        $this->loggerMock = $this->createMock(LoggerInterface::class);
 
         $this->paymentReservationCreated = new PaymentReservationCreated(
             $this->orderRepositoryMock,
             $this->webhookDataLoaderMock,
             $this->transactionBuilderMock,
-            $this->commentMock
+            $this->commentMock,
+            $this->subscriptionManagement,
+            $this->loggerMock
         );
     }
 
     public function testProcessWebhookSuccessfully(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123'
-            ]
-        ];
-
+        $webhookId = 'webhook-123';
         $paymentId = 'payment-123';
+        $rawAmount = 1300;
+        $formattedAmount = 13.00;
+        $currency = 'EUR';
+
+        // Mock amount
+        $this->amountMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($rawAmount);
+        $this->amountMock->expects($this->any())
+            ->method('getCurrency')
+            ->willReturn($currency);
+
+        // Mock reservation created data
+        $this->reservationCreatedDataMock->expects($this->any())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+        $this->reservationCreatedDataMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($this->amountMock);
+        $this->reservationCreatedDataMock->expects($this->any())
+            ->method('getPaymentMethod')
+            ->willReturn('card');
+        $this->reservationCreatedDataMock->expects($this->any())
+            ->method('getPaymentType')
+            ->willReturn('VISA');
+
+        // Mock webhook
+        $this->webhookMock->expects($this->any())
+            ->method('getId')
+            ->willReturn($webhookId);
+        $this->webhookMock->expects($this->any())
+            ->method('getData')
+            ->willReturn($this->reservationCreatedDataMock);
 
         // Mock order and payment
         $orderMock = $this->createMock(Order::class);
@@ -81,7 +147,7 @@ class PaymentReservationCreatedTest extends TestCase
         $this->webhookDataLoaderMock
             ->method('getTransactionByPaymentId')
             ->willReturnMap([
-                [$webhookData['id'], TransactionInterface::TYPE_AUTH, null],
+                [$webhookId, TransactionInterface::TYPE_AUTH, null],
                 [$paymentId, TransactionInterface::TYPE_PAYMENT, $reservationTransactionMock]
             ]);
 
@@ -99,14 +165,10 @@ class PaymentReservationCreatedTest extends TestCase
             ->with(AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED)
             ->willReturnSelf();
 
-        $orderMock->expects($this->atLeastOnce())
-            ->method('getPayment')
-            ->willReturn($paymentMock);
-
         $this->transactionBuilderMock->expects($this->once())
             ->method('build')
             ->with(
-                $webhookData['id'],
+                $webhookId,
                 $orderMock,
                 ['payment_id' => $paymentId],
                 TransactionInterface::TYPE_AUTH
@@ -127,9 +189,17 @@ class PaymentReservationCreatedTest extends TestCase
             ->method('setParentId')
             ->willReturnSelf();
 
+        $orderMock->method('getPayment')
+            ->willReturn($paymentMock);
+
         $paymentMock->expects($this->once())
-            ->method('addTransactionCommentsToOrder')
-            ->with($reservationTransactionMock, $this->anything())
+            ->method('formatAmount')
+            ->with($rawAmount / 100, true)
+            ->willReturn($formattedAmount);
+
+        $paymentMock->expects($this->once())
+            ->method('setBaseAmountAuthorized')
+            ->with($formattedAmount)
             ->willReturnSelf();
 
         $this->orderRepositoryMock->expects($this->once())
@@ -137,27 +207,36 @@ class PaymentReservationCreatedTest extends TestCase
             ->with($orderMock);
 
         // Execute the method
-        $this->paymentReservationCreated->processWebhook($webhookData);
+        $this->paymentReservationCreated->processWebhook($this->webhookMock);
     }
 
     public function testProcessWebhookThrowsExceptionWhenTransactionNotFound(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123'
-            ]
-        ];
+        $webhookId = 'webhook-123';
+        $paymentId = 'payment-123';
+
+        // Mock reservation created data
+        $this->reservationCreatedDataMock->expects($this->any())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->any())
+            ->method('getId')
+            ->willReturn($webhookId);
+        $this->webhookMock->expects($this->any())
+            ->method('getData')
+            ->willReturn($this->reservationCreatedDataMock);
 
         $this->webhookDataLoaderMock
             ->method('getTransactionByPaymentId')
-            ->with($webhookData['data']['paymentId'], TransactionInterface::TYPE_PAYMENT)
+            ->with($paymentId, TransactionInterface::TYPE_PAYMENT)
             ->willReturn(null);
 
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessage('Payment transaction not found for payment-123.');
 
         // Execute the method
-        $this->paymentReservationCreated->processWebhook($webhookData);
+        $this->paymentReservationCreated->processWebhook($this->webhookMock);
     }
 }

@@ -68,8 +68,8 @@ class WebhookDataLoader
 
         $transactions = $this->transactionRepository->getList($searchCriteria)->getItems();
 
-        if ($transactions === null || count($transactions) !== 1) {
-            throw new NotFoundException(__('Transaction not found or multiple transactions found for payment ID.'));
+        if ($transactions === null || count($transactions) === 0) {
+            throw new NotFoundException(__('Transaction not found for payment ID.'));
         }
 
         return reset($transactions);

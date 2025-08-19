@@ -70,6 +70,9 @@
                 <item name="refund" xsi:type="string">NexiCommandRefund</item>
                 <item name="update_order" xsi:type="string">NexiCommandUpdateOrder</item>
                 <item name="update_reference" xsi:type="string">NexiCommandUpdateReference</item>
+                <item name="subscription_charge" xsi:type="string">NexiCommandSubscriptionCharge</item>
+                <item name="void" xsi:type="string">NexiCommandVoid</item>
+                <item name="cancel" xsi:type="string">NexiCommandVoid</item>
             </argument>
         </arguments>
     </virtualType>
@@ -133,6 +136,25 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="NexiCommandSubscriptionCharge" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\SubscriptionChargeRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="handler" xsi:type="object">Nexi\Checkout\Gateway\Handler\SubscriptionCharge</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="NexiCommandVoid" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Nexi\Checkout\Gateway\Request\VoidRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Nexi\Checkout\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Nexi\Checkout\Gateway\Http\Client</argument>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </virtualType>
+
     <type name="Nexi\Checkout\Gateway\Request\CreatePaymentRequestBuilder">
         <arguments>
             <argument name="config" xsi:type="object">NexiConfig</argument>
@@ -181,7 +203,7 @@
         </arguments>
     </type>
 
-    <type name="\Nexi\Checkout\Controller\Hpp\CancelAction">
+    <type name="Nexi\Checkout\Controller\Hpp\CancelAction">
         <arguments>
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
@@ -240,6 +262,21 @@
             <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
         </arguments>
     </type>
+    <type name="Nexi\Checkout\Model\Receipt\ProcessService">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Model\Receipt\LoadService">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
+    <type name="Nexi\Checkout\Block\Info\Nexi">
+        <arguments>
+            <argument name="logger" xsi:type="object">NexiVirtualLogger</argument>
+        </arguments>
+    </type>
     <type name="Nexi\Checkout\Model\PaymentInitialize">
         <arguments>
             <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
@@ -255,7 +292,50 @@
                 type="Nexi\Checkout\Plugin\SendEmailPlugin"
                 sortOrder="100"/>
     </type>
-    <type name="Nexi\Checkout\Observer\CartRevokeObserver">
+
+    <!-- Subscriptions -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="subscription_bill" xsi:type="object">Nexi\Checkout\Console\Command\Bill
+                </item>
+                <item name="subscription_notify" xsi:type="object">Nexi\Checkout\Console\Command\Notify
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <preference for="Nexi\Checkout\Api\SubscriptionRepositoryInterface"
+                type="Nexi\Checkout\Model\SubscriptionRepository"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionInterface"
+                type="Nexi\Checkout\Model\Subscription"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionSearchResultInterface"
+                type="Nexi\Checkout\Model\ResourceModel\Subscription\Collection"/>
+    <preference for="Nexi\Checkout\Api\SubscriptionProfileRepositoryInterface"
+                type="Nexi\Checkout\Model\Subscription\ProfileRepository"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionProfileInterface"
+                type="Nexi\Checkout\Model\Subscription\Profile"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionProfileSearchResultInterface"
+                type="Nexi\Checkout\Model\ResourceModel\Subscription\Profile\Collection"/>
+    <preference for="Nexi\Checkout\Api\SubscriptionLinkRepositoryInterface"
+                type="Nexi\Checkout\Model\Subscription\SubscriptionLinkRepository"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionLinkInterface"
+                type="Nexi\Checkout\Model\Subscription\SubscriptionLink"/>
+    <preference for="Nexi\Checkout\Api\Data\SubscriptionLinkSearchResultInterface"
+                type="Nexi\Checkout\Model\ResourceModel\Subscription\SubscriptionLink\Collection"/>
+    <preference for="Nexi\Checkout\Api\SubscriptionManagementInterface"
+                type="Nexi\Checkout\Model\SubscriptionManagement"/>
+
+    <type name="\Nexi\Checkout\Model\Subscription\OrderCloner">
+        <arguments>
+            <argument name="quoteSession" xsi:type="object">Magento\Backend\Model\Session\Quote\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="\Magento\Quote\Model\Quote">
+        <plugin name="prevent_different_scheduled_cart"
+                type="Nexi\Checkout\Plugin\PreventDifferentScheduledCart"/>
+    </type>
+    <type name="Nexi\Checkout\Observer\ReactivateQuoteObserver">
         <arguments>
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
@@ -264,5 +344,19 @@
         <arguments>
             <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
         </arguments>
+    </type>
+    <type name="Magento\Checkout\Model\Session">
+        <plugin name="Nexi_Checkout::checkout_session_plugin"
+                type="Nexi\Checkout\Plugin\CheckoutSession"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Sales\Model\Order\Payment">
+        <plugin name="nexi_disable_invoice_void"
+                type="Nexi\Checkout\Plugin\DisableVoidAfterCapturePlugin" />
+    </type>
+    <type name="Magento\Quote\Model\Quote\Payment">
+        <plugin name="Nexi_Checkout::magento_quote_model_payment"
+                type="Nexi\Checkout\Plugin\PaymentData"
+                sortOrder="100"/>
     </type>
 </config>

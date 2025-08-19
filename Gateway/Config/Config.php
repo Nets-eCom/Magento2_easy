@@ -9,6 +9,7 @@ use Magento\Payment\Gateway\Config\Config as MagentoConfig;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Store\Model\ScopeInterface;
 use Nexi\Checkout\Model\Config\Source\Environment;
+use Nexi\Checkout\Model\Config\Source\PaymentTypesEnum;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 
 class Config extends MagentoConfig
@@ -188,5 +189,30 @@ class Config extends MagentoConfig
     public function getNexiTitle()
     {
         return $this->getValue('title');
+    }
+
+    /**
+     * Get the value of pay_type_splitting.
+     *
+     * @return bool
+     */
+    public function getPayTypeSplitting(): bool
+    {
+        return (bool)$this->getValue('pay_type_splitting');
+    }
+
+    /**
+     * Retrieve the payment type options
+     *
+     * @return PaymentTypesEnum[]
+     */
+    public function getPayTypeOptions(): array
+    {
+        $values = explode(',', (string)$this->getValue('pay_type_options'));
+
+        return array_map(
+            fn($value) => \Nexi\Checkout\Model\Config\Source\PaymentTypesEnum::from($value),
+            array_filter($values)
+        );
     }
 }

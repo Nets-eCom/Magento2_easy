@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Plugin\Order\Data;
 
 use Magento\Sales\Block\Order\Info;
+use Nexi\Checkout\Block\Info\Nexi;
 use Nexi\Checkout\Gateway\Config\Config;
 
 class PaymentMethodCustomerOrderInfo
@@ -17,11 +18,12 @@ class PaymentMethodCustomerOrderInfo
      */
     public function aroundGetPaymentInfoHtml(Info $subject)
     {
-        if ($subject->getOrder()->getPayment()->getMethod() === Config::CODE) {
-            return $subject->getOrder()->getPayment()->getAdditionalInformation()['method_title']
-                . ' ('
-                . $subject->getOrder()->getPayment()->getAdditionalInformation()['selected_payment_method']
-                . ')';
+        $emptyData = '';
+        $payment = $subject->getOrder()->getPayment();
+        if ($payment->getMethod() === Config::CODE) {
+            return "<p>" . $payment->getAdditionalInformation()['method_title'] . "</p>"
+                . "<p>" . $payment->getAdditionalInformation(Nexi::SELECTED_PATMENT_TYPE) . " - "
+                . $payment->getAdditionalInformation(Nexi::SELECTED_PATMENT_METHOD) . "</p>";
         } else {
             return $subject->getChildHtml('payment_info');
         }

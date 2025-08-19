@@ -6,6 +6,8 @@ use Magento\Sales\Model\Order;
 use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentCancelCreated;
+use NexiCheckout\Model\Webhook\Data\CancelCreatedData;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use PHPUnit\Framework\TestCase;
 
 class PaymentCancelCreatedTest extends TestCase
@@ -21,6 +23,16 @@ class PaymentCancelCreatedTest extends TestCase
     private $commentMock;
 
     /**
+     * @var WebhookInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $webhookMock;
+
+    /**
+     * @var CancelCreatedData|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $cancelCreatedDataMock;
+
+    /**
      * @var PaymentCancelCreated
      */
     private $paymentCancelCreated;
@@ -29,6 +41,8 @@ class PaymentCancelCreatedTest extends TestCase
     {
         $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
         $this->commentMock = $this->createMock(Comment::class);
+        $this->webhookMock = $this->createMock(WebhookInterface::class);
+        $this->cancelCreatedDataMock = $this->createMock(CancelCreatedData::class);
 
         $this->paymentCancelCreated = new PaymentCancelCreated(
             $this->webhookDataLoaderMock,
@@ -38,14 +52,17 @@ class PaymentCancelCreatedTest extends TestCase
 
     public function testProcessWebhookSuccessfully(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123'
-            ]
-        ];
-
         $paymentId = 'payment-123';
+
+        // Mock webhook data
+        $this->cancelCreatedDataMock->expects($this->exactly(2))
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->exactly(2))
+            ->method('getData')
+            ->willReturn($this->cancelCreatedDataMock);
 
         // Mock order
         $orderMock = $this->createMock(Order::class);
@@ -64,6 +81,6 @@ class PaymentCancelCreatedTest extends TestCase
             );
 
         // Execute the method
-        $this->paymentCancelCreated->processWebhook($webhookData);
+        $this->paymentCancelCreated->processWebhook($this->webhookMock);
     }
 }

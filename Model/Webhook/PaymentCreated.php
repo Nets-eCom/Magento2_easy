@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Model\Webhook;
 
-use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Reports\Model\ResourceModel\Order\CollectionFactory;
 use Magento\Sales\Api\Data\TransactionInterface;
@@ -14,6 +13,8 @@ use Nexi\Checkout\Model\Order\Comment;
 use Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory as PaymentCollectionFactory;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
+use NexiCheckout\Model\Webhook\Data\PaymentCreatedData;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 
 class PaymentCreated implements WebhookProcessorInterface
 {
@@ -40,17 +41,19 @@ class PaymentCreated implements WebhookProcessorInterface
     /**
      * PaymentCreated webhook service.
      *
-     * @param array $webhookData
+     * @param WebhookInterface $webhook
      *
      * @return void
      * @throws NotFoundException
      */
-    public function processWebhook(array $webhookData): void
+    public function processWebhook(WebhookInterface $webhook): void
     {
-        $paymentId   = $webhookData['data']['paymentId'];
+        /** @var PaymentCreatedData $data */
+        $data = $webhook->getData();
+        $paymentId = $data->getPaymentId();
         $transaction = $this->webhookDataLoader->getTransactionByPaymentId($paymentId);
 
-        $orderReference = $webhookData['data']['order']['reference'] ?? null;
+        $orderReference = $data->getOrder()->getReference();
 
         if ($orderReference === null) {
             $order = $this->getOrderByPaymentId($paymentId);
@@ -64,14 +67,19 @@ class PaymentCreated implements WebhookProcessorInterface
             )->getFirstItem();
         }
 
-        $this->comment->saveComment(
-            __('Webhook Received. Payment created for payment ID: %1', $webhookData['data']['paymentId']),
-            $order
-        );
-
         if (!$transaction) {
-            $this->createPaymentTransaction($order, $webhookData['data']['paymentId']);
+            $this->createPaymentTransaction($order, $data->getPaymentId());
             $this->orderRepository->save($order);
+            $this->comment->saveComment(
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %2 %3.',
+                    $data->getPaymentId(),
+                    number_format($data->getOrder()->getAmount()->getAmount() / 100, 2, '.', ''),
+                    $data->getOrder()->getAmount()->getCurrency()
+                ),
+                $order
+            );
         }
     }
 
@@ -106,7 +114,7 @@ class PaymentCreated implements WebhookProcessorInterface
             return;
         }
         $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
-        $paymentTransaction = $this->transactionBuilder
+        $this->transactionBuilder
             ->build(
                 $paymentId,
                 $order,
@@ -115,9 +123,5 @@ class PaymentCreated implements WebhookProcessorInterface
                 ],
                 TransactionInterface::TYPE_PAYMENT
             );
-        $order->getPayment()->addTransactionCommentsToOrder(
-            $paymentTransaction,
-            __('Payment created in Nexi Gateway.')
-        );
     }
 }

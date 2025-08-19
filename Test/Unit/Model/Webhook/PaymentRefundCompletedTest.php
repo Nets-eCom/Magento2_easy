@@ -14,6 +14,10 @@ use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentRefundCompleted;
+use NexiCheckout\Model\Webhook\Data\Amount;
+use NexiCheckout\Model\Webhook\Data\RefundCompletedData;
+use NexiCheckout\Model\Webhook\RefundCompleted;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use PHPUnit\Framework\TestCase;
 
 class PaymentRefundCompletedTest extends TestCase
@@ -54,6 +58,21 @@ class PaymentRefundCompletedTest extends TestCase
     private $commentMock;
 
     /**
+     * @var WebhookInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $webhookMock;
+
+    /**
+     * @var RefundCompletedData|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $refundCompletedDataMock;
+
+    /**
+     * @var Amount|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $amountMock;
+
+    /**
      * @var PaymentRefundCompleted
      */
     private $paymentRefundCompleted;
@@ -67,6 +86,9 @@ class PaymentRefundCompletedTest extends TestCase
         $this->creditmemoManagementMock = $this->createMock(CreditmemoManagementInterface::class);
         $this->amountConverterMock      = $this->createMock(AmountConverter::class);
         $this->commentMock              = $this->createMock(Comment::class);
+        $this->webhookMock              = $this->createMock(RefundCompleted::class);
+        $this->refundCompletedDataMock  = $this->createMock(RefundCompletedData::class);
+        $this->amountMock               = $this->createMock(Amount::class);
 
         $this->paymentRefundCompleted = new PaymentRefundCompleted(
             $this->webhookDataLoaderMock,
@@ -81,23 +103,38 @@ class PaymentRefundCompletedTest extends TestCase
 
     public function testProcessWebhookWithFullRefund(): void
     {
-        $webhookData = [
-            'id'   => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123',
-                'refundId'  => 'refund-123',
-                'amount'    => [
-                    'amount'   => 10000, // 100.00 in cents
-                    'currency' => 'USD'
-                ]
-            ]
-        ];
+        $paymentId = 'payment-123';
+        $refundId  = 'refund-123';
+        $amountValue = 10000; // 100.00 in cents
+        $currency = 'USD';
 
-        $paymentId = $webhookData['data']['paymentId'];
-        $refundId  = $webhookData['data']['refundId'];
+        // Mock amount
+        $this->amountMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($amountValue);
+        $this->amountMock->expects($this->any())
+            ->method('getCurrency')
+            ->willReturn($currency);
+
+        // Mock refund completed data
+        $this->refundCompletedDataMock->expects($this->any())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+        $this->refundCompletedDataMock->expects($this->any())
+            ->method('getRefundId')
+            ->willReturn($refundId);
+        $this->refundCompletedDataMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($this->amountMock);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->any())
+            ->method('getData')
+            ->willReturn($this->refundCompletedDataMock);
 
         // Mock order and payment
         $orderMock      = $this->createMock(Order::class);
+        $orderMock->method('canCreditmemo')->willReturn(true);
         $paymentMock    = $this->getMockBuilder(OrderPaymentInterface::class)
             ->disableOriginalConstructor()
             ->addMethods(['addTransactionCommentsToOrder', 'addTransaction'])
@@ -160,12 +197,10 @@ class PaymentRefundCompletedTest extends TestCase
         $orderMock->expects($this->atLeastOnce())
             ->method('getPayment')
             ->willReturn($paymentMock);
-        $paymentMock->expects($this->once())
-            ->method('addTransactionCommentsToOrder')
-            ->with(
-                $refundTransactionMock,
-                $this->anything()
-            );
+
+        $orderMock->expects($this->atLeastOnce())
+            ->method('getTotalRefunded')
+            ->willReturn(0.00);
 
         // Setup expectations for order save
         $this->orderRepositoryMock->expects($this->once())
@@ -173,6 +208,6 @@ class PaymentRefundCompletedTest extends TestCase
             ->with($orderMock);
 
         // Execute the method
-        $this->paymentRefundCompleted->processWebhook($webhookData);
+        $this->paymentRefundCompleted->processWebhook($this->webhookMock);
     }
 }

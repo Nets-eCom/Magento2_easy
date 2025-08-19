@@ -1,0 +1,117 @@
+<?php
+
+/** @var \Nexi\Checkout\Block\Order\Payments $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<?php $recurringPayments = $block->getCustomerSubscriptions() ?>
+<?php $closedSubscriptions = $block->getCustomerClosedSubscriptions() ?>
+<?php if ($block->isSubscriptionsEnabled()): ?>
+    <?php if ($recurringPayments && count($recurringPayments)): ?>
+        <div class="table-wrapper subscriptions-history">
+            <table class="data table table-order-items history" id="my-subscriptions-table">
+                <caption class="table-caption"><?= $escaper->escapeHtml(__('Subscriptions')) ?></caption>
+                <thead>
+                <tr>
+                    <th scope="col" class="col id"><?= $escaper->escapeHtml(__('Next order date')) ?></th>
+                    <th scope="col" class="col date"><?= $escaper->escapeHtml(__('Status')) ?></th>
+                    <th scope="col" class="col total"><?= $escaper->escapeHtml(__('Recurring payment profile')) ?></th>
+                    <th scope="col" class="col actions"><?= $escaper->escapeHtml(__('Grand total')) ?></th>
+                    <th scope="col" class="col actions"><?= $escaper->escapeHtml(__('Action')) ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($recurringPayments as $recurringPayment): ?>
+                    <tr>
+                        <td data-th="<?= $escaper->escapeHtml(__('Next Order Date')) ?>"
+                            class="col id"><?= $escaper->escapeHtml($block->validateDate($recurringPayment->getNextOrderDate())) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Status')) ?>" class="col date"><?= /* @noEscape */
+                            $escaper->escapeHtml($block->getRecurringPaymentStatusName($recurringPayment->getStatus())) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Recurring Payment Profile')) ?>"
+                            class="col total"><?= /* @noEscape */
+                            $escaper->escapeHtml($recurringPayment->getName()) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Grand total')) ?>"
+                            class="col status"><?= $escaper->escapeHtml($block->getCurrentCurrency()) . $escaper->escapeHtml($recurringPayment->getBaseGrandTotal()) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Actions')) ?>" class="col actions">
+                            <div class="customer-subscription-action">
+                                <button
+                                        data-mage-init='{"dropdown":{}}'
+                                        data-toggle="dropdown"
+                                        data-action="customer-menu-toggle">
+                                    <span><?= $escaper->escapeHtml(__('Action')) ?> &#8744;</span>
+                                </button>
+                                <ul data-target="dropdown" class="dropdown-options">
+                                    <li>
+                                        <a href="<?= $escaper->escapeUrl($block->getViewUrl($recurringPayment)) ?>"
+                                           class="action view">
+                                            <span><?= $escaper->escapeHtml(__('View Order')) ?></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="<?= $escaper->escapeHtml($block->getStopPaymentUrl($recurringPayment)) ?>"
+                                           class="action order stop-payment-confirmation">
+                                            <span><?= $escaper->escapeHtml(__('Stop subscription')) ?></span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php if ($block->getPagerHtml()) : ?>
+            <div class="order-products-toolbar toolbar bottom"><?= $block->getPagerHtml() ?></div>
+        <?php endif ?>
+    <?php else : ?>
+        <div class="message info empty"><span><?= $escaper->escapeHtml($block->getEmptyRecurringPaymentsMessage()) ?></span>
+        </div>
+    <?php endif ?>
+
+    <?php if ($closedSubscriptions && count($closedSubscriptions)) : ?>
+        <h2><?= $escaper->escapeHtml(__('Canceled subscriptions')) ?></h2>
+        <div class="table-wrapper subscription-canceled">
+            <table class="data table table-order-items history" id="my-closed-subscriptions-table">
+                <caption class="table-caption"><?= $escaper->escapeHtml(__('Canceled subscriptions')) ?></caption>
+                <thead>
+                <tr>
+                    <th scope="col" class="col id"><?= $escaper->escapeHtml(__('Next order date')) ?></th>
+                    <th scope="col" class="col date"><?= $escaper->escapeHtml(__('Status')) ?></th>
+                    <th scope="col" class="col total"><?= $escaper->escapeHtml(__('Recurring payment profile')) ?></th>
+                    <th scope="col" class="col actions"><?= $escaper->escapeHtml(__('Grand total')) ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($closedSubscriptions as $closedSubscription) : ?>
+                    <tr>
+                        <td data-th="<?= $escaper->escapeHtml(__('Next Order Date')) ?>"
+                            class="col id"><?= $escaper->escapeHtml($block->validateDate($closedSubscription->getNextOrderDate())) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Status')) ?>" class="col date"><?= /* @noEscape */
+                            $escaper->escapeHtml($block->getRecurringPaymentStatusName($closedSubscription->getStatus())) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Recurring Payment Profile')) ?>"
+                            class="col total"><?= /* @noEscape */
+                            $escaper->escapeHtml($closedSubscription->getName()) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Grand total')) ?>"
+                            class="col status"><?= $escaper->escapeHtml($closedSubscription->getBaseGrandTotal()) ?></td>
+                        <td data-th="<?= $escaper->escapeHtml(__('Actions')) ?>" class="col actions">
+                            <a href="<?= $escaper->escapeUrl($block->getViewUrl($closedSubscription)) ?>" class="action view">
+                                <span><?= $escaper->escapeHtml(__('View Order')) ?></span>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>
+
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Nexi_Checkout/js/payments": {
+                "previousError": "<?= /* @noEscape */ $block->getPreviousError() ?>"
+            }
+        }
+    }
+</script>

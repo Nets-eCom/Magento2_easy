@@ -15,6 +15,10 @@ use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
 use Nexi\Checkout\Model\Webhook\PaymentCreated;
+use NexiCheckout\Model\Webhook\Data\Amount;
+use NexiCheckout\Model\Webhook\Data\Order as NexiOrder;
+use NexiCheckout\Model\Webhook\Data\PaymentCreatedData;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use PHPUnit\Framework\TestCase;
 
 class PaymentCreatedTest extends TestCase
@@ -50,24 +54,48 @@ class PaymentCreatedTest extends TestCase
     private $commentMock;
 
     /**
+     * @var WebhookInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $webhookMock;
+
+    /**
+     * @var PaymentCreatedData|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $paymentCreatedDataMock;
+
+    /**
+     * @var NexiOrder|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $nexiOrderMock;
+
+    /**
+     * @var Amount|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $amountMock;
+
+    /**
      * @var PaymentCreated
      */
     private $paymentCreated;
 
     protected function setUp(): void
     {
-        $this->transactionBuilderMock = $this->createMock(Builder::class);
-        $this->orderCollectionFactoryMock = $this->getMockForNonExistingClass(
+        $this->transactionBuilderMock       = $this->createMock(Builder::class);
+        $this->orderCollectionFactoryMock   = $this->getMockForNonExistingClass(
             'Magento\Reports\Model\ResourceModel\Order\CollectionFactory',
             ['create']
         );
-        $this->webhookDataLoaderMock = $this->createMock(WebhookDataLoader::class);
-        $this->orderRepositoryMock = $this->createMock(OrderRepositoryInterface::class);
+        $this->webhookDataLoaderMock        = $this->createMock(WebhookDataLoader::class);
+        $this->orderRepositoryMock          = $this->createMock(OrderRepositoryInterface::class);
         $this->paymentCollectionFactoryMock = $this->getMockForNonExistingClass(
             'Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory',
             ['create']
         );
-        $this->commentMock = $this->createMock(Comment::class);
+        $this->commentMock                  = $this->createMock(Comment::class);
+        $this->webhookMock                  = $this->createMock(WebhookInterface::class);
+        $this->paymentCreatedDataMock       = $this->createMock(PaymentCreatedData::class);
+        $this->nexiOrderMock                = $this->createMock(NexiOrder::class);
+        $this->amountMock                   = $this->createMock(Amount::class);
 
         $this->paymentCreated = new PaymentCreated(
             $this->transactionBuilderMock,
@@ -84,6 +112,7 @@ class PaymentCreatedTest extends TestCase
      *
      * @param string $className The name of the class to mock
      * @param array|null $methods The methods to mock (optional)
+     *
      * @return \PHPUnit\Framework\MockObject\MockObject The mock object
      */
     private function getMockForNonExistingClass(string $className, array $methods = null)
@@ -103,21 +132,45 @@ class PaymentCreatedTest extends TestCase
 
     public function testProcessWebhookWithOrderReferenceAndExistingTransaction(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123',
-                'order' => [
-                    'reference' => '000000123'
-                ]
-            ]
-        ];
-
-        $paymentId = 'payment-123';
+        $paymentId      = 'payment-123';
         $orderReference = '000000123';
+        $amountValue    = 10000;
+        $currency       = 'EUR';
+
+        // Mock amount
+        $this->amountMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($amountValue);
+        $this->amountMock->expects($this->any())
+            ->method('getCurrency')
+            ->willReturn($currency);
+
+        // Mock order
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getReference')
+            ->willReturn($orderReference);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($this->amountMock);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getOrderItems')
+            ->willReturn([]);
+
+        // Mock payment created data
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getOrder')
+            ->willReturn($this->nexiOrderMock);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->any())
+            ->method('getData')
+            ->willReturn($this->paymentCreatedDataMock);
 
         // Mock order and collection
-        $orderMock = $this->createMock(Order::class);
+        $orderMock           = $this->createMock(Order::class);
         $orderCollectionMock = $this->createMock(OrderCollection::class);
 
         // Mock transaction
@@ -141,35 +194,53 @@ class PaymentCreatedTest extends TestCase
             ->method('getFirstItem')
             ->willReturn($orderMock);
 
-        // Setup expectations for saveComment
-        $this->commentMock->expects($this->once())
-            ->method('saveComment')
-            ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
-                $orderMock
-            );
-
         // Execute the method
-        $this->paymentCreated->processWebhook($webhookData);
+        $this->paymentCreated->processWebhook($this->webhookMock);
     }
 
     public function testProcessWebhookWithoutOrderReferenceAndExistingTransaction(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123'
-            ]
-        ];
+        $paymentId      = 'payment-123';
+        $amountValue    = 10000;
+        $currency       = 'EUR';
 
-        $paymentId = 'payment-123';
-        $orderReference = '000000123';
+        // Mock amount
+        $this->amountMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($amountValue);
+        $this->amountMock->expects($this->any())
+            ->method('getCurrency')
+            ->willReturn($currency);
+
+        // Mock order
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getReference')
+            ->willReturn(null);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($this->amountMock);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getOrderItems')
+            ->willReturn([]);
+
+        // Mock payment created data
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getOrder')
+            ->willReturn($this->nexiOrderMock);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->any())
+            ->method('getData')
+            ->willReturn($this->paymentCreatedDataMock);
 
         // Mock order, payment, and collections
-        $orderMock = $this->createMock(Order::class);
-        $paymentMock = $this->createMock(Payment::class);
+        $orderMock             = $this->createMock(Order::class);
+        $paymentMock           = $this->createMock(Payment::class);
         $paymentCollectionMock = $this->createMock(PaymentCollection::class);
-        $orderCollectionMock = $this->createMock(OrderCollection::class);
+        $orderCollectionMock   = $this->createMock(OrderCollection::class);
 
         // Mock transaction
         $transactionMock = $this->createMock(TransactionInterface::class);
@@ -209,36 +280,52 @@ class PaymentCreatedTest extends TestCase
 
         $orderMock->method('getId')->willReturn(1);
 
-        // Setup expectations for saveComment
-        $this->commentMock->expects($this->once())
-            ->method('saveComment')
-            ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
-                $orderMock
-            );
-
         // Execute the method
-        $this->paymentCreated->processWebhook($webhookData);
+        $this->paymentCreated->processWebhook($this->webhookMock);
     }
 
     public function testProcessWebhookWithOrderReferenceAndNoTransaction(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123',
-                'order' => [
-                    'reference' => '000000123'
-                ]
-            ]
-        ];
-
-        $paymentId = 'payment-123';
+        $paymentId      = 'payment-123';
         $orderReference = '000000123';
+        $amountValue    = 10000;
+        $currency       = 'EUR';
+
+        // Mock amount
+        $this->amountMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($amountValue);
+        $this->amountMock->expects($this->any())
+            ->method('getCurrency')
+            ->willReturn($currency);
+
+        // Mock order
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getReference')
+            ->willReturn($orderReference);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($this->amountMock);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getOrderItems')
+            ->willReturn([]);
+
+        // Mock payment created data
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getOrder')
+            ->willReturn($this->nexiOrderMock);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->any())
+            ->method('getData')
+            ->willReturn($this->paymentCreatedDataMock);
 
         // Mock order, payment, and collections
-        $orderMock = $this->createMock(Order::class);
-        $paymentMock = $this->getMockBuilder(OrderPaymentInterface::class)
+        $orderMock           = $this->createMock(Order::class);
+        $paymentMock         = $this->getMockBuilder(OrderPaymentInterface::class)
             ->disableOriginalConstructor()
             ->addMethods(['addTransactionCommentsToOrder'])
             ->getMockForAbstractClass();
@@ -269,7 +356,13 @@ class PaymentCreatedTest extends TestCase
         $this->commentMock->expects($this->once())
             ->method('saveComment')
             ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %2 %3.',
+                    $paymentId,
+                    number_format($amountValue / 100, 2, '.', ''),
+                    $currency
+                ),
                 $orderMock
             );
 
@@ -286,11 +379,6 @@ class PaymentCreatedTest extends TestCase
             ->with(Order::STATE_PENDING_PAYMENT)
             ->willReturnSelf();
 
-        // Setup expectations for payment
-        $orderMock->expects($this->atLeastOnce())
-            ->method('getPayment')
-            ->willReturn($paymentMock);
-
         // Setup expectations for transaction builder
         $this->transactionBuilderMock->expects($this->once())
             ->method('build')
@@ -302,40 +390,56 @@ class PaymentCreatedTest extends TestCase
             )
             ->willReturn($transactionMock);
 
-        // Setup expectations for payment
-        $paymentMock->expects($this->once())
-            ->method('addTransactionCommentsToOrder')
-            ->with(
-                $transactionMock,
-                $this->anything()
-            );
-
         // Setup expectations for order save
         $this->orderRepositoryMock->expects($this->once())
             ->method('save')
             ->with($orderMock);
 
         // Execute the method
-        $this->paymentCreated->processWebhook($webhookData);
+        $this->paymentCreated->processWebhook($this->webhookMock);
     }
 
     public function testProcessWebhookWithNoTransactionAndOrderNotInNewState(): void
     {
-        $webhookData = [
-            'id' => 'webhook-123',
-            'data' => [
-                'paymentId' => 'payment-123',
-                'order' => [
-                    'reference' => '000000123'
-                ]
-            ]
-        ];
-
-        $paymentId = 'payment-123';
+        $paymentId      = 'payment-123';
         $orderReference = '000000123';
+        $amountValue    = 10000;
+        $currency       = 'EUR';
+
+        // Mock amount
+        $this->amountMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($amountValue);
+        $this->amountMock->expects($this->any())
+            ->method('getCurrency')
+            ->willReturn($currency);
+
+        // Mock order
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getReference')
+            ->willReturn($orderReference);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getAmount')
+            ->willReturn($this->amountMock);
+        $this->nexiOrderMock->expects($this->any())
+            ->method('getOrderItems')
+            ->willReturn([]);
+
+        // Mock payment created data
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getPaymentId')
+            ->willReturn($paymentId);
+        $this->paymentCreatedDataMock->expects($this->any())
+            ->method('getOrder')
+            ->willReturn($this->nexiOrderMock);
+
+        // Mock webhook
+        $this->webhookMock->expects($this->any())
+            ->method('getData')
+            ->willReturn($this->paymentCreatedDataMock);
 
         // Mock order and collection
-        $orderMock = $this->createMock(Order::class);
+        $orderMock           = $this->createMock(Order::class);
         $orderCollectionMock = $this->createMock(OrderCollection::class);
 
         // Setup expectations for getTransactionByPaymentId
@@ -360,7 +464,13 @@ class PaymentCreatedTest extends TestCase
         $this->commentMock->expects($this->once())
             ->method('saveComment')
             ->with(
-                __('Webhook Received. Payment created for payment ID: %1', $paymentId),
+                __(
+                    'Webhook Received. Payment created for Payment ID: %1'
+                    . '<br />Amount: %2 %3.',
+                    $paymentId,
+                    number_format($amountValue / 100, 2, '.', ''),
+                    $currency
+                ),
                 $orderMock
             );
 
@@ -374,6 +484,6 @@ class PaymentCreatedTest extends TestCase
             ->method('build');
 
         // Execute the method
-        $this->paymentCreated->processWebhook($webhookData);
+        $this->paymentCreated->processWebhook($this->webhookMock);
     }
 }

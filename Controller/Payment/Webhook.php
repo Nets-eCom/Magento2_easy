@@ -15,6 +15,7 @@ use Magento\Framework\Encryption\Encryptor;
 use Magento\Framework\Serialize\SerializerInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 use Nexi\Checkout\Model\WebhookHandler;
+use NexiCheckout\Model\Webhook\WebhookBuilder;
 use Psr\Log\LoggerInterface;
 
 class Webhook extends Action implements CsrfAwareActionInterface, HttpPostActionInterface
@@ -53,25 +54,14 @@ class Webhook extends Action implements CsrfAwareActionInterface, HttpPostAction
 
         try {
             $content = $this->serializer->unserialize($this->getRequest()->getContent());
+            $this->logger->info('Webhook called:', ['webhook_data' => $content]);
 
-            if (!isset($content['event'])) {
-                return $this->_response
-                    ->setHttpResponseCode(400)
-                    ->setBody('Missing event name');
-            }
+            $webhook = WebhookBuilder::fromJson($this->getRequest()->getContent());
 
-            $this->webhookHandler->handle($content);
-
-            $this->logger->info(
-                'Webhook called:',
-                [
-                    'webhook_data' => json_encode($this->getRequest()->getContent()),
-                    'payment_id'   => $this->getRequest()->getParam('payment_id'),
-                ]
-            );
+            $this->webhookHandler->handle($webhook);
             $this->_response->setHttpResponseCode(200);
         } catch (Exception $e) {
-            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTrace()]);
+            $this->logger->error($e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
             $this->_response->setHttpResponseCode(500);
         }
     }
