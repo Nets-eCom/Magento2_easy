@@ -19,11 +19,12 @@ class ScheduledCartValidation implements ObserverInterface
      *
      * @param CartRepositoryInterface $cartRepository
      * @param TotalConfigProvider $totalConfigProvider
+     * @param Session $customerSession
      */
     public function __construct(
         private CartRepositoryInterface $cartRepository,
         private TotalConfigProvider     $totalConfigProvider,
-        private Session $customerSession
+        private Session                 $customerSession
     ) {
     }
 
