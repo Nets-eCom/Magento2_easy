@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Observer;
 
+use Magento\Customer\Model\Session;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
@@ -21,7 +22,8 @@ class ScheduledCartValidation implements ObserverInterface
      */
     public function __construct(
         private CartRepositoryInterface $cartRepository,
-        private TotalConfigProvider     $totalConfigProvider
+        private TotalConfigProvider     $totalConfigProvider,
+        private Session $customerSession
     ) {
     }
 
@@ -45,6 +47,10 @@ class ScheduledCartValidation implements ObserverInterface
                 $cartItemSchedule = $cartItem
                     ->getProduct()
                     ->getCustomAttribute(PreventDifferentScheduledCart::SCHEDULE_CODE);
+
+                if (!$this->customerSession->isLoggedIn() && $cartItemSchedule) {
+                    throw new LocalizedException(__("Can't place order with scheduled products when not logged in"));
+                }
 
                 if ($cartItemSchedule && $cartItemSchedule->getValue()) {
                     if (null !== $cartSchedule && $cartSchedule !== $cartItemSchedule->getValue()) {
