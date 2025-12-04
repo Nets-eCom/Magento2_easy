@@ -4,6 +4,13 @@ namespace Dibs\EasyCheckout\Controller\Webhook;
 
 class CheckoutCompleted extends Webhook
 {
+    public const sendEmailMethodsMap = [
+        'SWISH' => true,
+        'KLARNA' => true,
+        'TRUSTLY' => true,
+        'SOFORT' => true
+    ];
+
     /**
      * @inheritDoc
      */
@@ -33,8 +40,8 @@ class CheckoutCompleted extends Webhook
         // update reference if on order submit was to early to update
         $this->dibsCheckoutContext->getDibsOrderHandler()->updatePaymentReference($this->order);
 
-        // To sent email for Swish payment method
-        if (strtoupper($this->paymentMethod) === 'SWISH') {
+        // To sent email for Swish, Klarna, Sofort, Trustly payment method
+        if ($this->shouldSendEmail()) {
             try {
                 $this->dibsCheckoutContext->getOrderSender()->send($this->order);
                 $this->logInfo("Sent order confirmation");
@@ -53,5 +60,10 @@ class CheckoutCompleted extends Webhook
     protected function getSuccessComment(): string
     {
         return 'Checkout completed for payment ID: %s';
+    }
+
+    private function shouldSendEmail(): bool
+    {
+        return isset(self::sendEmailMethodsMap[strtoupper($this->paymentMethod)]) && !$this->order->getEmailSent();
     }
 }
