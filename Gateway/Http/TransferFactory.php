@@ -31,6 +31,7 @@ class TransferFactory implements TransferFactoryInterface
     {
         $nexiMethod = $request['nexi_method'];
         unset($request['nexi_method']);
+
         return $this->transferBuilder
             ->setBody($request['body'])
             ->setUri($nexiMethod)

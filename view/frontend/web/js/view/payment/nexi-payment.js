@@ -16,6 +16,7 @@ define(
                 component: 'Nexi_Checkout/js/view/payment/method-renderer/nexi-method'
             }
         );
+
         return Component.extend({});
     }
 );

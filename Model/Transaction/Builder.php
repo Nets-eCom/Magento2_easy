@@ -6,6 +6,7 @@ namespace Nexi\Checkout\Model\Transaction;
 
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Nexi\Checkout\Gateway\Config\Config;
 
@@ -36,9 +37,7 @@ class Builder
         return $this->transactionBuilder->setOrder($order)
             ->setPayment($order->getPayment())
             ->setTransactionId($transactionId)
-            ->setAdditionalInformation(
-                [\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => $transactionData]
-            )
+            ->setAdditionalInformation([Transaction::RAW_DETAILS => $transactionData])
             ->setFailSafe(true)
             ->setMessage('Payment transaction - return action.')
             ->build($action ?: $this->config->getPaymentAction());

@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Model\Webhook;
 
 use Exception;
-use Magento\Framework\Exception\AlreadyExistsException;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
+use Nexi\Checkout\Gateway\AmountConverter;
+use Nexi\Checkout\Model\Order\Comment;
 use Nexi\Checkout\Model\Transaction\Builder;
 use Nexi\Checkout\Model\Webhook\Data\WebhookDataLoader;
+use Nexi\Checkout\Setup\Patch\Data\AddPaymentAuthorizedOrderStatus;
+use NexiCheckout\Model\Webhook\ChargeCreated;
+use NexiCheckout\Model\Webhook\Shared\Data;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 
 class PaymentChargeCreated implements WebhookProcessorInterface
 {
@@ -21,27 +25,30 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param WebhookDataLoader $webhookDataLoader
      * @param Builder $transactionBuilder
+     * @param Comment $comment
+     * @param AmountConverter $amountConverter
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly WebhookDataLoader $webhookDataLoader,
-        private readonly Builder $transactionBuilder
+        private readonly Builder $transactionBuilder,
+        private readonly Comment $comment,
+        private readonly AmountConverter $amountConverter,
     ) {
     }
 
     /**
      * ProcessWebhook function for 'payment.charge.created.v2' event.
      *
-     * @param array $webhookData
+     * @param WebhookInterface $webhook
      *
      * @return void
-     * @throws LocalizedException
+     * @throws NotFoundException
      */
-    public function processWebhook(array $webhookData): void
+    public function processWebhook(WebhookInterface $webhook): void
     {
-        $order = $this->webhookDataLoader->loadOrderByPaymentId($webhookData['data']['paymentId']);
-        $this->processOrder($order, $webhookData);
-
+        $order = $this->webhookDataLoader->loadOrderByPaymentId($webhook->getData()->getPaymentId());
+        $this->processOrder($order, $webhook);
         $this->orderRepository->save($order);
     }
 
@@ -49,70 +56,76 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * ProcessOrder function.
      *
      * @param Order $order
-     * @param array $webhookData
+     * @param ChargeCreated $webhook
      *
      * @return void
-     * @throws AlreadyExistsException
-     * @throws LocalizedException
+     * @throws CouldNotSaveException
      * @throws NotFoundException
      */
-    private function processOrder(Order $order, array $webhookData): void
+    private function processOrder(Order $order, ChargeCreated $webhook): void
     {
         $reservationTxn = $this->webhookDataLoader->getTransactionByOrderId(
-            $order->getId(),
+            (int)$order->getId(),
             TransactionInterface::TYPE_AUTH
         );
 
-        if ($order->getState() !== Order::STATE_PENDING_PAYMENT) {
-            throw new Exception('Order state is not pending payment.');
-        }
-
-        $chargeTxnId = $webhookData['data']['chargeId'];
+        $chargeTxnId = $webhook->getData()->getChargeId();
 
         if ($this->webhookDataLoader->getTransactionByPaymentId($chargeTxnId, TransactionInterface::TYPE_CAPTURE)) {
-            throw new AlreadyExistsException(__('Transaction already exists.'));
+            return;
         }
 
-        $chargeTransaction = $this->transactionBuilder
+        $this->transactionBuilder
             ->build(
                 $chargeTxnId,
                 $order,
                 [
-                    'payment_id' => $webhookData['data']['paymentId'],
-                    'webhook'    => json_encode($webhookData, JSON_PRETTY_PRINT),
+                    'payment_id' => $webhook->getData()->getPaymentId(),
+                    'webhook'    => json_encode(
+                        [
+                            'webhook_id' => $webhook->getId(),
+                            'charge_id'  => $webhook->getData()->getChargeId(),
+                            'amount'     => $webhook->getData()->getAmount()->getAmount(),
+                            'currency'   => $webhook->getData()->getAmount()->getCurrency(),
+                        ],
+                        JSON_PRETTY_PRINT
+                    ),
                 ],
                 TransactionInterface::TYPE_CAPTURE
             )->setParentId($reservationTxn->getTransactionId())
             ->setParentTxnId($reservationTxn->getTxnId());
 
-        $order->getPayment()->addTransactionCommentsToOrder(
-            $chargeTransaction,
-            __(
-                'Payment charge created, amount: %1 %2',
-                $webhookData['data']['amount']['amount'] / 100,
-                $webhookData['data']['amount']['currency']
-            )
-        );
+        $this->saveOrderHistoryComment($webhook->getData(), $order);
 
-        if ($this->isFullCharge($webhookData, $order)) {
+        if ($this->isFullCharge($webhook, $order)) {
+            if ($order->getStatus() !== AddPaymentAuthorizedOrderStatus::STATUS_NEXI_AUTHORIZED) {
+                throw new Exception('Order status is not authorized.');
+            }
             $this->fullInvoice($order, $chargeTxnId);
         } else {
-            $this->partialInvoice($order, $chargeTxnId, $webhookData['data']['orderItems']);
+            $order->addCommentToStatusHistory(
+                'Partial charge received from the Nexi | Nets Portal gateway. ' .
+                'The order processing could not be completed automatically. '
+            );
         }
+
         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
     }
 
     /**
      * Validate charge transaction.
      *
-     * @param array $webhookData
+     * @param ChargeCreated $webhook
      * @param Order $order
      *
      * @return bool
      */
-    private function isFullCharge(array $webhookData, Order $order): bool
+    private function isFullCharge(ChargeCreated $webhook, Order $order): bool
     {
-        return (int)($order->getBaseGrandTotal() * 100) === $webhookData['data']['amount']['amount'];
+        $grandTotalConverted = (int)$this->amountConverter->convertToNexiAmount($order->getGrandTotal());
+        $webhookAmount = (int)$webhook->getData()->getAmount()->getAmount();
+
+        return $grandTotalConverted === $webhookAmount;
     }
 
     /**
@@ -122,7 +135,6 @@ class PaymentChargeCreated implements WebhookProcessorInterface
      * @param string $chargeTxnId
      *
      * @return void
-     * @throws LocalizedException
      */
     public function fullInvoice(Order $order, string $chargeTxnId): void
     {
@@ -139,48 +151,26 @@ class PaymentChargeCreated implements WebhookProcessorInterface
     }
 
     /**
-     * Create partial invoice. Add shipping amount if charged
+     * Save order history comment.
      *
-     * TODO: investigate how to invoice only shipping cost in magento? probably not possible separately - without any
-     * TODO: order item invoiced now its only in order history comments (if charge only for shipping)
-     *
+     * @param Data $data
      * @param Order $order
-     * @param string $chargeTxnId
-     * @param array $webhookItems
      *
      * @return void
-     * @throws LocalizedException
      */
-    private function partialInvoice(Order $order, string $chargeTxnId, array $webhookItems): void
+    private function saveOrderHistoryComment(Data $data, Order $order): void
     {
-        if ($order->canInvoice()) {
-            $qtys         = [];
-            $shippingItem = null;
-            foreach ($webhookItems as $webhookItem) {
-
-                if ($webhookItem['reference'] === SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE) {
-                    $shippingItem = $webhookItem;
-                    continue;
-                }
-
-                foreach ($order->getAllItems() as $item) {
-                    if ($item->getSku() === $webhookItem['reference']) {
-                        $qtys[$item->getId()] = (int)$webhookItem['quantity'];
-                    }
-                }
-            }
-            $invoice = $order->prepareInvoice($qtys);
-            $invoice->setTransactionId($chargeTxnId);
-            if ($shippingItem) {
-                $invoice->setShippingAmount($shippingItem['netTotalAmount'] / 100);
-                $invoice->setShippingInclTax($shippingItem['grossTotalAmount'] / 100);
-                $invoice->setShippingTaxAmount($shippingItem['taxAmount'] / 100);
-            }
-
-            $invoice->pay();
-
-            $invoice->register();
-            $order->addRelatedObject($invoice);
-        }
+        $this->comment->saveComment(
+            __(
+                'Webhook Received. Payment charge created for payment ID: %1'
+                . '<br/>Charge ID: %2'
+                . '<br/>Amount: %3 %4.',
+                $data->getPaymentId(),
+                $data->getChargeId(),
+                number_format($data->getAmount()->getAmount() / 100, 2, '.', ''),
+                $data->getAmount()->getCurrency()
+            ),
+            $order
+        );
     }
 }

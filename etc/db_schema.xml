@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="nexi_subscriptions" resource="default" engine="innodb" comment="Recurring payment table">
+        <column xsi:type="int" name="entity_id" unsigned="false" nullable="false" identity="true" comment="Entity Id" />
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" identity="false" comment="Customer Id" />
+        <column xsi:type="varchar" name="status" nullable="true" length="32" comment="Status"/>
+        <column xsi:type="datetime" name="next_order_date" on_update="false" nullable="false"
+                comment="date when order is going to be processed"/>
+        <column xsi:type="int" name="recurring_profile_id" unsigned="false" nullable="false" identity="false"
+                comment="Which profile is this payment using"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="Updated At"/>
+        <column xsi:type="smallint" name="repeat_count_left" unsigned="true" nullable="true" identity="false"
+                comment="How many times a new recurring order will be made"/>
+        <column xsi:type="smallint" name="retry_count" unsigned="true" nullable="true" identity="false"
+                comment="How many times payment will be attempted on this order if failure occurred."/>
+        <column xsi:type="varchar" name="nexi_subscription_id" nullable="true" length="32"
+                comment="Nexi Subscription ID."/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+
+        <!-- foreign keys -->
+        <constraint xsi:type="foreign" referenceId="NEXI_SUBSCRIPTIONS_PROFILE_ID_RECURRING_PAYMENT_PROFILES_PROFILE_ID" table="nexi_subscriptions"
+                    column="recurring_profile_id" referenceTable="recurring_payment_profiles" referenceColumn="profile_id"
+                    onDelete="NO ACTION"/>
+        <constraint xsi:type="foreign" referenceId="NEXI_SUBSCRIPTIONS_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID" table="nexi_subscriptions"
+                    column="customer_id" referenceTable="customer_entity" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+
+        <!-- indexes -->
+        <index referenceId="NEXI_SUBSCRIPTIONS_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+    </table>
+    <table name="recurring_payment_profiles" resource="default" engine="innodb" comment="Stores recurring payment profiles">
+        <column xsi:type="int" name="profile_id" unsigned="false" nullable="false" identity="true" comment="Entity Id" />
+        <column xsi:type="varchar" name="name" nullable="false" comment="Profile Name" />
+        <column xsi:type="varchar" name="description" nullable="true" comment="Profile Description" />
+        <column xsi:type="varchar" name="schedule" nullable="false" comment="Profile Schedule" />
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="profile_id"/>
+        </constraint>
+    </table>
+    <table name="nexi_subscription_link" resource="default" engine="innodb" comment="Nexi subscription payment link to order">
+        <column xsi:type="int" name="link_id" unsigned="true" nullable="false" identity="true" comment="Link Id" />
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="Order Id" />
+        <column xsi:type="int" name="subscription_id" nullable="true" comment="Subcription Id" />
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="link_id"/>
+        </constraint>
+
+        <!-- foreign keys -->
+        <constraint xsi:type="foreign" referenceId="NEXI_SUBSCRIPTION_LINK_ORDER_ID_SALES_ORDER_ENTITY_ID" table="nexi_subscription_link"
+                    column="order_id" referenceTable="sales_order" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="NEXI_SUBSCRIPTION_LINK_SUBSCRIPTION_ID_NEXI_SUBSCRIPTIONS_ENTITY_ID" table="nexi_subscription_link"
+                    column="subscription_id" referenceTable="nexi_subscriptions" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+
+        <constraint xsi:type="unique" referenceId="NEXI_SUBSCRIPTION_LINK_ORDER_ID_SUBSCRIPTION_ID">
+            <column name="order_id"/>
+        </constraint>
+    </table>
+</schema>

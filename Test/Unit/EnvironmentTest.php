@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nexi\Checkout\Model\Config\Source;
 
 use PHPUnit\Framework\TestCase;

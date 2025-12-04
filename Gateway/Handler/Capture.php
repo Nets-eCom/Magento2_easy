@@ -11,8 +11,6 @@ use NexiCheckout\Model\Result\ChargeResult;
 class Capture implements HandlerInterface
 {
     /**
-     * Constructor
-     *
      * @param SubjectReader $subjectReader
      */
     public function __construct(
@@ -30,6 +28,10 @@ class Capture implements HandlerInterface
 
         /** @var ChargeResult[] $response */
         $chargeResult = reset($response);
+
+        if (!$chargeResult instanceof ChargeResult) {
+            return;
+        }
 
         $chargeId = $chargeResult->getChargeId();
 

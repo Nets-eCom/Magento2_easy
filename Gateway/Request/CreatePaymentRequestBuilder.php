@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Gateway\Request;
 
-use libphonenumber\NumberParseException;
-use libphonenumber\PhoneNumberUtil;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
+use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
 use Nexi\Checkout\Gateway\Config\Config;
+use Nexi\Checkout\Gateway\Request\NexiCheckout\GlobalRequestBuilder;
 use Nexi\Checkout\Gateway\Request\NexiCheckout\SalesDocumentItemsBuilder;
 use Nexi\Checkout\Gateway\StringSanitizer;
-use Nexi\Checkout\Model\WebhookHandler;
+use Nexi\Checkout\Model\Subscription\NextDateCalculator;
+use Nexi\Checkout\Model\Subscription\TotalConfigProvider;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\Address;
@@ -25,33 +27,31 @@ use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Request\Payment\PrivatePerson;
-use NexiCheckout\Model\Request\Payment\PhoneNumber;
 use NexiCheckout\Model\Request\Shared\Notification;
-use NexiCheckout\Model\Request\Shared\Notification\Webhook;
-use NexiCheckout\Model\Request\Shared\Order as NexiRequestOrder;
-use Nexi\Checkout\Gateway\AmountConverter as AmountConverter;
 
 class CreatePaymentRequestBuilder implements BuilderInterface
 {
-    public const NEXI_PAYMENT_WEBHOOK_PATH = 'nexi/payment/webhook';
-
     /**
+     * CreatePaymentRequestBuilder constructor.
+     *
      * @param UrlInterface $url
      * @param Config $config
      * @param CountryInformationAcquirerInterface $countryInformationAcquirer
-     * @param EncryptorInterface $encryptor
-     * @param WebhookHandler $webhookHandler
      * @param AmountConverter $amountConverter
      * @param StringSanitizer $stringSanitizer
+     * @param TotalConfigProvider $totalConfigProvider
+     * @param GlobalRequestBuilder $globalRequestBuilder
+     * @param NextDateCalculator $nextDateCalculator
      */
     public function __construct(
-        private readonly UrlInterface $url,
-        private readonly Config $config,
+        private readonly UrlInterface                        $url,
+        private readonly Config                              $config,
         private readonly CountryInformationAcquirerInterface $countryInformationAcquirer,
-        private readonly EncryptorInterface $encryptor,
-        private readonly WebhookHandler $webhookHandler,
-        private readonly AmountConverter $amountConverter,
-        private readonly StringSanitizer $stringSanitizer,
+        private readonly AmountConverter                     $amountConverter,
+        private readonly StringSanitizer                     $stringSanitizer,
+        private readonly TotalConfigProvider                 $totalConfigProvider,
+        private readonly GlobalRequestBuilder                $globalRequestBuilder,
+        private readonly NextDateCalculator $nextDateCalculator
     ) {
     }
 
@@ -65,71 +65,59 @@ class CreatePaymentRequestBuilder implements BuilderInterface
      */
     public function build(array $buildSubject): array
     {
-        /** @var Order $order */
-        $order = $buildSubject['payment']->getPayment()->getOrder();
+        /** @var Order $paymentSubject */
+        $paymentSubject = $buildSubject['payment']->getPayment()->getOrder();
+
+        if (!$paymentSubject) {
+            $paymentSubject = $buildSubject['payment']->getPayment()->getQuote();
+        }
 
         return [
-            'nexi_method' => 'createHostedPayment',
-            'body'        => [
-                'payment' => $this->buildPayment($order),
+            'nexi_method' => $this->isEmbedded() ? 'createEmbeddedPayment' : 'createHostedPayment',
+            'body' => [
+                'payment' => $this->buildPayment($paymentSubject),
             ]
         ];
     }
 
     /**
-     * Build the Sdk order object
-     *
-     * @param Order $order
-     *
-     * @return NexiRequestOrder
-     */
-    public function buildOrder(Order $order): NexiRequestOrder
-    {
-        return new NexiRequestOrder(
-            items    : $this->buildItems($order),
-            currency : $order->getBaseCurrencyCode(),
-            amount   : $this->amountConverter->convertToNexiAmount($order->getBaseGrandTotal()),
-            reference: $order->getIncrementId()
-        );
-    }
-
-    /**
      * Build the Sdk items object
      *
-     * @param Order $order
+     * @param Order|Quote $paymentSubject
      *
      * @return OrderItem|array
      */
-    private function buildItems(Order $order): OrderItem|array
+    public function buildItems(Order|Quote $paymentSubject): OrderItem|array
     {
-        /** @var OrderItem $items */
-        foreach ($order->getAllVisibleItems() as $item) {
-            $items[] = new Item(
-                name            : $item->getName(),
-                quantity        : (float)$item->getQtyOrdered(),
-                unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($item->getPrice()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($item->getRowTotalInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($item->getRowTotal()),
-                reference       : $item->getSku(),
-                taxRate         : $this->amountConverter->convertToNexiAmount($item->getTaxPercent()),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($item->getTaxAmount()),
-            );
+        $items = $this->globalRequestBuilder->getProductsData($paymentSubject);
+
+        if ($paymentSubject instanceof Order) {
+            $shippingInfoHolder = $paymentSubject;
+        } else {
+            $shippingInfoHolder = $paymentSubject->getShippingAddress();
         }
 
-        if ($order->getShippingAmount()) {
+        if ($shippingInfoHolder->getShippingInclTax()) {
             $items[] = new Item(
-                name            : $order->getShippingDescription(),
-                quantity        : 1,
-                unit            : 'pcs',
-                unitPrice       : $this->amountConverter->convertToNexiAmount($order->getShippingAmount()),
-                grossTotalAmount: $this->amountConverter->convertToNexiAmount($order->getShippingInclTax()),
-                netTotalAmount  : $this->amountConverter->convertToNexiAmount($order->getShippingAmount()),
-                reference       : SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
-                taxRate         : $this->amountConverter->convertToNexiAmount(
-                    $order->getTaxAmount() / $order->getGrandTotal()
+                name: $shippingInfoHolder->getShippingDescription(),
+                quantity: 1,
+                unit: 'pcs',
+                unitPrice: $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingAmount()
                 ),
-                taxAmount       : $this->amountConverter->convertToNexiAmount($order->getShippingTaxAmount()),
+                grossTotalAmount: $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingInclTax()
+                ),
+                netTotalAmount: $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingAmount()
+                ),
+                reference: SalesDocumentItemsBuilder::SHIPPING_COST_REFERENCE,
+                taxRate: $this->amountConverter->convertToNexiAmount(
+                    $this->globalRequestBuilder->getShippingTaxRate($paymentSubject)
+                ),
+                taxAmount: $this->amountConverter->convertToNexiAmount(
+                    $shippingInfoHolder->getBaseShippingTaxAmount()
+                ),
             );
         }
 
@@ -137,142 +125,162 @@ class CreatePaymentRequestBuilder implements BuilderInterface
     }
 
     /**
-     * Build The Sdk payment object
+     * Build payment object for a request
      *
-     * @param Order $order
+     * @param Order|Quote $order
      *
      * @return Payment
-     * @throws NoSuchEntityException
      */
-    private function buildPayment(Order $order): Payment
+    private function buildPayment(Order|Quote $order): Payment
     {
         return new Payment(
-            order       : $this->buildOrder($order),
-            checkout    : $this->buildCheckout($order),
-            notification: new Notification($this->buildWebhooks()),
+            order: $this->globalRequestBuilder->buildOrder($order),
+            checkout: $this->buildCheckout($order),
+            notification: new Notification($this->globalRequestBuilder->buildWebhooks()),
+            subscription: $this->getSubscriptionSetup($order),
+            paymentMethodsConfiguration: $this->globalRequestBuilder->buildPaymentMethodsConfiguration(
+                $order
+            ),
         );
     }
 
     /**
-     * Build the webhooks for the payment
+     * Build Checkout request object
      *
-     * @return array<Webhook>
-     *
-     * added all for now, we need to check wh
-     */
-    public function buildWebhooks(): array
-    {
-        $webhooks = [];
-        foreach ($this->webhookHandler->getWebhookProcessors() as $eventName => $processor) {
-            $webhookUrl = $this->url->getUrl(self::NEXI_PAYMENT_WEBHOOK_PATH);
-            $webhooks[] = new Webhook(
-                eventName    : $eventName,
-                url          : $webhookUrl,
-                authorization: $this->encryptor->hash($this->config->getWebhookSecret())
-            );
-        }
-
-        return $webhooks;
-    }
-
-    /**
-     * Build the checkout object
-     *
-     * @param Order $order
+     * @param Order|Quote $salesObject
      *
      * @return HostedCheckout|EmbeddedCheckout
-     * @throws NoSuchEntityException
      */
-    public function buildCheckout(Order $order): HostedCheckout|EmbeddedCheckout
+    public function buildCheckout(Quote|Order $salesObject): HostedCheckout|EmbeddedCheckout
     {
-        if ($this->config->getIntegrationType() == IntegrationTypeEnum::EmbeddedCheckout) {
-            return new EmbeddedCheckout(
-                url             : $this->url->getUrl('checkout'),
-                termsUrl        : $this->config->getPaymentsTermsAndConditionsUrl(),
-                merchantTermsUrl: $this->config->getWebshopTermsAndConditionsUrl(),
-                consumer        : $this->buildConsumer($order),
-            );
-        }
-
-        return new HostedCheckout(
-            returnUrl                  : $this->url->getUrl('checkout/onepage/success'),
-            cancelUrl                  : $this->url->getUrl('nexi/hpp/cancelaction'),
-            termsUrl                   : $this->config->getWebshopTermsAndConditionsUrl(),
-            consumer                   : $this->buildConsumer($order),
-            isAutoCharge               : $this->config->getPaymentAction() == 'authorize_capture',
-            merchantHandlesConsumerData: true,
-            countryCode                : $this->getThreeLetterCountryCode(),
-        );
+        return $this->isEmbedded() ?
+            $this->buildEmbeddedCheckout($salesObject) :
+            $this->buildHostedCheckout($salesObject);
     }
 
     /**
      * Build the consumer object
      *
-     * @param Order $order
+     * @param Order|Quote $salesObject
      *
      * @return Consumer
-     * @throws NoSuchEntityException
      */
-    private function buildConsumer(Order $order): Consumer
+    private function buildConsumer(Order|Quote $salesObject): Consumer
     {
+        $customerId = $salesObject->getCustomerId();
+        $shippingAddress = $salesObject->getShippingAddress();
+        $billingAddress = $salesObject->getBillingAddress();
+        $lastName = $salesObject->getCustomerLastname() ?: $shippingAddress->getLastname();
+        $firstName = $salesObject->getCustomerFirstname() ?: $shippingAddress->getFirstname();
+        $email = $salesObject->getCustomerEmail() ?: $shippingAddress->getEmail();
+
         return new Consumer(
-            email          : $order->getCustomerEmail(),
-            reference      : $order->getCustomerId(),
+            email: $email,
+            reference: $customerId,
             shippingAddress: new Address(
-                addressLine1: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(1)),
-                addressLine2: $this->stringSanitizer->sanitize($order->getShippingAddress()->getStreetLine(2)),
-                postalCode  : $order->getShippingAddress()->getPostcode(),
-                city        : $this->stringSanitizer->sanitize($order->getShippingAddress()->getCity()),
-                country     : $this->getThreeLetterCountryCode(),
+                addressLine1: $this->stringSanitizer->sanitize($shippingAddress->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($shippingAddress->getStreetLine(2)),
+                postalCode: $shippingAddress->getPostcode(),
+                city: $this->stringSanitizer->sanitize($shippingAddress->getCity()),
+                country: $this->getThreeLetterCountryCode($shippingAddress->getCountryId()),
             ),
-            billingAddress : new Address(
-                addressLine1: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(1)),
-                addressLine2: $this->stringSanitizer->sanitize($order->getBillingAddress()->getStreetLine(2)),
-                postalCode  : $order->getBillingAddress()->getPostcode(),
-                city        : $order->getBillingAddress()->getCity(),
-                country     : $this->getThreeLetterCountryCode(),
+            billingAddress: new Address(
+                addressLine1: $this->stringSanitizer->sanitize($billingAddress->getStreetLine(1)),
+                addressLine2: $this->stringSanitizer->sanitize($billingAddress->getStreetLine(2)),
+                postalCode: $billingAddress->getPostcode(),
+                city: $this->stringSanitizer->sanitize($billingAddress->getCity()),
+                country: $this->getThreeLetterCountryCode($billingAddress->getCountryId()),
             ),
-            privatePerson  : new PrivatePerson(
-                firstName: $this->stringSanitizer->sanitize($order->getCustomerFirstname()),
-                lastName : $this->stringSanitizer->sanitize($order->getCustomerLastname()),
+            privatePerson: new PrivatePerson(
+                firstName: $this->stringSanitizer->sanitize($firstName),
+                lastName: $this->stringSanitizer->sanitize($lastName),
             ),
-            phoneNumber    : $this->getNumber($order)
+            phoneNumber: $this->globalRequestBuilder->getNumber($salesObject)
+        );
+    }
+
+    /**
+     * Check integration type
+     *
+     * @return bool
+     */
+    public function isEmbedded(): bool
+    {
+        return $this->config->getIntegrationType() === IntegrationTypeEnum::EmbeddedCheckout->name;
+    }
+
+    /**
+     * Build Embedded Checkout request object
+     *
+     * @param Quote|Order $salesObject
+     *
+     * @return EmbeddedCheckout
+     */
+    public function buildEmbeddedCheckout(Quote|Order $salesObject): EmbeddedCheckout
+    {
+        return new EmbeddedCheckout(
+            url: $this->url->getUrl('checkout/onepage/success'),
+            termsUrl: $this->config->getPaymentsTermsAndConditionsUrl(),
+            consumer: $this->buildConsumer($salesObject),
+            isAutoCharge: $this->config->getPaymentAction() == 'authorize_capture',
+            merchantHandlesConsumerData: true,
+            countryCode: $this->getThreeLetterCountryCode($this->config->getCountryCode()),
+        );
+    }
+
+    /**
+     * Build the checkout for hosted integration type
+     *
+     * @param Quote|Order $salesObject
+     *
+     * @return HostedCheckout
+     */
+    public function buildHostedCheckout(Quote|Order $salesObject): HostedCheckout
+    {
+        return new HostedCheckout(
+            returnUrl: $this->url->getUrl('checkout/onepage/success'),
+            cancelUrl: $this->url->getUrl('nexi/hpp/cancelaction'),
+            termsUrl: $this->config->getWebshopTermsAndConditionsUrl(),
+            consumer: $this->buildConsumer($salesObject),
+            isAutoCharge: $this->config->getPaymentAction() == 'authorize_capture',
+            merchantHandlesConsumerData: true,
+            countryCode: $this->getThreeLetterCountryCode($this->config->getCountryCode()),
         );
     }
 
     /**
      * Get the three-letter country code
      *
+     * @param string $countryCode
+     *
      * @return string
-     * @throws NoSuchEntityException
      */
-    public function getThreeLetterCountryCode(): string
+    public function getThreeLetterCountryCode(string $countryCode): string
     {
         return $this->countryInformationAcquirer->getCountryInfo(
-            $this->config->getCountryCode()
+            $countryCode
         )->getThreeLetterAbbreviation();
     }
 
     /**
-     * Build phone number object for the payment
-     *
-     * @param Order $order
+     * Set subscription setup for the payment.
      *
      * @return PhoneNumber
-     * @throws NumberParseException
      */
-    public function getNumber(Order $order): PhoneNumber
+    private function getSubscriptionSetup(): ?Payment\Subscription
     {
-        $lib = PhoneNumberUtil::getInstance();
+        if ($this->totalConfigProvider->isSubscriptionScheduled()
+            && $this->totalConfigProvider->isSubscriptionsEnabled()
+        ) {
+            $subscriptionProfileId = $this->totalConfigProvider->getSubscriptionProfileId();
 
-        $number = $lib->parse(
-            $order->getShippingAddress()->getTelephone(),
-            $order->getShippingAddress()->getCountryId()
-        );
+            return new Payment\Subscription(
+                subscriptionId: null,
+                endDate: new \DateTime((int)date('Y') + 100 . '-01-01'),
+                interval: $this->nextDateCalculator->getDaysInterval((int)$subscriptionProfileId),
+            );
+        }
 
-        return new PhoneNumber(
-            prefix: '+' . $number->getCountryCode(),
-            number: (string)$number->getNationalNumber(),
-        );
+        return null;
     }
 }

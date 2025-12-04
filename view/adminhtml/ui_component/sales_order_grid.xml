@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <columns name="sales_order_columns">
+        <column name="recurring_status">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Recurring Payment Status</item>
+                </item>
+            </argument>
+            <settings>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <column name="customer_id">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Recurring Customer Id</item>
+                </item>
+            </argument>
+            <settings>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <column name="subscription_id">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Recurring Payment ID</item>
+                </item>
+            </argument>
+            <settings>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <column name="recurring_profile">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Recurring Payment Profile</item>
+                </item>
+            </argument>
+            <settings>
+                <visible>false</visible>
+            </settings>
+        </column>
+    </columns>
+</listing>

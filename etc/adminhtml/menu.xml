@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Nexi_Checkout::subscriptions_section"
+             title="Subscriptions"
+             translate="title"
+             module="Nexi_Checkout"
+             parent="Magento_Sales::sales"
+             sortOrder="250"
+             dependsOnModule="Nexi_Checkout"
+             resource="Nexi_Checkout::subscriptions"
+             dependsOnConfig="nexi/subscriptions/active_subscriptions"
+        />
+        <add id="Nexi_Checkout::subscriptions"
+             title="Subscriptions"
+             translate="title"
+             module="Nexi_Checkout"
+             parent="Nexi_Checkout::subscriptions_section"
+             sortOrder="251"
+             dependsOnModule="Nexi_Checkout"
+             action="subscriptions/subscription"
+             resource="Nexi_Checkout::subscriptions"
+        />
+        <add id="Nexi_Checkout::subscription_profile"
+             title="Profiles"
+             translate="title"
+             module="Nexi_Checkout"
+             parent="Nexi_Checkout::subscriptions_section"
+             sortOrder="252"
+             dependsOnModule="Nexi_Checkout"
+             action="subscriptions/profile"
+             resource="Nexi_Checkout::subscriptions"
+        />
+    </menu>
+</config>

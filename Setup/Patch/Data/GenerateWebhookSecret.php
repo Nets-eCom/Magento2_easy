@@ -24,10 +24,9 @@ class GenerateWebhookSecret implements DataPatchInterface
     }
 
     /**
-     * Generate secret key for webhook verification
+     * Generate a secret key for webhook verification
      *
      * @return void
-     * @throws Exception
      */
     public function apply(): void
     {
