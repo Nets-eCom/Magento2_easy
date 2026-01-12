@@ -40,7 +40,7 @@ jobs:
       matrix:
         node-version:
           - 20
-        php-version: ["8.1", "8.2", "8.3"]
+        php-version: ["8.1", "8.2", "8.3", "8.4"]
         dependencies:
           - "highest"
         composer-options:
@@ -59,7 +59,7 @@ jobs:
           ini-file: development
           tools: composer:2.2, cs2pr
         env:
-          COMPOSER_AUTH_JSON: |
+          COMPOSER_AUTH: |
             {
               "http-basic": {
                 "repo.magento.com": {
@@ -70,11 +70,31 @@ jobs:
             }
       - name: Validate Composer Files
         run: composer validate
+        env:
+          COMPOSER_AUTH: |
+            {
+              "http-basic": {
+                "repo.magento.com": {
+                  "username": "${{ secrets.REPO_MAGENTO_USER }}",
+                  "password": "${{ secrets.REPO_MAGENTO_PASSWORD }}"
+                }
+              }
+            }
       - name: Run Composer install
         uses: "ramsey/composer-install@v1"
         with:
           dependency-versions: "${{ matrix.dependencies }}"
           composer-options: "${{ matrix.composer-options }}"
+        env:
+          COMPOSER_AUTH: |
+            {
+              "http-basic": {
+                "repo.magento.com": {
+                  "username": "${{ secrets.REPO_MAGENTO_USER }}",
+                  "password": "${{ secrets.REPO_MAGENTO_PASSWORD }}"
+                }
+              }
+            }
       - name: Detect PhpCs violations
         run: |
           vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/,../../phpcompatibility/php-compatibility,../../magento/php-compatibility-fork
