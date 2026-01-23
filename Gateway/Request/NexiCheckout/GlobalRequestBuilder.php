@@ -7,10 +7,14 @@ namespace Nexi\Checkout\Gateway\Request\NexiCheckout;
 use libphonenumber\PhoneNumberUtil;
 use Magento\Bundle\Model\Product\Price;
 use Magento\Bundle\Model\Product\Type as BundleType;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Model\Quote;
+use Magento\Sales\Api\Data\CreditmemoInterface;
+use Magento\Sales\Api\Data\InvoiceInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector;
@@ -35,6 +39,7 @@ class GlobalRequestBuilder
      * @param EncryptorInterface $encryptor
      * @param WebhookHandler $webhookHandler
      * @param AmountConverter $amountConverter
+     * @param ProductRepositoryInterface $productRepository
      */
     public function __construct(
         private readonly UrlInterface $url,
@@ -42,6 +47,7 @@ class GlobalRequestBuilder
         private readonly EncryptorInterface $encryptor,
         private readonly WebhookHandler $webhookHandler,
         private readonly AmountConverter $amountConverter,
+        private readonly ProductRepositoryInterface $productRepository
     ) {
     }
 
@@ -185,21 +191,21 @@ class GlobalRequestBuilder
     /**
      * Build payload with order items data based on product type
      *
-     * @param Order|Quote $paymentSubject
+     * @param Order|Quote|CreditmemoInterface|InvoiceInterface $paymentSubject
      *
      * @return array
      */
-    public function getProductsData(Order|Quote $paymentSubject): array
+    public function getProductsData(Order|Quote|CreditmemoInterface|InvoiceInterface $paymentSubject): array
     {
         $items = [];
         /** @var OrderItem|Quote\Item $item */
-        foreach ($paymentSubject->getAllVisibleItems() as $item) {
+        foreach ($paymentSubject->getAllItems() as $item) {
 
-            if ($item->getParentItem()) {
+            if ($item->getParentItem() || (double)$item->getBasePrice() === 0.0) {
                 continue;
             }
 
-            switch ($item->getProductType()) {
+            switch ($this->getProductType($item)) {
                 case ConfigurableType::TYPE_CODE:
                     $children = $this->getChildren($item);
                     foreach ($children as $childItem) {
@@ -275,15 +281,38 @@ class GlobalRequestBuilder
     /**
      * Get children items of a given order item or quote item.
      *
-     * @param OrderItem|Quote\Item $item
-     *
+     * @param mixed $item
      * @return array|Quote\Item\AbstractItem[]
      */
-    private function getChildren(OrderItem|Quote\Item $item): array
+    private function getChildren(mixed $item): array
     {
-        $children = $item instanceof OrderItem ? $item->getChildrenItems() : $item->getChildren();
+        if ($item instanceof \Magento\Sales\Model\Order\Item) {
+            return $item->getChildrenItems();
+        }
 
-        return $children;
+        if ($item instanceof \Magento\Quote\Model\Quote\Item\AbstractItem) {
+            return $item->getChildren();
+        }
+
+        if ($item instanceof \Magento\Sales\Model\Order\Invoice\Item
+            || $item instanceof \Magento\Sales\Model\Order\Creditmemo\Item
+        ) {
+            $orderItem = $item->getOrderItem();
+            $childOrderItems = $orderItem->getChildrenItems();
+
+            $saleDocument = $item->getInvoice() ?? $item->getCreditmemo();
+            $childrenItems = [];
+
+            foreach ($saleDocument->getAllItems() as $saleDocChild) {
+                if (in_array($saleDocChild->getOrderItem(), $childOrderItems, true)) {
+                    $childrenItems[] = $saleDocChild;
+                }
+            }
+
+            return $childrenItems;
+        }
+
+        return [];
     }
 
     /**
@@ -319,7 +348,7 @@ class GlobalRequestBuilder
         $data['netTotalAmount'] = $this->amountConverter->convertToNexiAmount(
             $item->getBaseRowTotal() - $item->getBaseDiscountAmount()
         );
-        $data['taxRate'] = $this->amountConverter->convertToNexiAmount($item->getTaxPercent());
+        $data['taxRate'] = $this->amountConverter->convertToNexiAmount($this->getTaxRate($item));
         $data['taxAmount'] = $this->amountConverter->convertToNexiAmount($item->getBaseTaxAmount());
 
         return $data;
@@ -346,5 +375,40 @@ class GlobalRequestBuilder
                 enabled: true
             )
         ];
+    }
+
+    /**
+     * Calculate the tax rate for a given item.
+     *
+     * @param mixed $item
+     *
+     * @return mixed
+     */
+    private function getTaxRate(mixed $item): mixed
+    {
+        if ($item->getTaxPercent()) {
+            return $item->getTaxPercent();
+        }
+        return $item->getTaxAmount() * 100 / $item->getRowTotal();
+    }
+
+    /**
+     * Get product type by product ID
+     *
+     * @param mixed $item
+     * @return string|null
+     */
+    private function getProductType(mixed $item) : string|null
+    {
+        if ($item->getProductType()) {
+            return $item->getProductType();
+        }
+
+        try {
+            $product = $this->productRepository->getById($item->getProductId());
+            return $product->getTypeId();
+        } catch (NoSuchEntityException $e) {
+            return null;
+        }
     }
 }
