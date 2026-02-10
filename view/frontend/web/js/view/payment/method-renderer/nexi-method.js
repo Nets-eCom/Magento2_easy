@@ -172,7 +172,7 @@ define(
                 this.clearNexiCheckout();
                 this._super();
                 checkoutData.setNexiSubselection(this.subselection());
-                if (this.isEmbedded()) {
+                if (this.isEmbedded() && this.subselection()) {
                     this.renderCheckout();
                 }
                 return true;

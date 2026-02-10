@@ -45,7 +45,7 @@
                             click: placeOrder,
                             attr: {title: $t('Place Order')},
                             css: {disabled: !isPlaceOrderActionAllowed()},
-                            enable: (getCode() == isChecked())
+                            enable: (getCode() == isChecked() && subselection())
                             "
                             disabled>
                         <span data-bind="i18n: 'Place Order', afterRender: afterRender()"></span>
