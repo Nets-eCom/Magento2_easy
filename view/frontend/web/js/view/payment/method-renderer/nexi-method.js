@@ -97,7 +97,7 @@ define(
                     }, this);
 
                 }
-                if (this.isActive() && this.isEmbedded()) {
+                if (this.isActive() && this.isEmbedded() && (!this.payTypeSplitting() || this.subselection())) {
                     this.renderCheckout();
                 }
 
