@@ -172,7 +172,7 @@ define(
                 this.clearNexiCheckout();
                 this._super();
                 checkoutData.setNexiSubselection(this.subselection());
-                if (this.isEmbedded() && this.subselection()) {
+                if (this.isEmbedded() && (!this.payTypeSplitting() || this.subselection())) {
                     this.renderCheckout();
                 }
                 return true;
