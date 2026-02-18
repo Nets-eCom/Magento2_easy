@@ -4,12 +4,15 @@
 | Module         | Nets Easy Payment Module for Magento 2                                                                        |
 |----------------|---------------------------------------------------------------------------------------------------------------|
 | Shop Version   | `2.4.x`                                                                                                       |
-| Plugin Version | `1.8.4`                                                                                                       |
+| Plugin Version | `1.8.5`                                                                                                       |
 | PHP Version    | `7.4 - 8.3`                                                                                                   |
 | Guide          | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/ |
 | Github         | https://github.com/Nets-eCom/Magento2_easy                                                                    |
 
 ## CHANGELOG
+
+### Version 1.8.5 - Released - 2026-02-18
+- Fix: authorization with store settings on canceling a payment
 
 ### Version 1.8.4 - Released - 2026-01-28
 - Update: introduce logging on invoice creation
