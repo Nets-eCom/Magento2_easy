@@ -488,7 +488,8 @@ class Order {
             );
         }
 
-        $this->paymentApi->terminatePayment(new TerminatePayment(), $paymentId);
+        $order = $payment->getOrder();
+        $this->paymentApi->terminatePayment(new TerminatePayment(), $paymentId, $order->getStoreId());
     }
 
     /**
@@ -507,10 +508,10 @@ class Order {
             $paymentObj->setAmount($payment->getSummary()->getReservedAmount());
 
             // cancel it now!
-            $this->paymentApi->cancelPayment($paymentObj, $paymentId);
+            $this->paymentApi->cancelPayment($paymentObj, $paymentId, (int) $storeId);
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
-                            __('You need an dibs payment ID to void.')
+                __('You need an dibs payment ID to void.')
             );
         }
     }

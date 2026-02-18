@@ -104,8 +104,8 @@ class Payment extends Client {
     /**
      * @throws ClientException
      */
-    public function terminatePayment(TerminatePayment $payment, string $paymentId) {
-        $this->put("/v1/payments/" . $paymentId . "/terminate", $payment);
+    public function terminatePayment(TerminatePayment $payment, string $paymentId, int $storeId = 0) {
+        $this->put("/v1/payments/" . $paymentId . "/terminate", $payment, ['storeId' => $storeId]);
     }
 
     /**
@@ -114,9 +114,9 @@ class Payment extends Client {
      * @throws ClientException
      * @return void
      */
-    public function cancelPayment(CancelPayment $payment, $paymentId) {
+    public function cancelPayment(CancelPayment $payment, $paymentId, int $storeId = 0) {
         try {
-            $this->post("/v1/payments/" . $paymentId . "/cancels", $payment);
+            $this->post("/v1/payments/" . $paymentId . "/cancels", $payment, ['storeId' => $storeId]);
         } catch (ClientException $e) {
             // handle?
             throw $e;

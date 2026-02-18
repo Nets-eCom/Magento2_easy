@@ -57,7 +57,7 @@ abstract class Client
     {
         $this->httpClient = new \GuzzleHttp\Client([
             'base_uri' => $baseUrl,
-        //    'verify' => false,
+            //    'verify' => false,
         ]);
     }
 
@@ -139,8 +139,13 @@ abstract class Client
         if (!is_array($options)) {
             $options = [];
         }
+        $store = null;
+        if (isset($options['storeId']) && $options['storeId'] > 0) {
+            $store = $this->apiContext->getHelper()->getStoreById($options['storeId']);
+            unset($options['storeId']);
+        }
 
-        $options = array_merge($options, $this->getDefaultOptions());
+        $options = array_merge($options, $this->getDefaultOptions($store));
         $options[RequestOptions::JSON] = $this->utf8ize($request->toArray());
 
         $exception = null;
@@ -190,8 +195,14 @@ abstract class Client
         if (!is_array($options)) {
             $options = [];
         }
+        $store = null;
+        if (isset($options['storeId']) && $options['storeId'] > 0) {
+            $store = $this->apiContext->getHelper()->getStoreById($options['storeId']);
+            unset($options['storeId']);
+        }
 
-        $options = array_merge($options, $this->getDefaultOptions());
+        $options = array_merge($options, $this->getDefaultOptions($store));
+
         $options[RequestOptions::JSON] = $request->toArray();
         $exception = null;
 
@@ -233,11 +244,11 @@ abstract class Client
     /**
      * @return mixed
      */
-    protected function getDefaultOptions()
+    protected function getDefaultOptions($store = null)
     {
         $options['headers'] = [
             'Content-Type' => 'application/json',
-            'Authorization' => $this->apiContext->getHelper()->getApiSecretKey(),
+            'Authorization' => $this->apiContext->getHelper()->getApiSecretKey($store),
         ];
 
         return $options;
@@ -288,12 +299,3 @@ abstract class Client
     }
 
 }
-
-
-
-
-
-
-
-
-

@@ -1,8 +1,10 @@
 <?php
 namespace Dibs\EasyCheckout\Helper;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Model\Quote;
 use Dibs\EasyCheckout\Model\Client\DTO\Payment\CreatePaymentCheckout;
+use Magento\Store\Api\Data\StoreInterface;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -92,6 +94,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->serializer = $serializer;
 
         parent::__construct($context);
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function getStoreById($storeId): StoreInterface
+    {
+        return $this->storeManager->getStore($storeId);
     }
 
     /**
