@@ -119,8 +119,8 @@ define(
                             };
                             self.dibsPayment = new Dibs.Checkout(checkoutOptions);
                             self.dibsPayment.ctrlkey = paymentConfiguration.ctrlkey;
-                            self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.saveOrder);
-                            self.dibsPayment.on('payment-completed', vanillaCheckoutHandler.onCheckoutCompleteAction);
+                            self.dibsPayment.on('pay-initialized', vanillaCheckoutHandler.saveOrder.bind(self.dibsPayment));
+                            self.dibsPayment.on('payment-completed', vanillaCheckoutHandler.onCheckoutCompleteAction.bind(self.dibsPayment));
 
                             setCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
                             cancelCouponCodeAction.registerSuccessCallback(vanillaCheckoutHandler.updatePayment);
