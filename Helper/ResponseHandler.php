@@ -7,7 +7,7 @@ namespace Dibs\EasyCheckout\Helper;
 use Dibs\EasyCheckout\Logger\Logger;
 use Dibs\EasyCheckout\Model\Client\DTO\GetPaymentResponse;
 use Magento\Framework\DB\Transaction;
-use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Api\OrderStatusHistoryRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Invoice;
@@ -15,21 +15,21 @@ use Magento\Sales\Model\Service\InvoiceService;
 
 class ResponseHandler
 {
-    private OrderRepositoryInterface $orderRepository;
+    private OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository;
     private InvoiceService $invoiceService;
     private Transaction $transaction;
     private InvoiceSender $invoiceSender;
     private Data $dibsDataHelper;
     private Logger $logger;
     public function __construct(
-        OrderRepositoryInterface $orderRepository,
+        OrderStatusHistoryRepositoryInterface $orderStatusHistoryRepository,
         InvoiceService $invoiceService,
         Transaction $transaction,
         InvoiceSender $invoiceSender,
         Data $dibsDataHelper,
         Logger $logger
     ) {
-        $this->orderRepository = $orderRepository;
+        $this->orderStatusHistoryRepository = $orderStatusHistoryRepository;
         $this->invoiceService = $invoiceService;
         $this->transaction = $transaction;
         $this->invoiceSender = $invoiceSender;
@@ -89,20 +89,24 @@ class ResponseHandler
             $transactionSave->save();
             $this->invoiceSender->send($invoice);
 
-            $invoice->capture();
+            if ($invoice->canCapture()) {
+                $invoice->capture();
+            }
             //send notification code
-            $order->addCommentToStatusHistory(
+            $statusHistory = $order->addCommentToStatusHistory(
                 __('Notified customer about invoice #%1.', $invoice->getId())
             )->setIsCustomerNotified(true);
-            $this->orderRepository->save($order);
+            $this->orderStatusHistoryRepository->save($statusHistory);
 
         } catch (\Exception $e) {
             $message = sprintf('There was an issue with invoicing the order: %s', $e->getMessage());
 
             $this->logger->error($message, ['exception' => $e]);
 
-            $order->addCommentToStatusHistory($message)->setIsCustomerNotified(false);
-            $this->orderRepository->save($order);
+            $statusHistory = $order->addCommentToStatusHistory($message)->setIsCustomerNotified(false);
+            $this->orderStatusHistoryRepository->save($statusHistory);
+
+            throw $e;
         }
     }
 }
