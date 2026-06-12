@@ -4,12 +4,15 @@
 | Module         | Nets Easy Payment Module for Magento 2                                                                        |
 |----------------|---------------------------------------------------------------------------------------------------------------|
 | Shop Version   | `2.4.x`                                                                                                       |
-| Plugin Version | `1.8.6`                                                                                                       |
+| Plugin Version | `1.8.7`                                                                                                       |
 | PHP Version    | `7.4 - 8.3`                                                                                                   |
 | Guide          | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-magento/checkout-for-magento-magento-2/ |
 | Github         | https://github.com/Nets-eCom/Magento2_easy                                                                    |
 
 ## CHANGELOG
+
+### Version 1.8.7 - Released - 2026-06-12
+- Fix: PaymentCharged webhook will throw exception when invoice creation fail
 
 ### Version 1.8.6 - Released - 2026-03-23
 - Fix: use bind on payment handlers
