@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="PaymentEnableTest">
+
+        <annotations>
+            <title value="Enable Payment and Check Frontend"/>
+            <description value="Enable the payment method and verify it is available at checkout."/>
+            <stories value="Enable Payment Method"/>
+            <severity value="CRITICAL"/>
+        </annotations>
+
+        <!-- 1. SETUP: Create a product and enable the payment method -->
+        <before>
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="_defaultProduct" stepKey="createProduct">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <magentoCLI command="indexer:reindex" stepKey="reindexBefore"/>
+            <magentoCLI command="config:set payment/nexi/environment test" stepKey="setTestEnvironment"/>
+            <magentoCLI command="config:set payment/nexi/secret_key test123" stepKey="setLiveSecretKey"/>
+            <magentoCLI command="config:set payment/nexi/checkout_key test123" stepKey="setLiveCheckoutKey"/>
+            <magentoCLI command="config:set payment/nexi/test_secret_key test123" stepKey="setTestSecretKey"/>
+            <magentoCLI command="config:set payment/nexi/test_checkout_key test123" stepKey="setTestCheckoutKey"/>
+            <magentoCLI command="config:set payment/nexi/webshop_terms_and_conditions_url https://example.com/terms" stepKey="setWebshopTerms"/>
+            <magentoCLI command="config:set payment/nexi/payment_terms_and_conditions_url https://example.com/payment-terms" stepKey="setPaymentTerms"/>
+            <magentoCLI command="config:set payment/nexi/active 1" stepKey="enablePayment"/>
+            <magentoCLI command="cache:clean" stepKey="cleanCacheBefore"/>
+        </before>
+
+        <!-- 2. TEARDOWN: disable payment and delete product and category -->
+        <after>
+            <magentoCLI command="config:set payment/nexi/active 0" stepKey="disablePaymentAfter"/>
+            <magentoCLI command="cache:clean" stepKey="cleanCacheAfter"/>
+
+            <deleteData createDataKey="createProduct" stepKey="deleteProduct"/>
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+        </after>
+
+        <!-- ======================================================= -->
+        <!-- STOREFRONT CHECKOUT                                     -->
+        <!-- ======================================================= -->
+        <!-- 1. Navigate to the storefront product page -->
+        <amOnPage url="{{StorefrontProductPage.url($$createProduct.custom_attributes[url_key]$$)}}" stepKey="goToProductPage"/>
+        <waitForPageLoad stepKey="waitForProductPageLoad"/>
+
+        <!-- 2. Add to Cart -->
+        <scrollTo selector="#product-addtocart-button" x="0" y="-200" stepKey="scrollToAddToCartButton"/>
+        <waitForElementNotVisible selector="#product-addtocart-button[disabled]" time="60" stepKey="waitForAddToCartEnabled"/>
+        <waitForElementClickable selector="#product-addtocart-button" time="30" stepKey="waitForAddToCartClickable"/>
+        <executeJS function="document.querySelector('#product-addtocart-button').click();" stepKey="clickAddToCart"/>
+        <waitForPageLoad time="60" stepKey="waitForAddToCartComplete"/>
+        <waitForElementVisible selector=".message-success" time="60" stepKey="waitForSuccessMessage"/>
+
+        <!-- 3. Go to Checkout -->
+        <amOnPage url="/checkout/" stepKey="goToCheckoutDirectly"/>
+        <waitForPageLoad time="30" stepKey="waitForCheckoutPageLoad"/>
+
+        <!-- 4. Fill Shipping Address and proceed to the payment step -->
+        <actionGroup ref="GuestCheckoutFillingShippingSectionActionGroup" stepKey="fillShippingAddress">
+            <argument name="customerVar" value="Simple_US_Customer"/>
+            <argument name="customerAddressVar" value="US_Address_TX"/>
+        </actionGroup>
+        <waitForPageLoad time="30" stepKey="waitForPaymentPageLoad"/>
+
+        <!-- 5. Verify that payment method is present -->
+        <waitForElementVisible selector="#nexi" time="30" stepKey="waitForPaymentMethod"/>
+        <seeElement selector="#nexi" stepKey="seePaymentMethod"/>
+
+    </test>
+</tests>

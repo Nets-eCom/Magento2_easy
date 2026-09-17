@@ -1,0 +1,58 @@
+<?php
+/**
+ * @var $block \Nexi\Checkout\Block\Adminhtml\System\Config\PaymentMethodsSortable
+ * @var $escaper \Magento\Framework\Escaper
+ */
+$htmlId = $block->getElement()->getHtmlId();
+$inputName = $block->getElement()->getName();
+$sortedValue = $block->getSortedPaymentMethods();
+?>
+
+<div class="payment-methods-sortable-container" id="<?= $escaper->escapeHtmlAttr($htmlId) ?>_container">
+    <select id="<?= $escaper->escapeHtmlAttr($htmlId) ?>"
+        name="<?= $block->escapeHtmlAttr($inputName) ?>"
+        class="select multiselect admin__control-multiselect"
+        size="10"
+        multiple="multiple">
+        <?php foreach ($sortedValue as $availableMethod): ?>    
+            <option value="<?= $escaper->escapeHtmlAttr($availableMethod['value']) ?>" <?= $availableMethod['enabled'] ? 'selected="selected"' : '' ?>">
+                <?= $escaper->escapeHtml($availableMethod['label']) ?>
+            </option>
+        <?php endforeach ?>
+    </select>
+
+    <div class="payment-methods-sortable-list" id="<?= $escaper->escapeHtmlAttr($htmlId) ?>_list" style="display:none">
+        <?php foreach ($sortedValue as $paymentMethod): ?>
+            <div class="payment-method-item" data-value="<?= $escaper->escapeHtmlAttr($paymentMethod['value']) ?>">
+                <div class="payment-method-drag-handle">
+                    <span class="drag-icon">&#8597;</span>
+                </div>
+                <div class="payment-method-content">
+                    <span class="payment-method-label"><?= $escaper->escapeHtml($paymentMethod['label']) ?></span>
+                </div>
+                <div class="payment-method-toggle">
+                    <label class="admin__actions-switch" data-role="switcher">
+                        <input type="checkbox" class="admin__actions-switch-checkbox"
+                            <?= $paymentMethod['enabled'] ? 'checked="checked"' : '' ?>
+                        />
+                        <label class="admin__actions-switch-label">
+                            <span class="admin__actions-switch-text" 
+                                  data-text-on="<?= $escaper->escapeHtmlAttr(__('Enabled')) ?>" 
+                                  data-text-off="<?= $escaper->escapeHtmlAttr(__('Disabled')) ?>"></span>
+                        </label>
+                    </label>
+                </div>
+            </div>
+        <?php endforeach ?>
+    </div>
+</div>
+
+<script type="text/x-magento-init">
+{
+    "#<?= $escaper->escapeJs($htmlId) ?>_container": {
+        "paymentMethodsSortable": {
+            "elementId": "<?= $escaper->escapeJs($htmlId) ?>"
+        }
+    }
+}
+</script>

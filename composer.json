@@ -1,0 +1,47 @@
+{
+    "name": "nexi-checkout/adobe-commerce-checkout",
+    "description": "Nexi Checkout",
+    "require": {
+        "php": "^8.1",
+        "nexi-checkout/php-payment-sdk": "~0.16",
+        "magento/framework": ">=102.0.0",
+        "ext-curl": "*",
+        "giggsey/libphonenumber-for-php-lite": "*"
+    },
+    "require-dev": {
+        "magento/magento-coding-standard": "*",
+        "phpunit/phpunit": "^9.6",
+        "magento/product-community-edition": ">2.4.7"
+    },
+    "type": "magento2-module",
+    "version": "2.0.1",
+    "license": "MIT",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Nexi\\Checkout\\": ""
+        }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    ],
+    "keywords": [
+        "magento 2",
+        "adobe commerce",
+        "payment gateway",
+        "nexi"
+    ],
+    "config": {
+        "allow-plugins": {
+            "magento/composer-dependency-version-audit-plugin": false,
+            "magento/magento-composer-installer": false,
+            "magento/inventory-composer-installer": false,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

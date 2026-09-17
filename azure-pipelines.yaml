@@ -1,0 +1,187 @@
+trigger:
+  - main
+  - develop
+
+pr:
+  - main
+  - develop
+
+resources:
+  repositories:
+    - repository: Connect
+      type: git
+      name: ECOM-EASY-PLUGINS/connect
+      ref: refs/heads/main
+
+parameters:
+  - name: phpVersion
+    displayName: PHP Version
+    type: string
+    default: "8.2"
+    values:
+      - "8.1"
+      - "8.2"
+      - "8.3"
+      - "8.4"
+  - name: magentoVersion
+    displayName: Magento Version
+    type: string
+    default: "2.4.8-p5"
+    values:
+      - "2.4.5-p17"
+      - "2.4.6-p15"
+      - "2.4.7-p10"
+      - "2.4.8-p5"
+      - "2.4.9"
+
+  - name: nodeVersion
+    displayName: Node Version
+    type: string
+    default: "20"
+    values:
+      - "18"
+      - "20"
+      - "22"
+
+  - name: reinstall
+    displayName: Force Magento reinstall
+    type: boolean
+    default: false
+  - name: ShouldDeployApplication
+    type: boolean
+    default: false
+  - name: ShouldBuildReleasePackage
+    type: boolean
+    default: false
+
+variables:
+  extensionName: nexi-checkout_adobe-commerce-checkout
+  publishDir: ./bin
+
+pool:
+  vmImage: ubuntu-24.04
+
+stages:
+  - stage: Validate
+    displayName: Validate
+    jobs:
+      - job: Validate_Code
+        displayName: PHP Lint, PHPCS & Unit Tests
+        variables:
+          COMPOSER_AUTH: '{"http-basic":{"repo.magento.com":{"username":"$(REPO_MAGENTO_USER)","password":"$(REPO_MAGENTO_PASSWORD)"}}}'
+        steps:
+          - script: |
+              sudo add-apt-repository ppa:ondrej/php -y
+              sudo apt-get update -y
+              sudo apt-get install -y \
+                php${{ parameters.phpVersion }} \
+                php${{ parameters.phpVersion }}-curl \
+                php${{ parameters.phpVersion }}-xml \
+                php${{ parameters.phpVersion }}-mbstring \
+                php${{ parameters.phpVersion }}-zip
+            displayName: Install PHP ${{ parameters.phpVersion }} with extensions
+
+          - script: composer install --no-interaction --no-progress --prefer-dist
+            displayName: Composer install
+            env:
+              COMPOSER_AUTH: $(COMPOSER_AUTH)
+
+          - script: |
+              find ./ -type f -name '*.php' ! -path './vendor/*' -print0 \
+                | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
+            displayName: PHP Syntax Checker (lint)
+
+          - script: vendor/bin/phpcs --standard=Magento2 --extensions=php --ignore=vendor/ --report=full --colors -n .
+            displayName: PHPCS – Magento2 Coding Standard
+
+          - script: vendor/bin/phpunit Test/Unit/ --testdox
+            displayName: PHPUnit – Unit Tests
+  - stage: MFTF_Tests
+    displayName: MFTF Tests
+    dependsOn: Validate
+    jobs:
+      - job: Run_MFTF
+        displayName: Run MFTF Tests
+        timeoutInMinutes: 60
+        pool:
+          name: d-econagents-weu-vmss-2
+        variables:
+          COMPOSER_AUTH: '{"http-basic":{"repo.magento.com":{"username":"$(REPO_MAGENTO_USER)","password":"$(REPO_MAGENTO_PASSWORD)"}}}'
+        steps:
+          - checkout: self
+            path: s
+
+          - template: /platforms/magento2/pipelines/jobs/mftf-template.yaml@Connect
+            parameters:
+              pluginSourceDir: $(Build.SourcesDirectory)
+              phpVersion: ${{ parameters.phpVersion }}
+              magentoVersion: ${{ parameters.magentoVersion }}
+              nodeVersion: ${{ parameters.nodeVersion }}
+              reinstall: ${{ parameters.reinstall }}
+
+  - stage: Build_Release_Package
+    displayName: Build Release Package
+    dependsOn: MFTF_Tests
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['Build.Reason'], 'Manual'),
+        ${{ parameters.ShouldBuildReleasePackage }}
+      )
+    jobs:
+      - job: Create_Zip
+        displayName: Create Magento Component ZIP
+        steps:
+          - checkout: self
+
+          - script: |
+              PACKAGE_VERSION=$(jq -r .version composer.json)
+
+              if [ "$PACKAGE_VERSION" == "null" ] || [ -z "$PACKAGE_VERSION" ]; then
+                echo "Error: Version not found in composer.json. Falling back to BuildId."
+                PACKAGE_VERSION="$(Build.BuildId)"
+              fi
+
+              PACKAGE_NAME="$(extensionName)-$PACKAGE_VERSION.zip"
+              TARGET_DIR="$(publishDir)"
+
+              echo "Creating package: $PACKAGE_NAME in $TARGET_DIR"
+
+              mkdir -p release_tmp
+              mkdir -p $TARGET_DIR
+
+              sed -i "s/COMMERCE_PLATFORM_TAG = 'Magento2';/COMMERCE_PLATFORM_TAG = 'Magento2_m';/g" Model/NexiSdk/HttpClientConfigurationProvider.php
+
+              rsync -av . release_tmp/ \
+                --exclude '.git*' \
+                --exclude 'azure-pipelines.yaml' \
+                --exclude '.github/' \
+                --exclude 'vendor/' \
+                --exclude 'release_tmp' \
+                --exclude "$TARGET_DIR"
+              
+              cd release_tmp && zip -r ../$TARGET_DIR/$PACKAGE_NAME .
+              cd ..
+
+              echo "Package created at: $TARGET_DIR/$PACKAGE_NAME"
+            displayName: Package module to ZIP
+          - publish: $(publishDir)
+            artifact: $(extensionName)
+            displayName: Publish Release Package
+  - stage: Deploy_Development
+    displayName: Deploy_Development
+    dependsOn: Validate
+    condition: |
+      and(
+        succeeded(),
+        or(
+          in(variables['Build.SourceBranch'], 'refs/heads/develop-2.0.0'),
+          and(${{ parameters.ShouldDeployApplication }}, eq(variables['Build.Reason'], 'Manual'))
+        )
+      )
+    jobs:
+      - job: Trigger_Deploy_Development
+        displayName: Trigger CD-Services-Magento2
+        steps:
+          - checkout: none
+          - bash: echo "Triggering CD-Services-Magento2 deployment to development environment"
