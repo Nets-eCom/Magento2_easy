@@ -1,6 +1,9 @@
 {
     "name": "nexi-checkout/adobe-commerce-checkout",
     "description": "Nexi Checkout",
+    "type": "magento2-module",
+    "version": "2.0.1",
+    "license": "MIT",
     "require": {
         "php": "^8.1",
         "nexi-checkout/php-payment-sdk": "~0.16",
@@ -13,9 +16,6 @@
         "phpunit/phpunit": "^9.6",
         "magento/product-community-edition": ">2.4.7"
     },
-    "type": "magento2-module",
-    "version": "2.0.1",
-    "license": "MIT",
     "autoload": {
         "files": [
             "registration.php"

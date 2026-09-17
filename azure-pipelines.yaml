@@ -57,6 +57,7 @@ parameters:
 variables:
   extensionName: nexi-checkout_adobe-commerce-checkout
   publishDir: ./bin
+  githubRepo: Nets-eCom/Magento2_easy
 
 pool:
   vmImage: ubuntu-24.04
@@ -175,7 +176,7 @@ stages:
       and(
         succeeded(),
         or(
-          in(variables['Build.SourceBranch'], 'refs/heads/develop-2.0.0'),
+          in(variables['Build.SourceBranch'], 'refs/heads/develop'),
           and(${{ parameters.ShouldDeployApplication }}, eq(variables['Build.Reason'], 'Manual'))
         )
       )
@@ -185,3 +186,47 @@ stages:
         steps:
           - checkout: none
           - bash: echo "Triggering CD-Services-Magento2 deployment to development environment"
+  - stage: Release
+    displayName: 'Release to GitHub'
+    dependsOn: []
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/main')
+      )
+    jobs:
+      - job: PushToGitHub
+        displayName: 'Tag and push to GitHub'
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+
+          - script: |
+              VERSION=$(awk '/^### Version /{print $3; exit}' CHANGELOG.md)
+              if [ -z "$VERSION" ]; then
+                echo "##[error]Could not extract version from CHANGELOG.md"
+                exit 1
+              fi
+              echo "Detected version: $VERSION"
+              echo "##vso[task.setvariable variable=RELEASE_VERSION]$VERSION"
+            displayName: 'Extract version from CHANGELOG.md'
+
+          - script: |
+              git config user.email "azure-pipelines@noreply.com"
+              git config user.name "Azure Pipelines"
+              git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+
+              GITHUB_REMOTE="https://x-access-token:$(GITHUB_PAT)@github.com/$(githubRepo).git"
+              git remote add github "$GITHUB_REMOTE" 2>/dev/null || git remote set-url github "$GITHUB_REMOTE"
+              git push github HEAD:main
+
+              if git ls-remote --tags github "$RELEASE_VERSION" | grep -q "refs/tags/$RELEASE_VERSION$"; then
+                echo "Tag $RELEASE_VERSION already on GitHub, skipping"
+              else
+                git push github "$RELEASE_VERSION"
+                echo "Pushed tag $RELEASE_VERSION to GitHub"
+              fi
+            displayName: 'Push branch and tag to GitHub'
+            env:
+              GITHUB_PAT: $(GITHUB_PAT)
