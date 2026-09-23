@@ -34,7 +34,7 @@ class PaymentMethodsFetcher implements PaymentMethodsFetcherInterface
         $paymentApi = $this->paymentApiFactory->create($secretKey, $isLiveMode);
             
         try {
-            $result = $paymentApi->getPaymentMethods(new PaymentMethods(null, $currency, true));
+            $result = $paymentApi->getPaymentMethods(new PaymentMethods($currency, true, null));
         } catch (PaymentApiException $e) {
             $this->logger->error('Failed to fetch payment methods from Nexi API: ' . $e->getMessage());
 
