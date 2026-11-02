@@ -1,0 +1,9 @@
+# Dev tooling
+rector.php
+azure-pipelines.yaml
+
+# Config files not needed in release
+.editorconfig
+.gitignore
+.php-cs-fixer.cache
+.php-cs-fixer.dist.php

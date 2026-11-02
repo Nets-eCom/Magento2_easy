@@ -4,12 +4,15 @@
 | Module         | Nexi Checkout Payment Module for Adobe Commerce                                                                              |
 |----------------|------------------------------------------------------------------------------------------------------------------------------|
 | Shop Version   | `2.4.x`                                                                                                                      |
-| Plugin Version | `2.0.2`                                                                                                                      |
+| Plugin Version | `2.0.3`                                                                                                                      |
 | PHP Version    | `7.4 - 8.4`                                                                                                                  |
 | Guide          | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/magento/checkout-magento-2-adobe-commerce-magento-2-adobe-commerce/ |
 | Github         | https://github.com/Nets-eCom/Magento2_easy                                                                                   |
 
 ## CHANGELOG
+
+### Version 2.0.3 - Released - 2026-11-01
+- Fix: order grid exception
 
 ### Version 2.0.2 - Released - 2026-09-23
 - Fix: sdk parameters order in get payment

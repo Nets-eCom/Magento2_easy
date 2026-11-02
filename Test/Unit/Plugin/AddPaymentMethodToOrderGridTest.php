@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Test\Unit\Plugin;
 
+use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 use Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory;
-use Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult;
 use Magento\Sales\Model\ResourceModel\Order\Grid\Collection;
 use Nexi\Checkout\Model\Order\NexiOrderFields;
 use Nexi\Checkout\Plugin\AddPaymentMethodToOrderGrid;
@@ -65,8 +65,7 @@ class AddPaymentMethodToOrderGridTest extends TestCase
 
     public function testAfterGetReportReturnsCollectionUnchangedForNonOrderGridCollection(): void
     {
-        $otherCollection = $this->createMock(SearchResult::class);
-        $otherCollection->expects($this->never())->method('getSelect');
+        $otherCollection = $this->createMock(DataCollection::class);
 
         $result = $this->plugin->afterGetReport(
             $this->subjectMock,

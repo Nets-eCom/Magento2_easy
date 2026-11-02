@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Plugin;
 
+use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory;
-use Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult;
 use Magento\Sales\Model\ResourceModel\Order\Grid\Collection;
 use Nexi\Checkout\Model\Order\NexiOrderFields;
 
@@ -17,9 +17,9 @@ class AddPaymentMethodToOrderGrid
 
     public function afterGetReport(
         CollectionFactory $subject,
-        SearchResult $collection,
+        DataCollection $collection,
         string $requestName
-    ): SearchResult {
+    ): DataCollection {
         if (!$this->isApplicable($collection, $requestName)) {
             return $collection;
         }
@@ -39,7 +39,7 @@ class AddPaymentMethodToOrderGrid
         return $collection;
     }
 
-    private function isApplicable(SearchResult $collection, string $requestName): bool
+    private function isApplicable(mixed $collection, string $requestName): bool
     {
         if ($requestName !== self::SALES_ORDER_GRID_REQUEST_NAME) {
             return false;

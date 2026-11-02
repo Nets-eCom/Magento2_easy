@@ -213,9 +213,13 @@ stages:
             displayName: 'Extract version from CHANGELOG.md'
 
           - script: |
+              set -e
               git config user.email "azure-pipelines@noreply.com"
               git config user.name "Azure Pipelines"
-              git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+
+              if ! git rev-parse "$RELEASE_VERSION" >/dev/null 2>&1; then
+                git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+              fi
 
               GITHUB_REMOTE="https://x-access-token:$(GITHUB_PAT)@github.com/$(githubRepo).git"
               git remote add github "$GITHUB_REMOTE" 2>/dev/null || git remote set-url github "$GITHUB_REMOTE"

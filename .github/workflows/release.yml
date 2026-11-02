@@ -1,0 +1,67 @@
+name: Create GitHub Release on Tag
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          VERSION="${{ github.ref_name }}"
+          CHANGELOG=$(awk "/^### Version ${VERSION}[[:space:]]/{found=1; next} found && /^### Version /{exit} found{print}" CHANGELOG.md)
+          {
+            echo 'BODY<<EOF'
+            echo "$CHANGELOG"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build zip archive
+        run: |
+          VERSION="${{ github.ref_name }}"
+          REPO_NAME="${{ github.event.repository.name }}"
+          FOLDER="${REPO_NAME}-${VERSION}"
+          ZIP="${FOLDER}.zip"
+
+          EXCLUDES=(--exclude='.git' --exclude='.github' --exclude='.releaseignore')
+
+          if [ -f ".releaseignore" ]; then
+            while IFS= read -r line || [ -n "$line" ]; do
+              [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+              EXCLUDES+=(--exclude="$line")
+            done < ".releaseignore"
+          fi
+
+          mkdir -p "/tmp/${FOLDER}"
+          rsync -a "${EXCLUDES[@]}" . "/tmp/${FOLDER}/"
+          cd /tmp && zip -r "${ZIP}" "${FOLDER}/"
+          mv "/tmp/${ZIP}" "$GITHUB_WORKSPACE/${ZIP}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.ref_name }}"
+          REPO_NAME="${{ github.event.repository.name }}"
+          ZIP="${REPO_NAME}-${VERSION}.zip"
+
+          if gh release view "${VERSION}" >/dev/null 2>&1; then
+            echo "Release ${VERSION} already exists, skipping"
+            exit 0
+          fi
+
+          gh release create "${VERSION}" \
+            --title "${VERSION}" \
+            --notes "${{ steps.changelog.outputs.BODY }}" \
+            --latest \
+            "${ZIP}"
